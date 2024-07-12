@@ -4,7 +4,7 @@
 	export let text = 'Hello, Squiggly World!'
 	export let frequency = 0.4
 	export let amplitude = 1.5
-	export let color = '#ff0000'
+	export let color = '#e33d3d'
 	export let distance = 3
 	export let lineWidth = 1.75
 
@@ -66,7 +66,7 @@
 <style lang="scss">
 	.squiggly-header {
 		font-size: $font-size;
-		font-weight: 400;
+		font-weight: 500;
 		margin-bottom: $unit-fourth;
 	}
 
