@@ -62,4 +62,10 @@
 		margin: 0;
 		padding: 0;
 	}
+
+	footer {
+		font-size: 0.85rem;
+		color: $grey-40;
+		text-align: center;
+	}
 </style>
