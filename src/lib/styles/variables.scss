@@ -1,0 +1,115 @@
+@import 'mixins.scss';
+
+/* Atomic Unit
+ * -------------------------------------------------------------------------- */
+
+$page-width: 784px;
+
+$unit: 8px;
+$margin: $unit * 5;
+
+$unit-fourth: calc($unit / 4);
+$unit-half: calc($unit / 2);
+$unit-three-fourth: calc($unit / 4) * 3;
+$unit-2x: $unit * 2;
+$unit-3x: $unit * 3;
+$unit-4x: $unit * 4;
+$unit-5x: $unit * 5;
+$unit-6x: $unit * 6;
+$unit-8x: $unit * 8;
+$unit-10x: $unit * 10;
+$unit-12x: $unit * 12;
+$unit-14x: $unit * 14;
+$unit-20x: $unit * 20;
+
+/* Page properties
+ * -------------------------------------------------------------------------- */
+$page-corner-radius: $unit;
+
+$page-top-margin: $unit-6x;
+
+$page-vert-padding: $unit-6x;
+$page-horz-padding: $unit-5x;
+
+$page-fourth: ($page-width - $margin * 5) / 4;
+$page-third: ($page-width - $margin * 5) / 3;
+$page-half: ($page-fourth * 2) + $margin;
+
+$card-height: $unit-14x;
+$mention-padding: $unit-3x;
+
+/* Typography
+ * -------------------------------------------------------------------------- */
+
+$font-stack: 'Circular Std', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+$font-unit: 14px;
+
+$font-size-small: 0.7rem; // 10
+$font-size: 1rem; // 14
+$font-size-med: 1.25rem; // 16
+$font-size-large: 1.4rem; // 18
+$font-size-xlarge: 1.65rem; // 22
+
+$font-weight: 400;
+$font-weight-med: 500;
+$font-weight-bold: 600;
+
+$line-height: 1.3;
+
+$letter-spacing: -0.02em;
+
+/* Colors
+ * -------------------------------------------------------------------------- */
+$grey-100: #ffffff;
+$grey-90: #f7f7f7;
+$grey-80: #e8e8e8;
+$grey-50: #b2b2b2;
+$grey-20: #666666;
+$grey-00: #333333;
+
+$red-80: #ff6a54;
+$red-60: #e33d3d;
+$red-40: #d31919;
+$red-00: #3d0c0c;
+
+$bg-color: #e8e8e8;
+$page-color: #ffffff;
+$card-color: #f7f7f7;
+
+$text-color-light: #b2b2b2;
+$text-color-body: #666666;
+
+$accent-color: #e33d3d;
+$grey-color: #f0f0f0;
+
+$image-border-color: rgba(0, 0, 0, 0.03);
+
+$facebook-color: #3b5998;
+$twitter-color: #55acee;
+$instagram-color: #3f729b;
+$pinterest-color: #bd061c;
+$github-color: #6cc644;
+$cmu-color: #fe6420;
+$quip-color: #ae4830;
+
+$twitter-button-color: #6cc0ff;
+$twitter-text-color: #0f5f9b;
+
+/* Images
+ * -------------------------------------------------------------------------- */
+$corner-radius: $unit-2x;
+$mobile-corner-radius: $unit-2x;
+
+/* Avatar header
+ * -------------------------------------------------------------------------- */
+$avatar-radius: 2rem;
+$avatar-url: url('images/header.png');
+
+/* Media queries breakpoints
+ * These needs to be revisited
+ * -------------------------------------------------------------------------- */
+
+$screen-sm-min: 768px;
+$screen-md-min: 992px;
+$screen-lg-min: 1200px;
