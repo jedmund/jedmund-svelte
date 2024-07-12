@@ -1,12 +1,12 @@
 @font-face {
 	font-family: 'cstd';
-	src: url('./fonts/DwMbyrnCMiZMVFXBZkwz.eot'); /* IE9 Compat Modes */
+	src: url('/fonts/DwMbyrnCMiZMVFXBZkwz.eot'); /* IE9 Compat Modes */
 	src:
-		url('./fonts/DwMbyrnCMiZMVFXBZkwz.eot?#iefix') format('embedded-opentype'),
-		/* IE6-IE8 */ url('./fonts/DwMbyrnCMiZMVFXBZkwz.woff') format('woff'),
-		/* Modern Browsers */ url('./fonts/DwMbyrnCMiZMVFXBZkwz.ttf') format('truetype'),
+		url('/fonts/DwMbyrnCMiZMVFXBZkwz.eot?#iefix') format('embedded-opentype'),
+		/* IE6-IE8 */ url('/fonts/DwMbyrnCMiZMVFXBZkwz.woff') format('woff'),
+		/* Modern Browsers */ url('/fonts/DwMbyrnCMiZMVFXBZkwz.ttf') format('truetype'),
 		/* Safari, Android, iOS */
-			url('./fonts/DwMbyrnCMiZMVFXBZkwz.svg#dd452d63ae05ddb466f19713a7d09fd5') format('svg'); /* Legacy iOS */
+			url('/fonts/DwMbyrnCMiZMVFXBZkwz.svg#dd452d63ae05ddb466f19713a7d09fd5') format('svg'); /* Legacy iOS */
 
 	font-style: normal;
 	font-weight: 400;
@@ -14,13 +14,13 @@
 
 @font-face {
 	font-family: 'cstd';
-	src: url('./fonts/xFErEAWaEHlAopmQYjAg.eot'); /* IE9 Compat Modes */
+	src: url('/fonts/xFErEAWaEHlAopmQYjAg.eot'); /* IE9 Compat Modes */
 	src:
-		url('./fonts/xFErEAWaEHlAopmQYjAg.eot?#iefix') format('embedded-opentype'),
-		/* IE6-IE8 */ url('./fonts/xFErEAWaEHlAopmQYjAg.woff') format('woff'),
-		/* Modern Browsers */ url('./fonts/xFErEAWaEHlAopmQYjAg.ttf') format('truetype'),
+		url('/fonts/xFErEAWaEHlAopmQYjAg.eot?#iefix') format('embedded-opentype'),
+		/* IE6-IE8 */ url('/fonts/xFErEAWaEHlAopmQYjAg.woff') format('woff'),
+		/* Modern Browsers */ url('/fonts/xFErEAWaEHlAopmQYjAg.ttf') format('truetype'),
 		/* Safari, Android, iOS */
-			url('./fonts/xFErEAWaEHlAopmQYjAg.svg#a81919819e5d11fb78ee7eadc8883b0d') format('svg'); /* Legacy iOS */
+			url('/fonts/xFErEAWaEHlAopmQYjAg.svg#a81919819e5d11fb78ee7eadc8883b0d') format('svg'); /* Legacy iOS */
 
 	font-style: normal;
 	font-weight: 500;
@@ -28,7 +28,7 @@
 
 // This doesn't work for some reason:
 
-// $font-path: './fonts/';
+// $font-path: '/fonts/';
 // $font-family: 'cstd';
 
 // @mixin font-face($file-name, $font-weight) {
