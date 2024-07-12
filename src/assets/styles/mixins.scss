@@ -1,5 +1,8 @@
 // use with @include
 @mixin breakpoint($breakpoint) {
+	$small-phone-width: 395px;
+	$small-phone-height: 1280px;
+
 	$phone-width: 450px;
 	$phone-height: 1280px;
 
@@ -34,6 +37,16 @@
 		@media only screen 
        and (max-width: $phone-width) 
        and (max-height: $phone-height) 
+       and (-webkit-min-device-pixel-ratio: 2) {
+        @content;
+       }
+	}
+
+	@if $breakpoint == small-phone {
+		// prettier-ignore
+		@media only screen 
+       and (max-width: $small-phone-width) 
+       and (max-height: $small-phone-height) 
        and (-webkit-min-device-pixel-ratio: 2) {
         @content;
        }

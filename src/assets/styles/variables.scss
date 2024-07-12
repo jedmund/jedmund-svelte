@@ -31,9 +31,9 @@ $page-top-margin: $unit-6x;
 $page-vert-padding: $unit-6x;
 $page-horz-padding: $unit-5x;
 
-$page-fourth: ($page-width - $margin * 5) / 4;
-$page-third: ($page-width - $margin * 5) / 3;
-$page-half: ($page-fourth * 2) + $margin;
+$page-fourth: calc(($page-width - $margin * 5) / 4);
+$page-third: calc(($page-width - $margin * 5) / 3);
+$page-half: calc(($page-fourth * 2) + $margin);
 
 $card-height: $unit-14x;
 $mention-padding: $unit-3x;
