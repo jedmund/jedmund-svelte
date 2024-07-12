@@ -2,29 +2,48 @@
 	import { onMount } from 'svelte'
 	import { spring } from 'svelte/motion'
 
-	let isHovering = false
-	let isBlinking = false
+	let isHovering = $state(false)
+	let isBlinking = $state(false)
 
 	const scale = spring(1, {
 		stiffness: 0.1,
 		damping: 0.125
 	})
 
-	$: isHovering ? scale.set(1.25) : scale.set(1)
+	$effect(() => {
+		if (isHovering) {
+			scale.set(1.25)
+		} else {
+			scale.set(1)
+		}
+	})
 
-	function blink() {
-		isBlinking = true
-		setTimeout(() => {
-			isBlinking = false
-			if (Math.random() < 0.45) {
-				setTimeout(() => {
-					isBlinking = true
-					setTimeout(() => {
-						isBlinking = false
-					}, 150)
-				}, 100)
-			}
-		}, 150)
+	function sleep(ms) {
+		return new Promise((resolve) => setTimeout(resolve, ms))
+	}
+
+	function setBlinkState(state) {
+		isBlinking = state
+	}
+
+	async function singleBlink(duration) {
+		setBlinkState(true)
+		await sleep(duration)
+		setBlinkState(false)
+	}
+
+	async function doubleBlink() {
+		await singleBlink(50)
+		await sleep(100)
+		await singleBlink(150)
+	}
+
+	async function blink() {
+		await singleBlink(150)
+
+		if (Math.random() < 0.45) {
+			await doubleBlink()
+		}
 	}
 
 	function startBlinking() {
