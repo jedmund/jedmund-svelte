@@ -30,7 +30,7 @@
 		<p>
 			Right now, I'm spending my free time building a hobby journaling app called <a
 				href="https://maitsu.co">Maitsu</a
-			>. I've spent time at several companies over the last 11 years, but you might know as the
+			>. I've spent time at several companies over the last 11 years, but you might know me as the
 			first designer hired at
 			<a href="https://www.pinterest.com/" target="_blank">Pinterest</a>.
 		</p>
@@ -55,6 +55,13 @@
 		color: $red-60;
 		font-weight: 500;
 		font-style: normal;
+		text-decoration: none;
+	}
+
+	a:hover {
+		cursor: pointer;
+		text-decoration: underline;
+		text-decoration-style: wavy;
 	}
 
 	ul {
