@@ -1,9 +1,16 @@
 <script lang="ts">
+	import Album from '$components/Album.svelte'
 	import Avatar from '$components/Avatar.svelte'
 	import MentionList from '$components/MentionList.svelte'
 	import Page from '$components/Page.svelte'
 	import ProjectList from '$components/ProjectList.svelte'
 	import Squiggly from '$components/Squiggly.svelte'
+
+	import type { PageData } from './$types'
+
+	export let data: PageData
+
+	$: ({ albums, error } = data)
 </script>
 
 <Page>
@@ -44,6 +51,23 @@
 
 	<MentionList />
 </Page>
+<Page>
+	<svelte:fragment slot="header">
+		<Squiggly text="Now playing" />
+	</svelte:fragment>
+
+	<section class="weekly-albums">
+		{#if albums.length > 0}
+			<ul>
+				{#each albums.slice(0, 5) as album}
+					<Album {album} />
+				{/each}
+			</ul>
+		{:else}
+			<p>Loading albums...</p>
+		{/if}
+	</section>
+</Page>
 
 <footer>
 	<p>&copy; 2024 Justin Edmund</p>
@@ -64,10 +88,60 @@
 		text-decoration-style: wavy;
 	}
 
+	header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: $unit-2x;
+	}
+
 	ul {
 		list-style: none;
 		margin: 0;
 		padding: 0;
+	}
+
+	.weekly-albums ul {
+		display: flex;
+		flex-direction: row;
+		gap: $unit-4x;
+		width: 100%;
+
+		li {
+			display: flex;
+			flex-basis: 100%;
+			flex-direction: column;
+			gap: $unit;
+
+			.info {
+				display: flex;
+				flex-direction: column;
+				gap: $unit-fourth;
+
+				p {
+					padding: 0;
+					margin: 0;
+				}
+
+				.album-name {
+					font-size: $font-size;
+					font-weight: $font-weight-med;
+				}
+
+				.artist-name {
+					font-size: $font-size-small;
+					font-weight: $font-weight-med;
+					color: $grey-40;
+				}
+			}
+
+			img {
+				border: 1px solid rgba(0, 0, 0, 0.1);
+				border-radius: $unit;
+				box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+				width: 100%;
+			}
+		}
 	}
 
 	footer {
