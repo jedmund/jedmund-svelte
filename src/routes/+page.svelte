@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Album from '$components/Album.svelte'
 	import Avatar from '$components/Avatar.svelte'
+	import Game from '$components/Game.svelte'
 	import MentionList from '$components/MentionList.svelte'
 	import Page from '$components/Page.svelte'
 	import ProjectList from '$components/ProjectList.svelte'
@@ -10,7 +11,7 @@
 
 	export let data: PageData
 
-	$: ({ albums, error } = data)
+	$: ({ albums, games, error } = data)
 </script>
 
 <Page>
@@ -67,6 +68,18 @@
 			<p>Loading albums...</p>
 		{/if}
 	</section>
+
+	<section class="latest-games">
+		{#if games.length > 0}
+			<ul>
+				{#each games.slice(0, 3) as game}
+					<Game {game} />
+				{/each}
+			</ul>
+		{:else}
+			<p>Loading games...</p>
+		{/if}
+	</section>
 </Page>
 
 <footer>
@@ -106,42 +119,13 @@
 		flex-direction: row;
 		gap: $unit-4x;
 		width: 100%;
+	}
 
-		li {
-			display: flex;
-			flex-basis: 100%;
-			flex-direction: column;
-			gap: $unit;
-
-			.info {
-				display: flex;
-				flex-direction: column;
-				gap: $unit-fourth;
-
-				p {
-					padding: 0;
-					margin: 0;
-				}
-
-				.album-name {
-					font-size: $font-size;
-					font-weight: $font-weight-med;
-				}
-
-				.artist-name {
-					font-size: $font-size-small;
-					font-weight: $font-weight-med;
-					color: $grey-40;
-				}
-			}
-
-			img {
-				border: 1px solid rgba(0, 0, 0, 0.1);
-				border-radius: $unit;
-				box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-				width: 100%;
-			}
-		}
+	.latest-games ul {
+		display: flex;
+		flex-direction: row;
+		gap: $unit-4x;
+		width: 100%;
 	}
 
 	footer {
