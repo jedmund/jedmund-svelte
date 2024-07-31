@@ -38,6 +38,9 @@
 	"type": "module",
 	"dependencies": {
 		"@sveltejs/adapter-node": "^5.2.0",
-		"node-itunes-search": "^1.2.3"
+		"@types/steamapi": "^2.2.5",
+		"dotenv": "^16.4.5",
+		"node-itunes-search": "^1.2.3",
+		"steamapi": "^3.0.11"
 	}
 }
