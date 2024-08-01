@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { LastClient } from '@musicorum/lastfm'
 import {
 	searchItunes,
@@ -14,7 +15,7 @@ const USERNAME = 'jedmund'
 const ALBUM_LIMIT = 3
 
 export const GET: RequestHandler = async ({ url }) => {
-	const client = new LastClient(LASTFM_API_KEY)
+	const client = new LastClient(LASTFM_API_KEY || '')
 
 	try {
 		// const albums = await getWeeklyAlbumChart(client, USERNAME)
@@ -94,7 +95,6 @@ async function searchItunesForAlbum(album: Album): Promise<Album> {
 
 	if (itunesResult && itunesResult.results.length > 0) {
 		const firstResult = itunesResult.results[0]
-		console.log(firstResult)
 		album.images.itunes = firstResult.artworkUrl100.replace('100x100', '600x600')
 	}
 

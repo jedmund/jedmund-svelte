@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types'
 import SteamAPI, { Game, GameInfo, GameInfoExtended, UserPlaytime } from 'steamapi'
 
 export const GET: RequestHandler = async ({ params }) => {
-	const steam = new SteamAPI(process.env.STEAM_API_KEY)
+	const steam = new SteamAPI(process.env.STEAM_API_KEY || '')
 	try {
 		const steamId = '76561197997279808'
 
