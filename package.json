@@ -41,6 +41,7 @@
 		"@types/steamapi": "^2.2.5",
 		"dotenv": "^16.4.5",
 		"node-itunes-search": "^1.2.3",
+		"psn-api": "^2.10.1",
 		"steamapi": "^3.0.11"
 	}
 }
