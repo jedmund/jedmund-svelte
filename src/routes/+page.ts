@@ -1,14 +1,19 @@
 import type { PageLoad } from './$types'
 import type { Album } from '$lib/types/lastfm'
-import type { GameInfoExtended, UserPlaytime } from 'steamapi'
+import type { RecentlyPlayedGame } from 'psn-api'
 
 export const load: PageLoad = async ({ fetch }) => {
 	try {
-		const [albums, games] = await Promise.all([fetchRecentAlbums(fetch), fetchRecentGames(fetch)])
-		console.log(games[0])
+		const [albums, steamGames, psnGames] = await Promise.all([
+			fetchRecentAlbums(fetch),
+			fetchRecentSteamGames(fetch),
+			fetchRecentPSNGames(fetch)
+		])
+
 		return {
 			albums,
-			games
+			steamGames: steamGames,
+			psnGames: psnGames
 		}
 	} catch (err) {
 		console.error('Error fetching data:', err)
@@ -27,8 +32,16 @@ async function fetchRecentAlbums(fetch: typeof window.fetch): Promise<Album[]> {
 	return musicData.albums
 }
 
-async function fetchRecentGames(fetch: typeof window.fetch): Promise<SerializableGameInfo[]> {
+async function fetchRecentSteamGames(fetch: typeof window.fetch): Promise<SerializableGameInfo[]> {
 	const response = await fetch('/api/steam')
+	if (!response.ok) {
+		throw new Error(`Failed to fetch recent game: ${response.status}`)
+	}
+	return await response.json()
+}
+
+async function fetchRecentPSNGames(fetch: typeof window.fetch): Promise<SerializableGameInfo[]> {
+	const response = await fetch('/api/psn')
 	if (!response.ok) {
 		throw new Error(`Failed to fetch recent game: ${response.status}`)
 	}

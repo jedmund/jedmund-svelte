@@ -3,9 +3,10 @@
 
 	interface GameProps {
 		game?: SerializableGameInfo
+		type: 'steam' | 'psn'
 	}
 
-	let { game = undefined }: GameProps = $props()
+	let { game = undefined, type }: GameProps = $props()
 
 	let isHovering = $state(false)
 
@@ -21,12 +22,17 @@
 			scale.set(1)
 		}
 	})
+
+	const url =
+		type === 'steam'
+			? `https://store.steampowered.com/app/${game?.id}`
+			: `https://store.playstation.com/en-us/product/${game?.id}/`
 </script>
 
 <div class="game">
 	{#if game}
 		<a
-			href={`https://store.steampowered.com/app/${game.id}`}
+			href={url}
 			target="_blank"
 			rel="noopener noreferrer"
 			onmouseenter={() => (isHovering = true)}

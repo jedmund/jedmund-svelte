@@ -11,7 +11,7 @@
 
 	export let data: PageData
 
-	$: ({ albums, games, error } = data)
+	$: ({ albums, steamGames, psnGames, error } = data)
 </script>
 
 <Page>
@@ -19,7 +19,9 @@
 		<h1 aria-label="@jedmund">
 			<Avatar />
 		</h1>
-		<Squiggly text="@jedmund is a software designer" />
+		<Squiggly
+			text="@jedmund is a software designer that helps you explore what your product can be, unburdened by what it has been"
+		/>
 	</svelte:fragment>
 
 	<ProjectList />
@@ -70,10 +72,22 @@
 	</section>
 
 	<section class="latest-games">
-		{#if games.length > 0}
+		{#if steamGames && steamGames.length > 0}
 			<ul>
-				{#each games.slice(0, 3) as game}
-					<Game {game} />
+				{#each steamGames.slice(0, 3) as game}
+					<Game {game} type="steam" />
+				{/each}
+			</ul>
+		{:else}
+			<p>Loading games...</p>
+		{/if}
+	</section>
+
+	<section class="latest-games">
+		{#if psnGames && psnGames.length > 0}
+			<ul>
+				{#each psnGames.slice(0, 3) as game}
+					<Game {game} type="psn" />
 				{/each}
 			</ul>
 		{:else}
