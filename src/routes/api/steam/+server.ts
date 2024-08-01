@@ -17,6 +17,7 @@ export const GET: RequestHandler = async ({ params }) => {
 			id: game.game.id,
 			name: game.game.name,
 			playtime: game.minutes,
+			lastPlayed: game.lastPlayedAt,
 			coverURL: game.game.coverURL
 		}))
 

@@ -1,6 +1,7 @@
 type SerializableGameInfo = {
-	id: number
+	id: number | string | null
 	name: string
-	playtime: number
+	playtime: number | undefined
+	lastPlayed: Date | undefined
 	coverURL: string
 }
