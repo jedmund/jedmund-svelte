@@ -5,7 +5,7 @@ import SteamAPI, { Game, GameInfo, GameInfoExtended, UserPlaytime } from 'steama
 
 import type { RequestHandler } from './$types'
 
-const CACHE_TTL = 60 * 60 * 24 // 24 hours in seconds
+const CACHE_TTL = 60 * 60 // 1 hour
 const STEAM_ID = '76561197997279808'
 
 export const GET: RequestHandler = async ({ params }) => {

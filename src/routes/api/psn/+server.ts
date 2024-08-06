@@ -17,7 +17,7 @@ const {
 	getUserPlayedTime
 } = require('psn-api')
 
-const CACHE_TTL = 60 * 60 * 24
+const CACHE_TTL = 60 * 60 // 1 hour
 const PSN_NPSSO_TOKEN = process.env.PSN_NPSSO_TOKEN
 const PSN_ID = '1275018559140296533'
 

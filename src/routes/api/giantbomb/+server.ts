@@ -5,7 +5,7 @@ import GiantBombAPI from 'giantbombing-api'
 
 import type { RequestHandler } from './$types'
 
-const CACHE_TTL = 60 * 60 * 24 * 7
+const CACHE_TTL = 60 * 60 // 1 hour
 
 const giantBombAPI = new GiantBombAPI({
 	apiKey: process.env.GIANTBOMB_API_KEY,
