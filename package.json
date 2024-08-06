@@ -39,10 +39,15 @@
 	"type": "module",
 	"dependencies": {
 		"@sveltejs/adapter-node": "^5.2.0",
+		"@types/redis": "^4.0.10",
 		"@types/steamapi": "^2.2.5",
 		"dotenv": "^16.4.5",
+		"giantbombing-api": "^1.0.4",
+		"ioredis": "^5.4.1",
 		"node-itunes-search": "^1.2.3",
-		"psn-api": "^2.10.1",
-		"steamapi": "^3.0.11"
+		"psn-api": "github:jedmund/psn-api",
+		"redis": "^4.7.0",
+		"steamapi": "^3.0.11",
+		"tinyduration": "^3.3.1"
 	}
 }
