@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { promisify } from 'util'
 import redis from '../redis-client'
 import GiantBombAPI from 'giantbombing-api'

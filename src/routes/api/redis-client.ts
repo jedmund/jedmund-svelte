@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { Redis } from 'ioredis'
 
 const redis = new Redis({
