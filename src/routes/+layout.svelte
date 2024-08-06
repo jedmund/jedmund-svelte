@@ -7,7 +7,7 @@
 		name="description"
 		content="Justin Edmund is a software designer based in San Francisco, California."
 	/>
-	<link href="/assets/styles/reset.css" rel="stylesheet" />
+	<!-- <link href="/assets/styles/reset.css" rel="stylesheet" /> -->
 </svelte:head>
 
 <main>
