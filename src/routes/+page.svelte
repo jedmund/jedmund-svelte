@@ -11,7 +11,7 @@
 
 	export let data: PageData
 
-	$: ({ albums, steamGames, psnGames, error } = data)
+	$: ({ albums, games, error } = data)
 </script>
 
 <Page>
@@ -72,22 +72,10 @@
 	</section>
 
 	<section class="latest-games">
-		{#if steamGames && steamGames.length > 0}
+		{#if games && games.length > 0}
 			<ul>
-				{#each steamGames.slice(0, 3) as game}
-					<Game {game} type="steam" />
-				{/each}
-			</ul>
-		{:else}
-			<p>Loading games...</p>
-		{/if}
-	</section>
-
-	<section class="latest-games">
-		{#if psnGames && psnGames.length > 0}
-			<ul>
-				{#each psnGames.slice(0, 3) as game}
-					<Game {game} type="psn" />
+				{#each games.slice(0, 3) as game}
+					<Game {game} />
 				{/each}
 			</ul>
 		{:else}

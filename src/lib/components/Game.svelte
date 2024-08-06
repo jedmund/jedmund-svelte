@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion'
+	import { parse } from 'tinyduration'
 
 	interface GameProps {
 		game?: SerializableGameInfo
-		type: 'steam' | 'psn'
 	}
 
-	let { game = undefined, type }: GameProps = $props()
+	let { game = undefined }: GameProps = $props()
 
 	let isHovering = $state(false)
 
@@ -17,16 +17,30 @@
 
 	$effect(() => {
 		if (isHovering) {
-			scale.set(1.1)
+			scale.set(1.06)
 		} else {
 			scale.set(1)
 		}
 	})
 
+	let hours = $state(0)
+	let minutes = $state(0)
+
+	if (game && game.playtime) {
+		if (game.platform === 'psn') {
+			const d = parse(game.playtime as string)
+			hours = d.hours || 0
+			minutes = d.minutes || 0
+		} else {
+			hours = Math.floor((game.playtime as number) / 3600)
+			minutes = (game.playtime as number) % 3600
+		}
+	}
+
 	const url =
-		type === 'steam'
+		game?.platform === 'steam'
 			? `https://store.steampowered.com/app/${game?.id}`
-			: `https://store.playstation.com/en-us/product/${game?.id}/`
+			: `https://store.playstation.com/en-us/concept/${game?.id}/`
 </script>
 
 <div class="game">
@@ -44,7 +58,7 @@
 					{game.name}
 				</span>
 				<p class="game-playtime">
-					{game.playtime} minutes played
+					{hours > 0 ? `${hours}h ` : ''}{minutes}m played
 				</p>
 			</div>
 		</a>

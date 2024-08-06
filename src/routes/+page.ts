@@ -1,6 +1,5 @@
 import type { PageLoad } from './$types'
 import type { Album } from '$lib/types/lastfm'
-import type { RecentlyPlayedGame } from 'psn-api'
 
 export const load: PageLoad = async ({ fetch }) => {
 	try {
@@ -10,8 +9,18 @@ export const load: PageLoad = async ({ fetch }) => {
 			fetchRecentPSNGames(fetch)
 		])
 
+		const response = await fetch('/api/giantbomb', {
+			method: 'POST',
+			body: JSON.stringify({ games: psnGames }),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+
+		const games = await response.json()
 		return {
 			albums,
+			games: games,
 			steamGames: steamGames,
 			psnGames: psnGames
 		}
