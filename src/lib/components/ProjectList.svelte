@@ -26,7 +26,8 @@
 			SVGComponent: SlackLogo,
 			backgroundColor: '#4a154b',
 			name: 'Slack',
-			description: 'I led design for end-user facing automation features at Slack.'
+			description:
+				'I led design for Workflows and other consumer-facing automation features at Slack.'
 		},
 		{
 			SVGComponent: FigmaLogo,
