@@ -29,7 +29,7 @@
 
 	.project-name {
 		margin: $unit 0 $unit-half;
-		font-size: 1.2rem;
+		font-size: 1rem;
 		font-weight: bold;
 		color: $red-60;
 	}
