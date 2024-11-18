@@ -19,8 +19,7 @@
 			SVGComponent: MaitsuLogo,
 			backgroundColor: '#FFF7EA',
 			name: 'Maitsu',
-			description:
-				"As a personal project, I'm building a hobby journal that helps people make something new every week."
+			description: "I'm building a hobby journal that helps people make something new every week."
 		},
 		{
 			SVGComponent: SlackLogo,
