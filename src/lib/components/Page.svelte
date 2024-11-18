@@ -52,6 +52,7 @@
 			display: flex;
 			flex-direction: column;
 			align-items: center;
+			gap: $unit-2x;
 		}
 	}
 </style>

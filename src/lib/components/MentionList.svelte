@@ -60,6 +60,7 @@
 			gap: $unit-2x;
 			list-style: none;
 			padding: 0;
+			margin: 0;
 		}
 
 		@include breakpoint('phone') {

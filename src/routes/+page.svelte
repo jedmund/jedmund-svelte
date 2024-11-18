@@ -6,7 +6,6 @@
 	import Page from '$components/Page.svelte'
 	import ProjectList from '$components/ProjectList.svelte'
 	import RecentAlbums from '$components/RecentAlbums.svelte'
-	import Squiggly from '$components/Squiggly.svelte'
 
 	import type { PageData } from './$types'
 
@@ -20,7 +19,7 @@
 		<h1 aria-label="@jedmund">
 			<Avatar />
 		</h1>
-		<Squiggly text="@jedmund is a software designer" />
+		<h2 class="subheader">@jedmund is a software designer</h2>
 	</svelte:fragment>
 
 	<ProjectList />
@@ -28,7 +27,7 @@
 
 <Page>
 	<svelte:fragment slot="header">
-		<Squiggly text="A little about me" />
+		<h2>A little about me</h2>
 	</svelte:fragment>
 
 	<section class="bio">
@@ -53,14 +52,14 @@
 </Page>
 <Page>
 	<svelte:fragment slot="header">
-		<Squiggly text="Notable mentions" />
+		<h2>Notable mentions</h2>
 	</svelte:fragment>
 
 	<MentionList />
 </Page>
 <Page noHorizontalPadding={true}>
 	<svelte:fragment slot="header">
-		<Squiggly text="Now playing" />
+		<h2>Now playing</h2>
 	</svelte:fragment>
 
 	<RecentAlbums {albums} />
@@ -104,9 +103,28 @@
 		margin-bottom: $unit-2x;
 	}
 
+	h1,
+	h2 {
+		margin: 0;
+	}
+
+	h2 {
+		color: $accent-color;
+		font-size: 1.2rem;
+		font-weight: 500;
+
+		&.subheader {
+			margin-bottom: $unit-2x;
+		}
+	}
+
 	.bio {
 		font-size: 1rem;
 		line-height: 1.3;
+
+		p:first-child {
+			margin-top: 0;
+		}
 
 		p:last-child {
 			margin-bottom: 0;
