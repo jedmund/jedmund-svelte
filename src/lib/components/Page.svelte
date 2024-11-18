@@ -28,7 +28,7 @@
 		}
 
 		@include breakpoint('phone') {
-			margin-top: $unit-2x;
+			margin-top: $unit-3x;
 			margin-bottom: $unit-3x;
 			padding: $unit-3x;
 
