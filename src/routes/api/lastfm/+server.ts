@@ -12,7 +12,7 @@ import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
-const ALBUM_LIMIT = 3
+const ALBUM_LIMIT = 10
 
 export const GET: RequestHandler = async ({ url }) => {
 	const client = new LastClient(LASTFM_API_KEY || '')
@@ -21,10 +21,23 @@ export const GET: RequestHandler = async ({ url }) => {
 		// const albums = await getWeeklyAlbumChart(client, USERNAME)
 
 		const albums = await getRecentAlbums(client, USERNAME, ALBUM_LIMIT)
+		console.log(albums)
 		const enrichedAlbums = await Promise.all(
-			albums.slice(0, ALBUM_LIMIT).map((album) => enrichAlbumWithInfo(client, album))
+			albums.slice(0, ALBUM_LIMIT).map(async (album) => {
+				try {
+					return await enrichAlbumWithInfo(client, album)
+				} catch (error) {
+					if (error instanceof Error && error.message.includes('Album not found')) {
+						console.warn(`Skipping album: ${album.name} (Album not found)`)
+						return null // Skip the album
+					}
+					throw error // Re-throw if it's a different error
+				}
+			})
 		)
-		const albumsWithItunesArt = await addItunesArtToAlbums(enrichedAlbums)
+
+		const validAlbums = enrichedAlbums.filter((album) => album !== null)
+		const albumsWithItunesArt = await addItunesArtToAlbums(validAlbums)
 
 		return new Response(JSON.stringify({ albums: albumsWithItunesArt }), {
 			headers: { 'Content-Type': 'application/json' }

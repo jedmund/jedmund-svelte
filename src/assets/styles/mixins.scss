@@ -12,6 +12,14 @@
 	$tablet-width: 1024px;
 	$tablet-height: 1024px;
 
+	@if $breakpoint == desktop {
+		// prettier-ignore
+		@media only screen
+		  and (min-width: $tablet-width) {
+				@content;
+			}
+	}
+
 	@if $breakpoint == tablet {
 		// prettier-ignore
 		@media only screen 

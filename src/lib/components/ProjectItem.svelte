@@ -13,9 +13,7 @@
 		{SVGComponent}
 		{backgroundColor}
 		maxMovement={10}
-		smoothness={0.1}
 		containerHeight="220px"
-		bounceStiffness={0.1}
 		bounceDamping={0.2}
 	/>
 	<h3 class="project-name">{name}</h3>
@@ -31,20 +29,27 @@
 
 	.project-name {
 		margin: $unit 0 $unit-half;
-		font-size: 18px;
+		font-size: 1.2rem;
 		font-weight: bold;
 		color: $red-60;
 	}
 
 	.project-description {
 		margin: 0;
-		font-size: 14px;
-		line-height: 1.4;
-		max-height: 2.8em;
+		font-size: 1rem;
+		line-height: 1.3;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		display: -webkit-box;
-		-webkit-line-clamp: 2;
+		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
+	}
+
+	@include breakpoint('phone') {
+		.project-description {
+			-webkit-line-clamp: none;
+			overflow: visible;
+			max-height: fit-content;
+		}
 	}
 </style>

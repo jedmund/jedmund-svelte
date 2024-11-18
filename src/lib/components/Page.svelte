@@ -1,7 +1,8 @@
 <script lang="ts">
+	export let noHorizontalPadding = false
 </script>
 
-<section class="page">
+<section class="page" class:no-horizontal-padding={noHorizontalPadding}>
 	<header>
 		<slot name="header" />
 	</header>
@@ -19,17 +20,32 @@
 		gap: $unit-4x;
 		margin: $unit-6x auto $unit-6x;
 		padding: $unit-5x;
-		width: 100%;
 		max-width: 784px;
+
+		&.no-horizontal-padding {
+			padding-left: 0;
+			padding-right: 0;
+		}
 
 		@include breakpoint('phone') {
 			margin-top: $unit-2x;
 			margin-bottom: $unit-3x;
 			padding: $unit-3x;
+
+			&.no-horizontal-padding {
+				padding-left: 0;
+				padding-right: 0;
+			}
 		}
 
 		@include breakpoint('small-phone') {
+			gap: $unit-2x;
 			padding: $unit-2x;
+
+			&.no-horizontal-padding {
+				padding-left: 0;
+				padding-right: 0;
+			}
 		}
 
 		header {

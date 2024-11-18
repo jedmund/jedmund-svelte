@@ -54,15 +54,17 @@
 
 <style lang="scss">
 	.album {
-		flex-basis: 100%;
+		width: 100%;
+		height: 100%;
 
 		a {
 			display: flex;
-
 			flex-direction: column;
 			gap: $unit * 1.5;
 			text-decoration: none;
 			transition: gap 0.125s ease-in-out;
+			width: 100%;
+			height: 100%;
 
 			img {
 				border: 1px solid rgba(0, 0, 0, 0.1);
@@ -70,6 +72,7 @@
 				box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 				width: 100%;
 				height: auto;
+				object-fit: cover;
 			}
 
 			.info {
@@ -86,6 +89,11 @@
 					font-size: $font-size;
 					font-weight: $font-weight-med;
 					color: $accent-color;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					display: -webkit-box;
+					-webkit-line-clamp: 2;
+					-webkit-box-orient: vertical;
 				}
 
 				.artist-name {

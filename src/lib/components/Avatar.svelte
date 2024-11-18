@@ -1,4 +1,6 @@
 <script>
+	// What if we have a headphones avatar that is head bopping if the last scrobble was < 5 mins ago
+	// We can do a thought bubble-y thing with the album art that takes you to the album section of the page
 	import { onMount } from 'svelte'
 	import { spring } from 'svelte/motion'
 

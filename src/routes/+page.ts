@@ -3,26 +3,27 @@ import type { Album } from '$lib/types/lastfm'
 
 export const load: PageLoad = async ({ fetch }) => {
 	try {
-		const [albums, steamGames, psnGames] = await Promise.all([
-			fetchRecentAlbums(fetch),
-			fetchRecentSteamGames(fetch),
-			fetchRecentPSNGames(fetch)
+		// const [albums, steamGames, psnGames] = await Promise.all([
+		const [albums] = await Promise.all([
+			fetchRecentAlbums(fetch)
+			// fetchRecentSteamGames(fetch),
+			// fetchRecentPSNGames(fetch)
 		])
 
-		const response = await fetch('/api/giantbomb', {
-			method: 'POST',
-			body: JSON.stringify({ games: psnGames }),
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
+		// const response = await fetch('/api/giantbomb', {
+		// 	method: 'POST',
+		// 	body: JSON.stringify({ games: psnGames }),
+		// 	headers: {
+		// 		'Content-Type': 'application/json'
+		// 	}
+		// })
 
-		const games = await response.json()
+		// const games = await response.json()
 		return {
-			albums,
-			games: games,
-			steamGames: steamGames,
-			psnGames: psnGames
+			albums
+			// games: games,
+			// steamGames: steamGames,
+			// psnGames: psnGames
 		}
 	} catch (err) {
 		console.error('Error fetching data:', err)

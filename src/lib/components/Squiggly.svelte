@@ -39,7 +39,7 @@
 	}
 
 	$: {
-		text // add this as a dependency
+		text
 		updateTextWidth()
 	}
 </script>
@@ -65,7 +65,7 @@
 
 <style lang="scss">
 	.squiggly-header {
-		font-size: $font-size;
+		font-size: 1.2rem;
 		font-weight: 500;
 		margin-bottom: $unit-fourth;
 	}

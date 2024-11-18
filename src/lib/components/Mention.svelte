@@ -51,7 +51,7 @@
 		h4 {
 			display: block;
 			font-weight: 400;
-			font-size: $font-size;
+			font-size: 1rem;
 			flex-grow: 2;
 			margin: 0;
 
@@ -64,12 +64,12 @@
 			color: $grey-50;
 			flex-grow: 0;
 			font-weight: $font-weight-med;
-			font-size: 0.8em;
+			font-size: 0.9rem;
 		}
 
 		.source,
 		.source-type {
-			margin-right: 0.5em;
+			margin-right: $unit;
 		}
 	}
 </style>

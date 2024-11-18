@@ -5,6 +5,7 @@
 	import MentionList from '$components/MentionList.svelte'
 	import Page from '$components/Page.svelte'
 	import ProjectList from '$components/ProjectList.svelte'
+	import RecentAlbums from '$components/RecentAlbums.svelte'
 	import Squiggly from '$components/Squiggly.svelte'
 
 	import type { PageData } from './$types'
@@ -19,9 +20,7 @@
 		<h1 aria-label="@jedmund">
 			<Avatar />
 		</h1>
-		<Squiggly
-			text="@jedmund is a software designer that helps you explore what your product can be, unburdened by what it has been"
-		/>
+		<Squiggly text="@jedmund is a software designer" />
 	</svelte:fragment>
 
 	<ProjectList />
@@ -40,9 +39,9 @@
 		<p>
 			Right now, I'm spending my free time building a hobby journaling app called <a
 				href="https://maitsu.co">Maitsu</a
-			>. I've spent time at several companies over the last 11 years, but you might know me as the
-			first designer hired at
-			<a href="https://www.pinterest.com/" target="_blank">Pinterest</a>.
+			>. I've spent time at several companies over the last 11 years, but you might know me from
+			<a href="https://www.pinterest.com/" target="_blank">Pinterest</a>, where I was the first
+			design hire.
 		</p>
 		<p>
 			I was born and raised in New York City and spend a lot of time in Tokyo. I graduated from <a
@@ -51,27 +50,22 @@
 			> in 2011 with a Bachelors of Arts in Communication Design.
 		</p>
 	</section>
+</Page>
+<Page>
+	<svelte:fragment slot="header">
+		<Squiggly text="Notable mentions" />
+	</svelte:fragment>
 
 	<MentionList />
 </Page>
-<Page>
+<Page noHorizontalPadding={true}>
 	<svelte:fragment slot="header">
 		<Squiggly text="Now playing" />
 	</svelte:fragment>
 
-	<section class="weekly-albums">
-		{#if albums.length > 0}
-			<ul>
-				{#each albums.slice(0, 5) as album}
-					<Album {album} />
-				{/each}
-			</ul>
-		{:else}
-			<p>Loading albums...</p>
-		{/if}
-	</section>
+	<RecentAlbums {albums} />
 
-	<section class="latest-games">
+	<!-- <section class="latest-games">
 		{#if games && games.length > 0}
 			<ul>
 				{#each games.slice(0, 3) as game}
@@ -81,7 +75,7 @@
 		{:else}
 			<p>Loading games...</p>
 		{/if}
-	</section>
+	</section> -->
 </Page>
 
 <footer>
@@ -110,17 +104,19 @@
 		margin-bottom: $unit-2x;
 	}
 
+	.bio {
+		font-size: 1rem;
+		line-height: 1.3;
+
+		p:last-child {
+			margin-bottom: 0;
+		}
+	}
+
 	ul {
 		list-style: none;
 		margin: 0;
 		padding: 0;
-	}
-
-	.weekly-albums ul {
-		display: flex;
-		flex-direction: row;
-		gap: $unit-4x;
-		width: 100%;
 	}
 
 	.latest-games ul {

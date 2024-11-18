@@ -61,5 +61,11 @@
 			list-style: none;
 			padding: 0;
 		}
+
+		@include breakpoint('phone') {
+			ul {
+				grid-template-columns: 1fr;
+			}
+		}
 	}
 </style>
