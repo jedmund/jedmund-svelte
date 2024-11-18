@@ -3,15 +3,18 @@
 
 <svelte:head>
 	<title>@jedmund is a software designer</title>
-	<meta
-		name="description"
-		content="Justin Edmund is a software designer based in San Francisco, California."
-	/>
+	<meta name="description" content="Justin Edmund is a software designer based in San Francisco." />
 	<meta
 		name="viewport"
 		content="width=device-width, initial-scale=1.0, 
 user-scalable=no"
 	/>
+	<meta property="og:title" content="@jedmund" />
+	<meta
+		property="og:description"
+		content="Justin Edmund is a software designer living in San Francisco."
+	/>
+	<meta property="og:image" content="%sveltekit.assets%/images/og-image.jpg" />
 </svelte:head>
 
 <main>
