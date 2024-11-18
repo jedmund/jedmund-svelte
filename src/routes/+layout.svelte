@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-	<title>@jedmund</title>
+	<title>@jedmund is a software designer</title>
 	<meta
 		name="description"
 		content="Justin Edmund is a software designer based in San Francisco, California."
