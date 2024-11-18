@@ -37,7 +37,8 @@
 		</p>
 		<p>
 			Right now, I'm spending my free time building a hobby journaling app called <a
-				href="https://maitsu.co">Maitsu</a
+				href="https://maitsu.co"
+				target="_blank">Maitsu</a
 			>. I've spent time at several companies over the last 11 years, but you might know me from
 			<a href="https://www.pinterest.com/" target="_blank">Pinterest</a>, where I was the first
 			design hire.
