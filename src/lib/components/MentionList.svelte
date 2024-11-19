@@ -15,7 +15,7 @@
 			date: 'Dec 2015'
 		},
 		{
-			href: 'http://spec.fm/podcasts/design-details/19703',
+			href: 'https://designdetails.fm/episodes/a4cc2bff',
 			title: 'Design Details #76',
 			sourceType: 'Podcast',
 			date: 'Nov 2015'
