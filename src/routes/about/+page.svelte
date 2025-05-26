@@ -36,9 +36,6 @@
 				target="_blank">Carnegie Mellon University</a
 			> in 2011 with a Bachelors of Arts in Communication Design.
 		</p>
-		<p>
-			I occasionally write about design and development on my <a href="/universe">blog</a>.
-		</p>
 	</section>
 </Page>
 <Page>
@@ -91,8 +88,11 @@
 	}
 
 	.bio {
-		font-size: 1rem;
-		line-height: 1.3;
+		font-size: 1.125rem;
+		line-height: 1.5;
+		color: #333;
+		background: $grey-100;
+		border-radius: $card-corner-radius;
 
 		p:first-child {
 			margin-top: 0;

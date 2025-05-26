@@ -17,9 +17,9 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		gap: $unit-4x;
+		gap: $unit-3x;
 		margin: $unit-6x auto $unit-6x;
-		padding: $unit-5x;
+		padding: $unit-3x;
 		width: 100%;
 		max-width: 700px;
 

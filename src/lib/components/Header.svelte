@@ -3,11 +3,19 @@
 	import SegmentedController from './SegmentedController.svelte'
 
 	let scrollY = $state(0)
-	let hasScrolled = $derived(scrollY > 10)
+	let hasScrolled = $state(false)
+	let gradientOpacity = $derived(Math.min(scrollY / 40, 1))
 
 	$effect(() => {
 		const handleScroll = () => {
 			scrollY = window.scrollY
+			
+			// Add hysteresis to prevent flickering
+			if (!hasScrolled && scrollY > 30) {
+				hasScrolled = true
+			} else if (hasScrolled && scrollY < 20) {
+				hasScrolled = false
+			}
 		}
 
 		window.addEventListener('scroll', handleScroll)
@@ -15,7 +23,7 @@
 	})
 </script>
 
-<header class="site-header {hasScrolled ? 'scrolled' : ''}">
+<header class="site-header {hasScrolled ? 'scrolled' : ''}" style="--gradient-opacity: {gradientOpacity}">
 	<div class="header-content">
 		<a href="/about" class="header-link" aria-label="@jedmund">
 			<Avatar />
@@ -26,20 +34,20 @@
 
 <style lang="scss">
 	.site-header {
-		position: fixed;
+		position: sticky;
 		top: 0;
-		left: 0;
-		right: 0;
 		z-index: 100;
 		display: flex;
 		justify-content: center;
 		padding: $unit-5x 0;
-		transition: padding 0.3s ease;
+		transition:
+			padding 0.3s ease,
+			background 0.3s ease;
 		pointer-events: none;
 
 		&.scrolled {
 			padding: $unit-2x 0;
-			
+
 			&::before {
 				content: '';
 				position: absolute;
@@ -47,13 +55,15 @@
 				left: 0;
 				right: 0;
 				height: 120px;
-				background: linear-gradient(to bottom, rgba(0, 0, 0, 0.15), transparent);
-				backdrop-filter: blur(6px);
-				-webkit-backdrop-filter: blur(6px);
+				background: linear-gradient(to bottom, rgba(0, 0, 0, calc(0.15 * var(--gradient-opacity))), transparent);
+				backdrop-filter: blur(calc(6px * var(--gradient-opacity)));
+				-webkit-backdrop-filter: blur(calc(6px * var(--gradient-opacity)));
 				mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);
 				-webkit-mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);
 				pointer-events: none;
 				z-index: -1;
+				opacity: var(--gradient-opacity);
+				transition: opacity 0.2s ease;
 			}
 		}
 	}

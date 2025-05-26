@@ -39,7 +39,6 @@ user-scalable=no"
 	}
 	
 	main {
-		padding-top: calc(52px + #{$unit-5x * 2}); // Avatar height + header padding
 		min-height: 100vh;
 	}
 
