@@ -12,6 +12,7 @@
 		backgroundColor: string
 		name: string
 		description: string
+		highlightColor: string
 	}
 
 	const projects: Project[] = [
@@ -19,58 +20,95 @@
 			SVGComponent: MaitsuLogo,
 			backgroundColor: '#FFF7EA',
 			name: 'Maitsu',
-			description: "I'm building a hobby journal that helps people make something new every week."
+			description: "Maitsu is a hobby journal that helps people make something new every week.",
+			highlightColor: '#F77754'
 		},
 		{
 			SVGComponent: SlackLogo,
 			backgroundColor: '#4a154b',
 			name: 'Slack',
 			description:
-				'I led design for Workflows and other consumer-facing automation features at Slack.'
+				'At Slack, I helped redefine strategy for Workflows and other features in under the automation umbrella.',
+			highlightColor: '#611F69'
 		},
 		{
 			SVGComponent: FigmaLogo,
 			backgroundColor: '#2c2c2c',
 			name: 'Figma',
-			description: 'I helped lead and set the direction for the early prototyping team at Figma.'
+			description: 'At Figma, I designed features and led R&D and strategy for the nascent prototyping team.',
+			highlightColor: '#0ACF83'
 		},
 		{
 			SVGComponent: PinterestLogo,
 			backgroundColor: '#f7f7f7',
 			name: 'Pinterest',
 			description:
-				'As the first design hire at Pinterest, I helped define product direction and grow the design team.'
+				'At Pinterest, I was the first product design hired, and touched almost every part of the product.',
+			highlightColor: '#CB1F27'
 		}
 	]
 </script>
 
 <section class="projects">
 	<ul>
-		{#each projects as project}
+		<li>
+			<div class="intro-card">
+				<p class="intro-text">
+					<span class="highlighted">@jedmund</span> is a software designer and strategist based out of San Francisco.
+				</p>
+				<p class="intro-text">
+					In his 15 year career, he's focused his design practice on building tools that help people connect with technology—and their own creativity.
+				</p>
+			</div>
+		</li>
+		{#each projects as project, index}
 			<li>
-				<ProjectItem {...project} />
+				<ProjectItem {...project} {index} />
 			</li>
 		{/each}
 	</ul>
 </section>
 
 <style lang="scss">
-	.projects ul {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		list-style: none;
-		padding: 0;
+	.projects {
+		display: flex;
+		justify-content: center;
 		width: 100%;
-		gap: $unit-4x;
-		margin: 0;
+		
+		ul {
+			display: flex;
+			flex-direction: column;
+			list-style: none;
+			padding: 0;
+			width: 100%;
+			max-width: 700px;
+			gap: $unit-3x;
+			margin: 0;
 
-		@include breakpoint('phone') {
-			grid-template-columns: 1fr;
+			li {
+				width: 100%;
+			}
+		}
+	}
+
+	.intro-card {
+		padding: $unit-3x;
+		background: $grey-100;
+		border-radius: $card-corner-radius;
+	}
+
+	.intro-text {
+		margin: 0;
+		font-size: 1.125rem; // 18px
+		line-height: 1.3;
+		color: $grey-00;
+
+		&:not(:last-child) {
+			margin-bottom: $unit-2x;
 		}
 
-		li {
-			flex: 0 0 calc(50% - #{$unit-2x}); /* 50% width minus gap */
-			box-sizing: border-box;
+		.highlighted {
+			color: #D0290D;
 		}
 	}
 </style>

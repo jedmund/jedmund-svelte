@@ -5,7 +5,7 @@
 
 <header class="site-header">
 	<div class="header-content">
-		<a href="/" class="header-link" aria-label="@jedmund">
+		<a href="/about" class="header-link" aria-label="@jedmund">
 			<Avatar />
 		</a>
 		<SegmentedController />
