@@ -2,6 +2,7 @@
 	import WorkIcon from '$icons/work.svg'
 	import LabsIcon from '$icons/labs.svg'
 	import UniverseIcon from '$icons/universe.svg'
+	import PhotosIcon from '$icons/photos.svg'
 	import { page } from '$app/stores'
 	
 	const currentPath = $derived($page.url.pathname)
@@ -10,11 +11,12 @@
 		icon: typeof WorkIcon
 		text: string
 		href: string
-		variant: 'work' | 'universe' | 'labs'
+		variant: 'work' | 'universe' | 'labs' | 'photos'
 	}
 	
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
+		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
 		{ icon: LabsIcon, text: 'Labs', href: '#', variant: 'labs' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' }
 	]
@@ -25,7 +27,8 @@
 	// Calculate active index based on current path
 	const activeIndex = $derived(
 		currentPath === '/' ? 0 : 
-		currentPath.startsWith('/universe') ? 2 : 
+		currentPath.startsWith('/photos') ? 1 :
+		currentPath.startsWith('/universe') ? 3 : 
 		-1
 	)
 	
@@ -64,6 +67,7 @@
 	function getBgColor(variant: string): string {
 		switch (variant) {
 			case 'work': return '#ffcdc5' // $work-bg
+			case 'photos': return '#e8c5ff' // $photos-bg (purple)
 			case 'universe': return '#ffebc5' // $universe-bg
 			case 'labs': return '#c5eaff' // $labs-bg
 			default: return '#c5eaff'
@@ -74,6 +78,7 @@
 	function getTextColor(variant: string): string {
 		switch (variant) {
 			case 'work': return '#d0290d' // $work-color
+			case 'photos': return '#7c3aed' // $photos-color (purple)
 			case 'universe': return '#b97d14' // $universe-color
 			case 'labs': return '#1482c1' // $labs-color
 			default: return '#1482c1'
@@ -157,18 +162,23 @@
 	}
 	
 	// Different animations for each nav item
-	// First item after the sliding pill is Work (index 1)
+	// First item is Work (index 1)
 	.nav-item:nth-of-type(1) :global(svg.animate) {
 		animation: cursorWiggle 0.6s ease;
 	}
 	
-	// Second item is Labs (index 2)
+	// Second item is Photos (index 2)
 	.nav-item:nth-of-type(2) :global(svg.animate) {
+		animation: photoFlash 0.6s ease;
+	}
+	
+	// Third item is Labs (index 3)
+	.nav-item:nth-of-type(3) :global(svg.animate) {
 		animation: tubeBubble 0.6s ease;
 	}
 	
-	// Third item is Universe (index 3)
-	.nav-item:nth-of-type(3) :global(svg.animate) {
+	// Fourth item is Universe (index 4)
+	.nav-item:nth-of-type(4) :global(svg.animate) {
 		animation: starSpin 0.6s ease;
 	}
 	
@@ -176,6 +186,11 @@
 		0%, 100% { transform: rotate(0deg) scale(1); }
 		25% { transform: rotate(-8deg) scale(1.05); }
 		75% { transform: rotate(8deg) scale(1.05); }
+	}
+	
+	@keyframes photoFlash {
+		0%, 100% { transform: scale(1); filter: brightness(1); }
+		50% { transform: scale(1.1); filter: brightness(1.3); }
 	}
 	
 	@keyframes tubeBubble {
