@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Post } from '$lib/posts'
+	import ImagePost from './ImagePost.svelte'
 
 	let { post }: { post: Post } = $props()
 
@@ -23,6 +24,12 @@
 		</time>
 	</header>
 
+	{#if post.type === 'image' && post.images}
+		<div class="post-images">
+			<ImagePost images={post.images} alt={post.title || 'Post image'} />
+		</div>
+	{/if}
+
 	<div class="post-body">
 		{@html post.content}
 	</div>
@@ -40,6 +47,12 @@
 		&.note {
 			.post-body {
 				font-size: 1.1rem;
+			}
+		}
+		
+		&.image {
+			.post-images {
+				margin-bottom: $unit-4x;
 			}
 		}
 	}

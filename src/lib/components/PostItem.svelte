@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Post } from '$lib/posts'
+	import ImagePost from './ImagePost.svelte'
 
 	let { post }: { post: Post } = $props()
 
@@ -14,15 +15,28 @@
 </script>
 
 <article class="post-item {post.type}">
-	<a href="/blog/{post.slug}" class="post-link">
+	<div class="post-content">
 		{#if post.title}
-			<h2 class="post-title">{post.title}</h2>
+			<h2 class="post-title">
+				<a href="/blog/{post.slug}" class="post-title-link">{post.title}</a>
+			</h2>
 		{/if}
-		<p class="post-excerpt">{post.excerpt}</p>
-		<time class="post-date" datetime={post.date}>
-			{formatDate(post.date)}
-		</time>
-	</a>
+		{#if post.type === 'image' && post.images}
+			<div class="post-image">
+				<ImagePost images={post.images} alt={post.title || 'Post image'} />
+			</div>
+		{/if}
+		<div class="post-text">
+			{#if post.excerpt}
+				<p class="post-excerpt">{post.excerpt}</p>
+			{/if}
+			<a href="/blog/{post.slug}" class="post-date-link">
+				<time class="post-date" datetime={post.date}>
+					{formatDate(post.date)}
+				</time>
+			</a>
+		</div>
+	</div>
 </article>
 
 <style lang="scss">
@@ -35,32 +49,46 @@
 				font-size: 1rem;
 			}
 		}
-	}
-
-	.post-link {
-		display: block;
-		text-decoration: none;
-		color: inherit;
-		padding: $unit-3x;
-		background: $grey-100;
-		border-radius: $card-corner-radius;
-		transition: all 0.2s ease;
-
-		&:hover {
-			// Hover styles can be added here if needed
+		
+		&.image {
+			.post-image {
+				margin-bottom: $unit-2x;
+			}
 		}
 	}
 
+	.post-content {
+		padding: $unit-3x;
+		background: $grey-100;
+		border-radius: $card-corner-radius;
+	}
+	
+	.post-text {
+		display: flex;
+		flex-direction: column;
+		gap: $unit;
+	}
+
 	.post-title {
-		margin: 0 0 $unit;
+		margin: 0 0 $unit-2x;
 		font-size: 1.2rem;
 		font-weight: 600;
+	}
+	
+	.post-title-link {
 		color: $red-60;
-		transition: color 0.2s ease;
+		text-decoration: none;
+		transition: all 0.2s ease;
+		
+		&:hover {
+			text-decoration: underline;
+			text-decoration-style: wavy;
+			text-underline-offset: 0.15em;
+		}
 	}
 
 	.post-excerpt {
-		margin: 0 0 $unit-2x;
+		margin: 0;
 		color: $grey-00;
 		font-size: 1rem;
 		line-height: 1.3;
@@ -69,11 +97,26 @@
 		-webkit-line-clamp: 3;
 		overflow: hidden;
 	}
+	
+	.post-date-link {
+		text-decoration: none;
+		transition: all 0.2s ease;
+		
+		&:hover {
+			.post-date {
+				color: $red-60;
+				text-decoration: underline;
+				text-decoration-style: wavy;
+				text-underline-offset: 0.15em;
+			}
+		}
+	}
 
 	.post-date {
 		display: block;
 		font-size: 1rem;
 		color: $grey-40;
 		font-weight: 400;
+		transition: all 0.2s ease;
 	}
 </style>
