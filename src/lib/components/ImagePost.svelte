@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Lightbox from './Lightbox.svelte'
+	import TiltCard from './TiltCard.svelte'
 
 	let {
 		images = [],
@@ -46,15 +47,19 @@
 
 {#if images.length === 1}
 	<!-- Single image -->
-	<button class="single-image image-button" onclick={() => openLightbox()}>
-		<img src={images[0]} {alt} />
-	</button>
+	<TiltCard>
+		<button class="single-image image-button" onclick={() => openLightbox()}>
+			<img src={images[0]} {alt} />
+		</button>
+	</TiltCard>
 {:else if images.length > 1}
 	<!-- Slideshow -->
 	<div class="slideshow">
-		<button class="main-image image-button" onclick={() => openLightbox()}>
-			<img src={images[selectedIndex]} alt="{alt} {selectedIndex + 1}" />
-		</button>
+		<TiltCard>
+			<button class="main-image image-button" onclick={() => openLightbox()}>
+				<img src={images[selectedIndex]} alt="{alt} {selectedIndex + 1}" />
+			</button>
+		</TiltCard>
 		<div class="thumbnails">
 			{#each Array(totalSlots) as _, index}
 				{#if index < images.length}
@@ -84,11 +89,6 @@
 		cursor: pointer;
 		display: block;
 		width: 100%;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: scale(0.98);
-		}
 
 		&:focus {
 			outline: 2px solid $red-60;
@@ -101,6 +101,10 @@
 		aspect-ratio: 4 / 3;
 		border-radius: $image-corner-radius;
 		overflow: hidden;
+		// Force GPU acceleration and proper clipping
+		transform: translateZ(0);
+		-webkit-backface-visibility: hidden;
+		backface-visibility: hidden;
 
 		img {
 			width: 100%;
