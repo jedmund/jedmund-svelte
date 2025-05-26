@@ -5,13 +5,21 @@ import { marked } from 'marked'
 
 export interface Post {
 	title?: string
-	type: 'note' | 'article' | 'image'
+	type: 'note' | 'article' | 'image' | 'link'
 	date: string
 	slug: string
 	published: boolean
 	content: string
 	excerpt?: string
 	images?: string[]
+	link?: {
+		url: string
+		title?: string
+		description?: string
+		image?: string
+		favicon?: string
+		siteName?: string
+	} | string
 }
 
 const postsDirectory = path.join(process.cwd(), 'src/lib/posts')

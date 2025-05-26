@@ -22,6 +22,10 @@
 		padding: $unit-5x;
 		max-width: 784px;
 
+		&:first-child {
+			margin-top: 0;
+		}
+
 		&.no-horizontal-padding {
 			padding-left: 0;
 			padding-right: 0;

@@ -16,8 +16,7 @@
 	.site-header {
 		display: flex;
 		justify-content: center;
-		padding: $unit-4x 0;
-		margin-bottom: $unit-2x;
+		padding: $unit-5x 0;
 	}
 
 	.header-content {

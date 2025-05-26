@@ -18,7 +18,7 @@
 <style lang="scss">
 	.blog-container {
 		max-width: 784px;
-		margin: $unit-6x auto;
+		margin: 0 auto;
 		padding: 0 $unit-5x;
 
 		@include breakpoint('phone') {

@@ -29,6 +29,11 @@ user-scalable=no"
 		font-size: 16px;
 		width: 100%;
 	}
+	
+	:global(body) {
+		margin: 0;
+		padding: 0;
+	}
 
 	@include breakpoint('phone') {
 		:global(html) {

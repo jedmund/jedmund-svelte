@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Post } from '$lib/posts'
 	import ImagePost from './ImagePost.svelte'
+	import LinkCard from './LinkCard.svelte'
 
 	let { post }: { post: Post } = $props()
 
@@ -30,12 +31,18 @@
 		</div>
 	{/if}
 
+	{#if post.type === 'link' && post.link}
+		<div class="post-link-preview">
+			<LinkCard link={post.link} />
+		</div>
+	{/if}
+
 	<div class="post-body">
 		{@html post.content}
 	</div>
 
 	<footer class="post-footer">
-		<a href="/blog" class="back-link">← Back to all posts</a>
+		<a href="/universe" class="back-link">← Back to all posts</a>
 	</footer>
 </article>
 
@@ -53,6 +60,13 @@
 		&.image {
 			.post-images {
 				margin-bottom: $unit-4x;
+			}
+		}
+		
+		&.link {
+			.post-link-preview {
+				margin-bottom: $unit-4x;
+				max-width: 600px;
 			}
 		}
 	}

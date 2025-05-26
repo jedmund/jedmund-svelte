@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Post } from '$lib/posts'
 	import ImagePost from './ImagePost.svelte'
+	import LinkCard from './LinkCard.svelte'
+	import UniverseIcon from '$icons/universe.svg'
 
 	let { post }: { post: Post } = $props()
 
@@ -18,7 +20,7 @@
 	<div class="post-content">
 		{#if post.title}
 			<h2 class="post-title">
-				<a href="/blog/{post.slug}" class="post-title-link">{post.title}</a>
+				<a href="/universe/{post.slug}" class="post-title-link">{post.title}</a>
 			</h2>
 		{/if}
 		{#if post.type === 'image' && post.images}
@@ -26,21 +28,30 @@
 				<ImagePost images={post.images} alt={post.title || 'Post image'} />
 			</div>
 		{/if}
+		{#if post.type === 'link' && post.link}
+			<div class="post-link">
+				<LinkCard link={post.link} />
+			</div>
+		{/if}
 		<div class="post-text">
 			{#if post.excerpt}
 				<p class="post-excerpt">{post.excerpt}</p>
 			{/if}
-			<a href="/blog/{post.slug}" class="post-date-link">
-				<time class="post-date" datetime={post.date}>
-					{formatDate(post.date)}
-				</time>
-			</a>
+			<div class="post-footer">
+				<a href="/universe/{post.slug}" class="post-date-link">
+					<time class="post-date" datetime={post.date}>
+						{formatDate(post.date)}
+					</time>
+				</a>
+				<UniverseIcon class="universe-icon" />
+			</div>
 		</div>
 	</div>
 </article>
 
 <style lang="scss">
 	.post-item {
+		width: 100%;
 		max-width: 700px;
 		margin: 0 auto;
 
@@ -49,9 +60,15 @@
 				font-size: 1rem;
 			}
 		}
-		
+
 		&.image {
 			.post-image {
+				margin-bottom: $unit-2x;
+			}
+		}
+
+		&.link {
+			.post-link {
 				margin-bottom: $unit-2x;
 			}
 		}
@@ -62,7 +79,7 @@
 		background: $grey-100;
 		border-radius: $card-corner-radius;
 	}
-	
+
 	.post-text {
 		display: flex;
 		flex-direction: column;
@@ -74,12 +91,12 @@
 		font-size: 1.2rem;
 		font-weight: 600;
 	}
-	
+
 	.post-title-link {
 		color: $red-60;
 		text-decoration: none;
 		transition: all 0.2s ease;
-		
+
 		&:hover {
 			text-decoration: underline;
 			text-decoration-style: wavy;
@@ -97,11 +114,11 @@
 		-webkit-line-clamp: 3;
 		overflow: hidden;
 	}
-	
+
 	.post-date-link {
 		text-decoration: none;
 		transition: all 0.2s ease;
-		
+
 		&:hover {
 			.post-date {
 				color: $red-60;
@@ -118,5 +135,17 @@
 		color: $grey-40;
 		font-weight: 400;
 		transition: all 0.2s ease;
+	}
+
+	.post-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	:global(.universe-icon) {
+		width: 16px;
+		height: 16px;
+		fill: $grey-40;
 	}
 </style>

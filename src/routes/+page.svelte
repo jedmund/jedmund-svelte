@@ -46,7 +46,7 @@
 			> in 2011 with a Bachelors of Arts in Communication Design.
 		</p>
 		<p>
-			I occasionally write about design and development on my <a href="/blog">blog</a>.
+			I occasionally write about design and development on my <a href="/universe">blog</a>.
 		</p>
 	</section>
 </Page>

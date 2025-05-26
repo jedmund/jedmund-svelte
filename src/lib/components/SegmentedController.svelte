@@ -11,7 +11,7 @@
 <nav class="segmented-controller">
 	<Pill icon={WorkIcon} text="Work" href="/" active={currentPath === '/'} variant="work" />
 	<Pill icon={LabsIcon} text="Labs" href="#" active={false} variant="default" />
-	<Pill icon={UniverseIcon} text="Universe" href="/blog" active={currentPath.startsWith('/blog')} variant="universe" />
+	<Pill icon={UniverseIcon} text="Universe" href="/universe" active={currentPath.startsWith('/universe')} variant="universe" />
 </nav>
 
 <style lang="scss">
