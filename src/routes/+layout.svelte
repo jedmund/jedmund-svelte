@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Header from '$components/Header.svelte'
 </script>
 
 <svelte:head>
@@ -10,6 +11,8 @@
 user-scalable=no"
 	/>
 </svelte:head>
+
+<Header />
 
 <main>
 	<slot />

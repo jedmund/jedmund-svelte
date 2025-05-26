@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Album from '$components/Album.svelte'
-	import Avatar from '$components/Avatar.svelte'
 	import Game from '$components/Game.svelte'
 	import MentionList from '$components/MentionList.svelte'
 	import Page from '$components/Page.svelte'
@@ -16,9 +15,6 @@
 
 <Page>
 	<svelte:fragment slot="header">
-		<h1 aria-label="@jedmund">
-			<Avatar />
-		</h1>
 		<h2 class="subheader">@jedmund is a software designer</h2>
 	</svelte:fragment>
 
@@ -48,6 +44,9 @@
 				href="http://design.cmu.edu/"
 				target="_blank">Carnegie Mellon University</a
 			> in 2011 with a Bachelors of Arts in Communication Design.
+		</p>
+		<p>
+			I occasionally write about design and development on my <a href="/blog">blog</a>.
 		</p>
 	</section>
 </Page>

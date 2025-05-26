@@ -25,6 +25,7 @@ $unit-20x: $unit * 20;
 /* Page properties
  * -------------------------------------------------------------------------- */
 $page-corner-radius: $unit;
+$card-corner-radius: $unit-3x;
 
 $page-top-margin: $unit-6x;
 
@@ -85,6 +86,20 @@ $accent-color: #e33d3d;
 $grey-color: #f0f0f0;
 
 $image-border-color: rgba(0, 0, 0, 0.03);
+
+/* Shadows
+ * -------------------------------------------------------------------------- */
+$card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+$card-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+/* Pill colors
+ * -------------------------------------------------------------------------- */
+$work-bg: #ffcdc5;
+$work-color: #d0290d;
+$universe-bg: #ffebc5;
+$universe-color: #b97d14;
+$labs-bg: #c5eaff;
+$labs-color: #1482c1;
 
 $facebook-color: #3b5998;
 $twitter-color: #55acee;
