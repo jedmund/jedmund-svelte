@@ -68,10 +68,6 @@
 	</section> -->
 </Page>
 
-<footer>
-	<p>&copy; 2024 Justin Edmund</p>
-</footer>
-
 <style lang="scss">
 	a,
 	em {
@@ -105,11 +101,5 @@
 		p:last-child {
 			margin-bottom: 0;
 		}
-	}
-
-	footer {
-		font-size: 0.85rem;
-		color: $grey-40;
-		text-align: center;
 	}
 </style>

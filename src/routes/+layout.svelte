@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Header from '$components/Header.svelte'
+	import Footer from '$components/Footer.svelte'
 </script>
 
 <svelte:head>
@@ -17,6 +18,8 @@ user-scalable=no"
 <main>
 	<slot />
 </main>
+
+<Footer />
 
 <style lang="scss">
 	@import '../assets/styles/reset.css';
