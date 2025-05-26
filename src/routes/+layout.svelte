@@ -37,6 +37,11 @@ user-scalable=no"
 		margin: 0;
 		padding: 0;
 	}
+	
+	main {
+		padding-top: calc(52px + #{$unit-5x * 2}); // Avatar height + header padding
+		min-height: 100vh;
+	}
 
 	@include breakpoint('phone') {
 		:global(html) {
