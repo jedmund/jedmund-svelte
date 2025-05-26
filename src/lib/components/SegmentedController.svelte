@@ -19,6 +19,9 @@
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' }
 	]
 	
+	// Track hover state for each item
+	let hoveredIndex = $state<number | null>(null)
+	
 	// Calculate active index based on current path
 	const activeIndex = $derived(
 		currentPath === '/' ? 0 : 
@@ -93,8 +96,10 @@
 			class:active={index === activeIndex}
 			bind:this={itemElements[index]}
 			style="color: {index === activeIndex ? getTextColor(item.variant) : '#666'};"
+			onmouseenter={() => hoveredIndex = index}
+			onmouseleave={() => hoveredIndex = null}
 		>
-			<svelte:component this={item.icon} />
+			<svelte:component this={item.icon} class="nav-icon {hoveredIndex === index ? 'animate' : ''}" />
 			<span>{item.text}</span>
 		</a>
 	{/each}
@@ -137,13 +142,49 @@
 		z-index: 2;
 		transition: color 0.2s ease;
 		
-		:global(svg) {
+		:global(svg.nav-icon) {
 			width: 20px;
 			height: 20px;
 			flex-shrink: 0;
 			fill: currentColor;
 			transition: fill 0.2s ease;
+			
+			&.animate {
+				animation: iconPulse 0.6s ease;
+			}
 		}
 		
+	}
+	
+	// Different animations for each nav item
+	// First item after the sliding pill is Work (index 1)
+	.nav-item:nth-of-type(1) :global(svg.animate) {
+		animation: cursorWiggle 0.6s ease;
+	}
+	
+	// Second item is Labs (index 2)
+	.nav-item:nth-of-type(2) :global(svg.animate) {
+		animation: tubeBubble 0.6s ease;
+	}
+	
+	// Third item is Universe (index 3)
+	.nav-item:nth-of-type(3) :global(svg.animate) {
+		animation: starSpin 0.6s ease;
+	}
+	
+	@keyframes cursorWiggle {
+		0%, 100% { transform: rotate(0deg) scale(1); }
+		25% { transform: rotate(-8deg) scale(1.05); }
+		75% { transform: rotate(8deg) scale(1.05); }
+	}
+	
+	@keyframes tubeBubble {
+		0%, 100% { transform: translateY(0) scale(1); }
+		50% { transform: translateY(-2px) scale(1.1); }
+	}
+	
+	@keyframes starSpin {
+		0%, 100% { transform: rotate(0deg) scale(1); }
+		50% { transform: rotate(45deg) scale(1.1); }
 	}
 </style>
