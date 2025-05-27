@@ -47,9 +47,17 @@ CREATE TABLE projects (
 CREATE TABLE posts (
   id SERIAL PRIMARY KEY,
   slug VARCHAR(255) UNIQUE NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  content JSONB NOT NULL, -- BlockNote JSON format
+  post_type VARCHAR(50) NOT NULL, -- blog, microblog, link, photo, album
+  title VARCHAR(255), -- Optional for microblog posts
+  content JSONB, -- BlockNote JSON for blog/microblog, optional for others
   excerpt TEXT,
+  
+  -- Type-specific fields
+  link_url VARCHAR(500), -- For link posts
+  link_description TEXT, -- For link posts
+  photo_id INTEGER REFERENCES photos(id), -- For photo posts
+  album_id INTEGER REFERENCES albums(id), -- For album posts
+  
   featured_image VARCHAR(500),
   tags JSONB, -- Array of tags
   status VARCHAR(50) DEFAULT 'draft',
@@ -85,6 +93,15 @@ CREATE TABLE photos (
   exif_data JSONB,
   caption TEXT,
   display_order INTEGER DEFAULT 0,
+  
+  -- Individual publishing support
+  slug VARCHAR(255) UNIQUE, -- Only if published individually
+  title VARCHAR(255), -- Optional title for individual photos
+  description TEXT, -- Longer description when published solo
+  status VARCHAR(50) DEFAULT 'draft',
+  published_at TIMESTAMP,
+  show_in_photos BOOLEAN DEFAULT true, -- Show in photos page when published solo
+  
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -404,13 +421,112 @@ const handleImageUpload = async (file) => {
 - [ ] Individual content pages
 - [ ] SEO meta tags
 
-## Open Questions
-1. Should Albums have a "featured" flag for homepage display?
-2. Do we want version history for content?
-3. Should photos support individual publishing vs entire albums?
-4. How should we handle project case study layouts (templates)?
-5. Do we need scheduled publishing?
-6. Should Universe support different post types (link posts, quotes)?
+## Design Decisions
+
+Based on requirements discussion:
+
+1. **Albums**: No featured flag needed
+2. **Version History**: Nice-to-have feature for future implementation
+3. **Photo Publishing**: Individual photos can be published separately from albums
+4. **Project Templates**: Defer case study layout templates for later phase
+5. **Scheduled Publishing**: Not needed initially
+6. **RSS Feeds**: Required for all content types (projects, posts, photos)
+7. **Post Types**: Universe will support multiple post types:
+   - **Blog Post**: Title + long-form BlockNote content
+   - **Microblog**: No title, short-form BlockNote content
+   - **Link Post**: URL + optional commentary
+   - **Photo Post**: Single photo + caption
+   - **Album Post**: Reference to photo album
+
+## Phased Implementation Plan
+
+### Phase 1: Database & Infrastructure Setup
+- [ ] Set up PostgreSQL on Railway
+- [ ] Create all database tables with updated schema
+- [ ] Set up Prisma ORM with models
+- [ ] Configure Cloudinary account and API keys
+- [ ] Create base API route structure
+- [ ] Implement database connection utilities
+- [ ] Set up error handling and logging
+
+### Phase 2: Media Management System
+- [ ] Create media upload endpoint with Cloudinary integration
+- [ ] Implement image processing pipeline (multiple sizes)
+- [ ] Build media library API endpoints
+- [ ] Create media association tracking system
+- [ ] Implement EXIF data extraction for photos
+- [ ] Add bulk upload endpoint for photos
+- [ ] Create media usage tracking queries
+
+### Phase 3: Admin Foundation
+- [ ] Create admin layout component
+- [ ] Build admin navigation with content type switcher
+- [ ] Implement admin authentication (basic for now)
+- [ ] Create reusable form components
+- [ ] Build data table component for list views
+- [ ] Add loading and error states
+- [ ] Create media library modal component
+
+### Phase 4: Posts System (All Types)
+- [ ] Create BlockNote Svelte wrapper component
+- [ ] Implement custom image block for BlockNote
+- [ ] Build post type selector UI
+- [ ] Create blog/microblog post editor
+- [ ] Build link post form
+- [ ] Create photo post selector
+- [ ] Build album post selector
+- [ ] Implement post CRUD APIs
+- [ ] Add auto-save functionality
+- [ ] Create post list view in admin
+
+### Phase 5: Projects System
+- [ ] Build project form with all metadata fields
+- [ ] Create technology tag selector
+- [ ] Implement featured image picker
+- [ ] Build gallery manager with drag-and-drop ordering
+- [ ] Add optional BlockNote editor for case studies
+- [ ] Create project CRUD APIs
+- [ ] Build project list view with thumbnails
+- [ ] Add project ordering functionality
+
+### Phase 6: Photos & Albums System
+- [ ] Create album management interface
+- [ ] Build bulk photo uploader with progress
+- [ ] Implement drag-and-drop photo ordering
+- [ ] Add individual photo publishing UI
+- [ ] Create photo/album CRUD APIs
+- [ ] Build photo metadata editor
+- [ ] Implement album cover selection
+- [ ] Add "show in universe" toggle for albums
+
+### Phase 7: Public Display Updates
+- [ ] Replace static Work page with dynamic data
+- [ ] Update project detail pages
+- [ ] Build Universe mixed feed component
+- [ ] Create different card types for each post type
+- [ ] Update Photos page with dynamic albums/photos
+- [ ] Implement individual photo pages
+- [ ] Add Universe post detail pages
+- [ ] Ensure responsive design throughout
+
+### Phase 8: RSS Feeds & Final Polish
+- [ ] Implement RSS feed for projects
+- [ ] Create RSS feed for Universe posts
+- [ ] Add RSS feed for photos/albums
+- [ ] Implement combined RSS feed
+- [ ] Add OpenGraph meta tags
+- [ ] Optimize image loading and caching
+- [ ] Add search functionality to admin
+- [ ] Performance optimization pass
+- [ ] Final testing on Railway
+
+### Future Enhancements (Post-Launch)
+- [ ] Version history system
+- [ ] More robust authentication
+- [ ] Project case study templates
+- [ ] Advanced media organization (folders/tags)
+- [ ] Analytics integration
+- [ ] Backup system
 
 ## Success Metrics
 - Can create and publish any content type within 2-3 minutes
@@ -420,3 +536,4 @@ const handleImageUpload = async (file) => {
 - Page load performance remains fast (<2s)
 - Admin interface works well on tablet/desktop
 - Media uploads show progress and handle failures gracefully
+- RSS feeds update automatically with new content
