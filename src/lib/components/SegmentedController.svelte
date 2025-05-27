@@ -112,6 +112,8 @@
 </nav>
 
 <style lang="scss">
+	@import '../../assets/styles/animations';
+	
 	.segmented-controller {
 		display: flex;
 		align-items: center;
@@ -176,33 +178,13 @@
 	
 	// Third item is Labs (index 3)
 	.nav-item:nth-of-type(3) :global(svg.animate) {
-		animation: tubeBubble 0.6s ease;
+		animation: tubeRotate 0.6s ease;
+		transform-origin: center bottom;
 	}
 	
 	// Fourth item is Universe (index 4)
 	.nav-item:nth-of-type(4) :global(svg.animate) {
 		animation: starSpin 0.6s ease;
-	}
-	
-	@keyframes cursorWiggle {
-		0%, 100% { transform: rotate(0deg) scale(1); }
-		25% { transform: rotate(-8deg) scale(1.05); }
-		75% { transform: rotate(8deg) scale(1.05); }
-	}
-	
-	@keyframes photoMasonry {
-		0%, 100% { 
-			transform: scale(1);
-		}
-		25% {
-			transform: scale(1);
-		}
-		50% {
-			transform: scale(1);
-		}
-		75% {
-			transform: scale(1);
-		}
 	}
 	
 	// Specific animation for photo masonry rectangles
@@ -222,57 +204,4 @@
 		animation: masonryRect4 0.6s ease;
 	}
 	
-	@keyframes masonryRect1 {
-		0%, 100% { 
-			height: 10px;
-			y: 2px;
-		}
-		50% { 
-			height: 6px;
-			y: 2px;
-		}
-	}
-	
-	@keyframes masonryRect2 {
-		0%, 100% { 
-			height: 6px;
-			y: 2px;
-		}
-		50% { 
-			height: 10px;
-			y: 2px;
-		}
-	}
-	
-	@keyframes masonryRect3 {
-		0%, 100% { 
-			height: 4px;
-			y: 14px;
-		}
-		50% { 
-			height: 8px;
-			y: 10px;
-		}
-	}
-	
-	@keyframes masonryRect4 {
-		0%, 100% { 
-			height: 8px;
-			y: 10px;
-		}
-		50% { 
-			height: 4px;
-			y: 14px;
-		}
-	}
-	
-	@keyframes tubeBubble {
-		0%, 100% { transform: translateY(0) scale(1); }
-		50% { transform: translateY(-2px) scale(1.1); }
-	}
-	
-	@keyframes starSpin {
-		0%, 100% { transform: rotate(0deg) scale(1); }
-		50% { transform: rotate(45deg) scale(1.1); }
-	}
 </style>
