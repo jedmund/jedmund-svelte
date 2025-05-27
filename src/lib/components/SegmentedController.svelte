@@ -17,7 +17,7 @@
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
-		{ icon: LabsIcon, text: 'Labs', href: '#', variant: 'labs' },
+		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' }
 	]
 	
@@ -28,6 +28,7 @@
 	const activeIndex = $derived(
 		currentPath === '/' ? 0 : 
 		currentPath.startsWith('/photos') ? 1 :
+		currentPath.startsWith('/labs') ? 2 :
 		currentPath.startsWith('/universe') ? 3 : 
 		-1
 	)
@@ -145,7 +146,11 @@
 		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		position: relative;
 		z-index: 2;
-		transition: color 0.2s ease;
+		transition: color 0.2s ease, background-color 0.2s ease;
+		
+		&:hover:not(.active) {
+			background-color: rgba(0, 0, 0, 0.05);
+		}
 		
 		:global(svg.nav-icon) {
 			width: 20px;
@@ -167,10 +172,7 @@
 		animation: cursorWiggle 0.6s ease;
 	}
 	
-	// Second item is Photos (index 2)
-	.nav-item:nth-of-type(2) :global(svg.animate) {
-		animation: photoFlash 0.6s ease;
-	}
+	// Second item is Photos (index 2) - animation handled by individual rect animations
 	
 	// Third item is Labs (index 3)
 	.nav-item:nth-of-type(3) :global(svg.animate) {
@@ -188,9 +190,80 @@
 		75% { transform: rotate(8deg) scale(1.05); }
 	}
 	
-	@keyframes photoFlash {
-		0%, 100% { transform: scale(1); filter: brightness(1); }
-		50% { transform: scale(1.1); filter: brightness(1.3); }
+	@keyframes photoMasonry {
+		0%, 100% { 
+			transform: scale(1);
+		}
+		25% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1);
+		}
+		75% {
+			transform: scale(1);
+		}
+	}
+	
+	// Specific animation for photo masonry rectangles
+	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(1)) {
+		animation: masonryRect1 0.6s ease;
+	}
+	
+	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(2)) {
+		animation: masonryRect2 0.6s ease;
+	}
+	
+	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(3)) {
+		animation: masonryRect3 0.6s ease;
+	}
+	
+	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(4)) {
+		animation: masonryRect4 0.6s ease;
+	}
+	
+	@keyframes masonryRect1 {
+		0%, 100% { 
+			height: 10px;
+			y: 2px;
+		}
+		50% { 
+			height: 6px;
+			y: 2px;
+		}
+	}
+	
+	@keyframes masonryRect2 {
+		0%, 100% { 
+			height: 6px;
+			y: 2px;
+		}
+		50% { 
+			height: 10px;
+			y: 2px;
+		}
+	}
+	
+	@keyframes masonryRect3 {
+		0%, 100% { 
+			height: 4px;
+			y: 14px;
+		}
+		50% { 
+			height: 8px;
+			y: 10px;
+		}
+	}
+	
+	@keyframes masonryRect4 {
+		0%, 100% { 
+			height: 8px;
+			y: 10px;
+		}
+		50% { 
+			height: 4px;
+			y: 14px;
+		}
 	}
 	
 	@keyframes tubeBubble {

@@ -31,13 +31,13 @@
 
 	function navigateLightbox(direction: 'prev' | 'next') {
 		if (lightboxAlbumPhotos.length === 0) return
-		
+
 		if (direction === 'prev') {
 			lightboxIndex = lightboxIndex > 0 ? lightboxIndex - 1 : lightboxAlbumPhotos.length - 1
 		} else {
 			lightboxIndex = lightboxIndex < lightboxAlbumPhotos.length - 1 ? lightboxIndex + 1 : 0
 		}
-		
+
 		lightboxPhoto = lightboxAlbumPhotos[lightboxIndex]
 	}
 </script>
@@ -51,8 +51,8 @@
 </div>
 
 {#if lightboxPhoto}
-	<PhotoLightbox 
-		photo={lightboxPhoto} 
+	<PhotoLightbox
+		photo={lightboxPhoto}
 		albumPhotos={lightboxAlbumPhotos}
 		currentIndex={lightboxIndex}
 		onClose={closeLightbox}
@@ -63,8 +63,8 @@
 <style lang="scss">
 	.photo-grid-container {
 		width: 100%;
-		padding: $unit-6x $unit-2x;
-		
+		padding: 0 $unit-2x;
+
 		@include breakpoint('phone') {
 			padding: $unit-3x $unit;
 		}

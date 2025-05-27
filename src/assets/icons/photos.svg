@@ -1,5 +1,7 @@
 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
-  <circle cx="6.5" cy="8.5" r="1.5" fill="currentColor"/>
-  <path d="m12 12 2-2 4 4v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2l4-4 2 2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  <!-- Masonry grid of photos -->
+  <rect x="2" y="2" width="7" height="10" rx="1" stroke="currentColor" stroke-width="1.5"/>
+  <rect x="11" y="2" width="7" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/>
+  <rect x="2" y="14" width="7" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/>
+  <rect x="11" y="10" width="7" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
 </svg>
