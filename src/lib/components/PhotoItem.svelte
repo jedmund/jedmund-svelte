@@ -2,12 +2,12 @@
 	import type { PhotoItem, Photo, PhotoAlbum } from '$lib/types/photos'
 	import { isAlbum } from '$lib/types/photos'
 
-	const { 
-		item, 
-		onPhotoClick 
-	}: { 
+	const {
+		item,
+		onPhotoClick
+	}: {
 		item: PhotoItem
-		onPhotoClick: (photo: Photo, albumPhotos?: Photo[]) => void 
+		onPhotoClick: (photo: Photo, albumPhotos?: Photo[]) => void
 	} = $props()
 
 	let imageLoaded = $state(false)
@@ -38,8 +38,8 @@
 				<div class="stack-photo stack-back"></div>
 				<div class="stack-photo stack-middle"></div>
 				<div class="stack-photo stack-front">
-					<img 
-						src={photo.src} 
+					<img
+						src={photo.src}
 						alt={photo.alt}
 						loading="lazy"
 						draggable="false"
@@ -60,8 +60,8 @@
 		{:else}
 			<!-- Single photo -->
 			<div class="single-photo">
-				<img 
-					src={photo.src} 
+				<img
+					src={photo.src}
 					alt={photo.alt}
 					loading="lazy"
 					draggable="false"
@@ -80,7 +80,7 @@
 	.photo-item {
 		break-inside: avoid;
 		margin-bottom: $unit-2x;
-		
+
 		@include breakpoint('tablet') {
 			margin-bottom: $unit;
 		}
@@ -96,7 +96,9 @@
 		border-radius: $corner-radius;
 		overflow: hidden;
 		position: relative;
-		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
 
 		&:hover {
 			transform: translateY(-2px);
@@ -133,7 +135,7 @@
 
 	.stack-photo {
 		border-radius: $corner-radius;
-		
+
 		&.stack-back {
 			position: absolute;
 			top: -6px;
@@ -144,7 +146,7 @@
 			z-index: 1;
 			transform: rotate(2deg);
 		}
-		
+
 		&.stack-middle {
 			position: absolute;
 			top: -3px;
@@ -155,11 +157,11 @@
 			z-index: 2;
 			transform: rotate(-1deg);
 		}
-		
+
 		&.stack-front {
 			position: relative;
 			z-index: 3;
-			
+
 			img {
 				width: 100%;
 				height: auto;
@@ -209,7 +211,7 @@
 			.stack-back {
 				transform: rotate(3deg) translateY(-1px);
 			}
-			
+
 			.stack-middle {
 				transform: rotate(-1.5deg) translateY(-0.5px);
 			}
@@ -226,7 +228,7 @@
 		background-size: 200% 200%;
 		animation: shimmer 1.5s ease-in-out infinite;
 		border-radius: $corner-radius;
-		
+
 		&::after {
 			content: '';
 			position: absolute;

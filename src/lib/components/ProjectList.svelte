@@ -20,7 +20,7 @@
 			SVGComponent: MaitsuLogo,
 			backgroundColor: '#FFF7EA',
 			name: 'Maitsu',
-			description: "Maitsu is a hobby journal that helps people make something new every week.",
+			description: 'Maitsu is a hobby journal that helps people make something new every week.',
 			highlightColor: '#F77754'
 		},
 		{
@@ -35,7 +35,8 @@
 			SVGComponent: FigmaLogo,
 			backgroundColor: '#2c2c2c',
 			name: 'Figma',
-			description: 'At Figma, I designed features and led R&D and strategy for the nascent prototyping team.',
+			description:
+				'At Figma, I designed features and led R&D and strategy for the nascent prototyping team.',
 			highlightColor: '#0ACF83'
 		},
 		{
@@ -54,10 +55,12 @@
 		<li>
 			<div class="intro-card">
 				<p class="intro-text">
-					<span class="highlighted">@jedmund</span> is a software designer and strategist based out of San Francisco.
+					<span class="highlighted">@jedmund</span> is a software designer and strategist based out of
+					San Francisco.
 				</p>
 				<p class="intro-text">
-					In his 15 year career, he's focused his design practice on building tools that help people connect with technology—and their own creativity.
+					In his 15 year career, he's focused his design practice on building tools that help people
+					connect with technology—and their own creativity.
 				</p>
 			</div>
 		</li>
@@ -74,7 +77,7 @@
 		display: flex;
 		justify-content: center;
 		width: 100%;
-		
+
 		ul {
 			display: flex;
 			flex-direction: column;
@@ -108,7 +111,7 @@
 		}
 
 		.highlighted {
-			color: #D0290D;
+			color: #d0290d;
 		}
 	}
 </style>

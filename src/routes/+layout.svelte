@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { page } from '$app/stores'
 	import Header from '$components/Header.svelte'
 	import Footer from '$components/Footer.svelte'
+
+	$: isAdminRoute = $page.url.pathname.startsWith('/admin')
 </script>
 
 <svelte:head>
@@ -13,13 +16,17 @@ user-scalable=no"
 	/>
 </svelte:head>
 
-<Header />
+{#if !isAdminRoute}
+	<Header />
+{/if}
 
-<main>
+<main class:admin-route={isAdminRoute}>
 	<slot />
 </main>
 
-<Footer />
+{#if !isAdminRoute}
+	<Footer />
+{/if}
 
 <style lang="scss">
 	@import '../assets/styles/reset.css';
@@ -32,14 +39,18 @@ user-scalable=no"
 		font-size: 16px;
 		width: 100%;
 	}
-	
+
 	:global(body) {
 		margin: 0;
 		padding: 0;
 	}
-	
+
 	main {
 		min-height: 100vh;
+
+		&.admin-route {
+			min-height: auto;
+		}
 	}
 
 	@include breakpoint('phone') {

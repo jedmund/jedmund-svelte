@@ -6,7 +6,8 @@ export const load: PageLoad = async () => {
 		{
 			id: 'granblue-team',
 			title: 'granblue.team',
-			description: 'A comprehensive web application for Granblue Fantasy players to track raids, manage crews, and optimize team compositions. Features real-time raid tracking, character databases, and community tools.',
+			description:
+				'A comprehensive web application for Granblue Fantasy players to track raids, manage crews, and optimize team compositions. Features real-time raid tracking, character databases, and community tools.',
 			status: 'active',
 			technologies: [],
 			url: 'https://granblue.team',
@@ -17,7 +18,8 @@ export const load: PageLoad = async () => {
 		{
 			id: 'subway-board',
 			title: 'Subway Board',
-			description: 'A beautiful, minimalist dashboard displaying real-time NYC subway arrival times. Clean interface inspired by the classic subway map design with live MTA data integration.',
+			description:
+				'A beautiful, minimalist dashboard displaying real-time NYC subway arrival times. Clean interface inspired by the classic subway map design with live MTA data integration.',
 			status: 'maintenance',
 			technologies: [],
 			github: 'https://github.com/jedmund/subway-board',
@@ -27,7 +29,8 @@ export const load: PageLoad = async () => {
 		{
 			id: 'siero-discord',
 			title: 'Siero for Discord',
-			description: 'A Discord bot for Granblue Fantasy communities providing character lookups, raid notifications, and server management tools. Serves thousands of users across multiple servers.',
+			description:
+				'A Discord bot for Granblue Fantasy communities providing character lookups, raid notifications, and server management tools. Serves thousands of users across multiple servers.',
 			status: 'active',
 			technologies: [],
 			github: 'https://github.com/jedmund/siero-bot',
@@ -37,7 +40,8 @@ export const load: PageLoad = async () => {
 		{
 			id: 'homelab',
 			title: 'Homelab',
-			description: 'Self-hosted infrastructure running on Kubernetes with monitoring, media servers, and development environments. Includes automated deployments and backup strategies.',
+			description:
+				'Self-hosted infrastructure running on Kubernetes with monitoring, media servers, and development environments. Includes automated deployments and backup strategies.',
 			status: 'active',
 			technologies: [],
 			github: 'https://github.com/jedmund/homelab',

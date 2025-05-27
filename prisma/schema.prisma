@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Projects table (for /work)
+model Project {
+  id                 Int       @id @default(autoincrement())
+  slug               String    @unique @db.VarChar(255)
+  title              String    @db.VarChar(255)
+  subtitle           String?   @db.VarChar(255)
+  description        String?   @db.Text
+  year               Int
+  client             String?   @db.VarChar(255)
+  role               String?   @db.VarChar(255)
+  technologies       Json?     // Array of tech stack
+  featuredImage      String?   @db.VarChar(500)
+  gallery            Json?     // Array of image URLs
+  externalUrl        String?   @db.VarChar(500)
+  caseStudyContent   Json?     // BlockNote JSON format
+  backgroundColor    String?   @db.VarChar(50)  // For project card styling
+  highlightColor     String?   @db.VarChar(50)  // For project card accent
+  displayOrder       Int       @default(0)
+  status             String    @default("draft") @db.VarChar(50)
+  publishedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  @@index([slug])
+  @@index([status])
+}
+
+// Posts table (for /universe)
+model Post {
+  id                 Int       @id @default(autoincrement())
+  slug               String    @unique @db.VarChar(255)
+  postType           String    @db.VarChar(50) // blog, microblog, link, photo, album
+  title              String?   @db.VarChar(255) // Optional for microblog posts
+  content            Json?     // BlockNote JSON for blog/microblog
+  excerpt            String?   @db.Text
+  
+  // Type-specific fields
+  linkUrl            String?   @db.VarChar(500)
+  linkDescription    String?   @db.Text
+  photoId            Int?
+  albumId            Int?
+  
+  featuredImage      String?   @db.VarChar(500)
+  tags               Json?     // Array of tags
+  status             String    @default("draft") @db.VarChar(50)
+  publishedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  // Relations
+  photo              Photo?    @relation(fields: [photoId], references: [id])
+  album              Album?    @relation(fields: [albumId], references: [id])
+  
+  @@index([slug])
+  @@index([status])
+  @@index([postType])
+}
+
+// Albums table
+model Album {
+  id                 Int       @id @default(autoincrement())
+  slug               String    @unique @db.VarChar(255)
+  title              String    @db.VarChar(255)
+  description        String?   @db.Text
+  date               DateTime?
+  location           String?   @db.VarChar(255)
+  coverPhotoId       Int?
+  status             String    @default("draft") @db.VarChar(50)
+  showInUniverse     Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  // Relations
+  photos             Photo[]
+  posts              Post[]
+  
+  @@index([slug])
+  @@index([status])
+}
+
+// Photos table
+model Photo {
+  id                 Int       @id @default(autoincrement())
+  albumId            Int?
+  filename           String    @db.VarChar(255)
+  url                String    @db.VarChar(500)
+  thumbnailUrl       String?   @db.VarChar(500)
+  width              Int?
+  height             Int?
+  exifData           Json?
+  caption            String?   @db.Text
+  displayOrder       Int       @default(0)
+  
+  // Individual publishing support
+  slug               String?   @unique @db.VarChar(255)
+  title              String?   @db.VarChar(255)
+  description        String?   @db.Text
+  status             String    @default("draft") @db.VarChar(50)
+  publishedAt        DateTime?
+  showInPhotos       Boolean   @default(true)
+  
+  createdAt          DateTime  @default(now())
+  
+  // Relations
+  album              Album?    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  posts              Post[]
+  
+  @@index([slug])
+  @@index([status])
+}
+
+// Media table (general uploads)
+model Media {
+  id                 Int       @id @default(autoincrement())
+  filename           String    @db.VarChar(255)
+  mimeType           String    @db.VarChar(100)
+  size               Int
+  url                String    @db.Text
+  thumbnailUrl       String?   @db.Text
+  width              Int?
+  height             Int?
+  usedIn             Json      @default("[]") // Track where media is used
+  createdAt          DateTime  @default(now())
+}

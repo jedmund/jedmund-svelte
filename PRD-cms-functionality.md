@@ -1,25 +1,29 @@
 # Product Requirements Document: Multi-Content CMS
 
 ## Overview
+
 Add a comprehensive CMS to the personal portfolio site to manage multiple content types: Projects (Work section), Posts (Universe section), and Photos/Albums (Photos and Universe sections).
 
 ## Goals
+
 - Enable dynamic content creation across all site sections
-- Provide rich text editing for long-form content (BlockNote)
+- Provide rich text editing for long-form content (Edra)
 - Support different content types with appropriate editing interfaces
 - Store all content in PostgreSQL database (Railway-compatible)
 - Display content instantly after publishing
 - Maintain the existing design aesthetic
 
 ## Technical Constraints
+
 - **Hosting**: Railway (no direct file system access)
 - **Database**: PostgreSQL add-on available
 - **Framework**: SvelteKit
-- **Editor**: BlockNote for rich text, custom forms for structured data
+- **Editor**: Edra for rich text (https://edra.tsuzat.com/docs), custom forms for structured data
 
 ## Core Features
 
 ### 1. Database Schema
+
 ```sql
 -- Projects table (for /work)
 CREATE TABLE projects (
@@ -35,7 +39,7 @@ CREATE TABLE projects (
   featured_image VARCHAR(500),
   gallery JSONB, -- Array of image URLs
   external_url VARCHAR(500),
-  case_study_content JSONB, -- BlockNote JSON format
+  case_study_content JSONB, -- Edra JSON format
   display_order INTEGER DEFAULT 0,
   status VARCHAR(50) DEFAULT 'draft',
   published_at TIMESTAMP,
@@ -49,15 +53,15 @@ CREATE TABLE posts (
   slug VARCHAR(255) UNIQUE NOT NULL,
   post_type VARCHAR(50) NOT NULL, -- blog, microblog, link, photo, album
   title VARCHAR(255), -- Optional for microblog posts
-  content JSONB, -- BlockNote JSON for blog/microblog, optional for others
+  content JSONB, -- Edra JSON for blog/microblog, optional for others
   excerpt TEXT,
-  
+
   -- Type-specific fields
   link_url VARCHAR(500), -- For link posts
   link_description TEXT, -- For link posts
   photo_id INTEGER REFERENCES photos(id), -- For photo posts
   album_id INTEGER REFERENCES albums(id), -- For album posts
-  
+
   featured_image VARCHAR(500),
   tags JSONB, -- Array of tags
   status VARCHAR(50) DEFAULT 'draft',
@@ -93,7 +97,7 @@ CREATE TABLE photos (
   exif_data JSONB,
   caption TEXT,
   display_order INTEGER DEFAULT 0,
-  
+
   -- Individual publishing support
   slug VARCHAR(255) UNIQUE, -- Only if published individually
   title VARCHAR(255), -- Optional title for individual photos
@@ -101,7 +105,7 @@ CREATE TABLE photos (
   status VARCHAR(50) DEFAULT 'draft',
   published_at TIMESTAMP,
   show_in_photos BOOLEAN DEFAULT true, -- Show in photos page when published solo
-  
+
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -121,34 +125,37 @@ CREATE TABLE media (
 
 ### 2. Image Handling Strategy
 
-#### For Posts (BlockNote Integration)
+#### For Posts (Edra Integration)
+
 - **Storage**: Images embedded in posts are stored in the `media` table
-- **BlockNote Custom Block**: Create custom image block that:
+- **Edra Custom Block**: Create custom image block that:
   - Uploads to `/api/media/upload` on drop/paste
   - Returns media ID and URL
   - Stores reference as `{ type: "image", mediaId: 123, url: "...", alt: "..." }`
-- **Advantages**: 
+- **Advantages**:
   - Images flow naturally with content
   - Can add captions, alt text inline
   - Supports drag-and-drop repositioning
   - No orphaned images (tracked by mediaId)
 
 #### For Projects
+
 - **Featured Image**: Single image reference stored in `featured_image` field
 - **Gallery Images**: Array of media IDs stored in `gallery` JSONB field
-- **Case Study Content**: Uses same BlockNote approach as Posts
+- **Case Study Content**: Uses same Edra approach as Posts
 - **Storage Pattern**:
   ```json
   {
-    "featured_image": "https://cdn.../image1.jpg",
-    "gallery": [
-      { "mediaId": 123, "url": "...", "caption": "..." },
-      { "mediaId": 124, "url": "...", "caption": "..." }
-    ]
+  	"featured_image": "https://cdn.../image1.jpg",
+  	"gallery": [
+  		{ "mediaId": 123, "url": "...", "caption": "..." },
+  		{ "mediaId": 124, "url": "...", "caption": "..." }
+  	]
   }
   ```
 
 #### Media Table Enhancement
+
 ```sql
 -- Add content associations to media table
 ALTER TABLE media ADD COLUMN used_in JSONB DEFAULT '[]';
@@ -156,13 +163,14 @@ ALTER TABLE media ADD COLUMN used_in JSONB DEFAULT '[]';
 ```
 
 ### 3. Content Type Editors
+
 - **Projects**: Form-based editor with:
   - Metadata fields (title, year, client, role)
   - Technology tag selector
   - Featured image picker (opens media library)
   - Gallery manager (grid view with reordering)
-  - Optional BlockNote editor for case studies
-- **Posts**: Full BlockNote editor with:
+  - Optional Edra editor for case studies
+- **Posts**: Full Edra editor with:
   - Custom image block implementation
   - Drag-and-drop image upload
   - Media library integration
@@ -174,10 +182,10 @@ ALTER TABLE media ADD COLUMN used_in JSONB DEFAULT '[]';
   - EXIF data extraction
   - Album metadata editing
 
-### 4. BlockNote Custom Image Block
+### 4. Edra Custom Image Block
 
 ```typescript
-// Custom image block schema for BlockNote
+// Custom image block schema for Edra
 const ImageBlock = {
   type: "image",
   content: {
@@ -192,12 +200,12 @@ const ImageBlock = {
   }
 }
 
-// Example BlockNote content with images
+// Example Edra content with images
 {
   "blocks": [
     { "type": "heading", "content": "Project Overview" },
     { "type": "paragraph", "content": "This project..." },
-    { 
+    {
       "type": "image",
       "content": {
         "mediaId": 123,
@@ -215,7 +223,7 @@ const ImageBlock = {
 
 ### 5. Media Library Component
 
-- **Modal Interface**: Opens from BlockNote toolbar or form fields
+- **Modal Interface**: Opens from Edra toolbar or form fields
 - **Features**:
   - Grid view of all uploaded media
   - Search by filename
@@ -241,77 +249,81 @@ const ImageBlock = {
 5. **Association**: Update `used_in` when embedded
 
 ### 7. API Endpoints
+
 ```typescript
 // Projects
-GET    /api/projects
-POST   /api/projects
-GET    /api/projects/[slug]
-PUT    /api/projects/[id]
-DELETE /api/projects/[id]
+GET / api / projects
+POST / api / projects
+GET / api / projects / [slug]
+PUT / api / projects / [id]
+DELETE / api / projects / [id]
 
 // Posts
-GET    /api/posts
-POST   /api/posts
-GET    /api/posts/[slug]
-PUT    /api/posts/[id]
-DELETE /api/posts/[id]
+GET / api / posts
+POST / api / posts
+GET / api / posts / [slug]
+PUT / api / posts / [id]
+DELETE / api / posts / [id]
 
 // Albums & Photos
-GET    /api/albums
-POST   /api/albums
-GET    /api/albums/[slug]
-PUT    /api/albums/[id]
-DELETE /api/albums/[id]
-POST   /api/albums/[id]/photos
-DELETE /api/photos/[id]
-PUT    /api/photos/[id]/order
+GET / api / albums
+POST / api / albums
+GET / api / albums / [slug]
+PUT / api / albums / [id]
+DELETE / api / albums / [id]
+POST / api / albums / [id] / photos
+DELETE / api / photos / [id]
+PUT / api / photos / [id] / order
 
 // Media upload
-POST   /api/media/upload
-POST   /api/media/bulk-upload
-GET    /api/media                  // Browse with filters
-DELETE /api/media/[id]             // Delete if unused
-GET    /api/media/[id]/usage       // Check where media is used
+POST / api / media / upload
+POST / api / media / bulk - upload
+GET / api / media // Browse with filters
+DELETE / api / media / [id] // Delete if unused
+GET / api / media / [id] / usage // Check where media is used
 ```
 
 ### 8. Media Management & Cleanup
 
 #### Orphaned Media Prevention
+
 - **Reference Tracking**: `used_in` field tracks all content using each media item
 - **On Save**: Update media associations when content is saved
 - **On Delete**: Remove associations when content is deleted
 - **Cleanup Task**: Periodic job to identify truly orphaned media
 
-#### BlockNote Integration Details
+#### Edra Integration Details
+
 ```javascript
 // Custom upload handler for BlockNote
 const handleImageUpload = async (file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('context', 'post'); // or 'project'
-  
-  const response = await fetch('/api/media/upload', {
-    method: 'POST',
-    body: formData
-  });
-  
-  const media = await response.json();
-  
-  // Return format expected by BlockNote
-  return {
-    mediaId: media.id,
-    url: media.url,
-    thumbnailUrl: media.thumbnail_url,
-    width: media.width,
-    height: media.height
-  };
-};
+	const formData = new FormData()
+	formData.append('file', file)
+	formData.append('context', 'post') // or 'project'
+
+	const response = await fetch('/api/media/upload', {
+		method: 'POST',
+		body: formData
+	})
+
+	const media = await response.json()
+
+	// Return format expected by Edra
+	return {
+		mediaId: media.id,
+		url: media.url,
+		thumbnailUrl: media.thumbnail_url,
+		width: media.width,
+		height: media.height
+	}
+}
 ```
 
 ### 9. Admin Interface
+
 - **Route**: `/admin` (completely separate from public routes)
 - **Dashboard**: Overview of all content types
-- **Content Lists**: 
+- **Content Lists**:
   - Projects with preview thumbnails
   - Posts with publish status
   - Albums with photo counts
@@ -319,8 +331,9 @@ const handleImageUpload = async (file) => {
 - **Media Library**: Browse all uploaded files
 
 ### 10. Public Display Integration
+
 - **Work page**: Dynamic project grid from database
-- **Universe page**: 
+- **Universe page**:
   - Mixed feed of posts and albums (marked with `show_in_universe`)
   - Chronological ordering
   - Different card styles for posts vs photo albums
@@ -330,24 +343,28 @@ const handleImageUpload = async (file) => {
 ## Implementation Phases
 
 ### Phase 1: Foundation (Week 1)
+
 - Set up PostgreSQL database with full schema
-- Create database connection utilities  
+- Create database connection utilities
 - Implement media upload infrastructure
 - Build admin route structure and navigation
 
 ### Phase 2: Content Types (Week 2-3)
-- **Posts**: BlockNote integration, CRUD APIs
+
+- **Posts**: Edra integration, CRUD APIs
 - **Projects**: Form builder, gallery management
 - **Albums/Photos**: Bulk upload, EXIF extraction
 - Create content type list views in admin
 
 ### Phase 3: Public Display (Week 4)
+
 - Replace static project data with dynamic
 - Build Universe mixed feed (posts + albums)
 - Update Photos page with dynamic albums
 - Implement individual content pages
 
 ### Phase 4: Polish & Optimization (Week 5)
+
 - Image optimization and CDN caching
 - Admin UI improvements
 - Search and filtering
@@ -356,12 +373,15 @@ const handleImageUpload = async (file) => {
 ## Technical Decisions
 
 ### Database Choice: PostgreSQL
-- Native JSON support for BlockNote content
+
+- Native JSON support for Edra content
 - Railway provides managed PostgreSQL
 - Familiar, battle-tested solution
 
 ### Media Storage Options
+
 1. **Cloudinary** (Recommended)
+
    - Free tier sufficient for personal use
    - Automatic image optimization
    - Easy API integration
@@ -371,50 +391,57 @@ const handleImageUpload = async (file) => {
    - Additional complexity for signed URLs
 
 ### Image Integration Summary
-- **Posts**: Use BlockNote's custom image blocks with inline placement
-- **Projects**: 
+
+- **Posts**: Use Edra's custom image blocks with inline placement
+- **Projects**:
   - Featured image: Single media reference
   - Gallery: Array of media IDs with ordering
-  - Case studies: BlockNote blocks (same as posts)
+  - Case studies: Edra blocks (same as posts)
 - **Albums**: Direct photos table relationship
 - **Storage**: All images go through media table for consistent handling
 - **Association**: Track usage with `used_in` JSONB field to prevent orphans
 
 ### Authentication (Future)
+
 - Initially: No auth (rely on obscure admin URL)
 - Future: Add simple password protection or OAuth
 
 ## Development Checklist
 
 ### Infrastructure
+
 - [ ] Set up PostgreSQL on Railway
 - [ ] Create database schema and migrations
 - [ ] Set up Cloudinary/S3 for media storage
 - [ ] Configure environment variables
 
 ### Dependencies
-- [ ] `@blocknote/core` & `@blocknote/react`
+
+- [ ] `edra` (Edra editor)
 - [ ] `@prisma/client` or `postgres` driver
 - [ ] `exifr` for EXIF data extraction
 - [ ] `sharp` or Cloudinary SDK for image processing
 - [ ] Form validation library (Zod/Valibot)
 
 ### Admin Interface
+
 - [ ] Admin layout and navigation
 - [ ] Content type switcher
 - [ ] List views for each content type
 - [ ] Form builders for Projects
-- [ ] BlockNote wrapper for Posts
+- [ ] Edra wrapper for Posts
 - [ ] Photo uploader with drag-and-drop
 - [ ] Media library browser
 
 ### APIs
+
 - [ ] CRUD endpoints for all content types
 - [ ] Media upload with progress
 - [ ] Bulk operations (delete, publish)
 - [ ] Search and filtering endpoints
 
 ### Public Display
+
 - [ ] Dynamic Work page
 - [ ] Mixed Universe feed
 - [ ] Photos masonry grid
@@ -432,66 +459,116 @@ Based on requirements discussion:
 5. **Scheduled Publishing**: Not needed initially
 6. **RSS Feeds**: Required for all content types (projects, posts, photos)
 7. **Post Types**: Universe will support multiple post types:
-   - **Blog Post**: Title + long-form BlockNote content
-   - **Microblog**: No title, short-form BlockNote content
+   - **Blog Post**: Title + long-form Edra content
+   - **Microblog**: No title, short-form Edra content
    - **Link Post**: URL + optional commentary
    - **Photo Post**: Single photo + caption
    - **Album Post**: Reference to photo album
 
+## Current Status (December 2024)
+
+### Completed
+- ✅ Database setup with Prisma and PostgreSQL
+- ✅ Media management system with Cloudinary integration
+- ✅ Admin foundation (layout, navigation, auth, forms, data tables)
+- ✅ Edra rich text editor integration for case studies
+- ✅ Edra image uploads configured to use media API
+- ✅ Local development mode for media uploads (no Cloudinary usage)
+- ✅ Project CRUD system with metadata fields
+- ✅ Project list view in admin
+- ✅ Test page for verifying upload functionality
+
+### In Progress
+- 🔄 Posts System - Core functionality implemented
+
+### Next Steps
+1. **Posts System Enhancements**
+   - Media library modal for photo/album post types
+   - Auto-save functionality
+   - Preview mode for posts
+   - Tags/categories management UI
+
+2. **Projects System Enhancements**
+   - Technology tag selector
+   - Featured image picker with media library
+   - Gallery manager for project images
+   - Project ordering/display order
+
+4. **Photos & Albums System**
+   - Album creation and management
+   - Bulk photo upload interface
+   - Photo ordering within albums
+
 ## Phased Implementation Plan
 
+### Phase 0: Local Development Setup
+
+- [x] Install local PostgreSQL (via Homebrew or Postgres.app)
+- [x] Create local database
+- [x] Set up local environment variables
+- [x] Run Prisma migrations locally
+- [x] Create mock data for testing
+- [x] Test basic CRUD operations locally
+
 ### Phase 1: Database & Infrastructure Setup
-- [ ] Set up PostgreSQL on Railway
-- [ ] Create all database tables with updated schema
-- [ ] Set up Prisma ORM with models
-- [ ] Configure Cloudinary account and API keys
-- [ ] Create base API route structure
-- [ ] Implement database connection utilities
-- [ ] Set up error handling and logging
+
+- [x] Create all database tables with updated schema
+- [x] Set up Prisma ORM with models
+- [x] Create base API route structure
+- [x] Implement database connection utilities
+- [x] Set up error handling and logging
+- [ ] Configure Cloudinary account (deferred to production setup)
+- [ ] Set up PostgreSQL on Railway (deferred to production setup)
 
 ### Phase 2: Media Management System
-- [ ] Create media upload endpoint with Cloudinary integration
-- [ ] Implement image processing pipeline (multiple sizes)
-- [ ] Build media library API endpoints
-- [ ] Create media association tracking system
-- [ ] Implement EXIF data extraction for photos
-- [ ] Add bulk upload endpoint for photos
-- [ ] Create media usage tracking queries
+
+- [x] Create media upload endpoint with Cloudinary integration
+- [x] Implement image processing pipeline (multiple sizes)
+- [x] Build media library API endpoints
+- [x] Create media association tracking system
+- [x] Add bulk upload endpoint for photos
+- [x] Create media usage tracking queries
 
 ### Phase 3: Admin Foundation
-- [ ] Create admin layout component
-- [ ] Build admin navigation with content type switcher
-- [ ] Implement admin authentication (basic for now)
-- [ ] Create reusable form components
-- [ ] Build data table component for list views
-- [ ] Add loading and error states
+
+- [x] Create admin layout component
+- [x] Build admin navigation with content type switcher
+- [x] Implement admin authentication (basic for now)
+- [x] Create reusable form components
+- [x] Build data table component for list views
+- [x] Add loading and error states
 - [ ] Create media library modal component
 
 ### Phase 4: Posts System (All Types)
-- [ ] Create BlockNote Svelte wrapper component
-- [ ] Implement custom image block for BlockNote
-- [ ] Build post type selector UI
-- [ ] Create blog/microblog post editor
-- [ ] Build link post form
+
+- [x] Create Edra Svelte wrapper component
+- [x] Implement custom image block for Edra
+- [x] Build post type selector UI
+- [x] Create blog/microblog post editor
+- [x] Build link post form
+- [x] Create posts list view in admin
+- [x] Implement post CRUD APIs
+- [x] Post editor page with type-specific fields
 - [ ] Create photo post selector
 - [ ] Build album post selector
-- [ ] Implement post CRUD APIs
 - [ ] Add auto-save functionality
-- [ ] Create post list view in admin
 
 ### Phase 5: Projects System
-- [ ] Build project form with all metadata fields
+
+- [x] Build project form with all metadata fields
 - [ ] Create technology tag selector
 - [ ] Implement featured image picker
 - [ ] Build gallery manager with drag-and-drop ordering
-- [ ] Add optional BlockNote editor for case studies
-- [ ] Create project CRUD APIs
-- [ ] Build project list view with thumbnails
+- [x] Add optional Edra editor for case studies
+- [x] Create project CRUD APIs
+- [x] Build project list view with thumbnails
 - [ ] Add project ordering functionality
 
 ### Phase 6: Photos & Albums System
+
 - [ ] Create album management interface
 - [ ] Build bulk photo uploader with progress
+- [ ] Implement EXIF data extraction for photos
 - [ ] Implement drag-and-drop photo ordering
 - [ ] Add individual photo publishing UI
 - [ ] Create photo/album CRUD APIs
@@ -500,6 +577,7 @@ Based on requirements discussion:
 - [ ] Add "show in universe" toggle for albums
 
 ### Phase 7: Public Display Updates
+
 - [ ] Replace static Work page with dynamic data
 - [ ] Update project detail pages
 - [ ] Build Universe mixed feed component
@@ -510,6 +588,7 @@ Based on requirements discussion:
 - [ ] Ensure responsive design throughout
 
 ### Phase 8: RSS Feeds & Final Polish
+
 - [ ] Implement RSS feed for projects
 - [ ] Create RSS feed for Universe posts
 - [ ] Add RSS feed for photos/albums
@@ -518,9 +597,20 @@ Based on requirements discussion:
 - [ ] Optimize image loading and caching
 - [ ] Add search functionality to admin
 - [ ] Performance optimization pass
-- [ ] Final testing on Railway
+
+### Phase 9: Production Deployment
+
+- [ ] Set up PostgreSQL on Railway
+- [ ] Run migrations on production database
+- [ ] Configure Cloudinary for production
+- [ ] Set up environment variables on Railway
+- [ ] Test all endpoints in production
+- [ ] Set up database backups
+- [ ] Configure proper authentication
+- [ ] Monitor logs and performance
 
 ### Future Enhancements (Post-Launch)
+
 - [ ] Version history system
 - [ ] More robust authentication
 - [ ] Project case study templates
@@ -529,6 +619,7 @@ Based on requirements discussion:
 - [ ] Backup system
 
 ## Success Metrics
+
 - Can create and publish any content type within 2-3 minutes
 - Content appears on site immediately after publishing
 - Bulk photo upload handles 50+ images smoothly

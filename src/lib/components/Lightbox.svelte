@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { fade, scale } from 'svelte/transition'
-	
+
 	let {
 		images = [],
 		selectedIndex = $bindable(0),
@@ -56,7 +56,7 @@
 			// Restore scroll when lightbox closes
 			document.body.style.overflow = ''
 		}
-		
+
 		// Cleanup on unmount
 		return () => {
 			document.body.style.overflow = ''
@@ -65,7 +65,7 @@
 
 	onMount(() => {
 		window.addEventListener('keydown', handleKeydown)
-		
+
 		return () => {
 			window.removeEventListener('keydown', handleKeydown)
 		}
@@ -73,8 +73,8 @@
 </script>
 
 {#if isOpen}
-	<div 
-		class="lightbox-backdrop" 
+	<div
+		class="lightbox-backdrop"
 		onclick={handleBackgroundClick}
 		transition:fade={{ duration: 200 }}
 		role="button"
@@ -82,19 +82,19 @@
 	>
 		<div class="lightbox-content" onclick={(e) => e.stopPropagation()}>
 			<div class="lightbox-image-container">
-				<img 
-					src={images[selectedIndex]} 
+				<img
+					src={images[selectedIndex]}
 					alt="{alt} {selectedIndex + 1}"
 					transition:scale={{ duration: 200, start: 0.9 }}
 				/>
 			</div>
-			
+
 			{#if images.length > 1}
 				<div class="lightbox-thumbnails">
 					<div class="thumbnails-inner">
 						{#each images as image, index}
-							<button 
-								class="lightbox-thumbnail" 
+							<button
+								class="lightbox-thumbnail"
 								class:active={index === selectedIndex}
 								onclick={() => selectImage(index)}
 								aria-label="View image {index + 1}"
@@ -106,10 +106,21 @@
 				</div>
 			{/if}
 		</div>
-		
+
 		<button class="lightbox-close" onclick={close} aria-label="Close lightbox">
-			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+			<svg
+				width="24"
+				height="24"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M18 6L6 18M6 6l12 12"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+				/>
 			</svg>
 		</button>
 	</div>
@@ -146,7 +157,7 @@
 		width: 100%;
 		overflow: hidden;
 		padding-bottom: 120px; // Space for thumbnails
-		
+
 		img {
 			max-width: 90vw;
 			max-height: 80vh;
@@ -171,7 +182,7 @@
 		overflow-x: auto;
 		max-width: 90vw;
 		padding: $unit $unit-2x; // Add vertical padding to prevent clipping
-		
+
 		&::-webkit-scrollbar {
 			display: none;
 		}
@@ -190,7 +201,7 @@
 		cursor: pointer;
 		opacity: 0.5;
 		transition: all 0.2s ease;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -201,7 +212,7 @@
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
-		
+
 		&::after {
 			content: '';
 			position: absolute;
@@ -212,24 +223,24 @@
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
-		
+
 		&:hover {
 			opacity: 1;
 			transform: scale(1.05);
 		}
-		
+
 		&.active {
 			opacity: 1;
-			
+
 			&::before {
 				border-color: $red-60;
 			}
-			
+
 			&::after {
 				border-color: $grey-00; // Black inner border
 			}
 		}
-		
+
 		img {
 			width: 100%;
 			height: 100%;
@@ -257,7 +268,7 @@
 		justify-content: center;
 		transition: all 0.2s ease;
 		backdrop-filter: blur(10px);
-		
+
 		&:hover {
 			background: rgba(255, 255, 255, 0.2);
 			transform: scale(1.1);

@@ -16,7 +16,7 @@
 		favicon?: string
 		siteName?: string
 	} | null>(null)
-	
+
 	let loading = $state(true)
 	let error = $state(false)
 
@@ -35,7 +35,7 @@
 			window.open(url, '_blank', 'noopener,noreferrer')
 		}
 	}
-	
+
 	onMount(async () => {
 		// If link is just a string URL, fetch metadata
 		if (typeof link === 'string') {
@@ -124,7 +124,7 @@
 		// Loading state
 		&.loading {
 			cursor: default;
-			
+
 			&:hover {
 				border-color: $grey-80;
 			}
@@ -225,7 +225,8 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% {
+		0%,
+		100% {
 			opacity: 1;
 		}
 		50% {

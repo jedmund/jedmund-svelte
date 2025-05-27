@@ -9,7 +9,7 @@
 	$effect(() => {
 		const handleScroll = () => {
 			scrollY = window.scrollY
-			
+
 			// Add hysteresis to prevent flickering
 			if (!hasScrolled && scrollY > 30) {
 				hasScrolled = true
@@ -23,7 +23,10 @@
 	})
 </script>
 
-<header class="site-header {hasScrolled ? 'scrolled' : ''}" style="--gradient-opacity: {gradientOpacity}">
+<header
+	class="site-header {hasScrolled ? 'scrolled' : ''}"
+	style="--gradient-opacity: {gradientOpacity}"
+>
 	<div class="header-content">
 		<a href="/about" class="header-link" aria-label="@jedmund">
 			<Avatar />
@@ -55,7 +58,11 @@
 				left: 0;
 				right: 0;
 				height: 120px;
-				background: linear-gradient(to bottom, rgba(0, 0, 0, calc(0.15 * var(--gradient-opacity))), transparent);
+				background: linear-gradient(
+					to bottom,
+					rgba(0, 0, 0, calc(0.15 * var(--gradient-opacity))),
+					transparent
+				);
 				backdrop-filter: blur(calc(6px * var(--gradient-opacity)));
 				-webkit-backdrop-filter: blur(calc(6px * var(--gradient-opacity)));
 				mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);

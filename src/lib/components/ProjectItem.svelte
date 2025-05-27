@@ -10,45 +10,45 @@
 	export let index: number = 0
 
 	$: isEven = index % 2 === 0
-	
+
 	// Create highlighted description
 	$: highlightedDescription = description.replace(
 		new RegExp(`(${name})`, 'gi'),
 		`<span style="color: ${highlightColor};">$1</span>`
 	)
-	
+
 	// 3D tilt effect
 	let cardElement: HTMLDivElement
 	let isHovering = false
 	let transform = ''
-	
+
 	function handleMouseMove(e: MouseEvent) {
 		if (!cardElement || !isHovering) return
-		
+
 		const rect = cardElement.getBoundingClientRect()
 		const x = e.clientX - rect.left
 		const y = e.clientY - rect.top
-		
+
 		const centerX = rect.width / 2
 		const centerY = rect.height / 2
-		
+
 		const rotateX = ((y - centerY) / centerY) * -4 // -4 to 4 degrees
 		const rotateY = ((x - centerX) / centerX) * 4 // -4 to 4 degrees
-		
+
 		transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.014, 1.014, 1.014)`
 	}
-	
+
 	function handleMouseEnter() {
 		isHovering = true
 	}
-	
+
 	function handleMouseLeave() {
 		isHovering = false
 		transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
 	}
 </script>
 
-<div 
+<div
 	class="project-item {isEven ? 'even' : 'odd'}"
 	bind:this={cardElement}
 	on:mousemove={handleMouseMove}
@@ -79,13 +79,15 @@
 		padding: $unit-3x;
 		background: $grey-100;
 		border-radius: $card-corner-radius;
-		transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+		transition:
+			transform 0.15s ease-out,
+			box-shadow 0.15s ease-out;
 		transform-style: preserve-3d;
 		will-change: transform;
 		cursor: pointer;
 
 		&:hover {
-			box-shadow: 
+			box-shadow:
 				0 10px 30px rgba(0, 0, 0, 0.1),
 				0 1px 8px rgba(0, 0, 0, 0.06);
 		}

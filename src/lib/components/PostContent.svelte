@@ -56,13 +56,13 @@
 				font-size: 1.1rem;
 			}
 		}
-		
+
 		&.image {
 			.post-images {
 				margin-bottom: $unit-4x;
 			}
 		}
-		
+
 		&.link {
 			.post-link-preview {
 				margin-bottom: $unit-4x;

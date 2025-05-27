@@ -19,3 +19,8 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+/../generated/prisma
+
+# Local uploads (for development)
+/static/local-uploads

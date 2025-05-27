@@ -13,7 +13,7 @@
 	let selectedIndex = $state(0)
 	let lightboxOpen = $state(false)
 	let windowWidth = $state(0)
-	
+
 	// Calculate columns based on breakpoints
 	const columnsPerRow = $derived(windowWidth <= 400 ? 3 : windowWidth <= 600 ? 4 : 6)
 	const totalSlots = $derived(Math.ceil(images.length / columnsPerRow) * columnsPerRow)
@@ -28,17 +28,17 @@
 		}
 		lightboxOpen = true
 	}
-	
+
 	// Track window width for responsive columns
 	$effect(() => {
 		windowWidth = window.innerWidth
-		
+
 		const handleResize = () => {
 			windowWidth = window.innerWidth
 		}
-		
+
 		window.addEventListener('resize', handleResize)
-		
+
 		return () => {
 			window.removeEventListener('resize', handleResize)
 		}
@@ -179,11 +179,11 @@
 				border-color: $grey-100;
 			}
 		}
-		
+
 		&.placeholder {
 			background: $grey-90;
 			cursor: default;
-			
+
 			&:hover {
 				transform: none;
 			}

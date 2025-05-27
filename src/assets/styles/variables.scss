@@ -64,11 +64,17 @@ $letter-spacing: -0.02em;
 /* Colors
  * -------------------------------------------------------------------------- */
 $grey-100: #ffffff;
+$grey-97: #fafafa;
+$grey-95: #f5f5f5;
 $grey-90: #f7f7f7;
+$grey-85: #ebebeb;
 $grey-80: #e8e8e8;
+$grey-60: #cccccc;
 $grey-50: #b2b2b2;
 $grey-40: #999999;
+$grey-30: #808080;
 $grey-20: #666666;
+$grey-10: #4d4d4d;
 $grey-00: #333333;
 
 $red-80: #ff6a54;
@@ -85,6 +91,7 @@ $text-color-body: #666666;
 
 $accent-color: #e33d3d;
 $grey-color: #f0f0f0;
+$primary-color: #1482c1; // Using labs color as primary
 
 $image-border-color: rgba(0, 0, 0, 0.03);
 

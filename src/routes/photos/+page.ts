@@ -291,7 +291,7 @@ export const load: PageLoad = async () => {
 			id: 'photo-9',
 			src: 'https://picsum.photos/300/450?random=13',
 			alt: 'Vintage camera',
-			caption: 'My grandfather\'s Leica',
+			caption: "My grandfather's Leica",
 			width: 300,
 			height: 450
 		},
