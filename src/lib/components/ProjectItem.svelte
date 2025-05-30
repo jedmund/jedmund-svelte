@@ -1,26 +1,89 @@
 <script lang="ts">
-	import SVGHoverEffect from '$components/SVGHoverEffect.svelte'
-	import type { SvelteComponent } from 'svelte'
+	import { onMount } from 'svelte'
 
-	export let SVGComponent: typeof SvelteComponent
-	export let backgroundColor: string
-	export let name: string
-	export let description: string
-	export let highlightColor: string
-	export let index: number = 0
+	interface Props {
+		logoUrl: string | null
+		backgroundColor: string
+		name: string
+		description: string
+		highlightColor: string
+		index?: number
+	}
 
-	$: isEven = index % 2 === 0
+	let { logoUrl, backgroundColor, name, description, highlightColor, index = 0 }: Props = $props()
+
+	const isEven = $derived(index % 2 === 0)
 
 	// Create highlighted description
-	$: highlightedDescription = description.replace(
-		new RegExp(`(${name})`, 'gi'),
-		`<span style="color: ${highlightColor};">$1</span>`
+	const highlightedDescription = $derived(
+		description.replace(
+			new RegExp(`(${name})`, 'gi'),
+			`<span style="color: ${highlightColor};">$1</span>`
+		)
 	)
 
 	// 3D tilt effect
 	let cardElement: HTMLDivElement
-	let isHovering = false
-	let transform = ''
+	let logoElement: HTMLElement
+	let isHovering = $state(false)
+	let transform = $state('')
+	let svgContent = $state('')
+
+	// Logo bounce effect
+	let logoTransform = $state('')
+	let velocity = { x: 0, y: 0 }
+	let position = { x: 0, y: 0 }
+	let animationFrame: number
+
+	const maxMovement = 10
+	const bounceDamping = 0.2
+	const friction = 0.85
+
+	onMount(async () => {
+		// Load SVG content
+		if (logoUrl) {
+			try {
+				const response = await fetch(logoUrl)
+				if (response.ok) {
+					const text = await response.text()
+					const parser = new DOMParser()
+					const doc = parser.parseFromString(text, 'image/svg+xml')
+					const svgElement = doc.querySelector('svg')
+					if (svgElement) {
+						svgElement.removeAttribute('width')
+						svgElement.removeAttribute('height')
+						svgContent = svgElement.outerHTML
+					}
+				}
+			} catch (error) {
+				console.error('Failed to load SVG:', error)
+			}
+		}
+
+		return () => {
+			if (animationFrame) {
+				cancelAnimationFrame(animationFrame)
+			}
+		}
+	})
+
+	function updateLogoPosition() {
+		velocity.x *= friction
+		velocity.y *= friction
+
+		position.x += velocity.x
+		position.y += velocity.y
+
+		// Constrain position
+		position.x = Math.max(-maxMovement, Math.min(maxMovement, position.x))
+		position.y = Math.max(-maxMovement, Math.min(maxMovement, position.y))
+
+		logoTransform = `translate(${position.x}px, ${position.y}px)`
+
+		if (Math.abs(velocity.x) > 0.01 || Math.abs(velocity.y) > 0.01) {
+			animationFrame = requestAnimationFrame(updateLogoPosition)
+		}
+	}
 
 	function handleMouseMove(e: MouseEvent) {
 		if (!cardElement || !isHovering) return
@@ -32,10 +95,31 @@
 		const centerX = rect.width / 2
 		const centerY = rect.height / 2
 
-		const rotateX = ((y - centerY) / centerY) * -4 // -4 to 4 degrees
-		const rotateY = ((x - centerX) / centerX) * 4 // -4 to 4 degrees
-
+		// 3D tilt for card
+		const rotateX = ((y - centerY) / centerY) * -4
+		const rotateY = ((x - centerX) / centerX) * 4
 		transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.014, 1.014, 1.014)`
+
+		// Logo movement
+		if (logoElement) {
+			const logoRect = logoElement.getBoundingClientRect()
+			const logoCenterX = logoRect.left + logoRect.width / 2 - rect.left
+			const logoCenterY = logoRect.top + logoRect.height / 2 - rect.top
+
+			const deltaX = x - logoCenterX
+			const deltaY = y - logoCenterY
+			const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+			if (distance < 100) {
+				const force = (100 - distance) / 100
+				velocity.x -= (deltaX / distance) * force * bounceDamping
+				velocity.y -= (deltaY / distance) * force * bounceDamping
+
+				if (!animationFrame) {
+					animationFrame = requestAnimationFrame(updateLogoPosition)
+				}
+			}
+		}
 	}
 
 	function handleMouseEnter() {
@@ -45,6 +129,15 @@
 	function handleMouseLeave() {
 		isHovering = false
 		transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
+		
+		// Reset logo position
+		velocity = { x: 0, y: 0 }
+		position = { x: 0, y: 0 }
+		logoTransform = ''
+		if (animationFrame) {
+			cancelAnimationFrame(animationFrame)
+			animationFrame = 0
+		}
 	}
 </script>
 
@@ -56,14 +149,18 @@
 	on:mouseleave={handleMouseLeave}
 	style="transform: {transform};"
 >
-	<div class="project-logo">
-		<SVGHoverEffect
-			{SVGComponent}
-			{backgroundColor}
-			maxMovement={10}
-			containerHeight="80px"
-			bounceDamping={0.2}
-		/>
+	<div class="project-logo" style="background-color: {backgroundColor}">
+		{#if svgContent}
+			<div 
+				bind:this={logoElement}
+				class="logo-svg" 
+				style="transform: {logoTransform}"
+			>
+				{@html svgContent}
+			</div>
+		{:else if logoUrl}
+			<img src={logoUrl} alt="{name} logo" class="logo-image" />
+		{/if}
 	</div>
 	<div class="project-content">
 		<p class="project-description">{@html highlightedDescription}</p>
@@ -101,19 +198,31 @@
 		flex-shrink: 0;
 		width: 80px;
 		height: 80px;
+		border-radius: $unit-2x;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: $unit-2x;
+		box-sizing: border-box;
 
-		:global(.svg-container) {
-			width: 80px !important;
-			height: 80px !important;
-			border-radius: $unit-2x;
+		.logo-image {
+			max-width: 100%;
+			max-height: 100%;
+			object-fit: contain;
+		}
+
+		.logo-svg {
 			display: flex;
 			align-items: center;
 			justify-content: center;
-		}
+			width: 100%;
+			height: 100%;
+			transition: transform 0.15s ease-out;
 
-		:global(svg) {
-			width: 48px !important;
-			height: 48px !important;
+			:global(svg) {
+				width: 48px;
+				height: 48px;
+			}
 		}
 	}
 
@@ -139,16 +248,6 @@
 		.project-logo {
 			width: 60px;
 			height: 60px;
-
-			:global(.svg-container) {
-				width: 60px !important;
-				height: 60px !important;
-			}
-
-			:global(svg) {
-				width: 36px !important;
-				height: 36px !important;
-			}
 		}
 	}
 </style>
