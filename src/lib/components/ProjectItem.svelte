@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
+	import { goto } from '$app/navigation'
 
 	interface Props {
 		logoUrl: string | null
 		backgroundColor: string
 		name: string
+		slug: string
 		description: string
 		highlightColor: string
 		index?: number
 	}
 
-	let { logoUrl, backgroundColor, name, description, highlightColor, index = 0 }: Props = $props()
+	let { logoUrl, backgroundColor, name, slug, description, highlightColor, index = 0 }: Props = $props()
 
 	const isEven = $derived(index % 2 === 0)
 
@@ -139,15 +141,23 @@
 			animationFrame = 0
 		}
 	}
+	
+	function handleClick() {
+		goto(`/work/${slug}`)
+	}
 </script>
 
 <div
 	class="project-item {isEven ? 'even' : 'odd'}"
 	bind:this={cardElement}
-	on:mousemove={handleMouseMove}
-	on:mouseenter={handleMouseEnter}
-	on:mouseleave={handleMouseLeave}
+	onclick={handleClick}
+	onkeydown={(e) => e.key === 'Enter' && handleClick()}
+	onmousemove={handleMouseMove}
+	onmouseenter={handleMouseEnter}
+	onmouseleave={handleMouseLeave}
 	style="transform: {transform};"
+	role="button"
+	tabindex="0"
 >
 	<div class="project-logo" style="background-color: {backgroundColor}">
 		{#if svgContent}

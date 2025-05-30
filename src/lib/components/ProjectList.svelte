@@ -34,6 +34,7 @@
 					logoUrl={project.logoUrl}
 					backgroundColor={project.backgroundColor || '#f7f7f7'}
 					name={project.title}
+					slug={project.slug}
 					description={project.description || ''}
 					highlightColor={project.highlightColor || '#333'}
 					{index} 
