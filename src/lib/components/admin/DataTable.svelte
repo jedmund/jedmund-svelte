@@ -13,6 +13,7 @@
 		isLoading?: boolean
 		emptyMessage?: string
 		onRowClick?: (item: T) => void
+		unstyled?: boolean
 	}
 
 	let {
@@ -20,7 +21,8 @@
 		columns = [],
 		isLoading = false,
 		emptyMessage = 'No data found',
-		onRowClick
+		onRowClick,
+		unstyled = false
 	}: Props<any> = $props()
 
 	function getCellValue(item: any, column: Column<any>) {
@@ -39,7 +41,7 @@
 	}
 </script>
 
-<div class="data-table-wrapper">
+<div class="data-table-wrapper" class:unstyled>
 	{#if isLoading}
 		<div class="loading">
 			<div class="spinner"></div>
@@ -85,6 +87,11 @@
 		border-radius: 8px;
 		overflow: hidden;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+		&.unstyled {
+			border-radius: 0;
+			box-shadow: none;
+		}
 	}
 
 	.loading {

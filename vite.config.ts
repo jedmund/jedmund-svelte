@@ -4,6 +4,11 @@ import autoprefixer from 'autoprefixer'
 import svg from '@poppanator/sveltekit-svg'
 
 export default defineConfig({
+	server: {
+		watch: {
+			usePolling: true
+		}
+	},
 	plugins: [
 		sveltekit(),
 		svg({
@@ -59,7 +64,8 @@ export default defineConfig({
           @import './src/assets/styles/fonts.scss';
           @import './src/assets/styles/themes.scss';
           @import './src/assets/styles/globals.scss';
-        `
+        `,
+				api: 'modern-compiler'
 			}
 		},
 		postcss: {

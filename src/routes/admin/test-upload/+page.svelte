@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Page from '$lib/components/Page.svelte'
+	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Editor from '$lib/components/admin/Editor.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	
@@ -108,7 +108,7 @@
 	})
 </script>
 
-<Page>
+<AdminPage>
 	<header slot="header">
 		<h1>Upload Test</h1>
 		<a href="/admin/projects" class="back-link">← Back to Projects</a>
@@ -179,7 +179,7 @@
 			<pre>{JSON.stringify(testContent, null, 2)}</pre>
 		</div>
 	</div>
-</Page>
+</AdminPage>
 
 <style lang="scss">
 	header {

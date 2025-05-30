@@ -38,7 +38,7 @@
 			initialized = true
 			return
 		}
-		
+
 		const json = props.editor.getJSON()
 		data = json
 		onChange?.(json)
@@ -72,9 +72,9 @@
 
 <div class="editor-wrapper {className}" style="--min-height: {minHeight}px">
 	<div class="editor-container">
-		<EditorWithUpload 
-			bind:editor 
-			content={data} 
+		<EditorWithUpload
+			bind:editor
+			content={data}
 			{onUpdate}
 			editable={!readOnly}
 			{showToolbar}
@@ -88,8 +88,8 @@
 </div>
 
 <style lang="scss">
-	@import '$lib/../assets/styles/variables.scss';
-	@import '$lib/../assets/styles/mixins.scss';
+	@import '$styles/variables.scss';
+	@import '$styles/mixins.scss';
 
 	.editor-wrapper {
 		width: 100%;
@@ -117,16 +117,17 @@
 		flex-direction: column;
 		min-height: 0;
 	}
-	
+
 	:global(.editor-content .edra) {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
 	}
-	
+
 	:global(.editor-content .editor-toolbar) {
-		border-bottom: 1px solid $grey-80;
+		border-radius: $card-corner-radius;
+		box-sizing: border-box;
 		background: $grey-95;
 		padding: $unit-2x;
 		position: sticky;
@@ -136,20 +137,23 @@
 		overflow-y: hidden;
 		white-space: nowrap;
 		-webkit-overflow-scrolling: touch;
-		
+
 		// Hide scrollbar but keep functionality
 		scrollbar-width: none;
 		-ms-overflow-style: none;
-		
+
 		&::-webkit-scrollbar {
 			display: none;
 		}
-		
+
 		// Override Edra toolbar styles
 		:global(.edra-toolbar) {
 			overflow: visible;
 			width: auto;
 			padding: 0;
+			display: flex;
+			align-items: center;
+			gap: $unit;
 		}
 	}
 
@@ -159,8 +163,8 @@
 		min-height: 0;
 		height: 100%;
 		overflow-y: auto;
-		padding: $unit-4x;
-		
+		padding: 0 $unit-4x;
+
 		@include breakpoint('phone') {
 			padding: $unit-3x;
 		}
@@ -286,7 +290,7 @@
 		color: $grey-50;
 		gap: $unit;
 	}
-	
+
 	// Image styles
 	:global(.edra .ProseMirror img) {
 		max-width: 100%;
@@ -298,11 +302,11 @@
 		display: block;
 		object-fit: contain;
 	}
-	
+
 	:global(.edra-media-placeholder-wrapper) {
 		margin: $unit-2x 0;
 	}
-	
+
 	:global(.edra-media-placeholder-content) {
 		display: flex;
 		flex-direction: column;
@@ -315,51 +319,51 @@
 		background: $grey-95;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		
+
 		&:hover {
 			border-color: $grey-60;
 			background: $grey-90;
 		}
 	}
-	
+
 	:global(.edra-media-placeholder-icon) {
 		width: 48px;
 		height: 48px;
 		color: $grey-50;
 	}
-	
+
 	:global(.edra-media-placeholder-text) {
 		font-size: 1rem;
 		color: $grey-30;
 		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
-	
+
 	// Image container styles
 	:global(.edra-media-container) {
 		margin: $unit-3x auto;
 		position: relative;
-		
+
 		&.align-left {
 			margin-left: 0;
 		}
-		
+
 		&.align-right {
 			margin-right: 0;
 			margin-left: auto;
 		}
-		
+
 		&.align-center {
 			margin-left: auto;
 			margin-right: auto;
 		}
 	}
-	
+
 	:global(.edra-media-content) {
 		width: 100%;
 		height: auto;
 		display: block;
 	}
-	
+
 	:global(.edra-media-caption) {
 		width: 100%;
 		margin-top: $unit;
@@ -370,7 +374,7 @@
 		color: $grey-30;
 		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		background: $grey-95;
-		
+
 		&:focus {
 			outline: none;
 			border-color: $grey-60;

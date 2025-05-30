@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import Page from '$lib/components/Page.svelte'
+	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import type { Media } from '@prisma/client'
 
 	let media = $state<Media[]>([])
@@ -83,7 +83,7 @@
 	}
 </script>
 
-<Page>
+<AdminPage>
 	<header slot="header">
 		<h1>Media Library</h1>
 		<div class="header-actions">
@@ -207,7 +207,7 @@
 			</div>
 		{/if}
 	{/if}
-</Page>
+</AdminPage>
 
 <style lang="scss">
 	header {

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
-	import Page from '$lib/components/Page.svelte'
+	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import DataTable from '$lib/components/admin/DataTable.svelte'
+	import PostDropdown from '$lib/components/admin/PostDropdown.svelte'
 
 	interface Post {
 		id: number
@@ -139,11 +140,11 @@
 	}
 </script>
 
-<Page>
+<AdminPage>
 	<header slot="header">
 		<h1>Posts</h1>
 		<div class="header-actions">
-			<a href="/admin/posts/new" class="btn btn-primary">New Post</a>
+			<PostDropdown />
 		</div>
 	</header>
 
@@ -171,7 +172,7 @@
 			onRowClick={handleRowClick}
 		/>
 	{/if}
-</Page>
+</AdminPage>
 
 <style lang="scss">
 	header {

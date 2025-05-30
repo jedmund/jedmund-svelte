@@ -18,7 +18,7 @@ const config = {
 			$illos: 'src/assets/illos',
 			$components: 'src/lib/components',
 			$utils: 'src/lib/utils',
-			$styles: 'src/styles'
+			$styles: 'src/assets/styles'
 		}
 	}
 }

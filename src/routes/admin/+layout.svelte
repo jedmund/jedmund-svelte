@@ -2,7 +2,7 @@
 	import { page } from '$app/stores'
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
-	import AdminSegmentedController from '$lib/components/admin/AdminSegmentedController.svelte'
+	import AdminNavBar from '$lib/components/admin/AdminNavBar.svelte'
 
 	let { children } = $props()
 
@@ -36,9 +36,7 @@
 {:else}
 	<!-- Authenticated, show admin layout -->
 	<div class="admin-container">
-		<header class="admin-header">
-			<AdminSegmentedController />
-		</header>
+		<AdminNavBar />
 
 		<main class="admin-content">
 			{@render children()}
@@ -61,18 +59,12 @@
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
-	}
-
-	.admin-header {
-		display: flex;
-		justify-content: center;
-		padding: $unit-6x 0 $unit-4x;
 		background-color: $bg-color;
 	}
 
 	.admin-content {
 		flex: 1;
-		background-color: $bg-color;
+		padding-top: $unit-4x;
 		padding-bottom: $unit-6x;
 	}
 </style>

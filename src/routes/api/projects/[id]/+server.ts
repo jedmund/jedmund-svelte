@@ -78,6 +78,7 @@ export const PUT: RequestHandler = async (event) => {
 				role: body.role ?? existing.role,
 				technologies: body.technologies ?? existing.technologies,
 				featuredImage: body.featuredImage ?? existing.featuredImage,
+				logoUrl: body.logoUrl ?? existing.logoUrl,
 				gallery: body.gallery ?? existing.gallery,
 				externalUrl: body.externalUrl ?? existing.externalUrl,
 				caseStudyContent: body.caseStudyContent ?? existing.caseStudyContent,

@@ -22,6 +22,7 @@ model Project {
   role               String?   @db.VarChar(255)
   technologies       Json?     // Array of tech stack
   featuredImage      String?   @db.VarChar(500)
+  logoUrl            String?   @db.VarChar(500)
   gallery            Json?     // Array of image URLs
   externalUrl        String?   @db.VarChar(500)
   caseStudyContent   Json?     // BlockNote JSON format

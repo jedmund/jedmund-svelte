@@ -85,6 +85,7 @@ export const POST: RequestHandler = async (event) => {
 				role: body.role,
 				technologies: body.technologies || [],
 				featuredImage: body.featuredImage,
+				logoUrl: body.logoUrl,
 				gallery: body.gallery || [],
 				externalUrl: body.externalUrl,
 				caseStudyContent: body.caseStudyContent,
