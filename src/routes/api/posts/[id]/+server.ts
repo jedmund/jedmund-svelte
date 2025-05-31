@@ -57,6 +57,29 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
+		// Handle album gallery updates
+		let featuredImageId = data.featuredImage
+		if (data.gallery && data.gallery.length > 0 && !featuredImageId) {
+			// Get the media URL for the first gallery item
+			const firstMedia = await prisma.media.findUnique({
+				where: { id: data.gallery[0] },
+				select: { url: true }
+			})
+			if (firstMedia) {
+				featuredImageId = firstMedia.url
+			}
+		}
+
+		// For albums, store gallery IDs in content field as a special structure
+		let postContent = data.content
+		if (data.type === 'album' && data.gallery) {
+			postContent = {
+				type: 'album',
+				gallery: data.gallery,
+				description: data.content
+			}
+		}
+
 		const post = await prisma.post.update({
 			where: { id },
 			data: {
@@ -64,10 +87,13 @@ export const PUT: RequestHandler = async (event) => {
 				slug: data.slug,
 				postType: data.type,
 				status: data.status,
-				content: data.content,
+				content: postContent,
 				excerpt: data.excerpt,
 				linkUrl: data.link_url,
-				tags: data.tags
+				linkDescription: data.linkDescription,
+				featuredImage: featuredImageId,
+				tags: data.tags,
+				publishedAt: data.publishedAt
 			}
 		})
 

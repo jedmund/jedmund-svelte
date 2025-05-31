@@ -7,7 +7,11 @@
 	import FormFieldWrapper from './FormFieldWrapper.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import MediaDetailsModal from './MediaDetailsModal.svelte'
+	import SmartImage from '../SmartImage.svelte'
 	import type { JSONContent } from '@tiptap/core'
+	import type { Media } from '@prisma/client'
 
 	export let isOpen = false
 	export let initialMode: 'modal' | 'page' = 'modal'
@@ -37,6 +41,15 @@
 	let essayTags = ''
 	let essayTab = 0
 
+	// Photo attachment state
+	let attachedPhotos: Media[] = []
+	let isMediaLibraryOpen = false
+	let fileInput: HTMLInputElement
+
+	// Media details modal state
+	let selectedMedia: Media | null = null
+	let isMediaDetailsOpen = false
+
 	const CHARACTER_LIMIT = 280
 	const dispatch = createEventDispatcher()
 
@@ -50,7 +63,7 @@
 	}
 
 	function hasContent(): boolean {
-		return characterCount > 0 || linkUrl.length > 0
+		return characterCount > 0 || linkUrl.length > 0 || attachedPhotos.length > 0
 	}
 
 	function resetComposer() {
@@ -65,6 +78,7 @@
 		linkDescription = ''
 		showLinkFields = false
 		characterCount = 0
+		attachedPhotos = []
 		if (editorInstance) {
 			editorInstance.clear()
 		}
@@ -88,6 +102,83 @@
 
 	function toggleLinkFields() {
 		showLinkFields = !showLinkFields
+	}
+
+	function handlePhotoUpload() {
+		fileInput.click()
+	}
+
+	async function handleFileUpload(event: Event) {
+		const input = event.target as HTMLInputElement
+		const files = input.files
+		if (!files || files.length === 0) return
+
+		for (const file of files) {
+			if (!file.type.startsWith('image/')) continue
+
+			const formData = new FormData()
+			formData.append('file', file)
+			formData.append('type', 'image')
+
+			// Add auth header if needed
+			const auth = localStorage.getItem('admin_auth')
+			const headers: Record<string, string> = {}
+			if (auth) {
+				headers.Authorization = `Basic ${auth}`
+			}
+
+			try {
+				const response = await fetch('/api/media/upload', {
+					method: 'POST',
+					headers,
+					body: formData
+				})
+
+				if (response.ok) {
+					const media = await response.json()
+					attachedPhotos = [...attachedPhotos, media]
+				} else {
+					console.error('Failed to upload image:', response.status)
+				}
+			} catch (error) {
+				console.error('Error uploading image:', error)
+			}
+		}
+
+		// Clear the input
+		input.value = ''
+	}
+
+	function handleMediaSelect(media: Media | Media[]) {
+		const mediaArray = Array.isArray(media) ? media : [media]
+		const currentIds = attachedPhotos.map(p => p.id)
+		const newMedia = mediaArray.filter(m => !currentIds.includes(m.id))
+		attachedPhotos = [...attachedPhotos, ...newMedia]
+	}
+
+	function handleMediaLibraryClose() {
+		isMediaLibraryOpen = false
+	}
+
+	function removePhoto(photoId: number) {
+		attachedPhotos = attachedPhotos.filter(p => p.id !== photoId)
+	}
+
+	function handlePhotoClick(photo: Media) {
+		selectedMedia = photo
+		isMediaDetailsOpen = true
+	}
+
+	function handleMediaDetailsClose() {
+		isMediaDetailsOpen = false
+		selectedMedia = null
+	}
+
+	function handleMediaUpdate(updatedMedia: Media) {
+		// Update the photo in the attachedPhotos array
+		attachedPhotos = attachedPhotos.map(photo => 
+			photo.id === updatedMedia.id ? updatedMedia : photo
+		)
 	}
 
 	function getTextFromContent(json: JSONContent): number {
@@ -114,7 +205,8 @@
 
 		let postData: any = {
 			content,
-			status: 'published'
+			status: 'published',
+			attachedPhotos: attachedPhotos.map(photo => photo.id)
 		}
 
 		if (postType === 'essay') {
@@ -137,7 +229,7 @@
 		} else {
 			postData = {
 				...postData,
-				type: 'microblog'
+				type: attachedPhotos.length > 0 ? 'photo' : 'microblog'
 			}
 		}
 
@@ -165,7 +257,7 @@
 
 	$: isOverLimit = characterCount > CHARACTER_LIMIT
 	$: canSave =
-		(postType === 'post' && characterCount > 0 && !isOverLimit) ||
+		(postType === 'post' && (characterCount > 0 || attachedPhotos.length > 0) && !isOverLimit) ||
 		(showLinkFields && linkUrl.length > 0) ||
 		(postType === 'essay' && essayTitle.length > 0 && content)
 </script>
@@ -238,6 +330,42 @@
 					</div>
 				{/if}
 
+
+				{#if attachedPhotos.length > 0}
+					<div class="attached-photos">
+						{#each attachedPhotos as photo}
+							<div class="photo-item">
+								<button
+									class="photo-button"
+									onclick={() => handlePhotoClick(photo)}
+									title="View media details"
+								>
+									<img 
+										src={photo.url} 
+										alt={photo.altText || ''} 
+										class="photo-preview"
+									/>
+								</button>
+								<button
+									class="remove-photo"
+									onclick={() => removePhoto(photo.id)}
+									title="Remove photo"
+								>
+									<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+										<path
+											d="M4 4L12 12M4 12L12 4"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</svg>
+								</button>
+							</div>
+						{/each}
+					</div>
+				{/if}
+
 				<div class="composer-footer">
 					<div class="footer-left">
 						<Button
@@ -275,7 +403,7 @@
 							variant="ghost"
 							iconOnly
 							size="icon"
-							onclick={() => alert('Image upload coming soon!')}
+							onclick={handlePhotoUpload}
 							title="Add image"
 							class="tool-button"
 						>
@@ -292,6 +420,25 @@
 								<circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" />
 								<path
 									d="M2 12l4-4 3 3 5-5 2 2"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						</Button>
+
+						<Button
+							variant="ghost"
+							iconOnly
+							size="icon"
+							onclick={() => (isMediaLibraryOpen = true)}
+							title="Browse library"
+							class="tool-button"
+						>
+							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+								<path
+									d="M2 5L9 12L16 5"
 									stroke="currentColor"
 									stroke-width="1.5"
 									stroke-linecap="round"
@@ -433,6 +580,42 @@
 					</div>
 				{/if}
 
+
+				{#if attachedPhotos.length > 0}
+					<div class="attached-photos">
+						{#each attachedPhotos as photo}
+							<div class="photo-item">
+								<button
+									class="photo-button"
+									onclick={() => handlePhotoClick(photo)}
+									title="View media details"
+								>
+									<img 
+										src={photo.url} 
+										alt={photo.altText || ''} 
+										class="photo-preview"
+									/>
+								</button>
+								<button
+									class="remove-photo"
+									onclick={() => removePhoto(photo.id)}
+									title="Remove photo"
+								>
+									<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+										<path
+											d="M4 4L12 12M4 12L12 4"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</svg>
+								</button>
+							</div>
+						{/each}
+					</div>
+				{/if}
+
 				<div class="composer-footer">
 					<div class="footer-left">
 						<Button
@@ -470,7 +653,7 @@
 							variant="ghost"
 							iconOnly
 							size="icon"
-							onclick={() => alert('Image upload coming soon!')}
+							onclick={handlePhotoUpload}
 							title="Add image"
 							class="tool-button"
 						>
@@ -487,6 +670,25 @@
 								<circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" />
 								<path
 									d="M2 12l4-4 3 3 5-5 2 2"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						</Button>
+
+						<Button
+							variant="ghost"
+							iconOnly
+							size="icon"
+							onclick={() => (isMediaLibraryOpen = true)}
+							title="Browse library"
+							class="tool-button"
+						>
+							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+								<path
+									d="M2 5L9 12L16 5"
 									stroke="currentColor"
 									stroke-width="1.5"
 									stroke-linecap="round"
@@ -512,6 +714,35 @@
 			</div>
 		</div>
 	{/if}
+{/if}
+
+<!-- Hidden file input for photo upload -->
+<input
+	bind:this={fileInput}
+	type="file"
+	accept="image/*"
+	multiple
+	onchange={handleFileUpload}
+	style="display: none;"
+/>
+
+<!-- Media Library Modal -->
+<MediaLibraryModal
+	bind:isOpen={isMediaLibraryOpen}
+	mode="multiple"
+	fileType="image"
+	onSelect={handleMediaSelect}
+	onClose={handleMediaLibraryClose}
+/>
+
+<!-- Media Details Modal -->
+{#if selectedMedia}
+	<MediaDetailsModal
+		bind:isOpen={isMediaDetailsOpen}
+		media={selectedMedia}
+		onClose={handleMediaDetailsClose}
+		onUpdate={handleMediaUpdate}
+	/>
 {/if}
 
 <style lang="scss">
@@ -755,5 +986,72 @@
 		padding: $unit-2x $unit-3x;
 		border-top: 1px solid $grey-80;
 		background-color: $grey-90;
+	}
+
+	.attached-photos {
+		padding: 0 $unit-3x $unit-2x;
+		display: flex;
+		flex-wrap: wrap;
+		gap: $unit;
+	}
+
+	.photo-item {
+		position: relative;
+		
+		.photo-button {
+			border: none;
+			background: none;
+			padding: 0;
+			cursor: pointer;
+			display: block;
+			transition: transform 0.2s ease;
+
+			&:hover {
+				transform: scale(1.05);
+			}
+		}
+		
+		:global(.photo-preview) {
+			width: 64px;
+			height: 64px;
+			object-fit: cover;
+			border-radius: 12px;
+			display: block;
+		}
+		
+		.remove-photo {
+			position: absolute;
+			top: -6px;
+			right: -6px;
+			width: 20px;
+			height: 20px;
+			border: none;
+			border-radius: 50%;
+			background: rgba(0, 0, 0, 0.8);
+			color: white;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: all 0.2s ease;
+			opacity: 0;
+
+			&:hover {
+				background: rgba(0, 0, 0, 0.9);
+			}
+
+			svg {
+				width: 10px;
+				height: 10px;
+			}
+		}
+
+		&:hover .remove-photo {
+			opacity: 1;
+		}
+	}
+
+	.inline-composer .attached-photos {
+		padding: 0 $unit-3x $unit-2x;
 	}
 </style>

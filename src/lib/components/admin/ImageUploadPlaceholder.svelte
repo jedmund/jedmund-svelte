@@ -1,32 +1,55 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
+	import type { Media } from '@prisma/client'
 	import Image from 'lucide-svelte/icons/image'
 	import Upload from 'lucide-svelte/icons/upload'
 	import Link from 'lucide-svelte/icons/link'
+	import Grid from 'lucide-svelte/icons/grid-3x3'
 	import { NodeViewWrapper } from 'svelte-tiptap'
+	import MediaLibraryModal from './MediaLibraryModal.svelte'
 
-	const { editor }: NodeViewProps = $props()
+	const { editor, deleteNode }: NodeViewProps = $props()
 
 	let fileInput: HTMLInputElement
 	let isDragging = $state(false)
+	let isMediaLibraryOpen = $state(false)
+	let isUploading = $state(false)
 
-	function handleClick(e: MouseEvent) {
+	function handleBrowseLibrary(e: MouseEvent) {
 		if (!editor.isEditable) return
 		e.preventDefault()
+		isMediaLibraryOpen = true
+	}
 
-		// Show options: upload file or enter URL
-		const choice = confirm('Click OK to upload a file, or Cancel to enter a URL')
+	function handleDirectUpload(e: MouseEvent) {
+		if (!editor.isEditable) return
+		e.preventDefault()
+		fileInput.click()
+	}
 
-		if (choice) {
-			// Upload file
-			fileInput?.click()
-		} else {
-			// Enter URL
-			const imageUrl = prompt('Enter the URL of an image:')
-			if (imageUrl) {
-				editor.chain().focus().setImage({ src: imageUrl }).run()
-			}
+	function handleMediaSelect(media: Media | Media[]) {
+		const selectedMedia = Array.isArray(media) ? media[0] : media
+		if (selectedMedia) {
+			// Set a reasonable default width (max 600px)
+			const displayWidth = selectedMedia.width && selectedMedia.width > 600 ? 600 : selectedMedia.width
+
+			editor
+				.chain()
+				.focus()
+				.setImage({
+					src: selectedMedia.url,
+					alt: selectedMedia.altText || '',
+					width: displayWidth,
+					height: selectedMedia.height,
+					align: 'center'
+				})
+				.run()
 		}
+		isMediaLibraryOpen = false
+	}
+
+	function handleMediaLibraryClose() {
+		isMediaLibraryOpen = false
 	}
 
 	async function handleFileSelect(e: Event) {
@@ -53,6 +76,8 @@
 			return
 		}
 
+		isUploading = true
+
 		try {
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
@@ -61,6 +86,7 @@
 
 			const formData = new FormData()
 			formData.append('file', file)
+			formData.append('type', 'image')
 
 			const response = await fetch('/api/media/upload', {
 				method: 'POST',
@@ -84,7 +110,7 @@
 				.focus()
 				.setImage({
 					src: media.url,
-					alt: media.filename || '',
+					alt: media.altText || '',
 					width: displayWidth,
 					height: media.height,
 					align: 'center'
@@ -93,6 +119,8 @@
 		} catch (error) {
 			console.error('Image upload failed:', error)
 			alert('Failed to upload image. Please try again.')
+		} finally {
+			isUploading = false
 		}
 	}
 
@@ -119,6 +147,16 @@
 			await uploadFile(file)
 		}
 	}
+
+	// Handle keyboard navigation
+	function handleKeyDown(e: KeyboardEvent) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault()
+			handleBrowseLibrary(e as any)
+		} else if (e.key === 'Escape') {
+			deleteNode()
+		}
+	}
 </script>
 
 <NodeViewWrapper class="edra-media-placeholder-wrapper" contenteditable="false">
@@ -130,38 +168,124 @@
 		style="display: none;"
 	/>
 
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<span
-		class="edra-media-placeholder-content {isDragging ? 'dragging' : ''}"
-		onclick={handleClick}
-		ondragover={handleDragOver}
-		ondragleave={handleDragLeave}
-		ondrop={handleDrop}
-		tabindex="0"
-		role="button"
-		aria-label="Insert An Image"
-	>
-		<Image class="edra-media-placeholder-icon" />
-		<span class="edra-media-placeholder-text">
-			{isDragging ? 'Drop image here' : 'Click to upload or drag & drop'}
-		</span>
-		<span class="edra-media-placeholder-subtext"> or paste from clipboard </span>
-	</span>
+	<div class="edra-image-placeholder-container">
+		{#if isUploading}
+			<div class="edra-image-placeholder-uploading">
+				<div class="spinner"></div>
+				<span>Uploading image...</span>
+			</div>
+		{:else}
+			<button
+				class="edra-image-placeholder-option"
+				onclick={handleDirectUpload}
+				onkeydown={handleKeyDown}
+				tabindex="0"
+				aria-label="Upload Image"
+				title="Upload from device"
+			>
+				<Upload class="edra-image-placeholder-icon" />
+				<span class="edra-image-placeholder-text">Upload Image</span>
+			</button>
+			
+			<button
+				class="edra-image-placeholder-option"
+				onclick={handleBrowseLibrary}
+				onkeydown={handleKeyDown}
+				tabindex="0"
+				aria-label="Browse Media Library"
+				title="Choose from library"
+			>
+				<Grid class="edra-image-placeholder-icon" />
+				<span class="edra-image-placeholder-text">Browse Library</span>
+			</button>
+		{/if}
+	</div>
+
+	<!-- Media Library Modal -->
+	<MediaLibraryModal
+		bind:isOpen={isMediaLibraryOpen}
+		mode="single"
+		fileType="image"
+		onSelect={handleMediaSelect}
+		onClose={handleMediaLibraryClose}
+	/>
 </NodeViewWrapper>
 
 <style>
-	.edra-media-placeholder-content {
+	.edra-image-placeholder-container {
+		display: flex;
+		gap: 12px;
+		padding: 24px;
+		border: 2px dashed #e5e7eb;
+		border-radius: 8px;
+		background: #f9fafb;
 		transition: all 0.2s ease;
+		justify-content: center;
+		align-items: center;
 	}
 
-	.edra-media-placeholder-content.dragging {
-		background-color: rgba(59, 130, 246, 0.1);
-		border-color: rgb(59, 130, 246);
+	.edra-image-placeholder-container:hover {
+		border-color: #d1d5db;
+		background: #f3f4f6;
 	}
 
-	.edra-media-placeholder-subtext {
-		font-size: 0.875em;
-		opacity: 0.7;
-		margin-top: 0.25rem;
+	.edra-image-placeholder-option {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		padding: 16px 20px;
+		border: 1px solid #e5e7eb;
+		border-radius: 6px;
+		background: white;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		min-width: 140px;
+	}
+
+	.edra-image-placeholder-option:hover {
+		border-color: #d1d5db;
+		background: #f9fafb;
+		transform: translateY(-1px);
+	}
+
+	.edra-image-placeholder-option:focus {
+		outline: none;
+		border-color: #3b82f6;
+		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+	}
+
+	.edra-image-placeholder-uploading {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 20px;
+		color: #6b7280;
+	}
+
+	.spinner {
+		width: 16px;
+		height: 16px;
+		border: 2px solid #f3f4f6;
+		border-top: 2px solid #3b82f6;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+
+	:global(.edra-image-placeholder-icon) {
+		width: 28px;
+		height: 28px;
+		color: #6b7280;
+	}
+
+	.edra-image-placeholder-text {
+		font-size: 14px;
+		color: #6b7280;
+		font-weight: 500;
 	}
 </style>

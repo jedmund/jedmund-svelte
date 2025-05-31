@@ -71,15 +71,46 @@ export const POST: RequestHandler = async (event) => {
 			data.publishedAt = new Date()
 		}
 
+		// Handle photo attachments for posts
+		let featuredImageId = data.featuredImage
+		if (data.attachedPhotos && data.attachedPhotos.length > 0 && !featuredImageId) {
+			// Use first attached photo as featured image for photo posts
+			featuredImageId = data.attachedPhotos[0]
+		}
+
+		// Handle album gallery - use first image as featured image
+		if (data.gallery && data.gallery.length > 0 && !featuredImageId) {
+			// Get the media URL for the first gallery item
+			const firstMedia = await prisma.media.findUnique({
+				where: { id: data.gallery[0] },
+				select: { url: true }
+			})
+			if (firstMedia) {
+				featuredImageId = firstMedia.url
+			}
+		}
+
+		// For albums, store gallery IDs in content field as a special structure
+		let postContent = data.content
+		if (data.type === 'album' && data.gallery) {
+			postContent = {
+				type: 'album',
+				gallery: data.gallery,
+				description: data.content
+			}
+		}
+
 		const post = await prisma.post.create({
 			data: {
 				title: data.title,
 				slug: data.slug,
 				postType: data.type,
 				status: data.status,
-				content: data.content,
+				content: postContent,
 				excerpt: data.excerpt,
 				linkUrl: data.link_url,
+				linkDescription: data.linkDescription,
+				featuredImage: featuredImageId,
 				tags: data.tags,
 				publishedAt: data.publishedAt
 			}

@@ -259,6 +259,14 @@ export const commands: Record<string, EdraCommandGroup> = {
 				}
 			},
 			{
+				iconName: 'Images',
+				name: 'gallery-placeholder',
+				label: 'Gallery',
+				action: (editor) => {
+					editor.chain().focus().insertGalleryPlaceholder().run()
+				}
+			},
+			{
 				iconName: 'Video',
 				name: 'video-placeholder',
 				label: 'Video',

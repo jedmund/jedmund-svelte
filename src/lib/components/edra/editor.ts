@@ -53,7 +53,8 @@ export const initiateEditor = (
 					}
 				},
 				codeBlock: false,
-				text: false
+				text: false,
+				image: false
 			}),
 			SmilieReplacer,
 			ColorHighlighter,

@@ -7,6 +7,8 @@
 	import FormFieldWrapper from '$lib/components/admin/FormFieldWrapper.svelte'
 	import Editor from '$lib/components/admin/Editor.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
+	import PhotoPostForm from '$lib/components/admin/PhotoPostForm.svelte'
+	import AlbumForm from '$lib/components/admin/AlbumForm.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
 	let post: any = null
@@ -251,6 +253,30 @@
 		<div class="loading-container">
 			<LoadingSpinner />
 		</div>
+	{:else if post && postType === 'photo'}
+		<PhotoPostForm 
+			mode="edit" 
+			postId={post.id}
+			initialData={{
+				title: post.title,
+				content: post.content,
+				featuredImage: post.featuredImage,
+				status: post.status,
+				tags: post.tags
+			}}
+		/>
+	{:else if post && postType === 'album'}
+		<AlbumForm 
+			mode="edit" 
+			postId={post.id}
+			initialData={{
+				title: post.title,
+				content: post.content,
+				gallery: post.gallery || [],
+				status: post.status,
+				tags: post.tags
+			}}
+		/>
 	{:else if post}
 		<div class="post-composer">
 			<div class="main-content">

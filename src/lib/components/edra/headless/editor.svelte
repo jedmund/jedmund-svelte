@@ -25,6 +25,10 @@
 	import VideoExtendedComponent from './components/VideoExtended.svelte'
 	import { VideoExtended } from '../extensions/video/VideoExtended.js'
 	import { AudioExtended } from '../extensions/audio/AudiExtended.js'
+	import { GalleryPlaceholder } from '../extensions/gallery/GalleryPlaceholder.js'
+	import GalleryPlaceholderComponent from './components/GalleryPlaceholder.svelte'
+	import { GalleryExtended } from '../extensions/gallery/GalleryExtended.js'
+	import GalleryExtendedComponent from './components/GalleryExtended.svelte'
 	import LinkMenu from './menus/link-menu.svelte'
 	import TableRowMenu from './menus/table/table-row-menu.svelte'
 	import TableColMenu from './menus/table/table-col-menu.svelte'
@@ -69,11 +73,13 @@
 				}),
 				AudioPlaceholder(AudioPlaceholderComponent),
 				ImagePlaceholder(ImagePlaceholderComponent),
+				GalleryPlaceholder(GalleryPlaceholderComponent),
 				IFramePlaceholder(IFramePlaceholderComponent),
 				IFrameExtended(IFrameExtendedComponent),
 				VideoPlaceholder(VideoPlaceholderComponent),
 				AudioExtended(AudioExtendedComponent),
 				ImageExtended(ImageExtendedComponent),
+				GalleryExtended(GalleryExtendedComponent),
 				VideoExtended(VideoExtendedComponent),
 				...(showSlashCommands ? [slashcommand(SlashCommandList)] : [])
 			],

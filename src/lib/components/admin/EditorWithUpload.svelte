@@ -34,6 +34,10 @@
 	import { IFramePlaceholder } from '$lib/components/edra/extensions/iframe/IFramePlaceholder.js'
 	import { IFrameExtended } from '$lib/components/edra/extensions/iframe/IFrameExtended.js'
 	import IFrameExtendedComponent from '$lib/components/edra/headless/components/IFrameExtended.svelte'
+	import { GalleryPlaceholder } from '$lib/components/edra/extensions/gallery/GalleryPlaceholder.js'
+	import GalleryPlaceholderComponent from '$lib/components/edra/headless/components/GalleryPlaceholder.svelte'
+	import { GalleryExtended } from '$lib/components/edra/extensions/gallery/GalleryExtended.js'
+	import GalleryExtendedComponent from '$lib/components/edra/headless/components/GalleryExtended.svelte'
 
 	// Import Edra styles
 	import '$lib/components/edra/headless/style.css'
@@ -296,11 +300,13 @@
 				}),
 				AudioPlaceholder(AudioPlaceholderComponent),
 				ImagePlaceholder(ImageUploadPlaceholder), // Use our custom component
+				GalleryPlaceholder(GalleryPlaceholderComponent),
 				IFramePlaceholder(IFramePlaceholderComponent),
 				IFrameExtended(IFrameExtendedComponent),
 				VideoPlaceholder(VideoPlaceholderComponent),
 				AudioExtended(AudioExtendedComponent),
 				ImageExtended(ImageExtendedComponent),
+				GalleryExtended(GalleryExtendedComponent),
 				VideoExtended(VideoExtendedComponent),
 				...(showSlashCommands ? [slashcommand(SlashCommandList)] : [])
 			],
@@ -499,6 +505,46 @@
 					/>
 				</svg>
 				<span>Image</span>
+			</button>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().insertGalleryPlaceholder().run()
+					showMediaDropdown = false
+				}}
+			>
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
+					<rect
+						x="2"
+						y="4"
+						width="12"
+						height="9"
+						stroke="currentColor"
+						stroke-width="2"
+						fill="none"
+						rx="1"
+					/>
+					<rect
+						x="6"
+						y="7"
+						width="12"
+						height="9"
+						stroke="currentColor"
+						stroke-width="2"
+						fill="none"
+						rx="1"
+					/>
+					<circle cx="6.5" cy="9.5" r="1" stroke="currentColor" stroke-width="1.5" fill="none" />
+					<path
+						d="M6 12L8 10L10 12L12 10L15 13"
+						stroke="currentColor"
+						stroke-width="1.5"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						fill="none"
+					/>
+				</svg>
+				<span>Gallery</span>
 			</button>
 			<button
 				class="dropdown-item"
