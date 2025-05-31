@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
+	import Input from '$lib/components/admin/Input.svelte'
 
 	let password = $state('')
 	let error = $state('')
@@ -38,13 +39,14 @@
 <div class="login-page">
 	<div class="login-card">
 		<form onsubmit={handleLogin}>
-			<input
+			<Input
 				type="password"
+				label="Password"
 				bind:value={password}
-				placeholder="Admin password..."
 				required
+				autofocus
+				placeholder="Enter password"
 				disabled={isLoading}
-				class="password-input"
 			/>
 
 			{#if error}
@@ -64,7 +66,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		overflow: hidden;
 	}
 
@@ -79,32 +80,7 @@
 		}
 	}
 
-	.password-input {
-		padding: $unit-2x $unit-3x;
-		border: 1px solid $grey-80;
-		border-radius: 50px;
-		font-size: 1rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		transition:
-			border-color 0.2s ease,
-			box-shadow 0.2s ease;
-
-		&::placeholder {
-			color: $grey-50;
-		}
-
-		&:focus {
-			outline: none;
-			border-color: $grey-40;
-			box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
-		}
-
-		&:disabled {
-			background-color: $grey-90;
-			cursor: not-allowed;
-			opacity: 0.6;
-		}
-	}
+	// Input component handles its own styling
 
 	.error-message {
 		background-color: rgba(255, 0, 0, 0.1);
@@ -113,7 +89,6 @@
 		border-radius: 50px;
 		text-align: center;
 		font-size: 0.875rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.login-btn {
@@ -123,7 +98,6 @@
 		border: none;
 		border-radius: 50px;
 		font-size: 1rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-weight: 500;
 		cursor: pointer;
 		transition:

@@ -123,7 +123,7 @@
 
 			// Calculate post type counts
 			const counts: Record<string, number> = {}
-			posts.forEach(post => {
+			posts.forEach((post) => {
 				counts[post.postType] = (counts[post.postType] || 0) + 1
 			})
 			postTypeCounts = counts
@@ -186,8 +186,7 @@
 			font-weight: 700;
 			margin: 0;
 			color: $grey-10;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		}
+			}
 	}
 
 	.header-actions {
@@ -200,7 +199,6 @@
 		border-radius: 50px;
 		text-decoration: none;
 		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		transition: all 0.2s ease;
 
 		&.btn-primary {
@@ -217,7 +215,6 @@
 		text-align: center;
 		padding: $unit-6x;
 		color: #d33;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.posts-stats {
@@ -235,14 +232,12 @@
 				font-size: 1.5rem;
 				font-weight: 700;
 				color: $grey-10;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-			}
+					}
 
 			.stat-label {
 				font-size: 0.875rem;
 				color: $grey-40;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-			}
+					}
 		}
 	}
 </style>

@@ -162,7 +162,6 @@
 		text-decoration: none;
 		font-size: 1rem;
 		font-weight: 400;
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		position: relative;
 		z-index: 2;
 		transition:

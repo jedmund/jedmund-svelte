@@ -21,7 +21,6 @@
 		display: flex;
 		align-items: center;
 		gap: $unit;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.color-dot {

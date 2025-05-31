@@ -48,12 +48,13 @@ const uploadPresets = {
 	}
 }
 
-// Image size variants
+// Image size variants (2025-appropriate sizes)
 export const imageSizes = {
-	thumbnail: { width: 300, height: 300, crop: 'fill' as const },
+	thumbnail: { width: 800, height: 600, crop: 'fill' as const }, // Much larger thumbnails for modern displays
 	small: { width: 600, quality: 'auto:good' as const },
 	medium: { width: 1200, quality: 'auto:good' as const },
-	large: { width: 1920, quality: 'auto:good' as const }
+	large: { width: 1920, quality: 'auto:good' as const },
+	xlarge: { width: 2560, quality: 'auto:good' as const }
 }
 
 export interface UploadResult {
@@ -80,14 +81,14 @@ export async function uploadFile(
 		if (dev || !isCloudinaryConfigured()) {
 			logger.info('Using local storage for file upload')
 			const localResult = await uploadFileLocally(file, type)
-			
+
 			if (!localResult.success) {
 				return {
 					success: false,
 					error: localResult.error || 'Local upload failed'
 				}
 			}
-			
+
 			return {
 				success: true,
 				publicId: `local/${localResult.filename}`,
@@ -209,7 +210,29 @@ export function getResponsiveUrls(publicId: string): Record<string, string> {
 		small: getOptimizedUrl(publicId, { width: imageSizes.small.width }),
 		medium: getOptimizedUrl(publicId, { width: imageSizes.medium.width }),
 		large: getOptimizedUrl(publicId, { width: imageSizes.large.width }),
+		xlarge: getOptimizedUrl(publicId, { width: imageSizes.xlarge.width }),
 		original: cloudinary.url(publicId, { secure: true })
+	}
+}
+
+// Smart image size selection based on container width
+export function getSmartImageUrl(
+	publicId: string, 
+	containerWidth: number,
+	retina = true
+): string {
+	// Account for retina displays
+	const targetWidth = retina ? containerWidth * 2 : containerWidth
+	
+	// Select appropriate size
+	if (targetWidth <= 600) {
+		return getOptimizedUrl(publicId, { width: imageSizes.small.width })
+	} else if (targetWidth <= 1200) {
+		return getOptimizedUrl(publicId, { width: imageSizes.medium.width })
+	} else if (targetWidth <= 1920) {
+		return getOptimizedUrl(publicId, { width: imageSizes.large.width })
+	} else {
+		return getOptimizedUrl(publicId, { width: imageSizes.xlarge.width })
 	}
 }
 

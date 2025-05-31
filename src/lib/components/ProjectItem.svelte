@@ -12,7 +12,15 @@
 		index?: number
 	}
 
-	let { logoUrl, backgroundColor, name, slug, description, highlightColor, index = 0 }: Props = $props()
+	let {
+		logoUrl,
+		backgroundColor,
+		name,
+		slug,
+		description,
+		highlightColor,
+		index = 0
+	}: Props = $props()
 
 	const isEven = $derived(index % 2 === 0)
 
@@ -131,7 +139,7 @@
 	function handleMouseLeave() {
 		isHovering = false
 		transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
-		
+
 		// Reset logo position
 		velocity = { x: 0, y: 0 }
 		position = { x: 0, y: 0 }
@@ -141,7 +149,7 @@
 			animationFrame = 0
 		}
 	}
-	
+
 	function handleClick() {
 		goto(`/work/${slug}`)
 	}
@@ -161,11 +169,7 @@
 >
 	<div class="project-logo" style="background-color: {backgroundColor}">
 		{#if svgContent}
-			<div 
-				bind:this={logoElement}
-				class="logo-svg" 
-				style="transform: {logoTransform}"
-			>
+			<div bind:this={logoElement} class="logo-svg" style="transform: {logoTransform}">
 				{@html svgContent}
 			</div>
 		{:else if logoUrl}

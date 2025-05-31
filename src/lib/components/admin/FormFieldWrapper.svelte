@@ -50,7 +50,6 @@
 		margin-bottom: $unit;
 		font-weight: 500;
 		color: $grey-20;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-size: 0.925rem;
 
 		.required {
@@ -63,13 +62,11 @@
 		margin-top: $unit;
 		color: #c33;
 		font-size: 0.875rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.help-text {
 		margin-top: $unit;
 		color: $grey-40;
 		font-size: 0.875rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 </style>

@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { NodeViewProps } from '@tiptap/core';
-	import AudioLines from 'lucide-svelte/icons/audio-lines';
-	import { NodeViewWrapper } from 'svelte-tiptap';
-	const { editor }: NodeViewProps = $props();
+	import type { NodeViewProps } from '@tiptap/core'
+	import AudioLines from 'lucide-svelte/icons/audio-lines'
+	import { NodeViewWrapper } from 'svelte-tiptap'
+	const { editor }: NodeViewProps = $props()
 
 	function handleClick(e: MouseEvent) {
-		if (!editor.isEditable) return;
-		e.preventDefault();
-		const audioUrl = prompt('Enter the URL of an audio:');
+		if (!editor.isEditable) return
+		e.preventDefault()
+		const audioUrl = prompt('Enter the URL of an audio:')
 		if (!audioUrl) {
-			return;
+			return
 		}
-		editor.chain().focus().setAudio(audioUrl).run();
+		editor.chain().focus().setAudio(audioUrl).run()
 	}
 </script>
 

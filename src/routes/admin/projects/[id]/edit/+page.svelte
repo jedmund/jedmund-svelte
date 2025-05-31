@@ -58,7 +58,6 @@
 		text-align: center;
 		padding: $unit-6x;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.error {

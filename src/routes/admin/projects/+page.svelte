@@ -197,8 +197,7 @@
 			font-weight: 700;
 			margin: 0;
 			color: $grey-10;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		}
+			}
 	}
 
 	.header-actions {
@@ -211,7 +210,6 @@
 		border-radius: 50px;
 		text-decoration: none;
 		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		transition: all 0.2s ease;
 		border: none;
 		cursor: pointer;
@@ -230,7 +228,6 @@
 		text-align: center;
 		padding: $unit-6x;
 		color: #d33;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.loading {
@@ -250,8 +247,7 @@
 
 		p {
 			margin: 0;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		}
+			}
 	}
 
 	@keyframes spin {
@@ -267,8 +263,7 @@
 
 		p {
 			margin: 0;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		}
+			}
 	}
 
 	.projects-list {

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
@@ -8,7 +7,9 @@
 	import Editor from './Editor.svelte'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
+	import ProjectGalleryForm from './ProjectGalleryForm.svelte'
 	import ProjectStylingForm from './ProjectStylingForm.svelte'
+	import Button from './Button.svelte'
 	import { projectSchema } from '$lib/schemas/project'
 	import type { Project, ProjectFormData } from '$lib/types/project'
 	import { defaultProjectFormData } from '$lib/types/project'
@@ -31,7 +32,6 @@
 
 	// Form data
 	let formData = $state<ProjectFormData>({ ...defaultProjectFormData })
-	let logoUploadInProgress = $state(false)
 
 	// Ref to the editor component
 	let editorRef: any
@@ -41,11 +41,11 @@
 		{ value: 'case-study', label: 'Case Study' }
 	]
 
-	onMount(() => {
-		if (project) {
+	// Watch for project changes and populate form data
+	$effect(() => {
+		if (project && mode === 'edit') {
 			populateFormData(project)
-		}
-		if (mode === 'create') {
+		} else if (mode === 'create') {
 			isLoading = false
 		}
 	})
@@ -60,9 +60,11 @@
 			role: data.role || '',
 			technologies: Array.isArray(data.technologies) ? data.technologies.join(', ') : '',
 			externalUrl: data.externalUrl || '',
+			featuredImage: data.featuredImage || null,
 			backgroundColor: data.backgroundColor || '',
 			highlightColor: data.highlightColor || '',
 			logoUrl: data.logoUrl || '',
+			gallery: data.gallery || null,
 			status: (data.status as 'draft' | 'published') || 'draft',
 			caseStudyContent: data.caseStudyContent || {
 				type: 'doc',
@@ -104,68 +106,6 @@
 		formData.caseStudyContent = content
 	}
 
-	async function handleLogoUpload(event: Event) {
-		const input = event.target as HTMLInputElement
-		const file = input.files?.[0]
-		
-		if (!file) return
-		
-		// Check if it's an SVG
-		if (file.type !== 'image/svg+xml') {
-			error = 'Please upload an SVG file'
-			return
-		}
-		
-		// Check file size (500KB max for SVG)
-		const filesize = file.size / 1024 / 1024
-		if (filesize > 0.5) {
-			error = `Logo file too large! File size: ${filesize.toFixed(2)} MB (max 0.5MB)`
-			return
-		}
-		
-		try {
-			logoUploadInProgress = true
-			error = ''
-			
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-			
-			const uploadFormData = new FormData()
-			uploadFormData.append('file', file)
-			
-			const response = await fetch('/api/media/upload', {
-				method: 'POST',
-				headers: {
-					Authorization: `Basic ${auth}`
-				},
-				body: uploadFormData
-			})
-			
-			if (!response.ok) {
-				throw new Error('Upload failed')
-			}
-			
-			const media = await response.json()
-			formData.logoUrl = media.url
-			successMessage = 'Logo uploaded successfully!'
-			
-			setTimeout(() => {
-				successMessage = ''
-			}, 3000)
-		} catch (err) {
-			error = 'Failed to upload logo'
-			console.error(err)
-		} finally {
-			logoUploadInProgress = false
-		}
-	}
-
-	function removeLogo() {
-		formData.logoUrl = ''
-	}
 
 	async function handleSave() {
 		// Check if we're on the case study tab and should save editor content
@@ -204,12 +144,16 @@
 					.map((t) => t.trim())
 					.filter(Boolean),
 				externalUrl: formData.externalUrl,
+				featuredImage: formData.featuredImage,
 				logoUrl: formData.logoUrl,
+				gallery: formData.gallery && formData.gallery.length > 0 ? formData.gallery : null,
 				backgroundColor: formData.backgroundColor,
 				highlightColor: formData.highlightColor,
 				status: formData.status,
 				caseStudyContent:
-					formData.caseStudyContent && formData.caseStudyContent.content && formData.caseStudyContent.content.length > 0
+					formData.caseStudyContent &&
+					formData.caseStudyContent.content &&
+					formData.caseStudyContent.content.length > 0
 						? formData.caseStudyContent
 						: null
 			}
@@ -296,16 +240,20 @@
 		<div class="header-actions">
 			{#if !isLoading}
 				<div class="save-actions">
-					<button onclick={handleSave} disabled={isSaving} class="btn btn-primary save-button">
+					<Button variant="primary" onclick={handleSave} disabled={isSaving} class="save-button">
 						{isSaving ? 'Saving...' : formData.status === 'published' ? 'Save' : 'Save Draft'}
-					</button>
-					<button
-						class="btn btn-primary chevron-button"
-						class:active={showPublishMenu}
+					</Button>
+					<Button
+						variant="ghost"
+						iconOnly
+						size="medium"
+						active={showPublishMenu}
 						onclick={togglePublishMenu}
 						disabled={isSaving}
+						class="chevron-button"
 					>
 						<svg
+							slot="icon"
 							width="12"
 							height="12"
 							viewBox="0 0 12 12"
@@ -320,13 +268,17 @@
 								stroke-linejoin="round"
 							/>
 						</svg>
-					</button>
+					</Button>
 					{#if showPublishMenu}
 						<div class="publish-menu">
 							{#if formData.status === 'published'}
-								<button onclick={handleUnpublish} class="menu-item"> Unpublish </button>
+								<Button variant="ghost" onclick={handleUnpublish} class="menu-item" fullWidth>
+									Unpublish
+								</Button>
 							{:else}
-								<button onclick={handlePublish} class="menu-item"> Publish </button>
+								<Button variant="ghost" onclick={handlePublish} class="menu-item" fullWidth>
+									Publish
+								</Button>
 							{/if}
 						</div>
 					{/if}
@@ -358,12 +310,8 @@
 							}}
 						>
 							<ProjectMetadataForm bind:formData {validationErrors} />
-							<ProjectBrandingForm 
-								bind:formData 
-								bind:logoUploadInProgress
-								onLogoUpload={handleLogoUpload}
-								onRemoveLogo={removeLogo}
-							/>
+							<ProjectBrandingForm bind:formData />
+							<ProjectGalleryForm bind:formData />
 							<ProjectStylingForm bind:formData {validationErrors} />
 						</form>
 					</div>
@@ -427,48 +375,22 @@
 	.save-actions {
 		position: relative;
 		display: flex;
+		gap: $unit-half;
 	}
 
-	.btn {
-		padding: $unit $unit-3x;
-		border-radius: 50px;
-		text-decoration: none;
-		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		transition: all 0.2s ease;
-		border: none;
-		cursor: pointer;
+	/* Button-specific styles handled by Button component */
 
-		&:disabled {
-			opacity: 0.6;
-			cursor: not-allowed;
-		}
-
-		&.btn-primary {
-			background-color: $grey-10;
-			color: white;
-
-			&:hover:not(:disabled) {
-				background-color: $grey-20;
-			}
-		}
-	}
-
-	.save-button {
+	/* Custom button styles */
+	:global(.save-button) {
 		border-top-right-radius: 0;
 		border-bottom-right-radius: 0;
 		padding-right: $unit-2x;
 	}
 
-	.chevron-button {
+	:global(.chevron-button) {
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 0;
-		padding: $unit $unit;
 		border-left: 1px solid rgba(255, 255, 255, 0.2);
-
-		&.active {
-			background-color: $grey-20;
-		}
 
 		svg {
 			display: block;
@@ -492,22 +414,10 @@
 		min-width: 120px;
 		z-index: 100;
 
-		.menu-item {
-			display: block;
-			width: 100%;
-			padding: $unit-2x $unit-3x;
+		/* Menu item styles handled by Button component */
+		:global(.menu-item) {
 			text-align: left;
-			background: none;
-			border: none;
-			font-size: 0.925rem;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-			color: $grey-10;
-			cursor: pointer;
-			transition: background-color 0.2s ease;
-
-			&:hover {
-				background-color: $grey-95;
-			}
+			justify-content: flex-start;
 		}
 	}
 
@@ -537,7 +447,6 @@
 		text-align: center;
 		padding: $unit-6x;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.error {
@@ -549,7 +458,6 @@
 		padding: $unit-3x;
 		border-radius: $unit;
 		margin-bottom: $unit-4x;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		max-width: 700px;
 		margin-left: auto;
 		margin-right: auto;
@@ -569,6 +477,12 @@
 		@include breakpoint('phone') {
 			padding: $unit-3x;
 		}
+	}
+
+	.form-content form {
+		display: flex;
+		flex-direction: column;
+		gap: $unit-6x;
 	}
 
 	.case-study-wrapper {

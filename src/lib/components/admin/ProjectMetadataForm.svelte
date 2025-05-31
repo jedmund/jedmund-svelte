@@ -1,5 +1,6 @@
 <script lang="ts">
-	import FormFieldWrapper from './FormFieldWrapper.svelte'
+	import Input from './Input.svelte'
+	import ImageUploader from './ImageUploader.svelte'
 	import type { ProjectFormData } from '$lib/types/project'
 
 	interface Props {
@@ -8,45 +9,71 @@
 	}
 
 	let { formData = $bindable(), validationErrors }: Props = $props()
+
+	function handleFeaturedImageUpload(media: Media) {
+		formData.featuredImage = media.url
+	}
 </script>
 
 <div class="form-section">
-	<FormFieldWrapper label="Title" required error={validationErrors.title}>
-		<input type="text" bind:value={formData.title} required placeholder="Project title" />
-	</FormFieldWrapper>
+	<Input
+		label="Title"
+		required
+		error={validationErrors.title}
+		bind:value={formData.title}
+		placeholder="Project title"
+	/>
 
-	<FormFieldWrapper label="Description" error={validationErrors.description}>
-		<textarea
-			bind:value={formData.description}
-			rows="3"
-			placeholder="Short description for project cards"
-		/>
-	</FormFieldWrapper>
+	<Input
+		type="textarea"
+		label="Description"
+		error={validationErrors.description}
+		bind:value={formData.description}
+		rows={3}
+		placeholder="Short description for project cards"
+	/>
 
 	<div class="form-row">
-		<FormFieldWrapper label="Year" required error={validationErrors.year}>
-			<input
-				type="number"
-				bind:value={formData.year}
-				required
-				min="1990"
-				max={new Date().getFullYear() + 1}
-			/>
-		</FormFieldWrapper>
+		<Input
+			type="number"
+			label="Year"
+			required
+			error={validationErrors.year}
+			bind:value={formData.year}
+			min={1990}
+			max={new Date().getFullYear() + 1}
+		/>
 
-		<FormFieldWrapper label="Client" error={validationErrors.client}>
-			<input type="text" bind:value={formData.client} placeholder="Client or company name" />
-		</FormFieldWrapper>
+		<Input
+			label="Client"
+			error={validationErrors.client}
+			bind:value={formData.client}
+			placeholder="Client or company name"
+		/>
 	</div>
 
-	<FormFieldWrapper label="External URL" error={validationErrors.externalUrl}>
-		<input type="url" bind:value={formData.externalUrl} placeholder="https://example.com" />
-	</FormFieldWrapper>
+	<Input
+		type="url"
+		label="External URL"
+		error={validationErrors.externalUrl}
+		bind:value={formData.externalUrl}
+		placeholder="https://example.com"
+	/>
+
+	<ImageUploader
+		label="Featured Image"
+		value={null}
+		onUpload={handleFeaturedImageUpload}
+		placeholder="Upload a featured image for this project"
+		showBrowseLibrary={true}
+	/>
 </div>
 
 <style lang="scss">
 	.form-section {
-		margin-bottom: $unit-6x;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-2x;
 
 		&:last-child {
 			margin-bottom: 0;
@@ -62,39 +89,5 @@
 		@include breakpoint('phone') {
 			grid-template-columns: 1fr;
 		}
-
-		:global(.form-field) {
-			margin-bottom: 0;
-		}
-	}
-
-	input[type='text'],
-	input[type='url'],
-	input[type='number'],
-	textarea {
-		width: 100%;
-		box-sizing: border-box;
-		padding: calc($unit * 1.5);
-		border: 1px solid $grey-80;
-		border-radius: $unit;
-		font-size: 1rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		transition: border-color 0.2s ease;
-		background-color: white;
-		color: #333;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-40;
-		}
-
-		&::placeholder {
-			color: #999;
-		}
-	}
-
-	textarea {
-		resize: vertical;
-		min-height: 80px;
 	}
 </style>

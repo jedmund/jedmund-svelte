@@ -1,10 +1,6 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import {
-	jsonResponse,
-	errorResponse,
-	checkAdminAuth
-} from '$lib/server/api-utils'
+import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
 // GET /api/posts/[id] - Get a single post

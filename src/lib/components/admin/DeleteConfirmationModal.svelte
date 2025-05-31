@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte'
+	import Button from './Button.svelte'
 
 	interface Props {
 		title?: string
@@ -38,12 +39,12 @@
 		<h2>{title}</h2>
 		<p>{message}</p>
 		<div class="modal-actions">
-			<button class="btn btn-secondary" onclick={handleCancel}>
+			<Button variant="secondary" onclick={handleCancel}>
 				{cancelText}
-			</button>
-			<button class="btn btn-danger" onclick={handleConfirm}>
+			</Button>
+			<Button variant="danger" onclick={handleConfirm}>
 				{confirmText}
-			</button>
+			</Button>
 		</div>
 	</div>
 </div>
@@ -75,49 +76,18 @@
 			font-size: 1.25rem;
 			font-weight: 700;
 			color: $grey-10;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		}
+			}
 
 		p {
 			margin: 0 0 $unit-4x;
 			color: $grey-20;
 			line-height: 1.5;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		}
+			}
 	}
 
 	.modal-actions {
 		display: flex;
 		gap: $unit-2x;
 		justify-content: flex-end;
-	}
-
-	.btn {
-		padding: $unit-2x $unit-3x;
-		border-radius: 50px;
-		text-decoration: none;
-		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		transition: all 0.2s ease;
-		border: none;
-		cursor: pointer;
-
-		&.btn-secondary {
-			background-color: $grey-85;
-			color: $grey-20;
-
-			&:hover {
-				background-color: $grey-80;
-			}
-		}
-
-		&.btn-danger {
-			background-color: $red-60;
-			color: white;
-
-			&:hover {
-				background-color: $red-40;
-			}
-		}
 	}
 </style>

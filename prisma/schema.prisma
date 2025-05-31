@@ -126,12 +126,16 @@ model Photo {
 model Media {
   id                 Int       @id @default(autoincrement())
   filename           String    @db.VarChar(255)
+  originalName       String?   @db.VarChar(255)  // Original filename from user (optional for backward compatibility)
   mimeType           String    @db.VarChar(100)
   size               Int
   url                String    @db.Text
   thumbnailUrl       String?   @db.Text
   width              Int?
   height             Int?
-  usedIn             Json      @default("[]") // Track where media is used
+  altText            String?   @db.Text          // Alt text for accessibility
+  description        String?   @db.Text          // Optional description
+  usedIn             Json      @default("[]")    // Track where media is used
   createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }

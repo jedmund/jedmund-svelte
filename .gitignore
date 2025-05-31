@@ -24,3 +24,6 @@ vite.config.ts.timestamp-*
 
 # Local uploads (for development)
 /static/local-uploads
+
+*storybook.log
+storybook-static

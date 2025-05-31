@@ -1,37 +1,35 @@
 <script>
 	// What if we have a headphones avatar that is head bopping if the last scrobble was < 5 mins ago
 	// We can do a thought bubble-y thing with the album art that takes you to the album section of the page
-	import { onMount } from 'svelte'
+	import { onMount, onDestroy } from 'svelte'
 	import { spring } from 'svelte/motion'
 
-	let isHovering = $state(false)
-	let isBlinking = $state(false)
+	let isHovering = false
+	let isBlinking = false
 
 	const scale = spring(1, {
 		stiffness: 0.1,
 		damping: 0.125
 	})
 
-	$effect(() => {
-		if (isHovering) {
-			scale.set(1.25)
-		} else {
-			scale.set(1)
-		}
-	})
+	function handleMouseEnter() {
+		isHovering = true
+		scale.set(1.25)
+	}
+
+	function handleMouseLeave() {
+		isHovering = false
+		scale.set(1)
+	}
 
 	function sleep(ms) {
 		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
 
-	function setBlinkState(state) {
-		isBlinking = state
-	}
-
 	async function singleBlink(duration) {
-		setBlinkState(true)
+		isBlinking = true
 		await sleep(duration)
-		setBlinkState(false)
+		isBlinking = false
 	}
 
 	async function doubleBlink() {
@@ -48,25 +46,27 @@
 		}
 	}
 
-	function startBlinking() {
-		const blinkInterval = setInterval(() => {
+	let blinkInterval
+
+	onMount(() => {
+		blinkInterval = setInterval(() => {
 			if (!isHovering) {
 				blink()
 			}
 		}, 4000)
 
-		return () => clearInterval(blinkInterval)
-	}
-
-	onMount(() => {
-		return startBlinking()
+		return () => {
+			if (blinkInterval) {
+				clearInterval(blinkInterval)
+			}
+		}
 	})
 </script>
 
 <div
 	class="face-container"
-	on:mouseenter={() => (isHovering = true)}
-	on:mouseleave={() => (isHovering = false)}
+	onmouseenter={handleMouseEnter}
+	onmouseleave={handleMouseLeave}
 	style="transform: scale({$scale})"
 >
 	<svg

@@ -69,7 +69,7 @@
 	// Filter out unwanted commands
 	const getFilteredCommands = () => {
 		const filtered = { ...commands }
-		
+
 		// Remove these groups entirely
 		delete filtered['undo-redo']
 		delete filtered['headings'] // In text style dropdown
@@ -77,60 +77,60 @@
 		delete filtered['alignment'] // Not needed
 		delete filtered['table'] // Not needed
 		delete filtered['media'] // Will be in media dropdown
-		
+
 		// Reorganize text-formatting commands
 		if (filtered['text-formatting']) {
 			const allCommands = filtered['text-formatting'].commands
 			const basicFormatting = []
 			const advancedFormatting = []
-			
+
 			// Group basic formatting first
 			const basicOrder = ['bold', 'italic', 'underline', 'strike']
-			basicOrder.forEach(name => {
-				const cmd = allCommands.find(c => c.name === name)
+			basicOrder.forEach((name) => {
+				const cmd = allCommands.find((c) => c.name === name)
 				if (cmd) basicFormatting.push(cmd)
 			})
-			
+
 			// Then link and code
 			const advancedOrder = ['link', 'code']
-			advancedOrder.forEach(name => {
-				const cmd = allCommands.find(c => c.name === name)
+			advancedOrder.forEach((name) => {
+				const cmd = allCommands.find((c) => c.name === name)
 				if (cmd) advancedFormatting.push(cmd)
 			})
-			
+
 			// Create two groups
 			filtered['basic-formatting'] = {
 				name: 'Basic Formatting',
 				label: 'Basic Formatting',
 				commands: basicFormatting
 			}
-			
+
 			filtered['advanced-formatting'] = {
 				name: 'Advanced Formatting',
 				label: 'Advanced Formatting',
 				commands: advancedFormatting
 			}
-			
+
 			// Remove original text-formatting
 			delete filtered['text-formatting']
 		}
-		
+
 		return filtered
 	}
-	
+
 	// Get media commands, but filter out iframe
 	const getMediaCommands = () => {
 		if (commands.media) {
-			return commands.media.commands.filter(cmd => cmd.name !== 'iframe-placeholder')
+			return commands.media.commands.filter((cmd) => cmd.name !== 'iframe-placeholder')
 		}
 		return []
 	}
-	
+
 	const filteredCommands = getFilteredCommands()
 	const colorCommands = commands.colors.commands
 	const fontCommands = commands.fonts.commands
 	const excludedCommands = ['colors', 'fonts']
-	
+
 	// Get current text style for dropdown
 	const getCurrentTextStyle = (editor: Editor) => {
 		if (editor.isActive('heading', { level: 1 })) return 'Heading 1'
@@ -143,7 +143,7 @@
 		if (editor.isActive('blockquote')) return 'Blockquote'
 		return 'Paragraph'
 	}
-	
+
 	// Calculate dropdown position
 	const updateDropdownPosition = () => {
 		if (dropdownTriggerRef) {
@@ -154,7 +154,7 @@
 			}
 		}
 	}
-	
+
 	// Toggle dropdown with position update
 	const toggleDropdown = () => {
 		if (!showTextStyleDropdown) {
@@ -162,7 +162,7 @@
 		}
 		showTextStyleDropdown = !showTextStyleDropdown
 	}
-	
+
 	// Update media dropdown position
 	const updateMediaDropdownPosition = () => {
 		if (mediaDropdownTriggerRef) {
@@ -173,7 +173,7 @@
 			}
 		}
 	}
-	
+
 	// Toggle media dropdown
 	const toggleMediaDropdown = () => {
 		if (!showMediaDropdown) {
@@ -181,7 +181,7 @@
 		}
 		showMediaDropdown = !showMediaDropdown
 	}
-	
+
 	// Close dropdown when clicking outside
 	const handleClickOutside = (event: MouseEvent) => {
 		const target = event.target as HTMLElement
@@ -192,7 +192,7 @@
 			showMediaDropdown = false
 		}
 	}
-	
+
 	$effect(() => {
 		if (showTextStyleDropdown || showMediaDropdown) {
 			document.addEventListener('click', handleClickOutside)
@@ -341,18 +341,26 @@
 			<div class="edra-toolbar">
 				<!-- Text Style Dropdown -->
 				<div class="text-style-dropdown">
-					<button
-						bind:this={dropdownTriggerRef}
-						class="dropdown-trigger"
-						onclick={toggleDropdown}
-					>
+					<button bind:this={dropdownTriggerRef} class="dropdown-trigger" onclick={toggleDropdown}>
 						<span>{getCurrentTextStyle(editor)}</span>
-						<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<svg
+							width="12"
+							height="12"
+							viewBox="0 0 12 12"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M3 4.5L6 7.5L9 4.5"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</button>
 				</div>
-				
+
 				<span class="separator"></span>
 
 				{#each Object.keys(filteredCommands).filter((key) => !excludedCommands.includes(key)) as keys}
@@ -371,8 +379,20 @@
 						onclick={toggleMediaDropdown}
 					>
 						<span>Insert</span>
-						<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<svg
+							width="12"
+							height="12"
+							viewBox="0 0 12 12"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M3 4.5L6 7.5L9 4.5"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</button>
 				</div>
@@ -384,14 +404,14 @@
 					{editor}
 					style={`color: ${editor.getAttributes('textStyle').color};`}
 					onclick={() => {
-						const color = editor.getAttributes('textStyle').color;
-						const hasColor = editor.isActive('textStyle', { color });
+						const color = editor.getAttributes('textStyle').color
+						const hasColor = editor.isActive('textStyle', { color })
 						if (hasColor) {
-							editor.chain().focus().unsetColor().run();
+							editor.chain().focus().unsetColor().run()
 						} else {
-							const color = prompt('Enter the color of the text:');
+							const color = prompt('Enter the color of the text:')
 							if (color !== null) {
-								editor.chain().focus().setColor(color).run();
+								editor.chain().focus().setColor(color).run()
 							}
 						}
 					}}
@@ -401,13 +421,13 @@
 					{editor}
 					style={`background-color: ${editor.getAttributes('highlight').color};`}
 					onclick={() => {
-						const hasHightlight = editor.isActive('highlight');
+						const hasHightlight = editor.isActive('highlight')
 						if (hasHightlight) {
-							editor.chain().focus().unsetHighlight().run();
+							editor.chain().focus().unsetHighlight().run()
 						} else {
-							const color = prompt('Enter the color of the highlight:');
+							const color = prompt('Enter the color of the highlight:')
 							if (color !== null) {
-								editor.chain().focus().setHighlight({ color }).run();
+								editor.chain().focus().setHighlight({ color }).run()
 							}
 						}
 					}}
@@ -445,38 +465,77 @@
 
 <!-- Media Dropdown Portal -->
 {#if showMediaDropdown}
-	<div 
+	<div
 		class="media-dropdown-portal"
 		style="position: fixed; top: {mediaDropdownPosition.top}px; left: {mediaDropdownPosition.left}px; z-index: 10000;"
 	>
 		<div class="dropdown-menu">
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().insertImagePlaceholder().run()
-				showMediaDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().insertImagePlaceholder().run()
+					showMediaDropdown = false
+				}}
+			>
 				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
-					<rect x="3" y="5" width="14" height="10" stroke="currentColor" stroke-width="2" fill="none" rx="1"/>
-					<circle cx="7" cy="9" r="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-					<path d="M3 12L7 8L10 11L13 8L17 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+					<rect
+						x="3"
+						y="5"
+						width="14"
+						height="10"
+						stroke="currentColor"
+						stroke-width="2"
+						fill="none"
+						rx="1"
+					/>
+					<circle cx="7" cy="9" r="1.5" stroke="currentColor" stroke-width="2" fill="none" />
+					<path
+						d="M3 12L7 8L10 11L13 8L17 12"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						fill="none"
+					/>
 				</svg>
 				<span>Image</span>
 			</button>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().insertVideoPlaceholder().run()
-				showMediaDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().insertVideoPlaceholder().run()
+					showMediaDropdown = false
+				}}
+			>
 				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
-					<rect x="3" y="4" width="14" height="12" stroke="currentColor" stroke-width="2" fill="none" rx="2"/>
-					<path d="M8 8.5L12 10L8 11.5V8.5Z" fill="currentColor"/>
+					<rect
+						x="3"
+						y="4"
+						width="14"
+						height="12"
+						stroke="currentColor"
+						stroke-width="2"
+						fill="none"
+						rx="2"
+					/>
+					<path d="M8 8.5L12 10L8 11.5V8.5Z" fill="currentColor" />
 				</svg>
 				<span>Video</span>
 			</button>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().insertAudioPlaceholder().run()
-				showMediaDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().insertAudioPlaceholder().run()
+					showMediaDropdown = false
+				}}
+			>
 				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
-					<path d="M10 4L10 16M6 8L6 12M14 8L14 12M2 6L2 14M18 6L18 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+					<path
+						d="M10 4L10 16M6 8L6 12M14 8L14 12M2 6L2 14M18 6L18 14"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+					/>
 				</svg>
 				<span>Audio</span>
 			</button>
@@ -486,66 +545,93 @@
 
 <!-- Dropdown Menu Portal -->
 {#if showTextStyleDropdown}
-	<div 
+	<div
 		class="dropdown-menu-portal"
 		style="position: fixed; top: {dropdownPosition.top}px; left: {dropdownPosition.left}px; z-index: 10000;"
 	>
 		<div class="dropdown-menu">
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().setParagraph().run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().setParagraph().run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Paragraph
 			</button>
 			<div class="dropdown-separator"></div>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleHeading({ level: 1 }).run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleHeading({ level: 1 }).run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Heading 1
 			</button>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleHeading({ level: 2 }).run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleHeading({ level: 2 }).run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Heading 2
 			</button>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleHeading({ level: 3 }).run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleHeading({ level: 3 }).run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Heading 3
 			</button>
 			<div class="dropdown-separator"></div>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleBulletList().run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleBulletList().run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Unordered List
 			</button>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleOrderedList().run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleOrderedList().run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Ordered List
 			</button>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleTaskList().run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleTaskList().run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Task List
 			</button>
 			<div class="dropdown-separator"></div>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleCodeBlock().run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleCodeBlock().run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Code Block
 			</button>
-			<button class="dropdown-item" onclick={() => {
-				editor?.chain().focus().toggleBlockquote().run()
-				showTextStyleDropdown = false
-			}}>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().toggleBlockquote().run()
+					showTextStyleDropdown = false
+				}}
+			>
 				Blockquote
 			</button>
 		</div>
@@ -655,7 +741,7 @@
 	.dropdown-item:hover {
 		background-color: #f5f5f5;
 	}
-	
+
 	.dropdown-icon {
 		flex-shrink: 0;
 		width: 20px;
@@ -693,7 +779,7 @@
 	}
 
 	:global(.edra-toolbar button.active),
-	:global(.edra-toolbar button[data-active="true"]) {
+	:global(.edra-toolbar button[data-active='true']) {
 		background: rgba(0, 0, 0, 0.1);
 		border-color: transparent;
 	}

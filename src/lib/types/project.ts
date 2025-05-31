@@ -31,9 +31,11 @@ export interface ProjectFormData {
 	role: string
 	technologies: string
 	externalUrl: string
+	featuredImage: string | null
 	backgroundColor: string
 	highlightColor: string
 	logoUrl: string
+	gallery: any[] | null
 	status: 'draft' | 'published'
 	caseStudyContent: any
 }
@@ -47,9 +49,11 @@ export const defaultProjectFormData: ProjectFormData = {
 	role: '',
 	technologies: '',
 	externalUrl: '',
+	featuredImage: null,
 	backgroundColor: '',
 	highlightColor: '',
 	logoUrl: '',
+	gallery: null,
 	status: 'draft',
 	caseStudyContent: {
 		type: 'doc',

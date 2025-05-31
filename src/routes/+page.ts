@@ -11,7 +11,7 @@ export const load: PageLoad = async ({ fetch }) => {
 		} catch (albumError) {
 			console.error('Error fetching albums:', albumError)
 		}
-		
+
 		// Fetch projects
 		let projectsData = { projects: [] as Project[], pagination: null }
 		try {
@@ -56,7 +56,9 @@ async function fetchRecentPSNGames(fetch: typeof window.fetch): Promise<Serializ
 	return await response.json()
 }
 
-async function fetchProjects(fetch: typeof window.fetch): Promise<{ projects: Project[]; pagination: any }> {
+async function fetchProjects(
+	fetch: typeof window.fetch
+): Promise<{ projects: Project[]; pagination: any }> {
 	const response = await fetch('/api/projects?status=published')
 	if (!response.ok) {
 		throw new Error(`Failed to fetch projects: ${response.status}`)

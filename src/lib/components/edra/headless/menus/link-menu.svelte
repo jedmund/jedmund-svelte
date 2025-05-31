@@ -1,36 +1,36 @@
 <script lang="ts">
-	import { type Editor } from '@tiptap/core';
-	import { BubbleMenu } from 'svelte-tiptap';
-	import type { ShouldShowProps } from '../../utils.js';
-	import Copy from 'lucide-svelte/icons/copy';
-	import Trash from 'lucide-svelte/icons/trash';
-	import Edit from 'lucide-svelte/icons/pen';
-	import Check from 'lucide-svelte/icons/check';
+	import { type Editor } from '@tiptap/core'
+	import { BubbleMenu } from 'svelte-tiptap'
+	import type { ShouldShowProps } from '../../utils.js'
+	import Copy from 'lucide-svelte/icons/copy'
+	import Trash from 'lucide-svelte/icons/trash'
+	import Edit from 'lucide-svelte/icons/pen'
+	import Check from 'lucide-svelte/icons/check'
 
 	interface Props {
-		editor: Editor;
+		editor: Editor
 	}
 
-	let { editor }: Props = $props();
+	let { editor }: Props = $props()
 
-	const link = $derived.by(() => editor.getAttributes('link').href);
+	const link = $derived.by(() => editor.getAttributes('link').href)
 
-	let isEditing = $state(false);
+	let isEditing = $state(false)
 
 	function setLink(url: string) {
 		if (url.trim() === '') {
-			editor.chain().focus().extendMarkRange('link').unsetLink().run();
-			return;
+			editor.chain().focus().extendMarkRange('link').unsetLink().run()
+			return
 		}
-		editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+		editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
 	}
 
-	let linkInput = $state('');
-	let isLinkValid = $state(true);
+	let linkInput = $state('')
+	let isLinkValid = $state(true)
 
 	$effect(() => {
-		isLinkValid = validateURL(linkInput);
-	});
+		isLinkValid = validateURL(linkInput)
+	})
 
 	function validateURL(url: string): boolean {
 		const urlPattern = new RegExp(
@@ -41,8 +41,8 @@
 				'(\\?[;&a-zA-Z\\d%_.~+=-]*)?' + // query string
 				'(\\#[-a-zA-Z\\d_]*)?$', // fragment locator
 			'i'
-		);
-		return urlPattern.test(url);
+		)
+		return urlPattern.test(url)
 	}
 </script>
 
@@ -50,14 +50,14 @@
 	{editor}
 	pluginKey="link-menu"
 	shouldShow={(props: ShouldShowProps) => {
-		if (!props.editor.isEditable) return false;
+		if (!props.editor.isEditable) return false
 		if (props.editor.isActive('link')) {
-			return true;
+			return true
 		} else {
-			isEditing = false;
-			linkInput = '';
-			isLinkValid = true;
-			return false;
+			isEditing = false
+			linkInput = ''
+			isLinkValid = true
+			return false
 		}
 	}}
 	class="bubble-menu-wrapper"
@@ -79,8 +79,8 @@
 		<button
 			class="edra-command-button"
 			onclick={() => {
-				linkInput = link;
-				isEditing = true;
+				linkInput = link
+				isEditing = true
 			}}
 			title="Edit the URL"
 		>
@@ -89,7 +89,7 @@
 		<button
 			class="edra-command-button"
 			onclick={() => {
-				navigator.clipboard.writeText(link);
+				navigator.clipboard.writeText(link)
 			}}
 			title="Copy the URL to the clipboard"
 		>
@@ -98,7 +98,7 @@
 		<button
 			class="edra-command-button"
 			onclick={() => {
-				editor.chain().focus().extendMarkRange('link').unsetLink().run();
+				editor.chain().focus().extendMarkRange('link').unsetLink().run()
 			}}
 			title="Remove the link"
 		>
@@ -108,9 +108,9 @@
 		<button
 			class="edra-command-button"
 			onclick={() => {
-				isEditing = false;
-				editor.commands.focus();
-				setLink(linkInput);
+				isEditing = false
+				editor.commands.focus()
+				setLink(linkInput)
 			}}
 			disabled={!isLinkValid}
 		>

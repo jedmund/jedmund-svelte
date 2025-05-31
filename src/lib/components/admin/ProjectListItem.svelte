@@ -169,7 +169,6 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.project-metadata {
@@ -178,7 +177,6 @@
 		gap: $unit;
 		font-size: 0.875rem;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 
 		.status {
 			&.published {
@@ -239,7 +237,6 @@
 		color: $grey-20;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 
 		&:hover {
 			background-color: $grey-95;

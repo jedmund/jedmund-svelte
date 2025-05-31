@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
+	import Input from '$lib/components/admin/Input.svelte'
+	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import type { Media } from '@prisma/client'
 
 	let media = $state<Media[]>([])
@@ -14,9 +16,24 @@
 	// Filter states
 	let filterType = $state<string>('all')
 	let searchQuery = $state('')
+	let searchTimeout: ReturnType<typeof setTimeout>
+
+	// Modal states
+	let selectedMedia = $state<Media | null>(null)
+	let isDetailsModalOpen = $state(false)
 
 	onMount(async () => {
 		await loadMedia()
+	})
+
+	// Watch for search query changes with debounce
+	$effect(() => {
+		if (searchQuery !== undefined) {
+			clearTimeout(searchTimeout)
+			searchTimeout = setTimeout(() => {
+				handleSearch()
+			}, 300)
+		}
 	})
 
 	async function loadMedia(page = 1) {
@@ -81,6 +98,24 @@
 		if (mimeType.includes('pdf')) return 'PDF'
 		return 'File'
 	}
+
+	function handleMediaClick(item: Media) {
+		selectedMedia = item
+		isDetailsModalOpen = true
+	}
+
+	function handleModalClose() {
+		selectedMedia = null
+		isDetailsModalOpen = false
+	}
+
+	function handleMediaUpdate(updatedMedia: Media) {
+		// Update the media item in the list
+		const index = media.findIndex(m => m.id === updatedMedia.id)
+		if (index !== -1) {
+			media[index] = updatedMedia
+		}
+	}
 </script>
 
 <AdminPage>
@@ -118,16 +153,20 @@
 					<option value="application/pdf">PDFs</option>
 				</select>
 
-				<div class="search-wrapper">
-					<input
-						type="text"
-						bind:value={searchQuery}
-						onkeydown={(e) => e.key === 'Enter' && handleSearch()}
-						placeholder="Search files..."
-						class="search-input"
-					/>
-					<button onclick={handleSearch} class="search-btn">Search</button>
-				</div>
+				<Input
+					type="search"
+					bind:value={searchQuery}
+					onkeydown={(e) => e.key === 'Enter' && handleSearch()}
+					placeholder="Search files..."
+					size="small"
+					fullWidth={false}
+					prefixIcon
+					wrapperClass="search-input-wrapper"
+				>
+					<svg slot="prefix" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+					</svg>
+				</Input>
 			</div>
 		</div>
 
@@ -141,9 +180,14 @@
 		{:else if viewMode === 'grid'}
 			<div class="media-grid">
 				{#each media as item}
-					<div class="media-item">
+					<button 
+						class="media-item" 
+						type="button"
+						onclick={() => handleMediaClick(item)}
+						title="Click to edit {item.filename}"
+					>
 						{#if item.mimeType.startsWith('image/')}
-							<img src={item.thumbnailUrl || item.url} alt={item.filename} />
+							<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
 						{:else}
 							<div class="file-placeholder">
 								<span class="file-type">{getFileType(item.mimeType)}</span>
@@ -152,17 +196,29 @@
 						<div class="media-info">
 							<span class="filename">{item.filename}</span>
 							<span class="filesize">{formatFileSize(item.size)}</span>
+							{#if item.altText}
+								<span class="alt-text" title="Alt text: {item.altText}">
+									Alt: {item.altText.length > 30 ? item.altText.substring(0, 30) + '...' : item.altText}
+								</span>
+							{:else}
+								<span class="no-alt-text">No alt text</span>
+							{/if}
 						</div>
-					</div>
+					</button>
 				{/each}
 			</div>
 		{:else}
 			<div class="media-list">
 				{#each media as item}
-					<div class="media-row">
+					<button 
+						class="media-row" 
+						type="button"
+						onclick={() => handleMediaClick(item)}
+						title="Click to edit {item.filename}"
+					>
 						<div class="media-preview">
 							{#if item.mimeType.startsWith('image/')}
-								<img src={item.thumbnailUrl || item.url} alt={item.filename} />
+								<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
 							{:else}
 								<div class="file-icon">{getFileType(item.mimeType)}</div>
 							{/if}
@@ -175,12 +231,20 @@
 									• {item.width}×{item.height}px
 								{/if}
 							</span>
+							{#if item.altText}
+								<span class="alt-text-preview">
+									Alt: {item.altText}
+								</span>
+							{:else}
+								<span class="no-alt-text-preview">No alt text</span>
+							{/if}
 						</div>
-						<div class="media-actions">
-							<button class="action-btn">Copy URL</button>
-							<button class="action-btn">Delete</button>
+						<div class="media-indicator">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							</svg>
 						</div>
-					</div>
+					</button>
 				{/each}
 			</div>
 		{/if}
@@ -209,6 +273,14 @@
 	{/if}
 </AdminPage>
 
+<!-- Media Details Modal -->
+<MediaDetailsModal
+	bind:isOpen={isDetailsModalOpen}
+	media={selectedMedia}
+	onClose={handleModalClose}
+	onUpdate={handleMediaUpdate}
+/>
+
 <style lang="scss">
 	header {
 		display: flex;
@@ -221,7 +293,6 @@
 			font-weight: 700;
 			margin: 0;
 			color: $grey-10;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		}
 	}
 
@@ -235,7 +306,6 @@
 		border-radius: 50px;
 		text-decoration: none;
 		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		transition: all 0.2s ease;
 		border: none;
 		cursor: pointer;
@@ -264,7 +334,6 @@
 		text-align: center;
 		padding: $unit-6x;
 		color: #d33;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.media-controls {
@@ -286,14 +355,12 @@
 				font-size: 1.5rem;
 				font-weight: 700;
 				color: $grey-10;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-			}
+				}
 
 			.stat-label {
 				font-size: 0.875rem;
 				color: $grey-40;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-			}
+				}
 		}
 	}
 
@@ -309,7 +376,6 @@
 		border-radius: 50px;
 		background: white;
 		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		color: $grey-20;
 		cursor: pointer;
 
@@ -319,42 +385,11 @@
 		}
 	}
 
-	.search-wrapper {
-		display: flex;
-		gap: $unit;
-	}
+	.search-input-wrapper {
+		width: 240px;
 
-	.search-input {
-		padding: $unit $unit-3x;
-		border: 1px solid $grey-80;
-		border-radius: 50px;
-		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		width: 200px;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-40;
-		}
-
-		&::placeholder {
-			color: $grey-50;
-		}
-	}
-
-	.search-btn {
-		padding: $unit $unit-3x;
-		background: $grey-10;
-		color: white;
-		border: none;
-		border-radius: 50px;
-		font-size: 0.875rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-
-		&:hover {
-			background-color: $grey-20;
+		:global(.input) {
+			border-radius: 50px;
 		}
 	}
 
@@ -362,14 +397,12 @@
 		text-align: center;
 		padding: $unit-6x;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.empty-state {
 		text-align: center;
 		padding: $unit-8x;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 
 		p {
 			margin-bottom: $unit-3x;
@@ -385,13 +418,24 @@
 
 	.media-item {
 		background: $grey-95;
+		border: none;
 		border-radius: $unit-2x;
 		overflow: hidden;
 		cursor: pointer;
-		transition: background-color 0.2s ease;
+		transition: all 0.2s ease;
+		text-align: left;
+		width: 100%;
+		padding: 0;
 
 		&:hover {
 			background-color: $grey-90;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		}
+
+		&:focus {
+			outline: 2px solid #3b82f6;
+			outline-offset: 2px;
 		}
 
 		img {
@@ -411,8 +455,7 @@
 			.file-type {
 				font-size: 0.875rem;
 				color: $grey-40;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-			}
+				}
 		}
 
 		.media-info {
@@ -424,8 +467,7 @@
 			.filename {
 				font-size: 0.875rem;
 				color: $grey-20;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-				white-space: nowrap;
+					white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
 			}
@@ -433,7 +475,21 @@
 			.filesize {
 				font-size: 0.75rem;
 				color: $grey-40;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
+			}
+
+			.alt-text {
+				font-size: 0.75rem;
+				color: $grey-30;
+				font-style: italic;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.no-alt-text {
+				font-size: 0.75rem;
+				color: $red-60;
+				font-style: italic;
 			}
 		}
 	}
@@ -451,11 +507,22 @@
 		gap: $unit-3x;
 		padding: $unit-2x;
 		background: $grey-95;
+		border: none;
 		border-radius: $unit-2x;
-		transition: background-color 0.2s ease;
+		transition: all 0.2s ease;
+		cursor: pointer;
+		text-align: left;
+		width: 100%;
 
 		&:hover {
 			background-color: $grey-90;
+			transform: translateY(-1px);
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		}
+
+		&:focus {
+			outline: 2px solid #3b82f6;
+			outline-offset: 2px;
 		}
 
 		.media-preview {
@@ -480,8 +547,7 @@
 				border-radius: $unit;
 				font-size: 0.75rem;
 				color: $grey-40;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-			}
+				}
 		}
 
 		.media-details {
@@ -493,14 +559,30 @@
 			.filename {
 				font-size: 0.925rem;
 				color: $grey-20;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
+				font-weight: 500;
 			}
 
 			.file-meta {
 				font-size: 0.75rem;
 				color: $grey-40;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 			}
+
+			.alt-text-preview {
+				font-size: 0.75rem;
+				color: $grey-30;
+				font-style: italic;
+			}
+
+			.no-alt-text-preview {
+				font-size: 0.75rem;
+				color: $red-60;
+				font-style: italic;
+			}
+		}
+
+		.media-indicator {
+			color: $grey-50;
+			flex-shrink: 0;
 		}
 
 		.media-actions {
@@ -513,8 +595,7 @@
 				border: 1px solid $grey-80;
 				border-radius: 50px;
 				font-size: 0.75rem;
-				font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-				color: $grey-30;
+					color: $grey-30;
 				cursor: pointer;
 				transition: all 0.2s ease;
 
@@ -540,7 +621,6 @@
 			border-radius: 50px;
 			color: $grey-20;
 			font-size: 0.875rem;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 			cursor: pointer;
 			transition: all 0.2s ease;
 
@@ -558,7 +638,6 @@
 		.pagination-info {
 			font-size: 0.875rem;
 			color: $grey-40;
-			font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		}
 	}
 </style>

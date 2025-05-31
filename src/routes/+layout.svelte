@@ -35,7 +35,6 @@ user-scalable=no"
 	:global(html) {
 		background: var(--bg-color);
 		color: var(--text-color);
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		font-size: 16px;
 		width: 100%;
 	}

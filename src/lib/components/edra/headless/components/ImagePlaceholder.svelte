@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { NodeViewProps } from '@tiptap/core';
-	import Image from 'lucide-svelte/icons/image';
-	import { NodeViewWrapper } from 'svelte-tiptap';
-	const { editor }: NodeViewProps = $props();
+	import type { NodeViewProps } from '@tiptap/core'
+	import Image from 'lucide-svelte/icons/image'
+	import { NodeViewWrapper } from 'svelte-tiptap'
+	const { editor }: NodeViewProps = $props()
 
 	function handleClick(e: MouseEvent) {
-		if (!editor.isEditable) return;
-		e.preventDefault();
-		const imageUrl = prompt('Enter the URL of an image:');
+		if (!editor.isEditable) return
+		e.preventDefault()
+		const imageUrl = prompt('Enter the URL of an image:')
 		if (!imageUrl) {
-			return;
+			return
 		}
-		editor.chain().focus().setImage({ src: imageUrl }).run();
+		editor.chain().focus().setImage({ src: imageUrl }).run()
 	}
 </script>
 

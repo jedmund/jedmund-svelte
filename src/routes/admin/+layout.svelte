@@ -23,6 +23,10 @@
 	})
 
 	const currentPath = $derived($page.url.pathname)
+	
+	// Pages that should use the card metaphor (no .admin-content wrapper)
+	const cardLayoutPages = ['/admin']
+	const useCardLayout = $derived(cardLayoutPages.includes(currentPath))
 </script>
 
 {#if isLoading}
@@ -38,9 +42,15 @@
 	<div class="admin-container">
 		<AdminNavBar />
 
-		<main class="admin-content">
-			{@render children()}
-		</main>
+		{#if useCardLayout}
+			<main class="admin-card-layout">
+				{@render children()}
+			</main>
+		{:else}
+			<main class="admin-content">
+				{@render children()}
+			</main>
+		{/if}
 	</div>
 {/if}
 
@@ -52,7 +62,6 @@
 		height: 100vh;
 		font-size: 1.125rem;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	.admin-container {
@@ -66,5 +75,15 @@
 		flex: 1;
 		padding-top: $unit-4x;
 		padding-bottom: $unit-6x;
+	}
+
+	.admin-card-layout {
+		flex: 1;
+		background: $grey-90;
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+		padding: $unit-6x $unit-4x;
+		min-height: calc(100vh - 60px); // Account for navbar
 	}
 </style>

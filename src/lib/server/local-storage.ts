@@ -17,7 +17,7 @@ async function ensureUploadDir(): Promise<void> {
 		path.join(UPLOAD_DIR, 'projects'),
 		path.join(UPLOAD_DIR, 'thumbnails')
 	]
-	
+
 	for (const dir of dirs) {
 		if (!existsSync(dir)) {
 			await mkdir(dir, { recursive: true })
@@ -54,54 +54,54 @@ export async function uploadFileLocally(
 ): Promise<LocalUploadResult> {
 	try {
 		await ensureUploadDir()
-		
+
 		// Generate unique filename
 		const filename = generateFilename(file.name)
 		const filepath = path.join(UPLOAD_DIR, type, filename)
 		const thumbnailPath = path.join(UPLOAD_DIR, 'thumbnails', `thumb-${filename}`)
-		
+
 		// Convert File to buffer
 		const arrayBuffer = await file.arrayBuffer()
 		const buffer = Buffer.from(arrayBuffer)
-		
+
 		// Process image with sharp to get dimensions
 		let width = 0
 		let height = 0
-		
+
 		try {
 			const image = sharp(buffer)
 			const metadata = await image.metadata()
 			width = metadata.width || 0
 			height = metadata.height || 0
-			
+
 			// Save original
 			await writeFile(filepath, buffer)
-			
-			// Create thumbnail (300x300)
+
+			// Create thumbnail (800x600 for modern displays)
 			await image
-				.resize(300, 300, {
+				.resize(800, 600, {
 					fit: 'cover',
 					position: 'center'
 				})
+				.jpeg({ quality: 85 }) // Good quality for larger thumbnails
 				.toFile(thumbnailPath)
-				
 		} catch (imageError) {
 			// If sharp fails (e.g., for SVG), just save the original
 			logger.warn('Sharp processing failed, saving original only', imageError as Error)
 			await writeFile(filepath, buffer)
 		}
-		
+
 		// Construct URLs
 		const url = `${PUBLIC_PATH}/${type}/${filename}`
 		const thumbnailUrl = `${PUBLIC_PATH}/thumbnails/thumb-${filename}`
-		
+
 		logger.info('File uploaded locally', {
 			filename,
 			type,
 			size: file.size,
 			dimensions: `${width}x${height}`
 		})
-		
+
 		return {
 			success: true,
 			filename,
@@ -126,19 +126,19 @@ export async function deleteFileLocally(url: string): Promise<boolean> {
 		// Extract path from URL
 		const relativePath = url.replace(PUBLIC_PATH, '')
 		const filepath = path.join(UPLOAD_DIR, relativePath)
-		
+
 		// Check if file exists and delete
 		if (existsSync(filepath)) {
 			const { unlink } = await import('fs/promises')
 			await unlink(filepath)
-			
+
 			// Try to delete thumbnail too
 			const filename = path.basename(filepath)
 			const thumbnailPath = path.join(UPLOAD_DIR, 'thumbnails', `thumb-${filename}`)
 			if (existsSync(thumbnailPath)) {
 				await unlink(thumbnailPath)
 			}
-			
+
 			return true
 		}
 		return false

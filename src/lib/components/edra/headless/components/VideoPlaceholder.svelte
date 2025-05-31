@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { NodeViewProps } from '@tiptap/core';
-	import Video from 'lucide-svelte/icons/video';
-	import { NodeViewWrapper } from 'svelte-tiptap';
-	const { editor }: NodeViewProps = $props();
+	import type { NodeViewProps } from '@tiptap/core'
+	import Video from 'lucide-svelte/icons/video'
+	import { NodeViewWrapper } from 'svelte-tiptap'
+	const { editor }: NodeViewProps = $props()
 
 	function handleClick(e: MouseEvent) {
-		if (!editor.isEditable) return;
-		e.preventDefault();
-		const videoUrl = prompt('Enter the URL of the video:');
+		if (!editor.isEditable) return
+		e.preventDefault()
+		const videoUrl = prompt('Enter the URL of the video:')
 		if (!videoUrl) {
-			return;
+			return
 		}
-		editor.chain().focus().setVideo(videoUrl).run();
+		editor.chain().focus().setVideo(videoUrl).run()
 	}
 </script>
 

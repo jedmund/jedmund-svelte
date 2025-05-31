@@ -1,20 +1,24 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import Avatar from '$lib/components/Avatar.svelte'
+	import AvatarSimple from '$lib/components/AvatarSimple.svelte'
+	import DashboardIcon from '$icons/dashboard.svg?component'
+	import WorkIcon from '$icons/work.svg?component'
+	import UniverseIcon from '$icons/universe.svg?component'
+	import PhotosIcon from '$icons/photos.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
 
 	interface NavItem {
 		text: string
 		href: string
-		icon: string
+		icon: any
 	}
 
 	const navItems: NavItem[] = [
-		{ text: 'Dashboard', href: '/admin', icon: 'dashboard' },
-		{ text: 'Projects', href: '/admin/projects', icon: 'work' },
-		{ text: 'Universe', href: '/admin/posts', icon: 'universe' },
-		{ text: 'Media', href: '/admin/media', icon: 'photos' }
+		{ text: 'Dashboard', href: '/admin', icon: DashboardIcon },
+		{ text: 'Projects', href: '/admin/projects', icon: WorkIcon },
+		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
+		{ text: 'Media', href: '/admin/media', icon: PhotosIcon }
 	]
 
 	// Calculate active index based on current path
@@ -36,7 +40,7 @@
 		<div class="nav-content">
 			<a href="/" class="nav-brand">
 				<div class="brand-logo">
-					<Avatar />
+					<AvatarSimple />
 				</div>
 				<span class="brand-text">Back to jedmund.com</span>
 			</a>
@@ -44,108 +48,7 @@
 			<div class="nav-links">
 				{#each navItems as item, index}
 					<a href={item.href} class="nav-link" class:active={index === activeIndex}>
-						<svg class="nav-icon" width="20" height="20" viewBox="0 0 20 20">
-							{#if item.icon === 'dashboard'}
-								<rect
-									x="3"
-									y="3"
-									width="6"
-									height="6"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-									rx="1"
-								/>
-								<rect
-									x="11"
-									y="3"
-									width="6"
-									height="6"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-									rx="1"
-								/>
-								<rect
-									x="3"
-									y="11"
-									width="6"
-									height="6"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-									rx="1"
-								/>
-								<rect
-									x="11"
-									y="11"
-									width="6"
-									height="6"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-									rx="1"
-								/>
-							{:else if item.icon === 'work'}
-								<rect
-									x="2"
-									y="4"
-									width="16"
-									height="12"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-									rx="2"
-								/>
-								<path
-									d="M8 4V3C8 2.44772 8.44772 2 9 2H11C11.5523 2 12 2.44772 12 3V4"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<line x1="2" y1="9" x2="18" y2="9" stroke="currentColor" stroke-width="1.5" />
-							{:else if item.icon === 'universe'}
-								<circle
-									cx="10"
-									cy="10"
-									r="8"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-								/>
-								<circle cx="10" cy="10" r="2" fill="currentColor" />
-								<circle cx="10" cy="4" r="1" fill="currentColor" />
-								<circle cx="16" cy="10" r="1" fill="currentColor" />
-								<circle cx="10" cy="16" r="1" fill="currentColor" />
-								<circle cx="4" cy="10" r="1" fill="currentColor" />
-							{:else if item.icon === 'photos'}
-								<rect
-									x="3"
-									y="5"
-									width="14"
-									height="10"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-									rx="1"
-								/>
-								<circle
-									cx="7"
-									cy="9"
-									r="1.5"
-									stroke="currentColor"
-									stroke-width="1.5"
-									fill="none"
-								/>
-								<path
-									d="M3 12L7 8L10 11L13 8L17 12"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									fill="none"
-								/>
-							{/if}
-						</svg>
+						<item.icon class="nav-icon" />
 						<span class="nav-text">{item.text}</span>
 					</a>
 				{/each}
@@ -168,8 +71,8 @@
 		top: 0;
 		z-index: 100;
 		width: 100%;
-		background-color: $grey-60;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		background: $grey-90;
+		border-bottom: 1px solid $grey-70;
 	}
 
 	.nav-container {
@@ -222,7 +125,6 @@
 		gap: $unit;
 		text-decoration: none;
 		color: $grey-30;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-weight: 400;
 		font-size: 0.925rem;
 		transition: color 0.2s ease;
@@ -281,7 +183,6 @@
 		text-decoration: none;
 		font-size: 0.925rem;
 		font-weight: 500;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		color: $grey-30;
 		transition: all 0.2s ease;
 		position: relative;

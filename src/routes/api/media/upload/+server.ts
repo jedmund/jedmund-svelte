@@ -20,6 +20,8 @@ export const POST: RequestHandler = async (event) => {
 		const formData = await event.request.formData()
 		const file = formData.get('file') as File
 		const context = (formData.get('context') as string) || 'media'
+		const altText = (formData.get('altText') as string) || null
+		const description = (formData.get('description') as string) || null
 
 		if (!file || !(file instanceof File)) {
 			return errorResponse('No file provided', 400)
@@ -55,12 +57,15 @@ export const POST: RequestHandler = async (event) => {
 		const media = await prisma.media.create({
 			data: {
 				filename: file.name,
+				originalName: file.name,
 				mimeType: file.type,
 				size: file.size,
 				url: uploadResult.secureUrl!,
 				thumbnailUrl: uploadResult.thumbnailUrl,
 				width: uploadResult.width,
 				height: uploadResult.height,
+				altText: altText?.trim() || null,
+				description: description?.trim() || null,
 				usedIn: []
 			}
 		})
@@ -79,14 +84,20 @@ export const POST: RequestHandler = async (event) => {
 				width: media.width,
 				height: media.height,
 				filename: media.filename,
+				originalName: media.originalName,
 				mimeType: media.mimeType,
-				size: media.size
+				size: media.size,
+				altText: media.altText,
+				description: media.description,
+				createdAt: media.createdAt,
+				updatedAt: media.updatedAt
 			},
 			201
 		)
 	} catch (error) {
 		logger.error('Media upload error', error as Error)
-		return errorResponse('Failed to upload media', 500)
+		console.error('Detailed upload error:', error)
+		return errorResponse(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 500)
 	}
 }
 

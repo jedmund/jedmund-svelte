@@ -8,14 +8,14 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		if (!response.ok) {
 			throw new Error('Failed to fetch projects')
 		}
-		
+
 		const data = await response.json()
 		const project = data.projects.find((p: Project) => p.slug === params.slug)
-		
+
 		if (!project) {
 			throw new Error('Project not found')
 		}
-		
+
 		return {
 			project
 		}

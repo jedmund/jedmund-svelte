@@ -12,6 +12,7 @@
 		autofocus?: boolean
 		class?: string
 		showToolbar?: boolean
+		simpleMode?: boolean
 	}
 
 	let {
@@ -25,7 +26,8 @@
 		minHeight = 400,
 		autofocus = false,
 		class: className = '',
-		showToolbar = true
+		showToolbar = true,
+		simpleMode = false
 	}: Props = $props()
 
 	let editor = $state<Editor | undefined>()
@@ -65,7 +67,12 @@
 	// Focus on mount if requested
 	$effect(() => {
 		if (editor && autofocus) {
-			editor.commands.focus()
+			// Only focus once on initial mount
+			const timer = setTimeout(() => {
+				editor.commands.focus()
+			}, 100)
+			
+			return () => clearTimeout(timer)
 		}
 	})
 </script>
@@ -77,11 +84,11 @@
 			content={data}
 			{onUpdate}
 			editable={!readOnly}
-			{showToolbar}
+			showToolbar={!simpleMode && showToolbar}
 			{placeholder}
-			showSlashCommands={true}
-			showLinkBubbleMenu={true}
-			showTableBubbleMenu={true}
+			showSlashCommands={!simpleMode}
+			showLinkBubbleMenu={!simpleMode}
+			showTableBubbleMenu={false}
 			class="editor-content"
 		/>
 	</div>
@@ -171,7 +178,6 @@
 	}
 
 	:global(.edra .ProseMirror) {
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-size: 16px;
 		line-height: 1.6;
 		color: $grey-10;
@@ -180,7 +186,6 @@
 	}
 
 	:global(.edra .ProseMirror h1) {
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-size: 2rem;
 		font-weight: 700;
 		margin: $unit-3x 0 $unit-2x;
@@ -188,7 +193,6 @@
 	}
 
 	:global(.edra .ProseMirror h2) {
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-size: 1.5rem;
 		font-weight: 600;
 		margin: $unit-3x 0 $unit-2x;
@@ -196,7 +200,6 @@
 	}
 
 	:global(.edra .ProseMirror h3) {
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-size: 1.25rem;
 		font-weight: 600;
 		margin: $unit-3x 0 $unit-2x;
@@ -335,7 +338,6 @@
 	:global(.edra-media-placeholder-text) {
 		font-size: 1rem;
 		color: $grey-30;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 
 	// Image container styles
@@ -372,7 +374,6 @@
 		border-radius: 4px;
 		font-size: 0.875rem;
 		color: $grey-30;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		background: $grey-95;
 
 		&:focus {

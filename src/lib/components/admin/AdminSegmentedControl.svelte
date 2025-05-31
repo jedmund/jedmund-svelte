@@ -35,7 +35,6 @@
 		border: none;
 		border-radius: 50px;
 		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		color: $grey-40;
 		cursor: pointer;
 		transition: all 0.2s ease;

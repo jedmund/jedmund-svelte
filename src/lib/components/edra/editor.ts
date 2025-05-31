@@ -1,28 +1,28 @@
-import { Editor, type Content, type EditorOptions, type Extensions } from '@tiptap/core';
-import Color from '@tiptap/extension-color';
-import Link from '@tiptap/extension-link';
-import Subscript from '@tiptap/extension-subscript';
-import Superscript from '@tiptap/extension-superscript';
-import TaskItem from '@tiptap/extension-task-item';
-import TaskList from '@tiptap/extension-task-list';
-import TextAlign from '@tiptap/extension-text-align';
-import TextStyle from '@tiptap/extension-text-style';
-import Typography from '@tiptap/extension-typography';
-import Underline from '@tiptap/extension-underline';
-import StarterKit from '@tiptap/starter-kit';
-import Highlight from '@tiptap/extension-highlight';
-import Text from '@tiptap/extension-text';
-import { SmilieReplacer } from './extensions/SmilieReplacer.js';
-import { ColorHighlighter } from './extensions/ColorHighlighter.js';
-import AutoJoiner from 'tiptap-extension-auto-joiner';
-import { MathExtension } from '@aarkue/tiptap-math-extension';
-import { Table, TableCell, TableHeader, TableRow } from './extensions/table/index.js';
-import FontSize from './extensions/FontSize.js';
-import Placeholder from '@tiptap/extension-placeholder';
-import CharacterCount from '@tiptap/extension-character-count';
-import SearchAndReplace from './extensions/FindAndReplace.js';
-import { getHandlePaste } from './utils.js';
-import { Markdown } from 'tiptap-markdown';
+import { Editor, type Content, type EditorOptions, type Extensions } from '@tiptap/core'
+import Color from '@tiptap/extension-color'
+import Link from '@tiptap/extension-link'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
+import TaskItem from '@tiptap/extension-task-item'
+import TaskList from '@tiptap/extension-task-list'
+import TextAlign from '@tiptap/extension-text-align'
+import TextStyle from '@tiptap/extension-text-style'
+import Typography from '@tiptap/extension-typography'
+import Underline from '@tiptap/extension-underline'
+import StarterKit from '@tiptap/starter-kit'
+import Highlight from '@tiptap/extension-highlight'
+import Text from '@tiptap/extension-text'
+import { SmilieReplacer } from './extensions/SmilieReplacer.js'
+import { ColorHighlighter } from './extensions/ColorHighlighter.js'
+import AutoJoiner from 'tiptap-extension-auto-joiner'
+import { MathExtension } from '@aarkue/tiptap-math-extension'
+import { Table, TableCell, TableHeader, TableRow } from './extensions/table/index.js'
+import FontSize from './extensions/FontSize.js'
+import Placeholder from '@tiptap/extension-placeholder'
+import CharacterCount from '@tiptap/extension-character-count'
+import SearchAndReplace from './extensions/FindAndReplace.js'
+import { getHandlePaste } from './utils.js'
+import { Markdown } from 'tiptap-markdown'
 
 export const initiateEditor = (
 	element?: HTMLElement,
@@ -104,11 +104,11 @@ export const initiateEditor = (
 				// Use different placeholders depending on the node type:
 				placeholder: ({ node }) => {
 					if (node.type.name === 'heading') {
-						return 'What’s the title?';
+						return 'What’s the title?'
 					} else if (node.type.name === 'paragraph') {
-						return 'Press / or write something ...';
+						return 'Press / or write something ...'
 					}
-					return '';
+					return ''
 				}
 			}),
 			CharacterCount.configure({
@@ -120,12 +120,12 @@ export const initiateEditor = (
 		],
 		autofocus: true,
 		...options
-	});
+	})
 
 	editor.setOptions({
 		editorProps: {
 			handlePaste: getHandlePaste(editor)
 		}
-	});
-	return editor;
-};
+	})
+	return editor
+}

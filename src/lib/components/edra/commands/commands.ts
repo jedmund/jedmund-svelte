@@ -1,5 +1,5 @@
-import { isMac } from '../utils.js';
-import type { EdraCommandGroup } from './types.js';
+import { isMac } from '../utils.js'
+import type { EdraCommandGroup } from './types.js'
 
 export const commands: Record<string, EdraCommandGroup> = {
 	'undo-redo': {
@@ -12,7 +12,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Undo',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Z`],
 				action: (editor) => {
-					editor.chain().focus().undo().run();
+					editor.chain().focus().undo().run()
 				}
 			},
 			{
@@ -21,7 +21,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Redo',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Y`, `${isMac ? 'Cmd' : 'Ctrl'}+Shift+Z`],
 				action: (editor) => {
-					editor.chain().focus().redo().run();
+					editor.chain().focus().redo().run()
 				}
 			}
 		]
@@ -36,7 +36,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Heading 1',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Alt+1`],
 				action: (editor) => {
-					editor.chain().focus().toggleHeading({ level: 1 }).run();
+					editor.chain().focus().toggleHeading({ level: 1 }).run()
 				},
 				isActive: (editor) => editor.isActive('heading', { level: 1 })
 			},
@@ -46,7 +46,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Heading 2',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Alt+2`],
 				action: (editor) => {
-					editor.chain().focus().toggleHeading({ level: 2 }).run();
+					editor.chain().focus().toggleHeading({ level: 2 }).run()
 				},
 				isActive: (editor) => editor.isActive('heading', { level: 2 })
 			},
@@ -56,7 +56,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Heading 3',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Alt+3`],
 				action: (editor) => {
-					editor.chain().focus().toggleHeading({ level: 3 }).run();
+					editor.chain().focus().toggleHeading({ level: 3 }).run()
 				},
 				isActive: (editor) => editor.isActive('heading', { level: 3 })
 			}
@@ -72,8 +72,8 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Link',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+K`],
 				action: (editor) => {
-					const href = prompt('Enter the URL of the link:');
-					if (href !== null) editor.chain().focus().setLink({ href, target: '_blank' }).run();
+					const href = prompt('Enter the URL of the link:')
+					if (href !== null) editor.chain().focus().setLink({ href, target: '_blank' }).run()
 				}
 			},
 			{
@@ -82,7 +82,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Bold',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+B`],
 				action: (editor) => {
-					editor.chain().focus().toggleBold().run();
+					editor.chain().focus().toggleBold().run()
 				}
 			},
 			{
@@ -91,7 +91,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Italic',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+I`],
 				action: (editor) => {
-					editor.chain().focus().toggleItalic().run();
+					editor.chain().focus().toggleItalic().run()
 				}
 			},
 			{
@@ -100,7 +100,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Underline',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+U`],
 				action: (editor) => {
-					editor.chain().focus().toggleUnderline().run();
+					editor.chain().focus().toggleUnderline().run()
 				}
 			},
 			{
@@ -109,7 +109,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Strikethrough',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+S`],
 				action: (editor) => {
-					editor.chain().focus().toggleStrike().run();
+					editor.chain().focus().toggleStrike().run()
 				}
 			},
 			{
@@ -118,7 +118,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Blockquote',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+B`],
 				action: (editor) => {
-					editor.chain().focus().toggleBlockquote().run();
+					editor.chain().focus().toggleBlockquote().run()
 				}
 			},
 			{
@@ -127,7 +127,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Superscript',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Period`],
 				action: (editor) => {
-					editor.chain().focus().toggleSuperscript().run();
+					editor.chain().focus().toggleSuperscript().run()
 				}
 			},
 			{
@@ -136,7 +136,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Subscript',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Comma`],
 				action: (editor) => {
-					editor.chain().focus().toggleSubscript().run();
+					editor.chain().focus().toggleSubscript().run()
 				}
 			},
 			{
@@ -145,7 +145,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Code',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+E`],
 				action: (editor) => {
-					editor.chain().focus().toggleCode().run();
+					editor.chain().focus().toggleCode().run()
 				}
 			},
 			{
@@ -154,7 +154,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Code Block',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Alt+C`],
 				action: (editor) => {
-					editor.chain().focus().toggleCodeBlock().run();
+					editor.chain().focus().toggleCodeBlock().run()
 				}
 			}
 		]
@@ -169,7 +169,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Align Left',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+L`],
 				action: (editor) => {
-					editor.chain().focus().setTextAlign('left').run();
+					editor.chain().focus().setTextAlign('left').run()
 				},
 				isActive: (editor) => editor.isActive({ textAlign: 'left' })
 			},
@@ -179,7 +179,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Align Center',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+E`],
 				action: (editor) => {
-					editor.chain().focus().setTextAlign('center').run();
+					editor.chain().focus().setTextAlign('center').run()
 				},
 				isActive: (editor) => editor.isActive({ textAlign: 'center' })
 			},
@@ -189,7 +189,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Align Right',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+R`],
 				action: (editor) => {
-					editor.chain().focus().setTextAlign('right').run();
+					editor.chain().focus().setTextAlign('right').run()
 				},
 				isActive: (editor) => editor.isActive({ textAlign: 'right' })
 			},
@@ -199,7 +199,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Align Justify',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+J`],
 				action: (editor) => {
-					editor.chain().focus().setTextAlign('justify').run();
+					editor.chain().focus().setTextAlign('justify').run()
 				},
 				isActive: (editor) => editor.isActive({ textAlign: 'justify' })
 			}
@@ -215,7 +215,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Bullet List',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+8`],
 				action: (editor) => {
-					editor.chain().focus().toggleBulletList().run();
+					editor.chain().focus().toggleBulletList().run()
 				}
 			},
 			{
@@ -224,7 +224,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Ordered List',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+7`],
 				action: (editor) => {
-					editor.chain().focus().toggleOrderedList().run();
+					editor.chain().focus().toggleOrderedList().run()
 				}
 			},
 			{
@@ -233,7 +233,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Task List',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+9`],
 				action: (editor) => {
-					editor.chain().focus().toggleTaskList().run();
+					editor.chain().focus().toggleTaskList().run()
 				}
 			}
 		]
@@ -247,7 +247,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				name: 'audio-placeholder',
 				label: 'Audio',
 				action: (editor) => {
-					editor.chain().focus().insertAudioPlaceholder().run();
+					editor.chain().focus().insertAudioPlaceholder().run()
 				}
 			},
 			{
@@ -255,7 +255,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				name: 'image-placeholder',
 				label: 'Image',
 				action: (editor) => {
-					editor.chain().focus().insertImagePlaceholder().run();
+					editor.chain().focus().insertImagePlaceholder().run()
 				}
 			},
 			{
@@ -263,7 +263,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				name: 'video-placeholder',
 				label: 'Video',
 				action: (editor) => {
-					editor.chain().focus().insertVideoPlaceholder().run();
+					editor.chain().focus().insertVideoPlaceholder().run()
 				}
 			},
 			{
@@ -271,7 +271,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				name: 'iframe-placeholder',
 				label: 'IFrame',
 				action: (editor) => {
-					editor.chain().focus().insertIFramePlaceholder().run();
+					editor.chain().focus().insertIFramePlaceholder().run()
 				}
 			}
 		]
@@ -286,7 +286,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Color',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+C`],
 				action: (editor) => {
-					editor.chain().focus().unsetColor().run();
+					editor.chain().focus().unsetColor().run()
 				}
 			},
 			{
@@ -295,7 +295,7 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Highlight',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+H`],
 				action: (editor) => {
-					editor.chain().focus().toggleHighlight().run();
+					editor.chain().focus().toggleHighlight().run()
 				}
 			}
 		]
@@ -310,8 +310,8 @@ export const commands: Record<string, EdraCommandGroup> = {
 				label: 'Table',
 				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+T`],
 				action: (editor) => {
-					if (editor.isActive('table')) editor.chain().focus().deleteTable().run();
-					else editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: false }).run();
+					if (editor.isActive('table')) editor.chain().focus().deleteTable().run()
+					else editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: false }).run()
 				}
 			}
 		]
@@ -325,9 +325,9 @@ export const commands: Record<string, EdraCommandGroup> = {
 				name: 'font increment',
 				label: 'Increase Font Size',
 				action: (editor) => {
-					let currentFontSize = parseInt(editor.getAttributes('textStyle').fontSize ?? '16px');
-					currentFontSize++;
-					editor.chain().focus().setFontSize(`${currentFontSize}px`).run();
+					let currentFontSize = parseInt(editor.getAttributes('textStyle').fontSize ?? '16px')
+					currentFontSize++
+					editor.chain().focus().setFontSize(`${currentFontSize}px`).run()
 				}
 			},
 			{
@@ -335,11 +335,11 @@ export const commands: Record<string, EdraCommandGroup> = {
 				name: 'font decrement',
 				label: 'Decrease Font Size',
 				action: (editor) => {
-					let currentFontSize = parseInt(editor.getAttributes('textStyle').fontSize ?? '16px');
-					currentFontSize--;
-					editor.chain().focus().setFontSize(`${currentFontSize}px`).run();
+					let currentFontSize = parseInt(editor.getAttributes('textStyle').fontSize ?? '16px')
+					currentFontSize--
+					editor.chain().focus().setFontSize(`${currentFontSize}px`).run()
 				}
 			}
 		]
 	}
-};
+}

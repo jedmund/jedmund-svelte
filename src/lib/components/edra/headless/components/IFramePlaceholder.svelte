@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { NodeViewProps } from '@tiptap/core';
-	import CodeXML from 'lucide-svelte/icons/code-xml';
-	import { NodeViewWrapper } from 'svelte-tiptap';
-	const { editor }: NodeViewProps = $props();
+	import type { NodeViewProps } from '@tiptap/core'
+	import CodeXML from 'lucide-svelte/icons/code-xml'
+	import { NodeViewWrapper } from 'svelte-tiptap'
+	const { editor }: NodeViewProps = $props()
 
 	function handleClick(e: MouseEvent) {
-		if (!editor.isEditable) return;
-		e.preventDefault();
-		const iFrameURL = prompt('Enter the URL of an iFrame:');
+		if (!editor.isEditable) return
+		e.preventDefault()
+		const iFrameURL = prompt('Enter the URL of an iFrame:')
 		if (!iFrameURL) {
-			return;
+			return
 		}
-		editor.chain().focus().setIframe({ src: iFrameURL }).run();
+		editor.chain().focus().setIframe({ src: iFrameURL }).run()
 	}
 </script>
 

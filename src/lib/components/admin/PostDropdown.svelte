@@ -1,28 +1,54 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	
+	import UniverseComposer from './UniverseComposer.svelte'
+	import Button from './Button.svelte'
+
 	let isOpen = $state(false)
-	let buttonRef: HTMLButtonElement
-	
+	let buttonRef: HTMLElement
+	let showComposer = $state(false)
+	let selectedType = $state<'post' | 'essay' | 'album'>('post')
+
 	const postTypes = [
-		{ value: 'blog', label: '📝 Blog Post', description: 'Long-form article' },
-		{ value: 'microblog', label: '💭 Microblog', description: 'Short thought' },
-		{ value: 'link', label: '🔗 Link', description: 'Share a link' },
-		{ value: 'photo', label: '📷 Photo', description: 'Single photo post' },
-		{ value: 'album', label: '🖼️ Album', description: 'Photo collection' }
+		{ value: 'blog', label: 'Essay' },
+		{ value: 'microblog', label: 'Post' },
+		{ value: 'link', label: 'Link' },
+		{ value: 'photo', label: 'Photo' },
+		{ value: 'album', label: 'Album' }
 	]
-	
+
 	function handleSelection(type: string) {
 		isOpen = false
-		goto(`/admin/posts/new?type=${type}`)
+
+		if (type === 'blog') {
+			// Essays go straight to the full page
+			goto('/admin/universe/compose?type=essay')
+		} else if (type === 'microblog' || type === 'link') {
+			// Posts and links open in modal
+			selectedType = 'post'
+			showComposer = true
+		} else if (type === 'photo' || type === 'album') {
+			// Photos and albums will be handled later
+			selectedType = 'album'
+			showComposer = true
+		}
 	}
-	
+
+	function handleComposerClose() {
+		showComposer = false
+	}
+
+	function handleComposerSaved() {
+		showComposer = false
+		// Reload posts - in a real app, you'd emit an event to parent
+		window.location.reload()
+	}
+
 	function handleClickOutside(event: MouseEvent) {
 		if (!buttonRef?.contains(event.target as Node)) {
 			isOpen = false
 		}
 	}
-	
+
 	$effect(() => {
 		if (isOpen) {
 			document.addEventListener('click', handleClickOutside)
@@ -32,122 +58,211 @@
 </script>
 
 <div class="dropdown-container">
-	<button 
+	<Button
 		bind:this={buttonRef}
-		class="btn btn-primary"
-		onclick={(e) => { e.stopPropagation(); isOpen = !isOpen }}
+		variant="primary"
+		onclick={(e) => {
+			e.stopPropagation()
+			isOpen = !isOpen
+		}}
+		iconPosition="right"
 	>
 		New Post
-		<svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="chevron">
-			<path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-		</svg>
-	</button>
-	
+		{#snippet icon()}
+			<svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="chevron">
+				<path
+					d="M3 4.5L6 7.5L9 4.5"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+			</svg>
+		{/snippet}
+	</Button>
+
 	{#if isOpen}
 		<div class="dropdown-menu">
 			{#each postTypes as type}
-				<button 
-					class="dropdown-item"
+				<Button
+					variant="ghost"
 					onclick={() => handleSelection(type.value)}
+					class="dropdown-item"
+					fullWidth
+					pill={false}
 				>
-					<span class="dropdown-icon">{type.label}</span>
-					<div class="dropdown-text">
-						<span class="dropdown-label">{type.label.split(' ')[1]}</span>
-						<span class="dropdown-description">{type.description}</span>
+					{#snippet icon()}
+						<div class="dropdown-icon">
+						{#if type.value === 'blog'}
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+								<path
+									d="M3 5C3 3.89543 3.89543 3 5 3H11L17 9V15C17 16.1046 16.1046 17 15 17H5C3.89543 17 3 16.1046 3 15V5Z"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<path d="M11 3V9H17" stroke="currentColor" stroke-width="1.5" />
+								<path
+									d="M7 13H13"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+								/>
+								<path
+									d="M7 10H13"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+								/>
+							</svg>
+						{:else if type.value === 'microblog'}
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+								<path
+									d="M4 3C2.89543 3 2 3.89543 2 5V11C2 12.1046 2.89543 13 4 13H6L8 16V13H13C14.1046 13 15 12.1046 15 11V5C15 3.89543 14.1046 3 13 3H4Z"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<path d="M5 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+								<path d="M5 9H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+							</svg>
+						{:else if type.value === 'link'}
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+								<path
+									d="M10 5H7C4.79086 5 3 6.79086 3 9C3 11.2091 4.79086 13 7 13H10M10 7H13C15.2091 7 17 8.79086 17 11C17 13.2091 15.2091 15 13 15H10"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+								/>
+								<path
+									d="M7 10H13"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+								/>
+							</svg>
+						{:else if type.value === 'photo'}
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+								<rect
+									x="3"
+									y="3"
+									width="14"
+									height="14"
+									rx="2"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<circle cx="8" cy="8" r="1.5" stroke="currentColor" stroke-width="1.5" />
+								<path
+									d="M3 14L7 10L10 13L13 10L17 14"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						{:else if type.value === 'album'}
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+								<rect
+									x="3"
+									y="5"
+									width="14"
+									height="12"
+									rx="2"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<path
+									d="M5 5V3C5 1.89543 5.89543 1 7 1H13C14.1046 1 15 1.89543 15 3V5"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<circle cx="8" cy="10" r="1.5" stroke="currentColor" stroke-width="1.5" />
+								<path
+									d="M3 14L7 11L10 13L13 11L17 14"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						{/if}
 					</div>
-				</button>
+					{/snippet}
+					<span class="dropdown-label">{type.label}</span>
+				</Button>
 			{/each}
 		</div>
 	{/if}
 </div>
 
+<UniverseComposer
+	bind:isOpen={showComposer}
+	initialPostType={selectedType}
+	on:close={handleComposerClose}
+	on:saved={handleComposerSaved}
+	on:switch-to-essay
+/>
+
 <style lang="scss">
 	@import '$styles/variables.scss';
-	
+
 	.dropdown-container {
 		position: relative;
 	}
-	
-	.btn {
-		padding: $unit-2x $unit-3x;
-		border: none;
-		border-radius: 50px;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		font-size: 0.925rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		display: flex;
-		align-items: center;
-		gap: $unit;
+
+	// Button styles are now handled by the Button component
+	// Override primary button color to match original design
+	:global(.dropdown-container .btn-primary) {
+		background-color: $grey-10;
 		
-		&.btn-primary {
-			background-color: $grey-10;
-			color: white;
-			
-			&:hover {
-				background-color: $grey-20;
-			}
+		&:hover:not(:disabled) {
+			background-color: $grey-20;
+		}
+		
+		&:active:not(:disabled) {
+			background-color: $grey-30;
 		}
 	}
-	
+
 	.chevron {
 		transition: transform 0.2s ease;
 	}
-	
+
 	.dropdown-menu {
 		position: absolute;
 		top: calc(100% + $unit);
 		right: 0;
 		background: white;
-		border: 1px solid $grey-80;
-		border-radius: 12px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		min-width: 200px;
+		border: 1px solid $grey-85;
+		border-radius: $unit-2x;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+		min-width: 220px;
 		z-index: 100;
 		overflow: hidden;
 	}
-	
-	.dropdown-item {
-		width: 100%;
-		padding: $unit-2x;
-		border: none;
-		background: none;
-		cursor: pointer;
+
+	// Override Button component styles for dropdown items
+	:global(.dropdown-item) {
+		justify-content: flex-start;
+		text-align: left;
+		padding: $unit-2x $unit-3x;
+		border-radius: 0;
+	}
+
+	.dropdown-icon {
+		color: $grey-40;
 		display: flex;
 		align-items: center;
-		gap: $unit-2x;
-		text-align: left;
-		transition: background 0.2s ease;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
-		
-		&:hover {
-			background: $grey-95;
-		}
-		
-		&:not(:last-child) {
-			border-bottom: 1px solid $grey-90;
-		}
-	}
-	
-	.dropdown-icon {
-		font-size: 1.25rem;
 		flex-shrink: 0;
+
+		svg {
+			width: 20px;
+			height: 20px;
+		}
 	}
-	
-	.dropdown-text {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-	
+
 	.dropdown-label {
 		font-size: 0.925rem;
-		font-weight: 600;
+		font-weight: 500;
 		color: $grey-10;
-	}
-	
-	.dropdown-description {
-		font-size: 0.75rem;
-		color: $grey-40;
 	}
 </style>

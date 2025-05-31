@@ -30,14 +30,14 @@
 		{/if}
 		{#each projects as project, index}
 			<li>
-				<ProjectItem 
+				<ProjectItem
 					logoUrl={project.logoUrl}
 					backgroundColor={project.backgroundColor || '#f7f7f7'}
 					name={project.title}
 					slug={project.slug}
 					description={project.description || ''}
 					highlightColor={project.highlightColor || '#333'}
-					{index} 
+					{index}
 				/>
 			</li>
 		{/each}
@@ -91,6 +91,5 @@
 		padding: $unit-3x;
 		text-align: center;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 	}
 </style>

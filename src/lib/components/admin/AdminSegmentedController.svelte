@@ -175,7 +175,6 @@
 		text-decoration: none;
 		font-size: 1rem;
 		font-weight: 400;
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		color: $grey-20;
 		position: relative;
 		z-index: 2;
@@ -251,7 +250,6 @@
 		border: none;
 		text-align: left;
 		font-size: 0.925rem;
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		color: $grey-20;
 		cursor: pointer;
 		transition: background-color 0.2s ease;

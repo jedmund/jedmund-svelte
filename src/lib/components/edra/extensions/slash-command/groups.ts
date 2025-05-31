@@ -1,12 +1,12 @@
-import { commands } from '../../commands/commands.js';
+import { commands } from '../../commands/commands.js'
 
-import type { EdraCommand } from '../../commands/types.js';
-import type { Editor } from '@tiptap/core';
+import type { EdraCommand } from '../../commands/types.js'
+import type { Editor } from '@tiptap/core'
 
 export interface Group {
-	name: string;
-	title: string;
-	commands: EdraCommand[];
+	name: string
+	title: string
+	commands: EdraCommand[]
 }
 
 export const GROUPS: Group[] = [
@@ -20,7 +20,7 @@ export const GROUPS: Group[] = [
 				name: 'blockquote',
 				label: 'Blockquote',
 				action: (editor: Editor) => {
-					editor.chain().focus().setBlockquote().run();
+					editor.chain().focus().setBlockquote().run()
 				}
 			},
 			{
@@ -28,7 +28,7 @@ export const GROUPS: Group[] = [
 				name: 'codeBlock',
 				label: 'Code Block',
 				action: (editor: Editor) => {
-					editor.chain().focus().setCodeBlock().run();
+					editor.chain().focus().setCodeBlock().run()
 				}
 			},
 			...commands.lists.commands
@@ -45,11 +45,11 @@ export const GROUPS: Group[] = [
 				name: 'horizontalRule',
 				label: 'Horizontal Rule',
 				action: (editor: Editor) => {
-					editor.chain().focus().setHorizontalRule().run();
+					editor.chain().focus().setHorizontalRule().run()
 				}
 			}
 		]
 	}
-];
+]
 
-export default GROUPS;
+export default GROUPS

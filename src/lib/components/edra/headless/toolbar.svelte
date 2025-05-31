@@ -1,23 +1,23 @@
 <script lang="ts">
-	import type { Editor } from '@tiptap/core';
-	import { commands } from '../commands/commands.js';
-	import EdraToolBarIcon from './components/EdraToolBarIcon.svelte';
-	import SearchAndReplace from './components/SearchAndReplace.svelte';
-	import type { Snippet } from 'svelte';
+	import type { Editor } from '@tiptap/core'
+	import { commands } from '../commands/commands.js'
+	import EdraToolBarIcon from './components/EdraToolBarIcon.svelte'
+	import SearchAndReplace from './components/SearchAndReplace.svelte'
+	import type { Snippet } from 'svelte'
 
 	interface Props {
-		class?: string;
-		editor: Editor;
-		children?: Snippet<[]>;
+		class?: string
+		editor: Editor
+		children?: Snippet<[]>
 	}
 
-	const { class: className = '', editor, children }: Props = $props();
+	const { class: className = '', editor, children }: Props = $props()
 
 	// Special components that are handled separately
-	let showSearchAndReplace = $state(false);
-	const colorCommands = commands.colors.commands;
-	const fontCommands = commands.fonts.commands;
-	const excludedCommands = ['colors', 'fonts'];
+	let showSearchAndReplace = $state(false)
+	const colorCommands = commands.colors.commands
+	const fontCommands = commands.fonts.commands
+	const excludedCommands = ['colors', 'fonts']
 </script>
 
 <div class={`edra-toolbar ${className}`}>
@@ -44,14 +44,14 @@
 				{editor}
 				style={`color: ${editor.getAttributes('textStyle').color};`}
 				onclick={() => {
-					const color = editor.getAttributes('textStyle').color;
-					const hasColor = editor.isActive('textStyle', { color });
+					const color = editor.getAttributes('textStyle').color
+					const hasColor = editor.isActive('textStyle', { color })
 					if (hasColor) {
-						editor.chain().focus().unsetColor().run();
+						editor.chain().focus().unsetColor().run()
 					} else {
-						const color = prompt('Enter the color of the text:');
+						const color = prompt('Enter the color of the text:')
 						if (color !== null) {
-							editor.chain().focus().setColor(color).run();
+							editor.chain().focus().setColor(color).run()
 						}
 					}
 				}}
@@ -61,13 +61,13 @@
 				{editor}
 				style={`background-color: ${editor.getAttributes('highlight').color};`}
 				onclick={() => {
-					const hasHightlight = editor.isActive('highlight');
+					const hasHightlight = editor.isActive('highlight')
 					if (hasHightlight) {
-						editor.chain().focus().unsetHighlight().run();
+						editor.chain().focus().unsetHighlight().run()
 					} else {
-						const color = prompt('Enter the color of the highlight:');
+						const color = prompt('Enter the color of the highlight:')
 						if (color !== null) {
-							editor.chain().focus().setHighlight({ color }).run();
+							editor.chain().focus().setHighlight({ color }).run()
 						}
 					}
 				}}
