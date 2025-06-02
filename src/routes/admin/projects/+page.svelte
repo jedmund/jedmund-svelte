@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
+	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import ProjectListItem from '$lib/components/admin/ProjectListItem.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
@@ -15,6 +16,7 @@
 		year: number
 		client: string | null
 		status: string
+		projectType: string
 		backgroundColor: string | null
 		highlightColor: string | null
 		createdAt: string
@@ -31,14 +33,21 @@
 	let statusCounts = $state<Record<string, number>>({})
 
 	// Filter state
-	let selectedFilter = $state<string>('all')
+	let selectedStatusFilter = $state<string>('all')
+	let selectedTypeFilter = $state<string>('all')
 
 	// Create filter options
-	const filterOptions = $derived([
+	const statusFilterOptions = $derived([
 		{ value: 'all', label: 'All projects' },
 		{ value: 'published', label: 'Published' },
 		{ value: 'draft', label: 'Draft' }
 	])
+
+	const typeFilterOptions = [
+		{ value: 'all', label: 'All types' },
+		{ value: 'work', label: 'Work' },
+		{ value: 'labs', label: 'Labs' }
+	]
 
 	onMount(async () => {
 		await loadProjects()
@@ -167,14 +176,26 @@
 	}
 
 	function applyFilter() {
-		if (selectedFilter === 'all') {
-			filteredProjects = projects
-		} else {
-			filteredProjects = projects.filter((project) => project.status === selectedFilter)
+		let filtered = projects
+
+		// Apply status filter
+		if (selectedStatusFilter !== 'all') {
+			filtered = filtered.filter((project) => project.status === selectedStatusFilter)
 		}
+
+		// Apply type filter based on projectType field
+		if (selectedTypeFilter !== 'all') {
+			filtered = filtered.filter((project) => project.projectType === selectedTypeFilter)
+		}
+
+		filteredProjects = filtered
 	}
 
-	function handleFilterChange() {
+	function handleStatusFilterChange() {
+		applyFilter()
+	}
+
+	function handleTypeFilterChange() {
 		applyFilter()
 	}
 </script>
@@ -190,15 +211,24 @@
 		<div class="error">{error}</div>
 	{:else}
 		<!-- Filters -->
-		<div class="filters">
-			<Select
-				bind:value={selectedFilter}
-				options={filterOptions}
-				size="small"
-				variant="minimal"
-				onchange={handleFilterChange}
-			/>
-		</div>
+		<AdminFilters>
+			{#snippet left()}
+				<Select
+					bind:value={selectedStatusFilter}
+					options={statusFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleStatusFilterChange}
+				/>
+				<Select
+					bind:value={selectedTypeFilter}
+					options={typeFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleTypeFilterChange}
+				/>
+			{/snippet}
+		</AdminFilters>
 
 		<!-- Projects List -->
 		{#if isLoading}
@@ -209,10 +239,10 @@
 		{:else if filteredProjects.length === 0}
 			<div class="empty-state">
 				<p>
-					{#if selectedFilter === 'all'}
+					{#if selectedStatusFilter === 'all' && selectedTypeFilter === 'all'}
 						No projects found. Create your first project!
 					{:else}
-						No {selectedFilter} projects found. Try a different filter or create a new project.
+						No projects found matching the current filters. Try adjusting your filters or create a new project.
 					{/if}
 				</p>
 			</div>
@@ -245,12 +275,6 @@
 
 <style lang="scss">
 
-	.filters {
-		display: flex;
-		gap: $unit-2x;
-		align-items: center;
-		margin-bottom: $unit-4x;
-	}
 
 	.error {
 		text-align: center;

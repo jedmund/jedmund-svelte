@@ -136,7 +136,7 @@
 				font-size: 13px;
 				min-height: 28px;
 				min-width: 120px;
-				border-radius: 8px;
+				border-radius: $corner-radius;
 			}
 
 			&.select-medium {
@@ -144,7 +144,7 @@
 				font-size: 14px;
 				min-height: 36px;
 				min-width: 160px;
-				border-radius: 8px;
+				border-radius: $corner-radius;
 			}
 
 			&.select-large {
@@ -152,7 +152,7 @@
 				font-size: 15px;
 				min-height: 44px;
 				min-width: 180px;
-				border-radius: 8px;
+				border-radius: $card-corner-radius;
 			}
 		}
 

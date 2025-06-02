@@ -1,22 +1,33 @@
 <script lang="ts">
 	import type { HTMLInputAttributes, HTMLTextareaAttributes } from 'svelte/elements'
-	
+
 	// Type helpers for different input elements
 	type InputProps = HTMLInputAttributes & {
-		type?: 'text' | 'email' | 'password' | 'url' | 'search' | 'number' | 'tel' | 'date' | 'time' | 'color'
+		type?:
+			| 'text'
+			| 'email'
+			| 'password'
+			| 'url'
+			| 'search'
+			| 'number'
+			| 'tel'
+			| 'date'
+			| 'time'
+			| 'color'
 	}
-	
+
 	type TextareaProps = HTMLTextareaAttributes & {
 		type: 'textarea'
 		rows?: number
 		autoResize?: boolean
 	}
-	
+
 	type Props = (InputProps | TextareaProps) & {
 		label?: string
 		error?: string
 		helpText?: string
 		size?: 'small' | 'medium' | 'large'
+		pill?: boolean
 		fullWidth?: boolean
 		required?: boolean
 		class?: string
@@ -34,6 +45,7 @@
 		error,
 		helpText,
 		size = 'medium',
+		pill = false,
 		fullWidth = true,
 		required = false,
 		disabled = false,
@@ -56,30 +68,30 @@
 	let textareaElement: HTMLTextAreaElement | undefined = $state()
 	let charCount = $derived(String(value).length)
 	let charsRemaining = $derived(maxLength ? maxLength - charCount : 0)
-	
+
 	// Color swatch validation and display
 	const isValidHexColor = $derived(() => {
 		if (!colorSwatch || !value) return false
 		const hexRegex = /^#[0-9A-Fa-f]{6}$/
 		return hexRegex.test(String(value))
 	})
-	
+
 	// Color picker functionality
 	let colorPickerInput: HTMLInputElement
-	
+
 	function handleColorSwatchClick() {
 		if (colorPickerInput) {
 			colorPickerInput.click()
 		}
 	}
-	
+
 	function handleColorPickerChange(event: Event) {
 		const target = event.target as HTMLInputElement
 		if (target.value) {
 			value = target.value.toUpperCase()
 		}
 	}
-	
+
 	// Auto-resize textarea
 	$effect(() => {
 		if (type === 'textarea' && textareaElement && isTextarea(restProps) && restProps.autoResize) {
@@ -100,7 +112,8 @@
 		if (prefixIcon) classes.push('has-prefix-icon')
 		if (suffixIcon) classes.push('has-suffix-icon')
 		if (colorSwatch) classes.push('has-color-swatch')
-		if (type === 'textarea' && isTextarea(restProps) && restProps.autoResize) classes.push('has-auto-resize')
+		if (type === 'textarea' && isTextarea(restProps) && restProps.autoResize)
+			classes.push('has-auto-resize')
 		if (wrapperClass) classes.push(wrapperClass)
 		if (className) classes.push(className)
 		return classes.join(' ')
@@ -109,6 +122,7 @@
 	const inputClasses = $derived(() => {
 		const classes = ['input']
 		classes.push(`input-${size}`)
+		if (pill) classes.push('input-pill')
 		if (inputClass) classes.push(inputClass)
 		return classes.join(' ')
 	})
@@ -128,17 +142,17 @@
 			{/if}
 		</label>
 	{/if}
-	
+
 	<div class="input-container">
 		{#if prefixIcon}
 			<span class="input-icon prefix-icon">
 				<slot name="prefix" />
 			</span>
 		{/if}
-		
+
 		{#if colorSwatch && isValidHexColor}
-			<span 
-				class="color-swatch" 
+			<span
+				class="color-swatch"
 				style="background-color: {value}"
 				onclick={handleColorSwatchClick}
 				role="button"
@@ -146,7 +160,7 @@
 				aria-label="Open color picker"
 			></span>
 		{/if}
-		
+
 		{#if type === 'textarea' && isTextarea(restProps)}
 			<textarea
 				bind:this={textareaElement}
@@ -173,13 +187,13 @@
 				{...restProps}
 			/>
 		{/if}
-		
+
 		{#if suffixIcon}
 			<span class="input-icon suffix-icon">
 				<slot name="suffix" />
 			</span>
 		{/if}
-		
+
 		{#if colorSwatch}
 			<input
 				bind:this={colorPickerInput}
@@ -192,7 +206,7 @@
 			/>
 		{/if}
 	</div>
-	
+
 	{#if (error || helpText || showCharCount) && !disabled}
 		<div class="input-footer">
 			{#if error}
@@ -200,9 +214,13 @@
 			{:else if helpText}
 				<span class="input-help">{helpText}</span>
 			{/if}
-			
+
 			{#if showCharCount && maxLength}
-				<span class="char-count" class:warning={charsRemaining < maxLength * 0.1} class:error={charsRemaining < 0}>
+				<span
+					class="char-count"
+					class:warning={charsRemaining < maxLength * 0.1}
+					class:error={charsRemaining < 0}
+				>
 					{charsRemaining}
 				</span>
 			{/if}
@@ -217,7 +235,7 @@
 	.input-wrapper {
 		display: inline-block;
 		position: relative;
-		
+
 		&.full-width {
 			display: block;
 			width: 100%;
@@ -226,7 +244,7 @@
 		&.has-error {
 			.input {
 				border-color: $red-50;
-				
+
 				&:focus {
 					border-color: $red-50;
 				}
@@ -293,7 +311,7 @@
 		border-radius: 6px;
 		background-color: white;
 		transition: all 0.15s ease;
-		
+
 		&::placeholder {
 			color: $grey-50;
 		}
@@ -332,6 +350,31 @@
 		font-size: 16px;
 	}
 
+	// Shape variants - pill vs rounded
+	.input-pill {
+		&.input-small {
+			border-radius: 20px;
+		}
+		&.input-medium {
+			border-radius: 24px;
+		}
+		&.input-large {
+			border-radius: 28px;
+		}
+	}
+
+	.input:not(.input-pill) {
+		&.input-small {
+			border-radius: 6px;
+		}
+		&.input-medium {
+			border-radius: 8px;
+		}
+		&.input-large {
+			border-radius: 10px;
+		}
+	}
+
 	// Icon adjustments
 	.has-prefix-icon .input {
 		padding-left: calc($unit-2x + 24px);
@@ -350,11 +393,11 @@
 		justify-content: center;
 		color: $grey-40;
 		pointer-events: none;
-		
+
 		&.prefix-icon {
 			left: $unit-2x;
 		}
-		
+
 		&.suffix-icon {
 			right: $unit-2x;
 		}
@@ -373,18 +416,18 @@
 		padding-bottom: calc($unit * 1.5);
 		line-height: 1.5;
 		overflow-y: hidden; // Important for auto-resize
-		
+
 		&.input-small {
 			min-height: 60px;
 			padding-top: $unit;
 			padding-bottom: $unit;
 		}
-		
+
 		&.input-large {
 			min-height: 100px;
 		}
 	}
-	
+
 	// Auto-resizing textarea
 	.has-auto-resize textarea.input {
 		resize: none; // Disable manual resize when auto-resize is enabled
@@ -418,11 +461,11 @@
 		color: $grey-50;
 		font-variant-numeric: tabular-nums;
 		margin-left: auto;
-		
+
 		&.warning {
 			color: $universe-color;
 		}
-		
+
 		&.error {
 			color: $red-50;
 			font-weight: 500;
@@ -430,23 +473,23 @@
 	}
 
 	// Special input types
-	input[type="color"].input {
+	input[type='color'].input {
 		padding: $unit;
 		cursor: pointer;
-		
+
 		&::-webkit-color-swatch-wrapper {
 			padding: 0;
 		}
-		
+
 		&::-webkit-color-swatch {
 			border: none;
 			border-radius: 4px;
 		}
 	}
 
-	input[type="number"].input {
+	input[type='number'].input {
 		-moz-appearance: textfield;
-		
+
 		&::-webkit-outer-spin-button,
 		&::-webkit-inner-spin-button {
 			-webkit-appearance: none;
@@ -455,7 +498,7 @@
 	}
 
 	// Search input
-	input[type="search"].input {
+	input[type='search'].input {
 		&::-webkit-search-decoration,
 		&::-webkit-search-cancel-button {
 			-webkit-appearance: none;

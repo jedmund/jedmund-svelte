@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
+	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import PostDropdown from '$lib/components/admin/PostDropdown.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
@@ -239,15 +240,17 @@
 		<div class="error-message">{error}</div>
 	{:else}
 		<!-- Filters -->
-		<div class="filters">
-			<Select
-				bind:value={selectedFilter}
-				options={filterOptions}
-				size="small"
-				variant="minimal"
-				onchange={handleFilterChange}
-			/>
-		</div>
+		<AdminFilters>
+			{#snippet left()}
+				<Select
+					bind:value={selectedFilter}
+					options={filterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleFilterChange}
+				/>
+			{/snippet}
+		</AdminFilters>
 
 		<!-- Posts List -->
 		{#if isLoading}
@@ -364,12 +367,6 @@
 <style lang="scss">
 	@import '$styles/variables.scss';
 
-	.filters {
-		display: flex;
-		gap: $unit-2x;
-		align-items: center;
-		margin-bottom: $unit-4x;
-	}
 
 	.error-message {
 		background: rgba(239, 68, 68, 0.1);

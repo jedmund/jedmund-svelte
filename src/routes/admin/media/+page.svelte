@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
+	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
+	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import Input from '$lib/components/admin/Input.svelte'
+	import Select from '$lib/components/admin/Select.svelte'
+	import Button from '$lib/components/admin/Button.svelte'
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import type { Media } from '@prisma/client'
 
@@ -18,6 +22,21 @@
 	let photographyFilter = $state<string>('all')
 	let searchQuery = $state('')
 	let searchTimeout: ReturnType<typeof setTimeout>
+
+	// Filter options
+	const typeFilterOptions = [
+		{ value: 'all', label: 'All types' },
+		{ value: 'image', label: 'Images' },
+		{ value: 'video', label: 'Videos' },
+		{ value: 'audio', label: 'Audio' },
+		{ value: 'application/pdf', label: 'PDFs' }
+	]
+
+	const photographyFilterOptions = [
+		{ value: 'all', label: 'All media' },
+		{ value: 'true', label: 'Photography only' },
+		{ value: 'false', label: 'Non-photography' }
+	]
 
 	// Modal states
 	let selectedMedia = $state<Media | null>(null)
@@ -286,47 +305,51 @@
 </script>
 
 <AdminPage>
-	<header slot="header">
-		<h1>Media Library</h1>
-		<div class="header-actions">
-			<button
+	<AdminHeader title="Media Library" slot="header">
+		{#snippet actions()}
+			<Button
+				variant="secondary"
+				size="large"
 				onclick={toggleMultiSelectMode}
-				class="btn btn-secondary"
-				class:active={isMultiSelectMode}
+				class={isMultiSelectMode ? 'active' : ''}
 			>
 				{isMultiSelectMode ? '✓' : '☐'}
 				{isMultiSelectMode ? 'Exit Select' : 'Select'}
-			</button>
-			<button
+			</Button>
+			<Button
+				variant="secondary"
+				size="large"
 				onclick={() => (viewMode = viewMode === 'grid' ? 'list' : 'grid')}
-				class="btn btn-secondary"
 			>
 				{viewMode === 'grid' ? '📋' : '🖼️'}
 				{viewMode === 'grid' ? 'List' : 'Grid'}
-			</button>
-			<a href="/admin/media/upload" class="btn btn-primary">Upload Media</a>
-		</div>
-	</header>
+			</Button>
+			<Button variant="primary" size="large" href="/admin/media/upload">Upload Media</Button>
+		{/snippet}
+	</AdminHeader>
 
 	{#if error}
 		<div class="error">{error}</div>
 	{:else}
-		<div class="media-controls">
-			<div class="filters">
-				<select bind:value={filterType} onchange={handleFilterChange} class="filter-select">
-					<option value="all">All types</option>
-					<option value="image">Images</option>
-					<option value="video">Videos</option>
-					<option value="audio">Audio</option>
-					<option value="application/pdf">PDFs</option>
-				</select>
-
-				<select bind:value={photographyFilter} onchange={handleFilterChange} class="filter-select">
-					<option value="all">All media</option>
-					<option value="true">Photography only</option>
-					<option value="false">Non-photography</option>
-				</select>
-
+		<!-- Filters -->
+		<AdminFilters>
+			{#snippet left()}
+				<Select
+					bind:value={filterType}
+					options={typeFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleFilterChange}
+				/>
+				<Select
+					bind:value={photographyFilter}
+					options={photographyFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleFilterChange}
+				/>
+			{/snippet}
+			{#snippet right()}
 				<Input
 					type="search"
 					bind:value={searchQuery}
@@ -334,8 +357,8 @@
 					placeholder="Search files..."
 					size="small"
 					fullWidth={false}
+					pill={true}
 					prefixIcon
-					wrapperClass="search-input-wrapper"
 				>
 					<svg
 						slot="prefix"
@@ -352,8 +375,8 @@
 						/>
 					</svg>
 				</Input>
-			</div>
-		</div>
+			{/snippet}
+		</AdminFilters>
 
 		{#if isMultiSelectMode && media.length > 0}
 			<div class="bulk-actions">
@@ -614,25 +637,6 @@
 />
 
 <style lang="scss">
-	header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-
-		h1 {
-			font-size: 1.75rem;
-			font-weight: 700;
-			margin: 0;
-			color: $grey-10;
-		}
-	}
-
-	.header-actions {
-		display: flex;
-		gap: $unit-2x;
-	}
-
 	.btn {
 		padding: $unit-2x $unit-3x;
 		border-radius: 50px;
@@ -666,44 +670,6 @@
 		text-align: center;
 		padding: $unit-6x;
 		color: #d33;
-	}
-
-	.media-controls {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: $unit-4x;
-		margin-bottom: $unit-4x;
-		flex-wrap: wrap;
-	}
-
-	.filters {
-		display: flex;
-		gap: $unit-2x;
-		align-items: center;
-	}
-
-	.filter-select {
-		padding: $unit $unit-3x;
-		border: 1px solid $grey-80;
-		border-radius: 50px;
-		background: white;
-		font-size: 0.925rem;
-		color: $grey-20;
-		cursor: pointer;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-40;
-		}
-	}
-
-	.search-input-wrapper {
-		width: 240px;
-
-		:global(.input) {
-			border-radius: 50px;
-		}
 	}
 
 	.loading {

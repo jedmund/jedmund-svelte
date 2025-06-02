@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
+	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import DataTable from '$lib/components/admin/DataTable.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
@@ -145,15 +146,17 @@
 		<div class="error">{error}</div>
 	{:else}
 		<!-- Filters -->
-		<div class="filters">
-			<Select
-				bind:value={photographyFilter}
-				options={filterOptions}
-				size="small"
-				variant="minimal"
-				onchange={handleFilterChange}
-			/>
-		</div>
+		<AdminFilters>
+			{#snippet left()}
+				<Select
+					bind:value={photographyFilter}
+					options={filterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleFilterChange}
+				/>
+			{/snippet}
+		</AdminFilters>
 
 		<!-- Albums Table -->
 		{#if isLoading}
@@ -185,12 +188,6 @@
 		margin-bottom: $unit-4x;
 	}
 
-	.filters {
-		display: flex;
-		gap: $unit-2x;
-		align-items: center;
-		margin-bottom: $unit-4x;
-	}
 
 	.loading-container {
 		display: flex;
