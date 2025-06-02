@@ -27,7 +27,7 @@ const uploadPresets = {
 	media: {
 		folder: 'jedmund/media',
 		resource_type: 'auto' as const,
-		allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'],
+		// Remove allowed_formats to avoid SVG validation issues
 		transformation: [{ quality: 'auto:good' }, { fetch_format: 'auto' }]
 	},
 
@@ -43,7 +43,7 @@ const uploadPresets = {
 	projects: {
 		folder: 'jedmund/projects',
 		resource_type: 'image' as const,
-		allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'svg'],
+		// Remove allowed_formats to avoid SVG validation issues
 		transformation: [{ quality: 'auto:good' }, { fetch_format: 'auto' }]
 	}
 }
@@ -77,8 +77,11 @@ export async function uploadFile(
 	customOptions?: any
 ): Promise<UploadResult> {
 	try {
+		// TEMPORARY: Force Cloudinary usage for testing SVG uploads
+		const FORCE_CLOUDINARY_IN_DEV = true; // Toggle this to test
+		
 		// Use local storage in development or when Cloudinary is not configured
-		if (dev || !isCloudinaryConfigured()) {
+		if ((dev && !FORCE_CLOUDINARY_IN_DEV) || !isCloudinaryConfigured()) {
 			logger.info('Using local storage for file upload')
 			const localResult = await uploadFileLocally(file, type)
 
@@ -106,16 +109,30 @@ export async function uploadFile(
 		const arrayBuffer = await file.arrayBuffer()
 		const buffer = Buffer.from(arrayBuffer)
 
-		// Check if file is SVG
+		// Check if file is SVG for logging purposes
 		const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
+		
+		// Extract filename without extension
+		const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
+		const fileExtension = file.name.split('.').pop()?.toLowerCase()
 		
 		// Prepare upload options
 		const uploadOptions = {
 			...uploadPresets[type],
 			...customOptions,
-			public_id: `${Date.now()}-${file.name.replace(/\.[^/.]+$/, '')}`,
-			// Override resource_type for SVG files
-			...(isSvg && { resource_type: 'raw' as const })
+			public_id: `${Date.now()}-${fileNameWithoutExt}`,
+			// For SVG files, explicitly set format to preserve extension
+			...(isSvg && { format: 'svg' })
+		}
+		
+		// Log upload attempt for debugging
+		if (isSvg) {
+			logger.info('Attempting SVG upload with options:', {
+				filename: file.name,
+				mimeType: file.type,
+				size: file.size,
+				uploadOptions
+			})
 		}
 
 		// Upload to Cloudinary
@@ -132,13 +149,11 @@ export async function uploadFile(
 			uploadStream.end(buffer)
 		})
 
-		// Generate thumbnail URL (for SVG, just use the original URL)
-		const thumbnailUrl = isSvg 
-			? result.secure_url 
-			: cloudinary.url(result.public_id, {
-				...imageSizes.thumbnail,
-				secure: true
-			})
+		// Generate thumbnail URL
+		const thumbnailUrl = cloudinary.url(result.public_id, {
+			...imageSizes.thumbnail,
+			secure: true
+		})
 
 		logger.mediaUpload(file.name, file.size, file.type, true)
 
@@ -174,19 +189,17 @@ export async function uploadFiles(
 }
 
 // Delete a file from Cloudinary
-export async function deleteFile(publicId: string, resourceType: string = 'image'): Promise<boolean> {
+export async function deleteFile(publicId: string): Promise<boolean> {
 	try {
 		if (!isCloudinaryConfigured()) {
 			throw new Error('Cloudinary is not configured')
 		}
 
-		// Check if this is an SVG file by looking at the public ID
-		const isSvg = publicId.includes('-svg') || publicId.endsWith('.svg')
-		const actualResourceType = isSvg ? 'raw' : resourceType
-
+		// Try to delete with auto resource type first
 		const result = await cloudinary.uploader.destroy(publicId, {
-			resource_type: actualResourceType
+			resource_type: 'auto'
 		})
+		
 		return result.result === 'ok'
 	} catch (error) {
 		logger.error('Cloudinary delete failed', error as Error)
