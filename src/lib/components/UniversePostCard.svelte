@@ -19,7 +19,7 @@
 <UniverseCard item={post} type="post">
 	{#if post.title}
 		<h2 class="card-title">
-			<a href="/universe/{post.slug}" class="card-title-link" onclick={(e) => e.preventDefault()} tabindex="-1">{post.title}</a>
+			<a href="/universe/{post.slug}" class="card-title-link" tabindex="-1">{post.title}</a>
 		</h2>
 	{/if}
 
@@ -43,7 +43,7 @@
 
 	{#if post.postType === 'essay' && isContentTruncated}
 		<p>
-			<a href="/universe/{post.slug}" class="read-more" onclick={(e) => e.preventDefault()} tabindex="-1">Continue reading</a>
+			<a href="/universe/{post.slug}" class="read-more" tabindex="-1">Continue reading</a>
 		</p>
 	{/if}
 

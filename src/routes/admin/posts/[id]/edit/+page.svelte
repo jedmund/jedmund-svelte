@@ -35,6 +35,179 @@
 
 	let config = $derived(postTypeConfig[postType])
 
+	// Convert blocks format (from database) to Tiptap format
+	function convertBlocksToTiptap(blocksContent: any): JSONContent {
+		if (!blocksContent || !blocksContent.blocks) {
+			return { type: 'doc', content: [] }
+		}
+
+		const tiptapContent = blocksContent.blocks.map((block: any) => {
+			switch (block.type) {
+				case 'paragraph':
+					return {
+						type: 'paragraph',
+						content: block.content ? [{ type: 'text', text: block.content }] : []
+					}
+				
+				case 'heading':
+					return {
+						type: 'heading',
+						attrs: { level: block.level || 1 },
+						content: block.content ? [{ type: 'text', text: block.content }] : []
+					}
+				
+				case 'bulletList':
+				case 'ul':
+					return {
+						type: 'bulletList',
+						content: (block.content || []).map((item: any) => ({
+							type: 'listItem',
+							content: [{
+								type: 'paragraph',
+								content: [{ type: 'text', text: item.content || item }]
+							}]
+						}))
+					}
+				
+				case 'orderedList':
+				case 'ol':
+					return {
+						type: 'orderedList',
+						content: (block.content || []).map((item: any) => ({
+							type: 'listItem',
+							content: [{
+								type: 'paragraph',
+								content: [{ type: 'text', text: item.content || item }]
+							}]
+						}))
+					}
+				
+				case 'blockquote':
+					return {
+						type: 'blockquote',
+						content: [{
+							type: 'paragraph',
+							content: [{ type: 'text', text: block.content || '' }]
+						}]
+					}
+				
+				case 'codeBlock':
+				case 'code':
+					return {
+						type: 'codeBlock',
+						attrs: { language: block.language || '' },
+						content: [{ type: 'text', text: block.content || '' }]
+					}
+				
+				case 'image':
+					return {
+						type: 'image',
+						attrs: {
+							src: block.src || '',
+							alt: block.alt || '',
+							title: block.caption || ''
+						}
+					}
+				
+				case 'hr':
+				case 'horizontalRule':
+					return { type: 'horizontalRule' }
+				
+				default:
+					// Default to paragraph for unknown types
+					return {
+						type: 'paragraph',
+						content: block.content ? [{ type: 'text', text: block.content }] : []
+					}
+			}
+		})
+
+		return {
+			type: 'doc',
+			content: tiptapContent
+		}
+	}
+
+	// Convert Tiptap format back to blocks format for saving
+	function convertTiptapToBlocks(tiptapContent: JSONContent): any {
+		if (!tiptapContent || !tiptapContent.content) {
+			return { blocks: [] }
+		}
+
+		const blocks = tiptapContent.content.map((node: any) => {
+			switch (node.type) {
+				case 'paragraph':
+					const text = extractTextFromNode(node)
+					return text ? { type: 'paragraph', content: text } : null
+				
+				case 'heading':
+					return {
+						type: 'heading',
+						level: node.attrs?.level || 1,
+						content: extractTextFromNode(node)
+					}
+				
+				case 'bulletList':
+					return {
+						type: 'bulletList',
+						content: node.content?.map((item: any) => {
+							const itemText = extractTextFromNode(item.content?.[0])
+							return itemText
+						}).filter(Boolean) || []
+					}
+				
+				case 'orderedList':
+					return {
+						type: 'orderedList',
+						content: node.content?.map((item: any) => {
+							const itemText = extractTextFromNode(item.content?.[0])
+							return itemText
+						}).filter(Boolean) || []
+					}
+				
+				case 'blockquote':
+					return {
+						type: 'blockquote',
+						content: extractTextFromNode(node.content?.[0])
+					}
+				
+				case 'codeBlock':
+					return {
+						type: 'codeBlock',
+						language: node.attrs?.language || '',
+						content: node.content?.[0]?.text || ''
+					}
+				
+				case 'image':
+					return {
+						type: 'image',
+						src: node.attrs?.src || '',
+						alt: node.attrs?.alt || '',
+						caption: node.attrs?.title || ''
+					}
+				
+				case 'horizontalRule':
+					return { type: 'hr' }
+				
+				default:
+					// Skip unknown types
+					return null
+			}
+		}).filter(Boolean)
+
+		return { blocks }
+	}
+
+	// Helper function to extract text from a node
+	function extractTextFromNode(node: any): string {
+		if (!node) return ''
+		if (node.text) return node.text
+		if (node.content && Array.isArray(node.content)) {
+			return node.content.map((n: any) => extractTextFromNode(n)).join('')
+		}
+		return ''
+	}
+
 	onMount(async () => {
 		// Wait a tick to ensure page params are loaded
 		await new Promise((resolve) => setTimeout(resolve, 0))
@@ -71,7 +244,16 @@
 				status = post.status || 'draft'
 				slug = post.slug || ''
 				excerpt = post.excerpt || ''
-				content = post.content || { type: 'doc', content: [] }
+				
+				// Convert blocks format to Tiptap format if needed
+				if (post.content && post.content.blocks) {
+					content = convertBlocksToTiptap(post.content)
+				} else if (post.content && post.content.type === 'doc') {
+					content = post.content
+				} else {
+					content = { type: 'doc', content: [] }
+				}
+				
 				tags = post.tags || []
 			} else {
 				if (response.status === 404) {
@@ -109,12 +291,19 @@
 		}
 
 		saving = true
+		
+		// Convert content to blocks format if it's in Tiptap format
+		let saveContent = content
+		if (config?.showContent && content && content.type === 'doc') {
+			saveContent = convertTiptapToBlocks(content)
+		}
+		
 		const postData = {
 			title: config?.showTitle ? title : null,
 			slug,
 			type: postType,
 			status: publishStatus || status,
-			content: config?.showContent ? content : null,
+			content: config?.showContent ? saveContent : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
 			link_url: undefined,
 			linkDescription: undefined,

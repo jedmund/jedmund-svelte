@@ -2,6 +2,7 @@
 	import Page from '$components/Page.svelte'
 	import DynamicPostContent from '$components/DynamicPostContent.svelte'
 	import { getContentExcerpt } from '$lib/utils/content'
+	import { goto } from '$app/navigation'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -10,24 +11,20 @@
 	const error = $derived(data.error)
 	const pageTitle = $derived(post?.title || 'Post')
 	const description = $derived(
-		post?.content ? getContentExcerpt(post.content, 160) : `${post?.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`
+		post?.content
+			? getContentExcerpt(post.content, 160)
+			: `${post?.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`
 	)
 </script>
 
 <svelte:head>
 	{#if post}
 		<title>{pageTitle} - jedmund</title>
-		<meta
-			name="description"
-			content={description}
-		/>
+		<meta name="description" content={description} />
 
 		<!-- Open Graph meta tags -->
 		<meta property="og:title" content={pageTitle} />
-		<meta
-			property="og:description"
-			content={description}
-		/>
+		<meta property="og:description" content={description} />
 		<meta property="og:type" content="article" />
 		{#if post.attachments && post.attachments.length > 0}
 			<meta property="og:image" content={post.attachments[0].url} />
@@ -47,7 +44,18 @@
 			<div class="error-content">
 				<h1>Post Not Found</h1>
 				<p>{error || "The post you're looking for doesn't exist."}</p>
-				<a href="/universe" class="back-link">← Back to Universe</a>
+				<button onclick={() => goto('/universe')} class="back-button">
+					<svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="back-arrow">
+						<path
+							d="M15 8H3.5M3.5 8L8 3.5M3.5 8L8 12.5"
+							stroke="currentColor"
+							stroke-width="2.25"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+					Back to Universe
+				</button>
 			</div>
 		</div>
 	</Page>
@@ -83,16 +91,35 @@
 			line-height: 1.5;
 		}
 
-		.back-link {
+		.back-button {
 			color: $red-60;
-			text-decoration: none;
+			background-color: transparent;
+			border: 1px solid transparent;
+			font: inherit;
+			font-size: 0.875rem;
 			font-weight: 500;
-			transition: all 0.2s ease;
+			cursor: pointer;
+			transition: all 0.15s ease;
+			display: inline-flex;
+			align-items: center;
+			gap: $unit;
+			border-radius: 24px;
+			outline: none;
 
-			&:hover {
-				text-decoration: underline;
-				text-decoration-style: wavy;
-				text-underline-offset: 0.15em;
+			&:hover:not(:disabled) {
+				.back-arrow {
+					transform: translateX(-3px);
+				}
+			}
+
+			&:focus-visible {
+				box-shadow: 0 0 0 3px rgba($red-60, 0.25);
+			}
+
+			.back-arrow {
+				flex-shrink: 0;
+				transition: transform 0.2s ease;
+				margin-left: -$unit-half;
 			}
 		}
 	}

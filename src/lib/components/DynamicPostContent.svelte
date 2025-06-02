@@ -3,6 +3,7 @@
 	import Slideshow from './Slideshow.svelte'
 	import { formatDate } from '$lib/utils/date'
 	import { renderEdraContent } from '$lib/utils/content'
+	import { goto } from '$app/navigation'
 
 	let { post }: { post: any } = $props()
 
@@ -12,9 +13,11 @@
 <article class="post-content {post.postType}">
 	<header class="post-header">
 		<div class="post-meta">
-			<time class="post-date" datetime={post.publishedAt}>
-				{formatDate(post.publishedAt)}
-			</time>
+			<a href="/universe/{post.slug}" class="post-date-link">
+				<time class="post-date" datetime={post.publishedAt}>
+					{formatDate(post.publishedAt)}
+				</time>
+			</a>
 		</div>
 
 		{#if post.title}
@@ -78,13 +81,27 @@
 	{/if}
 
 	<footer class="post-footer">
-		<a href="/universe" class="back-link">← Back to Universe</a>
+		<button onclick={() => goto('/universe')} class="back-button">
+			<svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="back-arrow">
+				<path
+					d="M15 8H3.5M3.5 8L8 3.5M3.5 8L8 12.5"
+					stroke="currentColor"
+					stroke-width="2.25"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+			</svg>
+			Back to Universe
+		</button>
 	</footer>
 </article>
 
 <style lang="scss">
 	.post-content {
+		display: flex;
+		flex-direction: column;
 		max-width: 784px;
+		gap: $unit-3x;
 		margin: 0 auto;
 		padding: 0 $unit-3x;
 
@@ -108,20 +125,33 @@
 	}
 
 	.post-header {
-		margin-bottom: $unit-5x;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-2x;
 	}
 
 	.post-meta {
 		display: flex;
 		align-items: center;
 		gap: $unit-2x;
-		margin-bottom: $unit-3x;
+	}
+
+	.post-date-link {
+		text-decoration: none;
+		transition: color 0.2s ease;
+
+		&:hover {
+			.post-date {
+				color: $red-60;
+			}
+		}
 	}
 
 	.post-date {
 		font-size: 0.9rem;
 		color: $grey-40;
 		font-weight: 400;
+		transition: color 0.2s ease;
 	}
 
 	.post-title {
@@ -202,6 +232,10 @@
 
 		:global(p) {
 			margin: 0 0 $unit-3x;
+		}
+
+		:global(p:last-child) {
+			margin-bottom: 0;
 		}
 
 		:global(ul),
@@ -293,21 +327,38 @@
 	}
 
 	.post-footer {
-		margin-top: $unit-6x;
-		padding-top: $unit-4x;
-		border-top: 1px solid $grey-85;
+		padding-bottom: $unit-2x;
 	}
 
-	.back-link {
+	.back-button {
 		color: $red-60;
-		text-decoration: none;
+		background-color: transparent;
+		border: 1px solid transparent;
+		font: inherit;
+		font-size: 0.875rem;
 		font-weight: 500;
-		transition: all 0.2s ease;
+		cursor: pointer;
+		transition: all 0.15s ease;
+		display: inline-flex;
+		align-items: center;
+		gap: $unit;
+		border-radius: 24px;
+		outline: none;
 
-		&:hover {
-			text-decoration: underline;
-			text-decoration-style: wavy;
-			text-underline-offset: 0.15em;
+		&:hover:not(:disabled) {
+			.back-arrow {
+				transform: translateX(-3px);
+			}
+		}
+
+		&:focus-visible {
+			box-shadow: 0 0 0 3px rgba($red-60, 0.25);
+		}
+
+		.back-arrow {
+			flex-shrink: 0;
+			transition: transform 0.2s ease;
+			margin-left: -$unit-half;
 		}
 	}
 </style>
