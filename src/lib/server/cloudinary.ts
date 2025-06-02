@@ -106,14 +106,22 @@ export async function uploadFile(
 		const arrayBuffer = await file.arrayBuffer()
 		const buffer = Buffer.from(arrayBuffer)
 
+		// Check if file is SVG
+		const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
+		
+		// Prepare upload options
+		const uploadOptions = {
+			...uploadPresets[type],
+			...customOptions,
+			public_id: `${Date.now()}-${file.name.replace(/\.[^/.]+$/, '')}`,
+			// Override resource_type for SVG files
+			...(isSvg && { resource_type: 'raw' as const })
+		}
+
 		// Upload to Cloudinary
 		const result = await new Promise<UploadApiResponse>((resolve, reject) => {
 			const uploadStream = cloudinary.uploader.upload_stream(
-				{
-					...uploadPresets[type],
-					...customOptions,
-					public_id: `${Date.now()}-${file.name.replace(/\.[^/.]+$/, '')}`
-				},
+				uploadOptions,
 				(error, result) => {
 					if (error) reject(error)
 					else if (result) resolve(result)
@@ -124,11 +132,13 @@ export async function uploadFile(
 			uploadStream.end(buffer)
 		})
 
-		// Generate thumbnail URL
-		const thumbnailUrl = cloudinary.url(result.public_id, {
-			...imageSizes.thumbnail,
-			secure: true
-		})
+		// Generate thumbnail URL (for SVG, just use the original URL)
+		const thumbnailUrl = isSvg 
+			? result.secure_url 
+			: cloudinary.url(result.public_id, {
+				...imageSizes.thumbnail,
+				secure: true
+			})
 
 		logger.mediaUpload(file.name, file.size, file.type, true)
 
@@ -164,13 +174,19 @@ export async function uploadFiles(
 }
 
 // Delete a file from Cloudinary
-export async function deleteFile(publicId: string): Promise<boolean> {
+export async function deleteFile(publicId: string, resourceType: string = 'image'): Promise<boolean> {
 	try {
 		if (!isCloudinaryConfigured()) {
 			throw new Error('Cloudinary is not configured')
 		}
 
-		const result = await cloudinary.uploader.destroy(publicId)
+		// Check if this is an SVG file by looking at the public ID
+		const isSvg = publicId.includes('-svg') || publicId.endsWith('.svg')
+		const actualResourceType = isSvg ? 'raw' : resourceType
+
+		const result = await cloudinary.uploader.destroy(publicId, {
+			resource_type: actualResourceType
+		})
 		return result.result === 'ok'
 	} catch (error) {
 		logger.error('Cloudinary delete failed', error as Error)
