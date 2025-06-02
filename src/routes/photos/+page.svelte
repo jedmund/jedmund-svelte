@@ -33,7 +33,7 @@
 		width: 100%;
 		max-width: 900px;
 		margin: 0 auto;
-		padding: $unit-4x $unit-3x;
+		padding: 0 $unit-3x;
 
 		@include breakpoint('phone') {
 			padding: $unit-3x $unit-2x;

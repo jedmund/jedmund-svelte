@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Project } from '$lib/types/project'
+	import Button from './admin/Button.svelte'
 
 	const { project }: { project: Project } = $props()
 
@@ -11,28 +12,40 @@
 {#if isClickable}
 	<a href={projectUrl} class="lab-card clickable">
 		<div class="card-header">
-			<h3 class="project-title">{project.title}</h3>
-			<span class="project-year">{project.year}</span>
+			<div class="project-title-container">
+				<h3 class="project-title">{project.title}</h3>
+				<span class="project-year">{project.year}</span>
+			</div>
+			{#if project.externalUrl}
+				<Button
+					variant="primary"
+					buttonSize="medium"
+					href={project.externalUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					iconPosition="right"
+					onclick={(e) => e.stopPropagation()}
+				>
+					Visit site
+					<svg
+						slot="icon"
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M5 12h14" />
+						<path d="m12 5 7 7-7 7" />
+					</svg>
+				</Button>
+			{/if}
 		</div>
 
 		<p class="project-description">{project.description}</p>
-
-		{#if project.externalUrl}
-			<div class="project-links">
-				<span class="project-link primary external">
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-						<path
-							d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-					Visit Project
-				</span>
-			</div>
-		{/if}
 
 		<!-- Add status indicators for different project states -->
 		{#if project.status === 'password-protected'}
@@ -58,33 +71,35 @@
 {:else}
 	<article class="lab-card">
 		<div class="card-header">
-			<h3 class="project-title">{project.title}</h3>
-			<span class="project-year">{project.year}</span>
+			<div class="project-title-container">
+				<h3 class="project-title">{project.title}</h3>
+				<span class="project-year">{project.year}</span>
+			</div>
+
+			{#if project.externalUrl}
+				<div class="project-links">
+					<a
+						href={project.externalUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="project-link primary"
+					>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+							<path
+								d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
+						Visit Project
+					</a>
+				</div>
+			{/if}
 		</div>
 
 		<p class="project-description">{project.description}</p>
-
-		{#if project.externalUrl}
-			<div class="project-links">
-				<a
-					href={project.externalUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="project-link primary"
-				>
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-						<path
-							d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-					Visit Project
-				</a>
-			</div>
-		{/if}
 
 		<!-- Add status indicators for different project states -->
 		{#if project.status === 'list-only'}
@@ -116,12 +131,14 @@
 		background: $grey-100;
 		border-radius: $card-corner-radius;
 		padding: $unit-3x;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-3x;
 		transition:
 			transform 0.2s ease,
 			box-shadow 0.2s ease;
 		text-decoration: none;
 		color: inherit;
-		display: block;
 
 		&:hover {
 			transform: translateY(-2px);
@@ -135,20 +152,35 @@
 		@include breakpoint('phone') {
 			padding: $unit-2x;
 		}
+
+		p {
+			margin-bottom: 0;
+		}
 	}
 
 	.card-header {
 		display: flex;
 		justify-content: space-between;
-		align-items: baseline;
-		margin-bottom: $unit-2x;
+		align-items: flex-start;
 		gap: $unit-2x;
+
+		// Style the Button component when used in card header
+		:global(.btn) {
+			flex-shrink: 0;
+			margin-top: 2px; // Align with title baseline
+		}
+	}
+
+	.project-title-container {
+		display: flex;
+		flex-direction: column;
+		gap: $unit-half;
 	}
 
 	.project-title {
 		margin: 0;
 		font-size: 1.25rem;
-		font-weight: 600;
+		font-weight: 400;
 		color: $grey-00;
 		line-height: 1.3;
 
@@ -158,9 +190,9 @@
 	}
 
 	.project-year {
-		font-size: 0.875rem;
+		font-size: 1rem;
 		color: $grey-40;
-		font-weight: 500;
+		font-weight: 400;
 		white-space: nowrap;
 	}
 

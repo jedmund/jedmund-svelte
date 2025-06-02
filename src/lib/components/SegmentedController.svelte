@@ -16,9 +16,9 @@
 
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
-		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
+		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
-		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' }
+		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' }
 	]
 
 	// Track hover state for each item
@@ -28,11 +28,11 @@
 	const activeIndex = $derived(
 		currentPath === '/'
 			? 0
-			: currentPath.startsWith('/labs')
+			: currentPath.startsWith('/universe')
 				? 1
 				: currentPath.startsWith('/photos')
 					? 2
-					: currentPath.startsWith('/universe')
+					: currentPath.startsWith('/labs')
 						? 3
 						: -1
 	)
@@ -186,25 +186,17 @@
 	}
 
 	// Different animations for each nav item
-	// First item is Work (index 1)
+	// First item is Work
 	.nav-item:nth-of-type(1) :global(svg.animate) {
 		animation: cursorWiggle 0.6s ease;
 	}
 
-	// Second item is Photos (index 2) - animation handled by individual rect animations
-
-	// Third item is Labs (index 3)
+	// Second item is Universe
 	.nav-item:nth-of-type(2) :global(svg.animate) {
-		animation: tubeRotate 0.6s ease;
-		transform-origin: center bottom;
-	}
-
-	// Fourth item is Universe (index 4)
-	.nav-item:nth-of-type(4) :global(svg.animate) {
 		animation: starSpin 0.6s ease;
 	}
 
-	// Specific animation for photo masonry rectangles
+	// Third item is Photos - animation handled by individual rect animations
 	.nav-item:nth-of-type(3) :global(svg.animate rect:nth-child(1)) {
 		animation: masonryRect1 0.6s ease;
 	}
@@ -219,5 +211,11 @@
 
 	.nav-item:nth-of-type(3) :global(svg.animate rect:nth-child(4)) {
 		animation: masonryRect4 0.6s ease;
+	}
+
+	// Fourth item is Labs
+	.nav-item:nth-of-type(4) :global(svg.animate) {
+		animation: tubeRotate 0.6s ease;
+		transform-origin: center bottom;
 	}
 </style>
