@@ -47,7 +47,7 @@ export function isValidStatus(status: any): status is Status {
 }
 
 // Post type validation
-export const VALID_POST_TYPES = ['blog', 'microblog', 'link', 'photo', 'album'] as const
+export const VALID_POST_TYPES = ['post', 'essay'] as const
 export type PostType = (typeof VALID_POST_TYPES)[number]
 
 export function isValidPostType(type: any): type is PostType {

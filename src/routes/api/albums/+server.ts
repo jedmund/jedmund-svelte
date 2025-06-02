@@ -33,13 +33,23 @@ export const GET: RequestHandler = async (event) => {
 		// Get total count
 		const total = await prisma.album.count({ where })
 
-		// Get albums with photo count
+		// Get albums with photo count and photos for thumbnails
 		const albums = await prisma.album.findMany({
 			where,
 			orderBy: { createdAt: 'desc' },
 			skip,
 			take: limit,
 			include: {
+				photos: {
+					select: {
+						id: true,
+						url: true,
+						thumbnailUrl: true,
+						caption: true
+					},
+					orderBy: { displayOrder: 'asc' },
+					take: 5 // Only get first 5 photos for thumbnails
+				},
 				_count: {
 					select: { photos: true }
 				}

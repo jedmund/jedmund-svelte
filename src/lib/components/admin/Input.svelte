@@ -348,6 +348,7 @@
 	.input-large {
 		padding: $unit-2x $unit-3x;
 		font-size: 16px;
+		box-sizing: border-box;
 	}
 
 	// Shape variants - pill vs rounded

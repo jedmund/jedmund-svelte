@@ -169,24 +169,28 @@ async function main() {
 
 	console.log(`✅ Created ${labsProjects.length} labs projects`)
 
-	// Create test posts
+	// Create test posts using new simplified types
 	const posts = await Promise.all([
 		prisma.post.create({
 			data: {
 				slug: 'hello-world',
-				postType: 'blog',
+				postType: 'essay',
 				title: 'Hello World',
 				content: {
 					blocks: [
-						{ type: 'paragraph', content: 'This is my first blog post on the new CMS!' },
+						{ type: 'paragraph', content: 'This is my first essay on the new CMS!' },
 						{
 							type: 'paragraph',
-							content: 'The system supports multiple post types and rich content editing.'
+							content: 'The system now uses a simplified post type system with just essays and posts.'
+						},
+						{
+							type: 'paragraph',
+							content: 'Essays are perfect for longer-form content with titles and excerpts, while posts are great for quick thoughts and updates.'
 						}
 					]
 				},
-				excerpt: 'Welcome to my new blog powered by a custom CMS.',
-				tags: ['announcement', 'meta'],
+				excerpt: 'Welcome to my new blog powered by a custom CMS with simplified post types.',
+				tags: ['announcement', 'meta', 'cms'],
 				status: 'published',
 				publishedAt: new Date()
 			}
@@ -194,29 +198,78 @@ async function main() {
 		prisma.post.create({
 			data: {
 				slug: 'quick-thought',
-				postType: 'microblog',
+				postType: 'post',
 				content: {
 					blocks: [
 						{
 							type: 'paragraph',
-							content: 'Just pushed a major update to the site. Feeling good about the progress!'
+							content: 'Just pushed a major update to the site. The new simplified post types are working great! 🎉'
 						}
 					]
 				},
+				tags: ['update', 'development'],
 				status: 'published',
 				publishedAt: new Date(Date.now() - 86400000) // Yesterday
 			}
 		}),
 		prisma.post.create({
 			data: {
-				slug: 'great-article',
-				postType: 'link',
-				title: 'Great Article on Web Performance',
-				linkUrl: 'https://web.dev/performance',
-				linkDescription:
-					'This article perfectly explains the core web vitals and how to optimize for them.',
+				slug: 'design-systems-thoughts',
+				postType: 'essay',
+				title: 'Thoughts on Design Systems',
+				content: {
+					blocks: [
+						{
+							type: 'paragraph',
+							content: 'Design systems have become essential for maintaining consistency across large products.'
+						},
+						{
+							type: 'paragraph',
+							content: 'The key is finding the right balance between flexibility and constraints.'
+						},
+						{
+							type: 'paragraph',
+							content: 'Too rigid, and designers feel boxed in. Too flexible, and you lose consistency.'
+						}
+					]
+				},
+				excerpt: 'Exploring the balance between flexibility and constraints in design systems.',
+				tags: ['design', 'systems', 'ux'],
 				status: 'published',
 				publishedAt: new Date(Date.now() - 172800000) // 2 days ago
+			}
+		}),
+		prisma.post.create({
+			data: {
+				slug: 'morning-coffee',
+				postType: 'post',
+				content: {
+					blocks: [
+						{
+							type: 'paragraph',
+							content: 'Perfect morning for coding with a fresh cup of coffee ☕'
+						}
+					]
+				},
+				tags: ['life', 'coffee'],
+				status: 'published',
+				publishedAt: new Date(Date.now() - 259200000) // 3 days ago
+			}
+		}),
+		prisma.post.create({
+			data: {
+				slug: 'weekend-project',
+				postType: 'post',
+				content: {
+					blocks: [
+						{
+							type: 'paragraph',
+							content: 'Built a small CLI tool over the weekend. Sometimes the best projects come from scratching your own itch.'
+						}
+					]
+				},
+				tags: ['projects', 'cli', 'weekend'],
+				status: 'draft'
 			}
 		})
 	])

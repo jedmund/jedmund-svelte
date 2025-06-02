@@ -191,13 +191,12 @@
 		}
 
 		&:hover {
-			color: $red-60;
-			background-color: $salmon-pink;
+			background-color: $grey-70;
 		}
 
 		&.active {
-			color: white;
-			background-color: $red-60;
+			color: $red-60;
+			background-color: $salmon-pink;
 		}
 
 		.nav-icon {

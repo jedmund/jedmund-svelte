@@ -3,72 +3,86 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import FormField from '$lib/components/admin/FormField.svelte'
-	import FormFieldWrapper from '$lib/components/admin/FormFieldWrapper.svelte'
 	import Editor from '$lib/components/admin/Editor.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
-	import PhotoPostForm from '$lib/components/admin/PhotoPostForm.svelte'
-	import AlbumForm from '$lib/components/admin/AlbumForm.svelte'
+	import MetadataPopover from '$lib/components/admin/MetadataPopover.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
-	let post: any = null
-	let loading = true
-	let saving = false
+	let post = $state<any>(null)
+	let loading = $state(true)
+	let saving = $state(false)
+	let loadError = $state('')
 
-	let title = ''
-	let postType: 'blog' | 'microblog' | 'link' | 'photo' | 'album' = 'blog'
-	let status: 'draft' | 'published' = 'draft'
-	let slug = ''
-	let excerpt = ''
-	let linkUrl = ''
-	let linkDescription = ''
-	let content: JSONContent = { type: 'doc', content: [] }
-	let tags: string[] = []
-	let tagInput = ''
-	let showMetadata = false
-	let isPublishDropdownOpen = false
+	let title = $state('')
+	let postType = $state<'post' | 'essay'>('post')
+	let status = $state<'draft' | 'published'>('draft')
+	let slug = $state('')
+	let excerpt = $state('')
+	let content = $state<JSONContent>({ type: 'doc', content: [] })
+	let tags = $state<string[]>([])
+	let tagInput = $state('')
+	let showMetadata = $state(false)
+	let isPublishDropdownOpen = $state(false)
 	let publishButtonRef: HTMLButtonElement
+	let metadataButtonRef: HTMLButtonElement
 
 	const postTypeConfig = {
-		blog: { icon: '📝', label: 'Blog Post', showTitle: true, showContent: true },
-		microblog: { icon: '💭', label: 'Microblog', showTitle: false, showContent: true },
-		link: { icon: '🔗', label: 'Link', showTitle: true, showContent: false },
-		photo: { icon: '📷', label: 'Photo', showTitle: true, showContent: false },
-		album: { icon: '🖼️', label: 'Album', showTitle: true, showContent: false }
+		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
+		essay: { icon: '📝', label: 'Essay', showTitle: true, showContent: true }
 	}
 
 	let config = $derived(postTypeConfig[postType])
 
 	onMount(async () => {
+		// Wait a tick to ensure page params are loaded
+		await new Promise((resolve) => setTimeout(resolve, 0))
 		await loadPost()
 	})
 
 	async function loadPost() {
+		const postId = $page.params.id
+
+		if (!postId) {
+			loadError = 'No post ID provided'
+			loading = false
+			return
+		}
+
 		const auth = localStorage.getItem('admin_auth')
+
 		if (!auth) {
 			goto('/admin/login')
 			return
 		}
 
 		try {
-			const response = await fetch(`/api/posts/${$page.params.id}`, {
+			const response = await fetch(`/api/posts/${postId}`, {
 				headers: { Authorization: `Basic ${auth}` }
 			})
+
 			if (response.ok) {
 				post = await response.json()
+
 				// Populate form fields
 				title = post.title || ''
-				postType = post.type || post.postType
-				status = post.status
+				postType = post.postType || 'post'
+				status = post.status || 'draft'
 				slug = post.slug || ''
 				excerpt = post.excerpt || ''
-				linkUrl = post.link_url || post.linkUrl || ''
-				linkDescription = post.link_description || post.linkDescription || ''
 				content = post.content || { type: 'doc', content: [] }
 				tags = post.tags || []
+			} else {
+				if (response.status === 404) {
+					loadError = 'Post not found'
+				} else if (response.status === 401) {
+					goto('/admin/login')
+					return
+				} else {
+					loadError = `Failed to load post: ${response.status} ${response.statusText}`
+				}
 			}
 		} catch (error) {
-			console.error('Failed to load post:', error)
+			loadError = 'Network error occurred while loading post'
 		} finally {
 			loading = false
 		}
@@ -94,14 +108,14 @@
 
 		saving = true
 		const postData = {
-			title: config.showTitle ? title : null,
+			title: config?.showTitle ? title : null,
 			slug,
 			type: postType,
 			status: publishStatus || status,
-			content: config.showContent ? content : null,
-			excerpt: postType === 'blog' ? excerpt : undefined,
-			link_url: postType === 'link' ? linkUrl : undefined,
-			link_description: postType === 'link' ? linkDescription : undefined,
+			content: config?.showContent ? content : null,
+			excerpt: postType === 'essay' ? excerpt : undefined,
+			link_url: undefined,
+			linkDescription: undefined,
 			tags
 		}
 
@@ -157,10 +171,29 @@
 		}
 	}
 
+	function handleMetadataPopover(event: MouseEvent) {
+		const target = event.target as Node
+		// Don't close if clicking inside the metadata button or anywhere in a metadata popover
+		if (
+			metadataButtonRef?.contains(target) ||
+			document.querySelector('.metadata-popover')?.contains(target)
+		) {
+			return
+		}
+		showMetadata = false
+	}
+
 	$effect(() => {
 		if (isPublishDropdownOpen) {
 			document.addEventListener('click', handlePublishDropdown)
 			return () => document.removeEventListener('click', handlePublishDropdown)
+		}
+	})
+
+	$effect(() => {
+		if (showMetadata) {
+			document.addEventListener('click', handleMetadataPopover)
+			return () => document.removeEventListener('click', handleMetadataPopover)
 		}
 	})
 </script>
@@ -180,33 +213,41 @@
 						/>
 					</svg>
 				</button>
-				<h1>{config.icon} Edit {config.label}</h1>
 			</div>
 			<div class="header-actions">
-				<button class="btn btn-text" onclick={handleDelete}>
-					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path
-							d="M4 4L12 12M4 12L12 4"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
+				<div class="metadata-popover-container">
+					<button
+						class="btn btn-text"
+						onclick={(e) => {
+							e.stopPropagation()
+							showMetadata = !showMetadata
+						}}
+						bind:this={metadataButtonRef}
+					>
+						<svg width="16" height="16" viewBox="0 0 56 56" fill="none">
+							<path
+								fill="currentColor"
+								d="M 36.4023 19.3164 C 38.8398 19.3164 40.9257 17.7461 41.6992 15.5898 L 49.8085 15.5898 C 50.7695 15.5898 51.6133 14.7461 51.6133 13.6914 C 51.6133 12.6367 50.7695 11.8164 49.8085 11.8164 L 41.7226 11.8164 C 40.9257 9.6367 38.8398 8.0430 36.4023 8.0430 C 33.9648 8.0430 31.8789 9.6367 31.1054 11.8164 L 6.2851 11.8164 C 5.2304 11.8164 4.3867 12.6367 4.3867 13.6914 C 4.3867 14.7461 5.2304 15.5898 6.2851 15.5898 L 31.1054 15.5898 C 31.8789 17.7461 33.9648 19.3164 36.4023 19.3164 Z M 6.1913 26.1133 C 5.2304 26.1133 4.3867 26.9570 4.3867 28.0117 C 4.3867 29.0664 5.2304 29.8867 6.1913 29.8867 L 14.5586 29.8867 C 15.3320 32.0898 17.4179 33.6601 19.8554 33.6601 C 22.3164 33.6601 24.4023 32.0898 25.1757 29.8867 L 49.7149 29.8867 C 50.7695 29.8867 51.6133 29.0664 51.6133 28.0117 C 51.6133 26.9570 50.7695 26.1133 49.7149 26.1133 L 25.1757 26.1133 C 24.3789 23.9570 22.2929 22.3867 19.8554 22.3867 C 17.4413 22.3867 15.3554 23.9570 14.5586 26.1133 Z M 36.4023 47.9570 C 38.8398 47.9570 40.9257 46.3867 41.6992 44.2070 L 49.8085 44.2070 C 50.7695 44.2070 51.6133 43.3867 51.6133 42.3320 C 51.6133 41.2773 50.7695 40.4336 49.8085 40.4336 L 41.6992 40.4336 C 40.9257 38.2539 38.8398 36.7070 36.4023 36.7070 C 33.9648 36.7070 31.8789 38.2539 31.1054 40.4336 L 6.2851 40.4336 C 5.2304 40.4336 4.3867 41.2773 4.3867 42.3320 C 4.3867 43.3867 5.2304 44.2070 6.2851 44.2070 L 31.1054 44.2070 C 31.8789 46.3867 33.9648 47.9570 36.4023 47.9570 Z"
+							/>
+						</svg>
+						Metadata
+					</button>
+
+					{#if showMetadata && metadataButtonRef}
+						<MetadataPopover
+							{post}
+							{postType}
+							triggerElement={metadataButtonRef}
+							bind:slug
+							bind:excerpt
+							bind:tags
+							bind:tagInput
+							onAddTag={addTag}
+							onRemoveTag={removeTag}
+							onDelete={handleDelete}
 						/>
-					</svg>
-					Delete
-				</button>
-				<button class="btn btn-text" onclick={() => (showMetadata = !showMetadata)}>
-					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path
-							d="M8 4V8L10 10M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 8 4.68629 8 8Z"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-					Metadata
-				</button>
+					{/if}
+				</div>
 				{#if status === 'draft'}
 					<div class="publish-dropdown">
 						<button
@@ -253,153 +294,25 @@
 		<div class="loading-container">
 			<LoadingSpinner />
 		</div>
-	{:else if post && postType === 'photo'}
-		<PhotoPostForm 
-			mode="edit" 
-			postId={post.id}
-			initialData={{
-				title: post.title,
-				content: post.content,
-				featuredImage: post.featuredImage,
-				status: post.status,
-				tags: post.tags
-			}}
-		/>
-	{:else if post && postType === 'album'}
-		<AlbumForm 
-			mode="edit" 
-			postId={post.id}
-			initialData={{
-				title: post.title,
-				content: post.content,
-				gallery: post.gallery || [],
-				status: post.status,
-				tags: post.tags
-			}}
-		/>
+	{:else if loadError}
+		<div class="error-container">
+			<h2>Error Loading Post</h2>
+			<p>{loadError}</p>
+			<button class="btn btn-primary" onclick={() => loadPost()}>Try Again</button>
+		</div>
 	{:else if post}
 		<div class="post-composer">
 			<div class="main-content">
-				{#if config.showTitle}
+				{#if config?.showTitle}
 					<input type="text" bind:value={title} placeholder="Title" class="title-input" />
 				{/if}
 
-				{#if postType === 'link'}
-					<div class="link-fields">
-						<input
-							type="url"
-							bind:value={linkUrl}
-							placeholder="https://example.com"
-							class="link-url-input"
-							required
-						/>
-						<textarea
-							bind:value={linkDescription}
-							class="link-description"
-							rows="3"
-							placeholder="What makes this link interesting?"
-						/>
-					</div>
-				{:else if postType === 'photo'}
-					<div class="photo-upload">
-						<div class="photo-placeholder">
-							<svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-								<path
-									d="M40 14H31.5L28 10H20L16.5 14H8C5.8 14 4 15.8 4 18V34C4 36.2 5.8 38 8 38H40C42.2 38 44 36.2 44 34V18C44 15.8 42.2 14 40 14ZM24 32C19.6 32 16 28.4 16 24C16 19.6 19.6 16 24 16C28.4 16 32 19.6 32 24C32 28.4 28.4 32 24 32Z"
-									fill="currentColor"
-									opacity="0.1"
-								/>
-								<path
-									d="M24 28C26.2091 28 28 26.2091 28 24C28 21.7909 26.2091 20 24 20C21.7909 20 20 21.7909 20 24C20 26.2091 21.7909 28 24 28Z"
-									fill="currentColor"
-									opacity="0.3"
-								/>
-							</svg>
-							<p>Click to upload photo</p>
-						</div>
-					</div>
-				{:else if postType === 'album'}
-					<div class="album-upload">
-						<div class="album-placeholder">
-							<svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-								<rect x="8" y="8" width="24" height="24" rx="2" fill="currentColor" opacity="0.1" />
-								<rect
-									x="16"
-									y="16"
-									width="24"
-									height="24"
-									rx="2"
-									fill="currentColor"
-									opacity="0.2"
-								/>
-								<path
-									d="M16 24L20 20L24 24L32 16L40 24V38C40 39.1046 39.1046 40 38 40H18C16.8954 40 16 39.1046 16 38V24Z"
-									fill="currentColor"
-									opacity="0.3"
-								/>
-							</svg>
-							<p>Click to upload photos</p>
-							<span class="album-hint">Select multiple photos</span>
-						</div>
-					</div>
-				{/if}
-
-				{#if config.showContent}
+				{#if config?.showContent}
 					<div class="editor-wrapper">
 						<Editor bind:data={content} placeholder="Continue writing..." />
 					</div>
 				{/if}
 			</div>
-
-			{#if showMetadata}
-				<aside class="metadata-sidebar">
-					<h3>Post Settings</h3>
-
-					<FormField label="Slug" bind:value={slug} />
-
-					{#if postType === 'blog'}
-						<FormFieldWrapper label="Excerpt">
-							<textarea
-								bind:value={excerpt}
-								class="form-textarea"
-								rows="3"
-								placeholder="Brief description..."
-							/>
-						</FormFieldWrapper>
-					{/if}
-
-					<FormFieldWrapper label="Tags">
-						<div class="tag-input-wrapper">
-							<input
-								type="text"
-								bind:value={tagInput}
-								onkeydown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-								placeholder="Add tags..."
-								class="form-input"
-							/>
-							<button type="button" onclick={addTag} class="btn btn-small">Add</button>
-						</div>
-						{#if tags.length > 0}
-							<div class="tags">
-								{#each tags as tag}
-									<span class="tag">
-										{tag}
-										<button onclick={() => removeTag(tag)}>×</button>
-									</span>
-								{/each}
-							</div>
-						{/if}
-					</FormFieldWrapper>
-
-					<div class="metadata">
-						<p>Created: {new Date(post.created_at || post.createdAt).toLocaleString()}</p>
-						<p>Updated: {new Date(post.updated_at || post.updatedAt).toLocaleString()}</p>
-						{#if post.published_at || post.publishedAt}
-							<p>Published: {new Date(post.published_at || post.publishedAt).toLocaleString()}</p>
-						{/if}
-					</div>
-				</aside>
-			{/if}
 		</div>
 	{:else}
 		<div class="error">Post not found</div>
@@ -416,17 +329,30 @@
 		min-height: 400px;
 	}
 
+	.error-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		min-height: 400px;
+		text-align: center;
+		gap: $unit-2x;
+
+		h2 {
+			color: $grey-20;
+			margin: 0;
+		}
+
+		p {
+			color: $grey-40;
+			margin: 0;
+		}
+	}
+
 	.header-left {
 		display: flex;
 		align-items: center;
 		gap: $unit-2x;
-
-		h1 {
-			font-size: 1.5rem;
-			font-weight: 700;
-			margin: 0;
-			color: $grey-10;
-			}
 	}
 
 	.header-actions {
@@ -545,10 +471,6 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: $unit-4x;
-
-		&:has(.metadata-sidebar) {
-			grid-template-columns: 1fr 300px;
-		}
 	}
 
 	.main-content {
@@ -560,7 +482,7 @@
 
 	.title-input {
 		width: 100%;
-		padding: 0;
+		padding: 0 $unit-2x;
 		border: none;
 		font-size: 2.5rem;
 		font-weight: 700;
@@ -576,197 +498,18 @@
 		}
 	}
 
-	.link-fields {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-2x;
-	}
-
-	.link-url-input {
-		width: 100%;
-		padding: $unit-2x $unit-3x;
-		border: 1px solid $grey-80;
-		border-radius: 8px;
-		font-size: 1.125rem;
-		background-color: $grey-95;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-50;
-			background-color: white;
-		}
-	}
-
-	.link-description {
-		width: 100%;
-		padding: $unit-2x $unit-3x;
-		border: 1px solid $grey-80;
-		border-radius: 8px;
-		font-size: 1rem;
-		background-color: $grey-95;
-		resize: vertical;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-50;
-			background-color: white;
-		}
-	}
-
-	.photo-upload,
-	.album-upload {
-		width: 100%;
-	}
-
-	.photo-placeholder,
-	.album-placeholder {
-		border: 2px dashed $grey-80;
-		border-radius: 12px;
-		padding: $unit-8x;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: $unit-2x;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		background: $grey-95;
-
-		&:hover {
-			border-color: $grey-60;
-			background: $grey-90;
-		}
-
-		svg {
-			color: $grey-50;
-		}
-
-		p {
-			margin: 0;
-			color: $grey-30;
-			}
-	}
-
-	.album-hint {
-		font-size: 0.875rem;
-		color: $grey-50;
-	}
-
 	.editor-wrapper {
 		width: 100%;
 		min-height: 400px;
 	}
 
-	.metadata-sidebar {
-		background: $grey-95;
-		border-radius: 12px;
-		padding: $unit-3x;
-		height: fit-content;
-		position: sticky;
-		top: $unit-3x;
-
-		h3 {
-			font-size: 1.125rem;
-			font-weight: 600;
-			margin: 0 0 $unit-3x;
-			color: $grey-10;
-			}
-
-		> * + * {
-			margin-top: $unit-3x;
-		}
-	}
-
-	.form-textarea {
-		width: 100%;
-		padding: $unit-2x;
-		border: 1px solid $grey-80;
-		border-radius: 8px;
-		font-size: 0.875rem;
-		background-color: white;
-		resize: vertical;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-50;
-		}
-	}
-
-	.form-input {
-		width: 100%;
-		padding: $unit $unit-2x;
-		border: 1px solid $grey-80;
-		border-radius: 8px;
-		font-size: 0.875rem;
-		background-color: white;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-50;
-		}
-	}
-
-	.tag-input-wrapper {
-		display: flex;
-		gap: $unit;
-
-		input {
-			flex: 1;
-		}
-	}
-
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: $unit;
-		margin-top: $unit;
-	}
-
-	.tag {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 4px $unit-2x;
-		background: $grey-80;
-		border-radius: 20px;
-		font-size: 0.75rem;
-
-		button {
-			background: none;
-			border: none;
-			color: $grey-40;
-			cursor: pointer;
-			padding: 0;
-			font-size: 1rem;
-			line-height: 1;
-
-			&:hover {
-				color: $grey-10;
-			}
-		}
-	}
-
-	.metadata {
-		font-size: 0.75rem;
-		color: $grey-40;
-
-		p {
-			margin: $unit-half 0;
-		}
+	.metadata-popover-container {
+		position: relative;
 	}
 
 	.error {
 		text-align: center;
 		color: $grey-40;
 		padding: 2rem;
-	}
-
-	@include breakpoint('phone') {
-		.post-composer {
-			grid-template-columns: 1fr;
-		}
-
-		.metadata-sidebar {
-			position: static;
-		}
 	}
 </style>

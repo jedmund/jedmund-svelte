@@ -223,7 +223,17 @@
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">
-			<!-- Empty spacer for balance -->
+			<button class="btn-icon" onclick={() => goto('/admin/projects')}>
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+					<path
+						d="M12.5 15L7.5 10L12.5 5"
+						stroke="currentColor"
+						stroke-width="1.5"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+			</button>
 		</div>
 		<div class="header-center">
 			<AdminSegmentedControl
@@ -356,6 +366,9 @@
 
 		.header-left {
 			width: 250px;
+			display: flex;
+			align-items: center;
+			gap: $unit-2x;
 		}
 
 		.header-center {
@@ -368,6 +381,25 @@
 			width: 250px;
 			display: flex;
 			justify-content: flex-end;
+		}
+	}
+
+	.btn-icon {
+		width: 40px;
+		height: 40px;
+		border: none;
+		background: none;
+		color: $grey-40;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 8px;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: $grey-90;
+			color: $grey-10;
 		}
 	}
 
