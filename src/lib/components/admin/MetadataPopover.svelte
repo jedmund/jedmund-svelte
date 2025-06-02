@@ -64,9 +64,27 @@
 			left = viewportWidth - popoverRect.width - 16
 		}
 
-		// Adjust if would go off-screen vertically
+		// Check if popover would go off-screen vertically (both top and bottom)
 		if (top + popoverRect.height > viewportHeight - 16) {
-			top = triggerRect.top - popoverRect.height - 8
+			// Try positioning above the trigger
+			const topAbove = triggerRect.top - popoverRect.height - 8
+			if (topAbove >= 16) {
+				top = topAbove
+			} else {
+				// If neither above nor below works, position with maximum available space
+				if (triggerRect.top > viewportHeight - triggerRect.bottom) {
+					// More space above - position at top of viewport with margin
+					top = 16
+				} else {
+					// More space below - position at bottom of viewport with margin
+					top = viewportHeight - popoverRect.height - 16
+				}
+			}
+		}
+
+		// Also check if positioning below would place us off the top (shouldn't happen but be safe)
+		if (top < 16) {
+			top = 16
 		}
 
 		popoverElement.style.position = 'fixed'

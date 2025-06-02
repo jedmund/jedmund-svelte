@@ -2,7 +2,7 @@
 	import type { HTMLButtonAttributes } from 'svelte/elements'
 
 	interface Props extends HTMLButtonAttributes {
-		variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'text' | 'overlay'
+		variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'text' | 'overlay' | 'danger-text'
 		buttonSize?: 'small' | 'medium' | 'large' | 'icon'
 		iconOnly?: boolean
 		iconPosition?: 'left' | 'right'
@@ -340,6 +340,23 @@
 
 		&:active:not(:disabled) {
 			color: $grey-00;
+		}
+	}
+
+	.btn-danger-text {
+		background: none;
+		color: #dc2626;
+		padding: $unit;
+		font-weight: 600;
+
+		&:hover:not(:disabled) {
+			background-color: $grey-90;
+			color: #dc2626;
+		}
+
+		&:active:not(:disabled) {
+			background-color: $grey-80;
+			color: #dc2626;
 		}
 	}
 

@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Editor from '$lib/components/admin/Editor.svelte'
-	import MetadataPopover from '$lib/components/admin/MetadataPopover.svelte'
+	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
@@ -179,7 +179,7 @@
 				</button>
 
 				{#if showMetadata && metadataButtonRef}
-					<MetadataPopover
+					<PostMetadataPopover
 						post={mockPost}
 						{postType}
 						triggerElement={metadataButtonRef}

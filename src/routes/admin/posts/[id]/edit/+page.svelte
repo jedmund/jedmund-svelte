@@ -5,7 +5,7 @@
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Editor from '$lib/components/admin/Editor.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
-	import MetadataPopover from '$lib/components/admin/MetadataPopover.svelte'
+	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import SaveActionsGroup from '$lib/components/admin/SaveActionsGroup.svelte'
@@ -229,7 +229,7 @@
 					</button>
 
 					{#if showMetadata && metadataButtonRef}
-						<MetadataPopover
+						<PostMetadataPopover
 							{post}
 							{postType}
 							triggerElement={metadataButtonRef}

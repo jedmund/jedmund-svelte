@@ -5,7 +5,6 @@
 	import SmartImage from '../SmartImage.svelte'
 	import MediaLibraryModal from './MediaLibraryModal.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
-	import RefreshIcon from '$icons/refresh.svg?component'
 
 	interface Props {
 		label: string
@@ -103,7 +102,7 @@
 		for (let i = 0; i < files.length; i++) {
 			const file = files[i]
 			const validationError = validateFile(file)
-			
+
 			if (validationError) {
 				errors.push(`${file.name}: ${validationError}`)
 			} else if (filesToUpload.length < remainingSlots) {
@@ -126,10 +125,10 @@
 		try {
 			// Initialize progress tracking
 			const progressKeys = filesToUpload.map((file, index) => `${file.name}-${index}`)
-			uploadProgress = Object.fromEntries(progressKeys.map(key => [key, 0]))
+			uploadProgress = Object.fromEntries(progressKeys.map((key) => [key, 0]))
 
 			// Simulate progress for user feedback
-			const progressIntervals = progressKeys.map(key => {
+			const progressIntervals = progressKeys.map((key) => {
 				return setInterval(() => {
 					if (uploadProgress[key] < 90) {
 						uploadProgress[key] += Math.random() * 10
@@ -139,16 +138,16 @@
 			})
 
 			const uploadedMedia = await uploadFiles(filesToUpload)
-			
+
 			// Clear progress intervals
-			progressIntervals.forEach(interval => clearInterval(interval))
-			
+			progressIntervals.forEach((interval) => clearInterval(interval))
+
 			// Complete progress
-			progressKeys.forEach(key => {
+			progressKeys.forEach((key) => {
 				uploadProgress[key] = 100
 			})
 			uploadProgress = { ...uploadProgress }
-			
+
 			// Brief delay to show completion
 			setTimeout(() => {
 				const newValue = [...(value || []), ...uploadedMedia]
@@ -158,7 +157,6 @@
 				isUploading = false
 				uploadProgress = {}
 			}, 500)
-
 		} catch (err) {
 			isUploading = false
 			uploadProgress = {}
@@ -180,7 +178,7 @@
 	function handleDrop(event: DragEvent) {
 		event.preventDefault()
 		isDragOver = false
-		
+
 		const files = event.dataTransfer?.files
 		if (files) {
 			handleFiles(files)
@@ -202,7 +200,7 @@
 	// Remove individual image - now passes the item to be removed instead of doing it locally
 	function handleRemoveImage(index: number) {
 		if (!value || !value[index]) return
-		
+
 		const itemToRemove = value[index]
 		// Call the onRemove callback if provided, otherwise fall back to onUpload
 		if (onRemove) {
@@ -219,7 +217,7 @@
 	// Update alt text on server
 	async function handleAltTextChange(item: any, newAltText: string) {
 		if (!item) return
-		
+
 		try {
 			// For album photos, use mediaId; for direct media objects, use id
 			const mediaId = item.mediaId || item.id
@@ -227,7 +225,7 @@
 				console.error('No media ID found for alt text update')
 				return
 			}
-			
+
 			const response = await authenticatedFetch(`/api/media/${mediaId}/metadata`, {
 				method: 'PATCH',
 				headers: {
@@ -241,9 +239,13 @@
 			if (response.ok) {
 				const updatedData = await response.json()
 				if (value) {
-					const index = value.findIndex(v => (v.mediaId || v.id) === mediaId)
+					const index = value.findIndex((v) => (v.mediaId || v.id) === mediaId)
 					if (index !== -1) {
-						value[index] = { ...value[index], altText: updatedData.altText, updatedAt: updatedData.updatedAt }
+						value[index] = {
+							...value[index],
+							altText: updatedData.altText,
+							updatedAt: updatedData.updatedAt
+						}
 						value = [...value]
 					}
 				}
@@ -275,25 +277,25 @@
 
 	function handleImageDrop(event: DragEvent, dropIndex: number) {
 		event.preventDefault()
-		
+
 		if (draggedIndex === null || !value) return
-		
+
 		const newValue = [...value]
 		const draggedItem = newValue[draggedIndex]
-		
+
 		// Remove from old position
 		newValue.splice(draggedIndex, 1)
-		
+
 		// Insert at new position (adjust index if dragging to later position)
 		const adjustedDropIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex
 		newValue.splice(adjustedDropIndex, 0, draggedItem)
-		
+
 		value = newValue
 		onUpload(newValue)
 		if (onReorder) {
 			onReorder(newValue)
 		}
-		
+
 		draggedIndex = null
 		draggedOverIndex = null
 	}
@@ -311,12 +313,12 @@
 	function handleMediaSelect(selectedMedia: any | any[]) {
 		// For gallery mode, selectedMedia will be an array
 		const mediaArray = Array.isArray(selectedMedia) ? selectedMedia : [selectedMedia]
-		
+
 		// Add selected media to existing gallery (avoid duplicates)
 		// Check both id and mediaId to handle different object types
-		const currentIds = value?.map(m => m.mediaId || m.id) || []
-		const newMedia = mediaArray.filter(media => !currentIds.includes(media.id))
-		
+		const currentIds = value?.map((m) => m.mediaId || m.id) || []
+		const newMedia = mediaArray.filter((media) => !currentIds.includes(media.id))
+
 		if (newMedia.length > 0) {
 			const updatedGallery = [...(value || []), ...newMedia]
 			value = updatedGallery
@@ -331,21 +333,9 @@
 </script>
 
 <div class="gallery-uploader">
-	<!-- Label -->
-	<label class="uploader-label">
-		{label}
-		{#if required}
-			<span class="required">*</span>
-		{/if}
-	</label>
-
-	{#if helpText}
-		<p class="help-text">{helpText}</p>
-	{/if}
-
 	<!-- Upload Area -->
 	{#if !hasImages || (hasImages && canAddMore)}
-		<div 
+		<div
 			class="drop-zone"
 			class:drag-over={isDragOver}
 			class:uploading={isUploading}
@@ -381,7 +371,7 @@
 						</circle>
 					</svg>
 					<p class="upload-text">Uploading images...</p>
-					
+
 					<!-- Individual file progress -->
 					<div class="file-progress-list">
 						{#each Object.entries(uploadProgress) as [fileName, progress]}
@@ -398,12 +388,53 @@
 			{:else}
 				<!-- Upload Prompt -->
 				<div class="upload-prompt">
-					<svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						<polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						<line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-						<line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-						<polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<svg
+						class="upload-icon"
+						width="48"
+						height="48"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<polyline
+							points="14,2 14,8 20,8"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<line
+							x1="16"
+							y1="13"
+							x2="8"
+							y2="13"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+						/>
+						<line
+							x1="16"
+							y1="17"
+							x2="8"
+							y2="17"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+						/>
+						<polyline
+							points="10,9 9,9 8,9"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
 					<p class="upload-main-text">{placeholder}</p>
 					<p class="upload-sub-text">
@@ -426,11 +457,9 @@
 			<Button variant="primary" onclick={handleBrowseClick}>
 				{hasImages ? 'Add More Images' : 'Choose Images'}
 			</Button>
-			
+
 			{#if showBrowseLibrary}
-				<Button variant="ghost" onclick={handleBrowseLibrary}>
-					Browse Library
-				</Button>
+				<Button variant="ghost" onclick={handleBrowseLibrary}>Browse Library</Button>
 			{/if}
 		</div>
 	{/if}
@@ -439,7 +468,7 @@
 	{#if hasImages}
 		<div class="image-gallery">
 			{#each value as media, index (media.id)}
-				<div 
+				<div
 					class="gallery-item"
 					class:dragging={draggedIndex === index}
 					class:drag-over={draggedOverIndex === index}
@@ -452,19 +481,25 @@
 				>
 					<!-- Drag Handle -->
 					<div class="drag-handle">
-						<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<circle cx="9" cy="6" r="2" fill="currentColor"/>
-							<circle cx="15" cy="6" r="2" fill="currentColor"/>
-							<circle cx="9" cy="12" r="2" fill="currentColor"/>
-							<circle cx="15" cy="12" r="2" fill="currentColor"/>
-							<circle cx="9" cy="18" r="2" fill="currentColor"/>
-							<circle cx="15" cy="18" r="2" fill="currentColor"/>
+						<svg
+							width="12"
+							height="12"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<circle cx="9" cy="6" r="2" fill="currentColor" />
+							<circle cx="15" cy="6" r="2" fill="currentColor" />
+							<circle cx="9" cy="12" r="2" fill="currentColor" />
+							<circle cx="15" cy="12" r="2" fill="currentColor" />
+							<circle cx="9" cy="18" r="2" fill="currentColor" />
+							<circle cx="15" cy="18" r="2" fill="currentColor" />
 						</svg>
 					</div>
 
 					<!-- Image Preview -->
 					<div class="image-preview">
-						<SmartImage 
+						<SmartImage
 							media={{
 								id: media.mediaId || media.id,
 								filename: media.filename,
@@ -487,17 +522,41 @@
 							aspectRatio="1:1"
 							class="gallery-image"
 						/>
-						
+
 						<!-- Remove Button -->
-						<button 
+						<button
 							class="remove-button"
 							onclick={() => handleRemoveImage(index)}
 							type="button"
 							aria-label="Remove image"
 						>
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-								<line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<svg
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<line
+									x1="18"
+									y1="6"
+									x2="6"
+									y2="18"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+								<line
+									x1="6"
+									y1="6"
+									x2="18"
+									y2="18"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
 							</svg>
 						</button>
 					</div>

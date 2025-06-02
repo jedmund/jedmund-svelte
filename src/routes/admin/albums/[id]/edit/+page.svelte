@@ -7,11 +7,11 @@
 	import Input from '$lib/components/admin/Input.svelte'
 	import FormFieldWrapper from '$lib/components/admin/FormFieldWrapper.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
-	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import MediaLibraryModal from '$lib/components/admin/MediaLibraryModal.svelte'
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import GalleryUploader from '$lib/components/admin/GalleryUploader.svelte'
 	import SaveActionsGroup from '$lib/components/admin/SaveActionsGroup.svelte'
+	import AlbumMetadataPopover from '$lib/components/admin/AlbumMetadataPopover.svelte'
 
 	// Form state
 	let album = $state<any>(null)
@@ -28,7 +28,6 @@
 	let isLoading = $state(true)
 	let isSaving = $state(false)
 	let error = $state('')
-	let isDeleteModalOpen = $state(false)
 
 	// Photo management state
 	let isMediaLibraryOpen = $state(false)
@@ -38,6 +37,10 @@
 	// Media details modal state
 	let isMediaDetailsOpen = $state(false)
 	let selectedMedia = $state<any>(null)
+
+	// Metadata popover state
+	let isMetadataOpen = $state(false)
+	let metadataButtonElement: HTMLButtonElement
 
 	onMount(async () => {
 		await loadAlbum()
@@ -443,14 +446,14 @@
 		try {
 			if (newPhotos.length > 0) {
 				// Check if these are new uploads (have File objects) or library selections (have media IDs)
-				const uploadsToAdd = newPhotos.filter(photo => photo instanceof File || !photo.id)
-				const libraryPhotosToAdd = newPhotos.filter(photo => photo.id && !(photo instanceof File))
-				
+				const uploadsToAdd = newPhotos.filter((photo) => photo instanceof File || !photo.id)
+				const libraryPhotosToAdd = newPhotos.filter((photo) => photo.id && !(photo instanceof File))
+
 				// Handle new uploads
 				if (uploadsToAdd.length > 0) {
 					await handleAddPhotosFromUpload(uploadsToAdd)
 				}
-				
+
 				// Handle library selections
 				if (libraryPhotosToAdd.length > 0) {
 					await handleAddPhotos(libraryPhotosToAdd)
@@ -471,7 +474,7 @@
 				error = 'Cannot remove photo: no photo ID found'
 				return
 			}
-			
+
 			// Call the existing remove photo function
 			const success = await handleRemovePhoto(photoId, true) // Skip confirmation since user clicked remove
 			if (!success) {
@@ -486,7 +489,6 @@
 			albumPhotos = [...albumPhotos]
 		}
 	}
-
 
 	function generateSlug(text: string): string {
 		return text
@@ -503,6 +505,34 @@
 	})
 
 	const canSave = $derived(title.trim().length > 0 && slug.trim().length > 0)
+
+	// Metadata popover handlers
+	function handleMetadataUpdate(key: string, value: any) {
+		if (key === 'date') {
+			date = value ? new Date(value).toISOString().split('T')[0] : ''
+		} else {
+			// Update the form state variable
+			switch (key) {
+				case 'slug':
+					slug = value
+					break
+				case 'location':
+					location = value
+					break
+				case 'isPhotography':
+					isPhotography = value
+					break
+				case 'showInUniverse':
+					showInUniverse = value
+					break
+			}
+		}
+	}
+
+	function handleMetadataDelete() {
+		isMetadataOpen = false
+		handleDelete()
+	}
 </script>
 
 <AdminPage>
@@ -522,23 +552,34 @@
 				</button>
 			</div>
 			<div class="header-actions">
-				<Button
-					variant="ghost"
-					buttonSize="large"
-					onclick={() => (isDeleteModalOpen = true)}
-					disabled={isSaving}
-				>
-					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path
-							d="M6 3V2C6 1.44772 6.44772 1 7 1H9C9.55228 1 10 1.44772 10 2V3M13 4H3M5 7V12M8 7V12M11 7V12M4 4L4.5 13C4.55228 13.5523 4.99772 14 5.5 14H10.5C11.0023 14 11.4477 13.5523 11.5 13L12 4H4Z"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
+				<div class="metadata-popover-container">
+					<button
+						bind:this={metadataButtonElement}
+						class="btn btn-text"
+						onclick={(e) => {
+							e.stopPropagation()
+							isMetadataOpen = !isMetadataOpen
+						}}
+						disabled={isSaving}
+					>
+						<svg width="16" height="16" viewBox="0 0 56 56" fill="none">
+							<path
+								fill="currentColor"
+								d="M 36.4023 19.3164 C 38.8398 19.3164 40.9257 17.7461 41.6992 15.5898 L 49.8085 15.5898 C 50.7695 15.5898 51.6133 14.7461 51.6133 13.6914 C 51.6133 12.6367 50.7695 11.8164 49.8085 11.8164 L 41.7226 11.8164 C 40.9257 9.6367 38.8398 8.0430 36.4023 8.0430 C 33.9648 8.0430 31.8789 9.6367 31.1054 11.8164 L 6.2851 11.8164 C 5.2304 11.8164 4.3867 12.6367 4.3867 13.6914 C 4.3867 14.7461 5.2304 15.5898 6.2851 15.5898 L 31.1054 15.5898 C 31.8789 17.7461 33.9648 19.3164 36.4023 19.3164 Z M 6.1913 26.1133 C 5.2304 26.1133 4.3867 26.9570 4.3867 28.0117 C 4.3867 29.0664 5.2304 29.8867 6.1913 29.8867 L 14.5586 29.8867 C 15.3320 32.0898 17.4179 33.6601 19.8554 33.6601 C 22.3164 33.6601 24.4023 32.0898 25.1757 29.8867 L 49.7149 29.8867 C 50.7695 29.8867 51.6133 29.0664 51.6133 28.0117 C 51.6133 26.9570 50.7695 26.1133 49.7149 26.1133 L 25.1757 26.1133 C 24.3789 23.9570 22.2929 22.3867 19.8554 22.3867 C 17.4413 22.3867 15.3554 23.9570 14.5586 26.1133 Z M 36.4023 47.9570 C 38.8398 47.9570 40.9257 46.3867 41.6992 44.2070 L 49.8085 44.2070 C 50.7695 44.2070 51.6133 43.3867 51.6133 42.3320 C 51.6133 41.2773 50.7695 40.4336 49.8085 40.4336 L 41.6992 40.4336 C 40.9257 38.2539 38.8398 36.7070 36.4023 36.7070 C 33.9648 36.7070 31.8789 38.2539 31.1054 40.4336 L 6.2851 40.4336 C 5.2304 40.4336 4.3867 41.2773 4.3867 42.3320 C 4.3867 43.3867 5.2304 44.2070 6.2851 44.2070 L 31.1054 44.2070 C 31.8789 46.3867 33.9648 47.9570 36.4023 47.9570 Z"
+							/>
+						</svg>
+						Metadata
+					</button>
+
+					{#if isMetadataOpen && metadataButtonElement && album}
+						<AlbumMetadataPopover
+							bind:album
+							triggerElement={metadataButtonElement}
+							onUpdate={handleMetadataUpdate}
+							onDelete={handleMetadataDelete}
 						/>
-					</svg>
-					Delete
-				</Button>
+					{/if}
+				</div>
 				<SaveActionsGroup
 					{status}
 					onSave={handleSave}
@@ -578,15 +619,6 @@
 				/>
 
 				<Input
-					label="Slug"
-					bind:value={slug}
-					placeholder="album-url-slug"
-					helpText="Used in the album URL."
-					disabled={isSaving}
-					fullWidth
-				/>
-
-				<Input
 					type="textarea"
 					label="Description"
 					bind:value={description}
@@ -595,66 +627,6 @@
 					disabled={isSaving}
 					fullWidth
 				/>
-
-				<div class="form-row">
-					<Input
-						type="date"
-						label="Date"
-						bind:value={date}
-						helpText="When was this album created or photos taken?"
-						disabled={isSaving}
-					/>
-
-					<Input
-						label="Location"
-						bind:value={location}
-						placeholder="Location where photos were taken"
-						disabled={isSaving}
-					/>
-				</div>
-			</div>
-
-			<div class="form-section">
-				<h2>Album Settings</h2>
-
-				<!-- Photography Toggle -->
-				<FormFieldWrapper label="Album Type">
-					<div class="photography-toggle">
-						<label class="toggle-label">
-							<input
-								type="checkbox"
-								bind:checked={isPhotography}
-								disabled={isSaving}
-								class="toggle-input"
-							/>
-							<span class="toggle-slider"></span>
-							<div class="toggle-content">
-								<span class="toggle-title">Photography Album</span>
-								<span class="toggle-description">Show this album in the photography experience</span
-								>
-							</div>
-						</label>
-					</div>
-				</FormFieldWrapper>
-
-				<!-- Show in Universe Toggle -->
-				<FormFieldWrapper label="Visibility">
-					<div class="universe-toggle">
-						<label class="toggle-label">
-							<input
-								type="checkbox"
-								bind:checked={showInUniverse}
-								disabled={isSaving}
-								class="toggle-input"
-							/>
-							<span class="toggle-slider"></span>
-							<div class="toggle-content">
-								<span class="toggle-title">Show in Universe</span>
-								<span class="toggle-description">Display this album in the Universe feed</span>
-							</div>
-						</label>
-					</div>
-				</FormFieldWrapper>
 			</div>
 
 			<!-- Photo Management -->
@@ -694,16 +666,6 @@
 		</div>
 	{/if}
 </AdminPage>
-
-<!-- Delete Confirmation Modal -->
-<DeleteConfirmationModal
-	bind:isOpen={isDeleteModalOpen}
-	title="Delete Album"
-	message="Are you sure you want to delete this album? This action cannot be undone."
-	confirmText="Delete Album"
-	onConfirm={handleDelete}
-	onCancel={() => (isDeleteModalOpen = false)}
-/>
 
 <!-- Media Library Modal -->
 <MediaLibraryModal
@@ -760,6 +722,49 @@
 		&:hover {
 			background: $grey-90;
 			color: $grey-10;
+		}
+
+		&.metadata-btn {
+			&:hover {
+				background: $blue-60;
+				color: white;
+			}
+		}
+	}
+
+	.btn-text {
+		padding: $unit $unit-2x;
+		border: none;
+		background: none;
+		color: $grey-40;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: $unit;
+		border-radius: 8px;
+		font-size: 0.875rem;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: $grey-90;
+			color: $grey-10;
+		}
+	}
+
+	.btn {
+		padding: $unit-2x $unit-3x;
+		border: none;
+		border-radius: 50px;
+		font-size: 0.925rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		display: flex;
+		align-items: center;
+		gap: $unit;
+
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
 		}
 	}
 
@@ -1071,7 +1076,6 @@
 			}
 		}
 	}
-
 
 	// Upload status styles
 	.upload-status {
