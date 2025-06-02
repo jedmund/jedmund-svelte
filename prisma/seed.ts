@@ -195,7 +195,6 @@ async function main() {
 						}
 					]
 				},
-				excerpt: 'Welcome to my new blog powered by a custom CMS with simplified post types.',
 				tags: ['announcement', 'meta', 'cms'],
 				status: 'published',
 				publishedAt: new Date()
@@ -242,7 +241,6 @@ async function main() {
 						}
 					]
 				},
-				excerpt: 'Exploring the balance between flexibility and constraints in design systems.',
 				tags: ['design', 'systems', 'ux'],
 				status: 'published',
 				publishedAt: new Date(Date.now() - 172800000) // 2 days ago
