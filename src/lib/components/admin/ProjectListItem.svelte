@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { createEventDispatcher } from 'svelte'
+	import AdminByline from './AdminByline.svelte'
 
 	interface Project {
 		id: number
@@ -9,9 +10,11 @@
 		year: number
 		client: string | null
 		status: string
+		projectType: string
 		logoUrl: string | null
 		backgroundColor: string | null
 		highlightColor: string | null
+		publishedAt: string | null
 		createdAt: string
 		updatedAt: string
 	}
@@ -36,11 +39,21 @@
 		const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
 		if (diffInSeconds < 60) return 'just now'
-		if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
-		if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
-		if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`
-		if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`
-		return `${Math.floor(diffInSeconds / 31536000)} years ago`
+		
+		const minutes = Math.floor(diffInSeconds / 60)
+		if (diffInSeconds < 3600) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
+		
+		const hours = Math.floor(diffInSeconds / 3600)
+		if (diffInSeconds < 86400) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+		
+		const days = Math.floor(diffInSeconds / 86400)
+		if (diffInSeconds < 2592000) return `${days} ${days === 1 ? 'day' : 'days'} ago`
+		
+		const months = Math.floor(diffInSeconds / 2592000)
+		if (diffInSeconds < 31536000) return `${months} ${months === 1 ? 'month' : 'months'} ago`
+		
+		const years = Math.floor(diffInSeconds / 31536000)
+		return `${years} ${years === 1 ? 'year' : 'years'} ago`
 	}
 
 	function handleProjectClick() {
@@ -79,13 +92,15 @@
 
 	<div class="project-info">
 		<h3 class="project-title">{project.title}</h3>
-		<div class="project-metadata">
-			<span class="status" class:published={project.status === 'published'}>
-				{project.status === 'published' ? 'Published' : 'Not published'}
-			</span>
-			<span class="separator">·</span>
-			<span class="updated">Last updated {formatRelativeTime(project.updatedAt)}</span>
-		</div>
+		<AdminByline 
+			sections={[
+				project.projectType === 'work' ? 'Work' : 'Labs',
+				project.status === 'published' ? 'Published' : 'Draft',
+				project.status === 'published' && project.publishedAt 
+					? `Published ${formatRelativeTime(project.publishedAt)}`
+					: `Created ${formatRelativeTime(project.createdAt)}`
+			]} 
+		/>
 	</div>
 
 	<div class="dropdown-container">
@@ -171,23 +186,6 @@
 		text-overflow: ellipsis;
 	}
 
-	.project-metadata {
-		display: flex;
-		align-items: center;
-		gap: $unit;
-		font-size: 0.875rem;
-		color: $grey-40;
-
-		.status {
-			&.published {
-				color: #22c55e; // Green color for published status
-			}
-		}
-
-		.separator {
-			color: $grey-60;
-		}
-	}
 
 	.dropdown-container {
 		position: relative;

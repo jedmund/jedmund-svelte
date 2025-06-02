@@ -82,22 +82,22 @@
 			}
 
 			&:disabled {
-				background: $grey-95;
+				background: $grey-90;
 			}
 		}
 
 		// Minimal variant
 		&.select-minimal {
 			border: none;
-			background: transparent;
+			background: $grey-90;
 			font-weight: 500;
 
 			&:hover {
-				background: $grey-95;
+				background: $grey-80;
 			}
 
 			&:focus {
-				background: $grey-95;
+				background: $grey-80;
 			}
 
 			&:disabled {

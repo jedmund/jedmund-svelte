@@ -71,65 +71,47 @@
 	</Button>
 
 	{#if isOpen}
-		<div class="dropdown-menu">
+		<ul class="dropdown-menu">
 			{#each postTypes as type}
-				<Button
-					variant="ghost"
-					onclick={() => handleSelection(type.value)}
-					class="dropdown-item"
-					fullWidth
-					pill={false}
-				>
-					{#snippet icon()}
-						<div class="dropdown-icon">
-							{#if type.value === 'essay'}
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-									<path
-										d="M3 5C3 3.89543 3.89543 3 5 3H11L17 9V15C17 16.1046 16.1046 17 15 17H5C3.89543 17 3 16.1046 3 15V5Z"
-										stroke="currentColor"
-										stroke-width="1.5"
-									/>
-									<path d="M11 3V9H17" stroke="currentColor" stroke-width="1.5" />
-									<path
-										d="M7 13H13"
-										stroke="currentColor"
-										stroke-width="1.5"
-										stroke-linecap="round"
-									/>
-									<path
-										d="M7 10H13"
-										stroke="currentColor"
-										stroke-width="1.5"
-										stroke-linecap="round"
-									/>
-								</svg>
-							{:else if type.value === 'post'}
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-									<path
-										d="M4 3C2.89543 3 2 3.89543 2 5V11C2 12.1046 2.89543 13 4 13H6L8 16V13H13C14.1046 13 15 12.1046 15 11V5C15 3.89543 14.1046 3 13 3H4Z"
-										stroke="currentColor"
-										stroke-width="1.5"
-									/>
-									<path
-										d="M5 7H12"
-										stroke="currentColor"
-										stroke-width="1.5"
-										stroke-linecap="round"
-									/>
-									<path
-										d="M5 9H10"
-										stroke="currentColor"
-										stroke-width="1.5"
-										stroke-linecap="round"
-									/>
-								</svg>
-							{/if}
-						</div>
-					{/snippet}
+				<li class="dropdown-item" onclick={() => handleSelection(type.value)}>
+					<div class="dropdown-icon">
+						{#if type.value === 'essay'}
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+								<path
+									d="M3 5C3 3.89543 3.89543 3 5 3H11L17 9V15C17 16.1046 16.1046 17 15 17H5C3.89543 17 3 16.1046 3 15V5Z"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<path d="M11 3V9H17" stroke="currentColor" stroke-width="1.5" />
+								<path
+									d="M7 13H13"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+								/>
+								<path
+									d="M7 10H13"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+								/>
+							</svg>
+						{:else if type.value === 'post'}
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+								<path
+									d="M4 3C2.89543 3 2 3.89543 2 5V11C2 12.1046 2.89543 13 4 13H6L8 16V13H13C14.1046 13 15 12.1046 15 11V5C15 3.89543 14.1046 3 13 3H4Z"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<path d="M5 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+								<path d="M5 9H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+							</svg>
+						{/if}
+					</div>
 					<span class="dropdown-label">{type.label}</span>
-				</Button>
+				</li>
 			{/each}
-		</div>
+		</ul>
 	{/if}
 </div>
 
@@ -163,17 +145,41 @@
 		border: 1px solid $grey-85;
 		border-radius: $unit-2x;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-		min-width: 220px;
+		min-width: 140px;
 		z-index: 100;
 		overflow: hidden;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
-	// Override Button component styles for dropdown items
-	:global(.dropdown-item) {
-		justify-content: flex-start;
-		text-align: left;
+	.dropdown-item {
+		display: flex;
+		align-items: center;
+		gap: $unit;
 		padding: $unit-2x $unit-3x;
-		border-radius: 0;
+		cursor: pointer;
+		transition: background-color 0.2s ease;
+		border: none;
+		background: none;
+		width: 100%;
+		text-align: left;
+
+		&:hover {
+			background-color: $grey-95;
+		}
+
+		&:first-child {
+			border-radius: $unit-2x $unit-2x 0 0;
+		}
+
+		&:last-child {
+			border-radius: 0 0 $unit-2x $unit-2x;
+		}
+
+		&:only-child {
+			border-radius: $unit-2x;
+		}
 	}
 
 	.dropdown-icon {

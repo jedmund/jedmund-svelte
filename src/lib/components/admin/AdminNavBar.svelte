@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import AvatarSimple from '$lib/components/AvatarSimple.svelte'
-	import DashboardIcon from '$icons/dashboard.svg?component'
 	import WorkIcon from '$icons/work.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
 	import PhotosIcon from '$icons/photos.svg?component'
@@ -15,7 +14,6 @@
 	}
 
 	const navItems: NavItem[] = [
-		{ text: 'Dashboard', href: '/admin', icon: DashboardIcon },
 		{ text: 'Projects', href: '/admin/projects', icon: WorkIcon },
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: PhotosIcon },
@@ -24,17 +22,15 @@
 
 	// Calculate active index based on current path
 	const activeIndex = $derived(
-		currentPath === '/admin'
+		currentPath.startsWith('/admin/projects')
 			? 0
-			: currentPath.startsWith('/admin/projects')
+			: currentPath.startsWith('/admin/posts')
 				? 1
-				: currentPath.startsWith('/admin/posts')
+				: currentPath.startsWith('/admin/albums')
 					? 2
-					: currentPath.startsWith('/admin/albums')
+					: currentPath.startsWith('/admin/media')
 						? 3
-						: currentPath.startsWith('/admin/media')
-							? 4
-							: -1
+						: -1
 	)
 </script>
 
