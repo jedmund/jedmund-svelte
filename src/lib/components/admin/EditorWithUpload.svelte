@@ -212,7 +212,9 @@
 		if (!clipboardData) return false
 
 		// Check for images first
-		const imageItem = Array.from(clipboardData.items).find(item => item.type.indexOf('image') === 0)
+		const imageItem = Array.from(clipboardData.items).find(
+			(item) => item.type.indexOf('image') === 0
+		)
 		if (imageItem) {
 			const file = imageItem.getAsFile()
 			if (!file) return false
@@ -232,11 +234,11 @@
 		// Handle text paste - strip HTML formatting
 		const htmlData = clipboardData.getData('text/html')
 		const plainText = clipboardData.getData('text/plain')
-		
+
 		if (htmlData && plainText) {
 			// If we have both HTML and plain text, use plain text to strip formatting
 			event.preventDefault()
-			
+
 			// Use editor commands to insert text so all callbacks are triggered
 			const editorInstance = (view as any).editor
 			if (editorInstance) {
@@ -248,7 +250,7 @@
 				const transaction = state.tr.insertText(plainText, selection.from, selection.to)
 				dispatch(transaction)
 			}
-			
+
 			return true // Prevent default paste behavior
 		}
 

@@ -1,6 +1,11 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth, parseRequestBody } from '$lib/server/api-utils'
+import {
+	jsonResponse,
+	errorResponse,
+	checkAdminAuth,
+	parseRequestBody
+} from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
 // GET /api/albums/[id] - Get a single album
@@ -41,18 +46,18 @@ export const GET: RequestHandler = async (event) => {
 
 		// Create a map of media by mediaId for efficient lookup
 		const mediaMap = new Map()
-		mediaUsages.forEach(usage => {
+		mediaUsages.forEach((usage) => {
 			if (usage.media) {
 				mediaMap.set(usage.mediaId, usage.media)
 			}
 		})
 
 		// Enrich photos with media information using proper media usage tracking
-		const photosWithMedia = album.photos.map(photo => {
+		const photosWithMedia = album.photos.map((photo) => {
 			// Find the corresponding media usage record for this photo
-			const usage = mediaUsages.find(u => u.media && u.media.filename === photo.filename)
+			const usage = mediaUsages.find((u) => u.media && u.media.filename === photo.filename)
 			const media = usage?.media
-			
+
 			return {
 				...photo,
 				mediaId: media?.id || null,

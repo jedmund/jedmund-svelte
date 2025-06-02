@@ -31,7 +31,8 @@
 		const selectedMedia = Array.isArray(media) ? media[0] : media
 		if (selectedMedia) {
 			// Set a reasonable default width (max 600px)
-			const displayWidth = selectedMedia.width && selectedMedia.width > 600 ? 600 : selectedMedia.width
+			const displayWidth =
+				selectedMedia.width && selectedMedia.width > 600 ? 600 : selectedMedia.width
 
 			editor
 				.chain()
@@ -186,7 +187,7 @@
 				<Upload class="edra-image-placeholder-icon" />
 				<span class="edra-image-placeholder-text">Upload Image</span>
 			</button>
-			
+
 			<button
 				class="edra-image-placeholder-option"
 				onclick={handleBrowseLibrary}
@@ -273,8 +274,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	:global(.edra-image-placeholder-icon) {

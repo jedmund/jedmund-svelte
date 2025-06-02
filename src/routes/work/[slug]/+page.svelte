@@ -37,11 +37,18 @@
 	</Page>
 {:else if project.status === 'password-protected'}
 	<Page>
-		<ProjectPasswordProtection projectSlug={project.slug} correctPassword={project.password || ''} projectType="work">
+		<ProjectPasswordProtection
+			projectSlug={project.slug}
+			correctPassword={project.password || ''}
+			projectType="work"
+		>
 			{#snippet children()}
 				<div slot="header" class="project-header">
 					{#if project.logoUrl}
-						<div class="project-logo" style="background-color: {project.backgroundColor || '#f5f5f5'}">
+						<div
+							class="project-logo"
+							style="background-color: {project.backgroundColor || '#f5f5f5'}"
+						>
 							<img src={project.logoUrl} alt="{project.title} logo" />
 						</div>
 					{/if}

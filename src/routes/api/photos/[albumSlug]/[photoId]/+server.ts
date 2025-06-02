@@ -15,7 +15,7 @@ export const GET: RequestHandler = async (event) => {
 	try {
 		// First find the album
 		const album = await prisma.album.findUnique({
-			where: { 
+			where: {
 				slug: albumSlug,
 				status: 'published',
 				isPhotography: true
@@ -45,13 +45,13 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Find the specific photo
-		const photo = album.photos.find(p => p.id === photoId)
+		const photo = album.photos.find((p) => p.id === photoId)
 		if (!photo) {
 			return errorResponse('Photo not found in album', 404)
 		}
 
 		// Get photo index for navigation
-		const photoIndex = album.photos.findIndex(p => p.id === photoId)
+		const photoIndex = album.photos.findIndex((p) => p.id === photoId)
 		const prevPhoto = photoIndex > 0 ? album.photos[photoIndex - 1] : null
 		const nextPhoto = photoIndex < album.photos.length - 1 ? album.photos[photoIndex + 1] : null
 

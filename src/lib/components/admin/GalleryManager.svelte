@@ -27,16 +27,16 @@
 
 	function handleImagesSelect(media: Media[]) {
 		// Add new images to existing ones, avoiding duplicates
-		const existingIds = new Set(value.map(item => item.id))
-		const newImages = media.filter(item => !existingIds.has(item.id))
-		
+		const existingIds = new Set(value.map((item) => item.id))
+		const newImages = media.filter((item) => !existingIds.has(item.id))
+
 		if (maxItems) {
 			const availableSlots = maxItems - value.length
 			value = [...value, ...newImages.slice(0, availableSlots)]
 		} else {
 			value = [...value, ...newImages]
 		}
-		
+
 		showModal = false
 	}
 
@@ -51,11 +51,11 @@
 	// Drag and Drop functionality
 	function handleDragStart(event: DragEvent, index: number) {
 		if (!event.dataTransfer) return
-		
+
 		draggedIndex = index
 		event.dataTransfer.effectAllowed = 'move'
 		event.dataTransfer.setData('text/html', '')
-		
+
 		// Add dragging class to the dragged element
 		const target = event.target as HTMLElement
 		target.style.opacity = '0.5'
@@ -64,7 +64,7 @@
 	function handleDragEnd(event: DragEvent) {
 		const target = event.target as HTMLElement
 		target.style.opacity = '1'
-		
+
 		draggedIndex = null
 		dragOverIndex = null
 	}
@@ -72,7 +72,7 @@
 	function handleDragOver(event: DragEvent, index: number) {
 		event.preventDefault()
 		if (!event.dataTransfer) return
-		
+
 		event.dataTransfer.dropEffect = 'move'
 		dragOverIndex = index
 	}
@@ -83,7 +83,7 @@
 
 	function handleDrop(event: DragEvent, dropIndex: number) {
 		event.preventDefault()
-		
+
 		if (draggedIndex === null || draggedIndex === dropIndex) {
 			return
 		}
@@ -91,16 +91,16 @@
 		// Reorder the array
 		const newValue = [...value]
 		const draggedItem = newValue[draggedIndex]
-		
+
 		// Remove the dragged item
 		newValue.splice(draggedIndex, 1)
-		
+
 		// Insert at the new position (adjust index if necessary)
 		const insertIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex
 		newValue.splice(insertIndex, 0, draggedItem)
-		
+
 		value = newValue
-		
+
 		// Reset drag state
 		draggedIndex = null
 		dragOverIndex = null
@@ -117,10 +117,8 @@
 	// Computed properties
 	const hasImages = $derived(value.length > 0)
 	const canAddMore = $derived(!maxItems || value.length < maxItems)
-	const selectedIds = $derived(value.map(item => item.id))
-	const itemsText = $derived(
-		value.length === 1 ? '1 image' : `${value.length} images`
-	)
+	const selectedIds = $derived(value.map((item) => item.id))
+	const itemsText = $derived(value.length === 1 ? '1 image' : `${value.length} images`)
 </script>
 
 <div class="gallery-manager">
@@ -131,7 +129,7 @@
 				<span class="required">*</span>
 			{/if}
 		</label>
-		
+
 		{#if hasImages}
 			<span class="items-count">
 				{itemsText}
@@ -146,7 +144,7 @@
 	{#if hasImages}
 		<div class="gallery-grid" class:has-error={error}>
 			{#each value as item, index (item.id)}
-				<div 
+				<div
 					class="gallery-item"
 					class:drag-over={dragOverIndex === index}
 					draggable="true"
@@ -158,13 +156,19 @@
 				>
 					<!-- Drag Handle -->
 					<div class="drag-handle">
-						<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<circle cx="9" cy="12" r="1" fill="currentColor"/>
-							<circle cx="9" cy="5" r="1" fill="currentColor"/>
-							<circle cx="9" cy="19" r="1" fill="currentColor"/>
-							<circle cx="15" cy="12" r="1" fill="currentColor"/>
-							<circle cx="15" cy="5" r="1" fill="currentColor"/>
-							<circle cx="15" cy="19" r="1" fill="currentColor"/>
+						<svg
+							width="12"
+							height="12"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<circle cx="9" cy="12" r="1" fill="currentColor" />
+							<circle cx="9" cy="5" r="1" fill="currentColor" />
+							<circle cx="9" cy="19" r="1" fill="currentColor" />
+							<circle cx="15" cy="12" r="1" fill="currentColor" />
+							<circle cx="15" cy="5" r="1" fill="currentColor" />
+							<circle cx="15" cy="19" r="1" fill="currentColor" />
 						</svg>
 					</div>
 
@@ -174,10 +178,29 @@
 							<img src={item.thumbnailUrl} alt={item.filename} />
 						{:else}
 							<div class="image-placeholder">
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-									<circle cx="8.5" cy="8.5" r=".5" fill="currentColor"/>
-									<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none"/>
+								<svg
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<rect
+										x="3"
+										y="5"
+										width="18"
+										height="14"
+										rx="2"
+										stroke="currentColor"
+										stroke-width="2"
+									/>
+									<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
+									<path
+										d="M3 16l5-5 3 3 4-4 4 4"
+										stroke="currentColor"
+										stroke-width="2"
+										fill="none"
+									/>
 								</svg>
 							</div>
 						{/if}
@@ -192,13 +215,19 @@
 					{/if}
 
 					<!-- Remove Button -->
-					<button 
+					<button
 						type="button"
 						class="remove-button"
 						onclick={() => removeImage(index)}
 						aria-label="Remove image"
 					>
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
 							<path
 								d="M6 6L18 18M6 18L18 6"
 								stroke="currentColor"
@@ -217,13 +246,15 @@
 
 			<!-- Add More Button (if within grid) -->
 			{#if canAddMore}
-				<button 
-					type="button"
-					class="add-more-item"
-					onclick={openModal}
-				>
+				<button type="button" class="add-more-item" onclick={openModal}>
 					<div class="add-icon">
-						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<svg
+							width="32"
+							height="32"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
 							<path
 								d="M12 5v14m-7-7h14"
 								stroke="currentColor"
@@ -241,10 +272,24 @@
 		<div class="empty-state" class:has-error={error}>
 			<div class="empty-content">
 				<div class="empty-icon">
-					<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
-						<circle cx="8.5" cy="8.5" r=".5" fill="currentColor"/>
-						<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+					<svg
+						width="48"
+						height="48"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<rect
+							x="3"
+							y="5"
+							width="18"
+							height="14"
+							rx="2"
+							stroke="currentColor"
+							stroke-width="1.5"
+						/>
+						<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
+						<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="1.5" fill="none" />
 					</svg>
 				</div>
 				<p class="empty-text">No images added yet</p>

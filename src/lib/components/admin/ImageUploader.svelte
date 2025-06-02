@@ -76,11 +76,11 @@
 	async function uploadFile(file: File): Promise<Media> {
 		const formData = new FormData()
 		formData.append('file', file)
-		
+
 		if (allowAltText && altTextValue.trim()) {
 			formData.append('altText', altTextValue.trim())
 		}
-		
+
 		if (allowAltText && descriptionValue.trim()) {
 			formData.append('description', descriptionValue.trim())
 		}
@@ -104,7 +104,7 @@
 
 		const file = files[0]
 		const validationError = validateFile(file)
-		
+
 		if (validationError) {
 			uploadError = validationError
 			return
@@ -123,10 +123,10 @@
 			}, 100)
 
 			const uploadedMedia = await uploadFile(file)
-			
+
 			clearInterval(progressInterval)
 			uploadProgress = 100
-			
+
 			// Brief delay to show completion
 			setTimeout(() => {
 				value = uploadedMedia
@@ -136,7 +136,6 @@
 				isUploading = false
 				uploadProgress = 0
 			}, 500)
-
 		} catch (err) {
 			isUploading = false
 			uploadProgress = 0
@@ -158,7 +157,7 @@
 	function handleDrop(event: DragEvent) {
 		event.preventDefault()
 		isDragOver = false
-		
+
 		const files = event.dataTransfer?.files
 		if (files) {
 			handleFiles(files)
@@ -188,7 +187,7 @@
 	// Update alt text on server
 	async function handleAltTextChange() {
 		if (!value) return
-		
+
 		try {
 			const response = await authenticatedFetch(`/api/media/${value.id}/metadata`, {
 				method: 'PATCH',
@@ -211,7 +210,7 @@
 
 	async function handleDescriptionChange() {
 		if (!value) return
-		
+
 		try {
 			const response = await authenticatedFetch(`/api/media/${value.id}/metadata`, {
 				method: 'PATCH',
@@ -271,32 +270,51 @@
 				<!-- Compact Layout: Image and metadata side-by-side -->
 				<div class="compact-preview">
 					<div class="compact-image">
-						<SmartImage 
-							media={value} 
+						<SmartImage
+							media={value}
 							alt={value?.altText || value?.filename || 'Uploaded image'}
 							containerWidth={100}
 							loading="eager"
-							aspectRatio={aspectRatio}
+							{aspectRatio}
 							class="preview-image"
 						/>
-						
+
 						<!-- Overlay with actions -->
 						<div class="preview-overlay">
 							<div class="preview-actions">
 								<Button variant="overlay" buttonSize="small" onclick={handleBrowseClick}>
 									<RefreshIcon slot="icon" width="12" height="12" />
 								</Button>
-								
+
 								<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
-									<svg slot="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-										<path d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									<svg
+										slot="icon"
+										width="12"
+										height="12"
+										viewBox="0 0 24 24"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<polyline
+											points="3,6 5,6 21,6"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+										<path
+											d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
 									</svg>
 								</Button>
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="compact-info">
 						<!-- Alt Text Input in compact mode -->
 						{#if allowAltText}
@@ -309,7 +327,7 @@
 									buttonSize="small"
 									onblur={handleAltTextChange}
 								/>
-								
+
 								<Input
 									type="textarea"
 									label="Description (Optional)"
@@ -326,15 +344,15 @@
 			{:else}
 				<!-- Standard Layout: Image preview -->
 				<div class="image-preview" style={aspectRatioStyle}>
-					<SmartImage 
-						media={value} 
+					<SmartImage
+						media={value}
 						alt={value?.altText || value?.filename || 'Uploaded image'}
 						containerWidth={800}
 						loading="eager"
-						aspectRatio={aspectRatio}
+						{aspectRatio}
 						class="preview-image"
 					/>
-					
+
 					<!-- Overlay with actions -->
 					<div class="preview-overlay">
 						<div class="preview-actions">
@@ -342,11 +360,30 @@
 								<RefreshIcon slot="icon" width="16" height="16" />
 								Replace
 							</Button>
-							
+
 							<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
-								<svg slot="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-									<path d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+								<svg
+									slot="icon"
+									width="16"
+									height="16"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<polyline
+										points="3,6 5,6 21,6"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+									<path
+										d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
 								</svg>
 								Remove
 							</Button>
@@ -365,10 +402,9 @@
 					</p>
 				</div>
 			{/if}
-
 		{:else}
 			<!-- Upload Drop Zone -->
-			<div 
+			<div
 				class="drop-zone"
 				class:drag-over={isDragOver}
 				class:uploading={isUploading}
@@ -412,12 +448,53 @@
 				{:else}
 					<!-- Upload Prompt -->
 					<div class="upload-prompt">
-						<svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-							<polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-							<line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-							<line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-							<polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<svg
+							class="upload-icon"
+							width="48"
+							height="48"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<polyline
+								points="14,2 14,8 20,8"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<line
+								x1="16"
+								y1="13"
+								x2="8"
+								y2="13"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+							<line
+								x1="16"
+								y1="17"
+								x2="8"
+								y2="17"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+							<polyline
+								points="10,9 9,9 8,9"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 						<p class="upload-main-text">{placeholder}</p>
 						<p class="upload-sub-text">
@@ -432,14 +509,10 @@
 	<!-- Action Buttons -->
 	{#if !hasValue && !isUploading}
 		<div class="action-buttons">
-			<Button variant="primary" onclick={handleBrowseClick}>
-				Choose File
-			</Button>
-			
+			<Button variant="primary" onclick={handleBrowseClick}>Choose File</Button>
+
 			{#if showBrowseLibrary}
-				<Button variant="ghost" onclick={handleBrowseLibrary}>
-					Browse Library
-				</Button>
+				<Button variant="ghost" onclick={handleBrowseLibrary}>Browse Library</Button>
 			{/if}
 		</div>
 	{/if}
@@ -455,7 +528,7 @@
 				helpText="Help make your content accessible. Describe what's in the image."
 				onblur={handleAltTextChange}
 			/>
-			
+
 			<Input
 				type="textarea"
 				label="Description (Optional)"
@@ -498,7 +571,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit-2x;
-		
+
 		&.compact {
 			gap: $unit;
 		}

@@ -38,7 +38,6 @@ We are using Svelte 5 in Runes mode, so make sure to only write solutions that w
 
 Make sure to use the CSS variables that are defined across the various files in `src/assets/styles`. When making new colors or defining new variables, check that it doesn't exist first, then define it.
 
-
 ### Key Architecture Components
 
 **API Integration Layer** (`src/routes/api/`)

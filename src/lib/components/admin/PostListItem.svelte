@@ -114,14 +114,14 @@
 		<p class="post-preview">{getPostSnippet(post)}</p>
 	</div>
 
-	<AdminByline 
+	<AdminByline
 		sections={[
 			postTypeLabels[post.postType] || post.postType,
 			post.status === 'published' ? 'Published' : 'Draft',
-			post.status === 'published' && post.publishedAt 
+			post.status === 'published' && post.publishedAt
 				? `published ${formatDate(post.publishedAt)}`
 				: `created ${formatDate(post.createdAt)}`
-		]} 
+		]}
 	/>
 </article>
 

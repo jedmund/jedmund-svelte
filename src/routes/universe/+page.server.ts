@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 		if (!response.ok) {
 			throw new Error('Failed to fetch universe feed')
 		}
-		
+
 		const data = await response.json()
 		return {
 			universeItems: data.items || [],

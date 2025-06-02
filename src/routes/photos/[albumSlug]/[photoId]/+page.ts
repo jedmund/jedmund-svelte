@@ -3,7 +3,7 @@ import type { PageLoad } from './$types'
 export const load: PageLoad = async ({ params, fetch }) => {
 	try {
 		const response = await fetch(`/api/photos/${params.albumSlug}/${params.photoId}`)
-		
+
 		if (!response.ok) {
 			if (response.status === 404) {
 				throw new Error('Photo not found')

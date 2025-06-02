@@ -53,14 +53,12 @@
 
 	// Calculate aspect ratio styles
 	const aspectRatioStyle = $derived(
-		!aspectRatio 
+		!aspectRatio
 			? 'aspect-ratio: 16/9;'
 			: (() => {
-				const [width, height] = aspectRatio.split(':').map(Number)
-				return width && height 
-					? `aspect-ratio: ${width}/${height};`
-					: 'aspect-ratio: 16/9;'
-			})()
+					const [width, height] = aspectRatio.split(':').map(Number)
+					return width && height ? `aspect-ratio: ${width}/${height};` : 'aspect-ratio: 16/9;'
+				})()
 	)
 </script>
 
@@ -73,7 +71,7 @@
 	</label>
 
 	<!-- Image Preview Area -->
-	<div 
+	<div
 		class="image-preview-container"
 		class:has-image={hasImage}
 		class:has-error={error}
@@ -82,17 +80,13 @@
 		tabindex="0"
 		onclick={openModal}
 		onkeydown={(e) => e.key === 'Enter' && openModal()}
-		onmouseenter={() => isHovering = true}
-		onmouseleave={() => isHovering = false}
+		onmouseenter={() => (isHovering = true)}
+		onmouseleave={() => (isHovering = false)}
 	>
 		{#if hasImage && value}
 			<!-- Image Display -->
-			<img 
-				src={value.url} 
-				alt={value.filename}
-				class="preview-image"
-			/>
-			
+			<img src={value.url} alt={value.filename} class="preview-image" />
+
 			<!-- Hover Overlay -->
 			{#if isHovering}
 				<div class="image-overlay">
@@ -149,10 +143,24 @@
 			<!-- Empty State -->
 			<div class="empty-state">
 				<div class="empty-icon">
-					<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
-						<circle cx="8.5" cy="8.5" r=".5" fill="currentColor"/>
-						<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+					<svg
+						width="48"
+						height="48"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<rect
+							x="3"
+							y="5"
+							width="18"
+							height="14"
+							rx="2"
+							stroke="currentColor"
+							stroke-width="1.5"
+						/>
+						<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
+						<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="1.5" fill="none" />
 					</svg>
 				</div>
 				<p class="empty-text">{placeholder}</p>

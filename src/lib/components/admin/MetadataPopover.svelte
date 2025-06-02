@@ -132,16 +132,12 @@
 	<div class="popover-content">
 		<h3>Post Settings</h3>
 
-		<Input 
-			label="Slug" 
-			bind:value={slug} 
-			placeholder="post-slug"
-		/>
+		<Input label="Slug" bind:value={slug} placeholder="post-slug" />
 
 		{#if postType === 'essay'}
-			<Input 
+			<Input
 				type="textarea"
-				label="Excerpt" 
+				label="Excerpt"
 				bind:value={excerpt}
 				rows={3}
 				placeholder="Brief description..."
@@ -149,14 +145,14 @@
 		{/if}
 
 		<div class="tags-section">
-			<Input 
+			<Input
 				label="Tags"
 				bind:value={tagInput}
 				onkeydown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddTag())}
 				placeholder="Add tags..."
 			/>
 			<button type="button" onclick={onAddTag} class="add-tag-btn">Add</button>
-			
+
 			{#if tags.length > 0}
 				<div class="tags">
 					{#each tags as tag}

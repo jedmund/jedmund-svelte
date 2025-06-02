@@ -15,9 +15,9 @@ export function getAuthHeaders(): HeadersInit {
 		// In production, this should redirect to login
 		adminCredentials = btoa('admin:localdev')
 	}
-	
+
 	return {
-		'Authorization': `Basic ${adminCredentials}`
+		Authorization: `Basic ${adminCredentials}`
 	}
 }
 
@@ -32,12 +32,15 @@ export function clearAuth() {
 }
 
 // Make authenticated API request
-export async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+export async function authenticatedFetch(
+	url: string,
+	options: RequestInit = {}
+): Promise<Response> {
 	const headers = {
 		...getAuthHeaders(),
 		...options.headers
 	}
-	
+
 	return fetch(url, {
 		...options,
 		headers

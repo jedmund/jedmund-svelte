@@ -14,9 +14,12 @@
 
 	const getPostTypeLabel = (postType: string) => {
 		switch (postType) {
-			case 'post': return 'Post'
-			case 'essay': return 'Essay'
-			default: return 'Post'
+			case 'post':
+				return 'Post'
+			case 'essay':
+				return 'Essay'
+			default:
+				return 'Post'
 		}
 	}
 
@@ -42,18 +45,22 @@
 
 				case 'bulletList':
 				case 'ul':
-					const listItems = (block.content || []).map((item: any) => {
-						const itemText = item.content || item.text || ''
-						return `<li>${itemText}</li>`
-					}).join('')
+					const listItems = (block.content || [])
+						.map((item: any) => {
+							const itemText = item.content || item.text || ''
+							return `<li>${itemText}</li>`
+						})
+						.join('')
 					return `<ul>${listItems}</ul>`
 
 				case 'orderedList':
 				case 'ol':
-					const orderedItems = (block.content || []).map((item: any) => {
-						const itemText = item.content || item.text || ''
-						return `<li>${itemText}</li>`
-					}).join('')
+					const orderedItems = (block.content || [])
+						.map((item: any) => {
+							const itemText = item.content || item.text || ''
+							return `<li>${itemText}</li>`
+						})
+						.join('')
 					return `<ol>${orderedItems}</ol>`
 
 				case 'blockquote':
@@ -110,11 +117,13 @@
 
 	{#if post.linkUrl}
 		<div class="post-link-preview">
-			<LinkCard link={{
-				url: post.linkUrl,
-				title: post.title,
-				description: post.linkDescription
-			}} />
+			<LinkCard
+				link={{
+					url: post.linkUrl,
+					title: post.title,
+					description: post.linkDescription
+				}}
+			/>
 		</div>
 	{/if}
 
@@ -316,7 +325,8 @@
 			background: $grey-95;
 			padding: 2px 6px;
 			border-radius: 4px;
-			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
+				monospace;
 			font-size: 0.9em;
 			color: $grey-10;
 		}

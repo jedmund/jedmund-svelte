@@ -5,7 +5,7 @@
 	import Upload from 'lucide-svelte/icons/upload'
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import MediaLibraryModal from '../../../admin/MediaLibraryModal.svelte'
-	
+
 	const { editor, deleteNode }: NodeViewProps = $props()
 
 	let isMediaLibraryOpen = $state(false)
@@ -27,7 +27,7 @@
 	function handleMediaSelect(media: Media | Media[]) {
 		const mediaArray = Array.isArray(media) ? media : [media]
 		if (mediaArray.length > 0) {
-			const galleryImages = mediaArray.map(m => ({
+			const galleryImages = mediaArray.map((m) => ({
 				id: m.id,
 				url: m.url,
 				alt: m.altText || '',
@@ -128,7 +128,7 @@
 				<Upload class="edra-gallery-placeholder-icon" />
 				<span class="edra-gallery-placeholder-text">Upload Images</span>
 			</button>
-			
+
 			<button
 				class="edra-gallery-placeholder-option"
 				onclick={handleBrowseLibrary}
@@ -225,8 +225,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	:global(.edra-gallery-placeholder-icon) {

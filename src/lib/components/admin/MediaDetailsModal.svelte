@@ -13,12 +13,7 @@
 		onUpdate: (updatedMedia: Media) => void
 	}
 
-	let {
-		isOpen = $bindable(),
-		media,
-		onClose,
-		onUpdate
-	}: Props = $props()
+	let { isOpen = $bindable(), media, onClose, onUpdate }: Props = $props()
 
 	// Form state
 	let altText = $state('')
@@ -29,14 +24,16 @@
 	let successMessage = $state('')
 
 	// Usage tracking state
-	let usage = $state<Array<{
-		contentType: string
-		contentId: number
-		contentTitle: string
-		fieldDisplayName: string
-		contentUrl?: string
-		createdAt: string
-	}>>([])
+	let usage = $state<
+		Array<{
+			contentType: string
+			contentId: number
+			contentTitle: string
+			fieldDisplayName: string
+			contentUrl?: string
+			createdAt: string
+		}>
+	>([])
 	let loadingUsage = $state(false)
 
 	// Initialize form when media changes
@@ -54,11 +51,11 @@
 	// Load usage information
 	async function loadUsage() {
 		if (!media) return
-		
+
 		try {
 			loadingUsage = true
 			const response = await authenticatedFetch(`/api/media/${media.id}/usage`)
-			
+
 			if (response.ok) {
 				const data = await response.json()
 				usage = data.usage || []
@@ -110,12 +107,11 @@
 			const updatedMedia = await response.json()
 			onUpdate(updatedMedia)
 			successMessage = 'Media updated successfully!'
-			
+
 			// Auto-close after success
 			setTimeout(() => {
 				handleClose()
 			}, 1500)
-
 		} catch (err) {
 			error = 'Failed to update media. Please try again.'
 			console.error('Failed to update media:', err)
@@ -125,7 +121,10 @@
 	}
 
 	async function handleDelete() {
-		if (!media || !confirm('Are you sure you want to delete this media file? This action cannot be undone.')) {
+		if (
+			!media ||
+			!confirm('Are you sure you want to delete this media file? This action cannot be undone.')
+		) {
 			return
 		}
 
@@ -144,7 +143,6 @@
 			// Close modal and let parent handle the deletion
 			handleClose()
 			// Note: Parent component should refresh the media list
-
 		} catch (err) {
 			error = 'Failed to delete media. Please try again.'
 			console.error('Failed to delete media:', err)
@@ -155,17 +153,20 @@
 
 	function copyUrl() {
 		if (media?.url) {
-			navigator.clipboard.writeText(media.url).then(() => {
-				successMessage = 'URL copied to clipboard!'
-				setTimeout(() => {
-					successMessage = ''
-				}, 2000)
-			}).catch(() => {
-				error = 'Failed to copy URL'
-				setTimeout(() => {
-					error = ''
-				}, 2000)
-			})
+			navigator.clipboard
+				.writeText(media.url)
+				.then(() => {
+					successMessage = 'URL copied to clipboard!'
+					setTimeout(() => {
+						successMessage = ''
+					}, 2000)
+				})
+				.catch(() => {
+					error = 'Failed to copy URL'
+					setTimeout(() => {
+						error = ''
+					}, 2000)
+				})
 		}
 	}
 
@@ -187,7 +188,13 @@
 </script>
 
 {#if media}
-	<Modal bind:isOpen size="large" closeOnBackdrop={!isSaving} closeOnEscape={!isSaving} on:close={handleClose}>
+	<Modal
+		bind:isOpen
+		size="large"
+		closeOnBackdrop={!isSaving}
+		closeOnEscape={!isSaving}
+		on:close={handleClose}
+	>
 		<div class="media-details-modal">
 			<!-- Header -->
 			<div class="modal-header">
@@ -197,8 +204,20 @@
 				</div>
 				{#if !isSaving}
 					<Button variant="ghost" onclick={handleClose} iconOnly aria-label="Close modal">
-						<svg slot="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+						<svg
+							slot="icon"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M6 6L18 18M6 18L18 6"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
 						</svg>
 					</Button>
 				{/if}
@@ -213,9 +232,27 @@
 							<SmartImage {media} alt={media.altText || media.filename} />
 						{:else}
 							<div class="file-placeholder">
-								<svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-									<polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+								<svg
+									width="64"
+									height="64"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<path
+										d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+									<polyline
+										points="14,2 14,8 20,8"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
 								</svg>
 								<span class="file-type">{getFileType(media.mimeType)}</span>
 							</div>
@@ -246,9 +283,7 @@
 							<span class="label">URL:</span>
 							<div class="url-section">
 								<span class="url-text">{media.url}</span>
-								<Button variant="ghost" buttonSize="small" onclick={copyUrl}>
-									Copy
-								</Button>
+								<Button variant="ghost" buttonSize="small" onclick={copyUrl}>Copy</Button>
 							</div>
 						</div>
 					</div>
@@ -257,7 +292,7 @@
 				<!-- Edit Form -->
 				<div class="edit-form">
 					<h3>Accessibility & SEO</h3>
-					
+
 					<Input
 						type="text"
 						label="Alt Text"
@@ -267,7 +302,7 @@
 						disabled={isSaving}
 						fullWidth
 					/>
-					
+
 					<Input
 						type="textarea"
 						label="Description (Optional)"
@@ -291,7 +326,8 @@
 							<span class="toggle-slider"></span>
 							<div class="toggle-content">
 								<span class="toggle-title">Photography</span>
-								<span class="toggle-description">Show this media in the photography experience</span>
+								<span class="toggle-description">Show this media in the photography experience</span
+								>
 							</div>
 						</label>
 					</div>
@@ -311,7 +347,12 @@
 										<div class="usage-content">
 											<div class="usage-header">
 												{#if usageItem.contentUrl}
-													<a href={usageItem.contentUrl} class="usage-title" target="_blank" rel="noopener">
+													<a
+														href={usageItem.contentUrl}
+														class="usage-title"
+														target="_blank"
+														rel="noopener"
+													>
 														{usageItem.contentTitle}
 													</a>
 												{:else}
@@ -321,7 +362,9 @@
 											</div>
 											<div class="usage-details">
 												<span class="usage-field">{usageItem.fieldDisplayName}</span>
-												<span class="usage-date">Added {new Date(usageItem.createdAt).toLocaleDateString()}</span>
+												<span class="usage-date"
+													>Added {new Date(usageItem.createdAt).toLocaleDateString()}</span
+												>
 											</div>
 										</div>
 									</li>
@@ -337,16 +380,11 @@
 			<!-- Footer -->
 			<div class="modal-footer">
 				<div class="footer-left">
-					<Button 
-						variant="ghost" 
-						onclick={handleDelete}
-						disabled={isSaving}
-						class="delete-button"
-					>
+					<Button variant="ghost" onclick={handleDelete} disabled={isSaving} class="delete-button">
 						Delete
 					</Button>
 				</div>
-				
+
 				<div class="footer-right">
 					{#if error}
 						<span class="error-text">{error}</span>
@@ -354,10 +392,8 @@
 					{#if successMessage}
 						<span class="success-text">{successMessage}</span>
 					{/if}
-					
-					<Button variant="ghost" onclick={handleClose} disabled={isSaving}>
-						Cancel
-					</Button>
+
+					<Button variant="ghost" onclick={handleClose} disabled={isSaving}>Cancel</Button>
 					<Button variant="primary" onclick={handleSave} disabled={isSaving}>
 						{isSaving ? 'Saving...' : 'Save Changes'}
 					</Button>
@@ -711,8 +747,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	// Responsive adjustments

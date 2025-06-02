@@ -61,7 +61,7 @@
 
 	function handleFeaturedImageUpload(media: Media) {
 		featuredImage = media
-		
+
 		// If no title is set, use the media filename as a starting point
 		if (!title.trim() && media.originalName) {
 			title = media.originalName.replace(/\.[^/.]+$/, '') // Remove file extension
@@ -119,7 +119,12 @@
 				status,
 				content: editorContent,
 				featuredImage: featuredImage.url,
-				tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+				tags: tags
+					? tags
+							.split(',')
+							.map((tag) => tag.trim())
+							.filter(Boolean)
+					: [],
 				excerpt: generateExcerpt(editorContent)
 			}
 
@@ -147,7 +152,6 @@
 			} else {
 				goto('/admin/posts')
 			}
-
 		} catch (err) {
 			error = `Failed to ${mode === 'edit' ? 'update' : 'create'} photo post`
 			console.error(err)
@@ -159,7 +163,7 @@
 	function generateExcerpt(content: JSONContent): string {
 		// Extract plain text from editor content for excerpt
 		if (!content?.content) return ''
-		
+
 		let text = ''
 		const extractText = (node: any) => {
 			if (node.type === 'text') {
@@ -168,7 +172,7 @@
 				node.content.forEach(extractText)
 			}
 		}
-		
+
 		content.content.forEach(extractText)
 		return text.substring(0, 200) + (text.length > 200 ? '...' : '')
 	}
@@ -190,16 +194,22 @@
 			<h1>{mode === 'edit' ? 'Edit Photo Post' : 'New Photo Post'}</h1>
 			<p class="subtitle">Share a photo with a caption and description</p>
 		</div>
-		
+
 		<div class="header-actions">
 			{#if !isSaving}
-				<Button variant="ghost" onclick={() => goto('/admin/posts')}>
-					Cancel
-				</Button>
-				<Button variant="secondary" onclick={handleDraft} disabled={!featuredImage || !title.trim()}>
+				<Button variant="ghost" onclick={() => goto('/admin/posts')}>Cancel</Button>
+				<Button
+					variant="secondary"
+					onclick={handleDraft}
+					disabled={!featuredImage || !title.trim()}
+				>
 					Save Draft
 				</Button>
-				<Button variant="primary" onclick={handlePublish} disabled={!featuredImage || !title.trim()}>
+				<Button
+					variant="primary"
+					onclick={handlePublish}
+					disabled={!featuredImage || !title.trim()}
+				>
 					{isSaving ? 'Publishing...' : 'Publish'}
 				</Button>
 			{/if}

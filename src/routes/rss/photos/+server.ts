@@ -36,7 +36,7 @@ export const GET: RequestHandler = async (event) => {
 					take: 1 // Get first photo for cover image
 				},
 				_count: {
-					select: { 
+					select: {
 						photos: {
 							where: {
 								status: 'published',
@@ -63,30 +63,36 @@ export const GET: RequestHandler = async (event) => {
 
 		// Combine albums and standalone photos
 		const items = [
-			...albums.map(album => ({
+			...albums.map((album) => ({
 				type: 'album',
 				id: album.id.toString(),
 				title: album.title,
-				description: album.description || `Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.photos} photo${album._count.photos !== 1 ? 's' : ''}`,
-			content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
+				description:
+					album.description ||
+					`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.photos} photo${album._count.photos !== 1 ? 's' : ''}`,
+				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
 				link: `${event.url.origin}/photos/${album.slug}`,
 				pubDate: album.createdAt,
-			updatedDate: album.updatedAt,
+				updatedDate: album.updatedAt,
 				guid: `${event.url.origin}/photos/${album.slug}`,
 				photoCount: album._count.photos,
 				coverPhoto: album.photos[0],
 				location: album.location,
 				date: album.date
 			})),
-			...standalonePhotos.map(photo => ({
+			...standalonePhotos.map((photo) => ({
 				type: 'photo',
 				id: photo.id.toString(),
 				title: photo.title || photo.filename,
 				description: photo.description || photo.caption || `Photo: ${photo.filename}`,
-			content: photo.description ? `<p>${escapeXML(photo.description)}</p>` : (photo.caption ? `<p>${escapeXML(photo.caption)}</p>` : ''),
+				content: photo.description
+					? `<p>${escapeXML(photo.description)}</p>`
+					: photo.caption
+						? `<p>${escapeXML(photo.caption)}</p>`
+						: '',
 				link: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
 				pubDate: photo.publishedAt || photo.createdAt,
-			updatedDate: photo.updatedAt,
+				updatedDate: photo.updatedAt,
 				guid: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
 				url: photo.url,
 				thumbnailUrl: photo.thumbnailUrl
@@ -95,7 +101,7 @@ export const GET: RequestHandler = async (event) => {
 
 		const now = new Date()
 		const lastBuildDate = formatRFC822Date(now)
-		
+
 		// Build RSS XML following best practices
 		const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
@@ -111,7 +117,9 @@ export const GET: RequestHandler = async (event) => {
 <generator>SvelteKit RSS Generator</generator>
 <docs>https://cyber.harvard.edu/rss/rss.html</docs>
 <ttl>60</ttl>
-${items.map(item => `
+${items
+	.map(
+		(item) => `
 <item>
 <title>${escapeXML(item.title)}</title>
 <description><![CDATA[${item.description}]]></description>
@@ -121,17 +129,27 @@ ${item.content ? `<content:encoded><![CDATA[${item.content}]]></content:encoded>
 <pubDate>${formatRFC822Date(new Date(item.pubDate))}</pubDate>
 ${item.updatedDate ? `<atom:updated>${new Date(item.updatedDate).toISOString()}</atom:updated>` : ''}
 <category>${item.type}</category>
-${item.type === 'album' && item.coverPhoto ? `
+${
+	item.type === 'album' && item.coverPhoto
+		? `
 <enclosure url="${event.url.origin}${item.coverPhoto.url}" type="image/jpeg" length="0"/>
 <media:thumbnail url="${event.url.origin}${item.coverPhoto.thumbnailUrl || item.coverPhoto.url}"/>
-<media:content url="${event.url.origin}${item.coverPhoto.url}" type="image/jpeg"/>` : ''}
-${item.type === 'photo' ? `
+<media:content url="${event.url.origin}${item.coverPhoto.url}" type="image/jpeg"/>`
+		: ''
+}
+${
+	item.type === 'photo'
+		? `
 <enclosure url="${event.url.origin}${item.url}" type="image/jpeg" length="0"/>
 <media:thumbnail url="${event.url.origin}${item.thumbnailUrl || item.url}"/>
-<media:content url="${event.url.origin}${item.url}" type="image/jpeg"/>` : ''}
+<media:content url="${event.url.origin}${item.url}" type="image/jpeg"/>`
+		: ''
+}
 ${item.location ? `<category domain="location">${escapeXML(item.location)}</category>` : ''}
 <author>noreply@jedmund.com (Justin Edmund)</author>
-</item>`).join('')}
+</item>`
+	)
+	.join('')}
 </channel>
 </rss>`
 
@@ -142,9 +160,9 @@ ${item.location ? `<category domain="location">${escapeXML(item.location)}</cate
 				'Content-Type': 'application/rss+xml; charset=utf-8',
 				'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
 				'Last-Modified': lastBuildDate,
-				'ETag': `"${Buffer.from(rssXml).toString('base64').slice(0, 16)}"`,
+				ETag: `"${Buffer.from(rssXml).toString('base64').slice(0, 16)}"`,
 				'X-Content-Type-Options': 'nosniff',
-				'Vary': 'Accept-Encoding'
+				Vary: 'Accept-Encoding'
 			}
 		})
 	} catch (error) {

@@ -13,15 +13,19 @@ declare module '@tiptap/core' {
 			/**
 			 * Insert a gallery
 			 */
-			setGallery: (options: { images: Array<{ id: number; url: string; alt?: string; title?: string }> }) => ReturnType
+			setGallery: (options: {
+				images: Array<{ id: number; url: string; alt?: string; title?: string }>
+			}) => ReturnType
 		}
 	}
 }
 
-export const GalleryExtended = (component: Component<NodeViewProps>): Node<GalleryOptions, unknown> => {
+export const GalleryExtended = (
+	component: Component<NodeViewProps>
+): Node<GalleryOptions, unknown> => {
 	return Node.create<GalleryOptions>({
 		name: 'gallery',
-		
+
 		addOptions() {
 			return {
 				HTMLAttributes: {}
@@ -46,15 +50,16 @@ export const GalleryExtended = (component: Component<NodeViewProps>): Node<Galle
 		},
 
 		parseHTML() {
-			return [
-				{ tag: `div[data-type="${this.name}"]` }
-			]
+			return [{ tag: `div[data-type="${this.name}"]` }]
 		},
 
 		renderHTML({ HTMLAttributes }) {
-			return ['div', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-				'data-type': this.name
-			})]
+			return [
+				'div',
+				mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+					'data-type': this.name
+				})
+			]
 		},
 
 		group: 'block',
@@ -67,14 +72,16 @@ export const GalleryExtended = (component: Component<NodeViewProps>): Node<Galle
 
 		addCommands() {
 			return {
-				setGallery: (options) => ({ commands }) => {
-					return commands.insertContent({
-						type: this.name,
-						attrs: {
-							images: options.images
-						}
-					})
-				}
+				setGallery:
+					(options) =>
+					({ commands }) => {
+						return commands.insertContent({
+							type: this.name,
+							attrs: {
+								images: options.images
+							}
+						})
+					}
 			}
 		}
 	})

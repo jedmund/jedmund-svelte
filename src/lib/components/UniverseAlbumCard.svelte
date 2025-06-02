@@ -17,9 +17,7 @@
 <article class="universe-album-card">
 	<div class="card-content">
 		<div class="card-header">
-			<div class="album-type-badge">
-				Album
-			</div>
+			<div class="album-type-badge">Album</div>
 			<time class="album-date" datetime={album.publishedAt}>
 				{formatDate(album.publishedAt)}
 			</time>
@@ -27,8 +25,8 @@
 
 		{#if album.coverPhoto}
 			<div class="album-cover">
-				<img 
-					src={album.coverPhoto.thumbnailUrl || album.coverPhoto.url} 
+				<img
+					src={album.coverPhoto.thumbnailUrl || album.coverPhoto.url}
 					alt={album.coverPhoto.caption || album.title}
 					loading="lazy"
 				/>
@@ -60,9 +58,7 @@
 		</div>
 
 		<div class="card-footer">
-			<a href="/photos/{album.slug}" class="view-album">
-				View album →
-			</a>
+			<a href="/photos/{album.slug}" class="view-album"> View album → </a>
 			<UniverseIcon class="universe-icon" />
 		</div>
 	</div>

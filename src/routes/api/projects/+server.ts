@@ -10,7 +10,11 @@ import {
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { createSlug, ensureUniqueSlug } from '$lib/server/database'
-import { trackMediaUsage, extractMediaIds, type MediaUsageReference } from '$lib/server/media-usage.js'
+import {
+	trackMediaUsage,
+	extractMediaIds,
+	type MediaUsageReference
+} from '$lib/server/media-usage.js'
 
 // GET /api/projects - List all projects
 export const GET: RequestHandler = async (event) => {
@@ -22,28 +26,29 @@ export const GET: RequestHandler = async (event) => {
 		const status = event.url.searchParams.get('status')
 		const projectType = event.url.searchParams.get('projectType')
 		const includeListOnly = event.url.searchParams.get('includeListOnly') === 'true'
-		const includePasswordProtected = event.url.searchParams.get('includePasswordProtected') === 'true'
+		const includePasswordProtected =
+			event.url.searchParams.get('includePasswordProtected') === 'true'
 
 		// Build where clause
 		const where: any = {}
-		
+
 		if (status) {
 			where.status = status
 		} else {
 			// Default behavior: determine which statuses to include
 			const allowedStatuses = ['published']
-			
+
 			if (includeListOnly) {
 				allowedStatuses.push('list-only')
 			}
-			
+
 			if (includePasswordProtected) {
 				allowedStatuses.push('password-protected')
 			}
-			
+
 			where.status = { in: allowedStatuses }
 		}
-		
+
 		if (projectType) {
 			where.projectType = projectType
 		}
@@ -126,7 +131,7 @@ export const POST: RequestHandler = async (event) => {
 
 			// Track featured image
 			const featuredImageIds = extractMediaIds(body, 'featuredImage')
-			featuredImageIds.forEach(mediaId => {
+			featuredImageIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',
@@ -137,7 +142,7 @@ export const POST: RequestHandler = async (event) => {
 
 			// Track logo
 			const logoIds = extractMediaIds(body, 'logoUrl')
-			logoIds.forEach(mediaId => {
+			logoIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',
@@ -148,7 +153,7 @@ export const POST: RequestHandler = async (event) => {
 
 			// Track gallery images
 			const galleryIds = extractMediaIds(body, 'gallery')
-			galleryIds.forEach(mediaId => {
+			galleryIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',
@@ -159,7 +164,7 @@ export const POST: RequestHandler = async (event) => {
 
 			// Track media in case study content
 			const contentIds = extractMediaIds(body, 'caseStudyContent')
-			contentIds.forEach(mediaId => {
+			contentIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',

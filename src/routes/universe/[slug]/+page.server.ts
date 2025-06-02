@@ -4,7 +4,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	try {
 		// Fetch the specific post by slug from the database
 		const response = await fetch(`/api/posts/by-slug/${params.slug}`)
-		
+
 		if (!response.ok) {
 			if (response.status === 404) {
 				return {

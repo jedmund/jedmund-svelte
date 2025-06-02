@@ -264,18 +264,9 @@
 						}}
 					>
 						<div class="form-section">
-							<Input
-								label="Title"
-								bind:value={title}
-								required
-								placeholder="Essay title"
-							/>
+							<Input label="Title" bind:value={title} required placeholder="Essay title" />
 
-							<Input
-								label="Slug"
-								bind:value={slug}
-								placeholder="essay-url-slug"
-							/>
+							<Input label="Slug" bind:value={slug} placeholder="essay-url-slug" />
 
 							<Input
 								type="textarea"
@@ -366,7 +357,6 @@
 		}
 	}
 
-
 	.admin-container {
 		width: 100%;
 		margin: 0 auto;
@@ -383,15 +373,14 @@
 		display: flex;
 	}
 
-
 	// Custom styles for save/publish buttons to maintain grey color scheme
 	:global(.save-button.btn-primary) {
 		background-color: $grey-10;
-		
+
 		&:hover:not(:disabled) {
 			background-color: $grey-20;
 		}
-		
+
 		&:active:not(:disabled) {
 			background-color: $grey-30;
 		}
@@ -405,15 +394,15 @@
 
 	:global(.chevron-button.btn-primary) {
 		background-color: $grey-10;
-		
+
 		&:hover:not(:disabled) {
 			background-color: $grey-20;
 		}
-		
+
 		&:active:not(:disabled) {
 			background-color: $grey-30;
 		}
-		
+
 		&.active {
 			background-color: $grey-20;
 		}
@@ -510,14 +499,14 @@
 	// Tags field styles
 	.tags-field {
 		margin-bottom: $unit-4x;
-		
+
 		.input-label {
 			display: block;
 			margin-bottom: $unit;
 			font-size: 14px;
 			font-weight: 500;
 			color: $grey-20;
-			}
+		}
 	}
 
 	.tag-input-wrapper {

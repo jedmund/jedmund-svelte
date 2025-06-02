@@ -1,6 +1,11 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth, parseRequestBody } from '$lib/server/api-utils'
+import {
+	jsonResponse,
+	errorResponse,
+	checkAdminAuth,
+	parseRequestBody
+} from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { removeMediaUsage, extractMediaIds } from '$lib/server/media-usage.js'
 
@@ -17,7 +22,7 @@ export const DELETE: RequestHandler = async (event) => {
 			return errorResponse('Invalid request body. Expected array of media IDs.', 400)
 		}
 
-		const mediaIds = body.mediaIds.filter(id => typeof id === 'number' && !isNaN(id))
+		const mediaIds = body.mediaIds.filter((id) => typeof id === 'number' && !isNaN(id))
 		if (mediaIds.length === 0) {
 			return errorResponse('No valid media IDs provided', 400)
 		}
@@ -47,19 +52,18 @@ export const DELETE: RequestHandler = async (event) => {
 			where: { id: { in: mediaIds } }
 		})
 
-		logger.info('Bulk media deletion completed', { 
+		logger.info('Bulk media deletion completed', {
 			deletedCount: deleteResult.count,
 			mediaIds,
-			filenames: mediaRecords.map(m => m.filename)
+			filenames: mediaRecords.map((m) => m.filename)
 		})
 
 		return jsonResponse({
 			success: true,
 			message: `Successfully deleted ${deleteResult.count} media file${deleteResult.count > 1 ? 's' : ''}`,
 			deletedCount: deleteResult.count,
-			deletedFiles: mediaRecords.map(m => ({ id: m.id, filename: m.filename }))
+			deletedFiles: mediaRecords.map((m) => ({ id: m.id, filename: m.filename }))
 		})
-
 	} catch (error) {
 		logger.error('Failed to bulk delete media files', error as Error)
 		return errorResponse('Failed to delete media files', 500)
@@ -74,16 +78,16 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 		where: { id: { in: mediaIds } },
 		select: { url: true }
 	})
-	const urlsToRemove = mediaUrls.map(m => m.url)
+	const urlsToRemove = mediaUrls.map((m) => m.url)
 
 	// Clean up projects
 	const projects = await prisma.project.findMany({
-		select: { 
-			id: true, 
-			featuredImage: true, 
-			logoUrl: true, 
-			gallery: true, 
-			caseStudyContent: true 
+		select: {
+			id: true,
+			featuredImage: true,
+			logoUrl: true,
+			gallery: true,
+			caseStudyContent: true
 		}
 	})
 
@@ -135,9 +139,9 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 
 	// Clean up posts
 	const posts = await prisma.post.findMany({
-		select: { 
-			id: true, 
-			featuredImage: true, 
+		select: {
+			id: true,
+			featuredImage: true,
 			content: true,
 			attachments: true
 		}
@@ -195,7 +199,7 @@ function cleanContentFromMedia(content: any, mediaIds: number[], urlsToRemove: s
 
 		// Remove image nodes that reference deleted media
 		if (node.type === 'image' && node.attrs?.src) {
-			const shouldRemove = urlsToRemove.some(url => node.attrs.src.includes(url))
+			const shouldRemove = urlsToRemove.some((url) => node.attrs.src.includes(url))
 			if (shouldRemove) {
 				return null // Mark for removal
 			}
@@ -203,10 +207,8 @@ function cleanContentFromMedia(content: any, mediaIds: number[], urlsToRemove: s
 
 		// Clean gallery nodes
 		if (node.type === 'gallery' && node.attrs?.images) {
-			const filteredImages = node.attrs.images.filter((image: any) => 
-				!mediaIds.includes(image.id)
-			)
-			
+			const filteredImages = node.attrs.images.filter((image: any) => !mediaIds.includes(image.id))
+
 			if (filteredImages.length === 0) {
 				return null // Remove empty gallery
 			} else if (filteredImages.length !== node.attrs.images.length) {
@@ -222,10 +224,8 @@ function cleanContentFromMedia(content: any, mediaIds: number[], urlsToRemove: s
 
 		// Recursively clean child nodes
 		if (node.content) {
-			const cleanedContent = node.content
-				.map(cleanNode)
-				.filter((child: any) => child !== null)
-			
+			const cleanedContent = node.content.map(cleanNode).filter((child: any) => child !== null)
+
 			return {
 				...node,
 				content: cleanedContent

@@ -9,10 +9,10 @@
 	}
 
 	let { formData = $bindable() }: Props = $props()
-	
+
 	// Convert logoUrl string to Media object for ImageUploader
 	let logoMedia = $state<Media | null>(null)
-	
+
 	// Update logoMedia when logoUrl changes
 	$effect(() => {
 		if (formData.logoUrl && !logoMedia) {
@@ -37,12 +37,12 @@
 			logoMedia = null
 		}
 	})
-	
+
 	function handleLogoUpload(media: Media) {
 		formData.logoUrl = media.url
 		logoMedia = media
 	}
-	
+
 	function handleLogoRemove() {
 		formData.logoUrl = ''
 		logoMedia = null

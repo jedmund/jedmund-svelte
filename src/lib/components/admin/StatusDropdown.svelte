@@ -60,9 +60,7 @@
 	})
 
 	const availableActions = $derived(
-		dropdownActions.filter(action => 
-			action.show !== false && action.status !== currentStatus
-		)
+		dropdownActions.filter((action) => action.show !== false && action.status !== currentStatus)
 	)
 </script>
 
@@ -75,7 +73,7 @@
 	>
 		{isLoading ? `${primaryAction.label.replace(/e$/, 'ing')}...` : primaryAction.label}
 	</Button>
-	
+
 	{#if availableActions.length > 0}
 		<Button
 			variant="ghost"
@@ -94,7 +92,7 @@
 				/>
 			</svg>
 		</Button>
-		
+
 		{#if isDropdownOpen}
 			<DropdownMenuContainer>
 				{#each availableActions as action}

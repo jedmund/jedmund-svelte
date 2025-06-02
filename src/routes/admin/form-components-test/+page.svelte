@@ -71,7 +71,7 @@
 		<section class="test-section">
 			<h2>MediaInput Component</h2>
 			<p>Generic input component for media selection with preview.</p>
-			
+
 			<div class="form-grid">
 				<MediaInput
 					label="Single Media File"
@@ -104,7 +104,7 @@
 		<section class="test-section">
 			<h2>ImagePicker Component</h2>
 			<p>Specialized image picker with enhanced preview and aspect ratio support.</p>
-			
+
 			<div class="form-grid">
 				<ImagePicker
 					label="Featured Image"
@@ -128,13 +128,9 @@
 		<section class="test-section">
 			<h2>GalleryManager Component</h2>
 			<p>Multiple image management with drag-and-drop reordering.</p>
-			
+
 			<div class="form-column">
-				<GalleryManager
-					label="Image Gallery"
-					bind:value={galleryImages}
-					showFileInfo={false}
-				/>
+				<GalleryManager label="Image Gallery" bind:value={galleryImages} showFileInfo={false} />
 
 				<GalleryManager
 					label="Project Gallery (Max 6 images)"
@@ -149,12 +145,8 @@
 		<section class="test-section">
 			<h2>Form Actions</h2>
 			<div class="actions-grid">
-				<Button variant="primary" onclick={logAllValues}>
-					Log All Values
-				</Button>
-				<Button variant="ghost" onclick={clearAllValues}>
-					Clear All
-				</Button>
+				<Button variant="primary" onclick={logAllValues}>Log All Values</Button>
+				<Button variant="ghost" onclick={clearAllValues}>Clear All</Button>
 			</div>
 		</section>
 
@@ -166,25 +158,37 @@
 					<h4>Single Media:</h4>
 					<pre>{JSON.stringify(singleMedia?.filename || null, null, 2)}</pre>
 				</div>
-				
+
 				<div class="value-item">
 					<h4>Multiple Media ({multipleMedia.length}):</h4>
-					<pre>{JSON.stringify(multipleMedia.map(m => m.filename), null, 2)}</pre>
+					<pre>{JSON.stringify(
+							multipleMedia.map((m) => m.filename),
+							null,
+							2
+						)}</pre>
 				</div>
-				
+
 				<div class="value-item">
 					<h4>Featured Image:</h4>
 					<pre>{JSON.stringify(featuredImage?.filename || null, null, 2)}</pre>
 				</div>
-				
+
 				<div class="value-item">
 					<h4>Gallery Images ({galleryImages.length}):</h4>
-					<pre>{JSON.stringify(galleryImages.map(m => m.filename), null, 2)}</pre>
+					<pre>{JSON.stringify(
+							galleryImages.map((m) => m.filename),
+							null,
+							2
+						)}</pre>
 				</div>
-				
+
 				<div class="value-item">
 					<h4>Project Gallery ({projectGallery.length}):</h4>
-					<pre>{JSON.stringify(projectGallery.map(m => m.filename), null, 2)}</pre>
+					<pre>{JSON.stringify(
+							projectGallery.map((m) => m.filename),
+							null,
+							2
+						)}</pre>
 				</div>
 			</div>
 		</section>

@@ -12,9 +12,21 @@ async function extractExifData(file: File): Promise<any> {
 		const buffer = await file.arrayBuffer()
 		const exif = await exifr.parse(buffer, {
 			pick: [
-				'Make', 'Model', 'LensModel', 'FocalLength', 'FNumber', 'ExposureTime', 
-				'ISO', 'DateTime', 'DateTimeOriginal', 'CreateDate', 'GPSLatitude', 
-				'GPSLongitude', 'GPSAltitude', 'Orientation', 'ColorSpace'
+				'Make',
+				'Model',
+				'LensModel',
+				'FocalLength',
+				'FNumber',
+				'ExposureTime',
+				'ISO',
+				'DateTime',
+				'DateTimeOriginal',
+				'CreateDate',
+				'GPSLatitude',
+				'GPSLongitude',
+				'GPSAltitude',
+				'Orientation',
+				'ColorSpace'
 			]
 		})
 
@@ -77,7 +89,9 @@ async function extractExifData(file: File): Promise<any> {
 
 		return Object.keys(formattedExif).length > 0 ? formattedExif : null
 	} catch (error) {
-		logger.warn('Failed to extract EXIF data', { error: error instanceof Error ? error.message : 'Unknown error' })
+		logger.warn('Failed to extract EXIF data', {
+			error: error instanceof Error ? error.message : 'Unknown error'
+		})
 		return null
 	}
 }
@@ -183,7 +197,10 @@ export const POST: RequestHandler = async (event) => {
 	} catch (error) {
 		logger.error('Media upload error', error as Error)
 		console.error('Detailed upload error:', error)
-		return errorResponse(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 500)
+		return errorResponse(
+			`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			500
+		)
 	}
 }
 

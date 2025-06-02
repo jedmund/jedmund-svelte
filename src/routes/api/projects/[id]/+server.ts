@@ -8,7 +8,12 @@ import {
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { ensureUniqueSlug } from '$lib/server/database'
-import { updateMediaUsage, removeMediaUsage, extractMediaIds, type MediaUsageReference } from '$lib/server/media-usage.js'
+import {
+	updateMediaUsage,
+	removeMediaUsage,
+	extractMediaIds,
+	type MediaUsageReference
+} from '$lib/server/media-usage.js'
 
 // GET /api/projects/[id] - Get a single project
 export const GET: RequestHandler = async (event) => {
@@ -103,7 +108,7 @@ export const PUT: RequestHandler = async (event) => {
 
 			// Track featured image
 			const featuredImageIds = extractMediaIds(project, 'featuredImage')
-			featuredImageIds.forEach(mediaId => {
+			featuredImageIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',
@@ -114,7 +119,7 @@ export const PUT: RequestHandler = async (event) => {
 
 			// Track logo
 			const logoIds = extractMediaIds(project, 'logoUrl')
-			logoIds.forEach(mediaId => {
+			logoIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',
@@ -125,7 +130,7 @@ export const PUT: RequestHandler = async (event) => {
 
 			// Track gallery images
 			const galleryIds = extractMediaIds(project, 'gallery')
-			galleryIds.forEach(mediaId => {
+			galleryIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',
@@ -136,7 +141,7 @@ export const PUT: RequestHandler = async (event) => {
 
 			// Track media in case study content
 			const contentIds = extractMediaIds(project, 'caseStudyContent')
-			contentIds.forEach(mediaId => {
+			contentIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'project',

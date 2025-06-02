@@ -216,14 +216,10 @@ export function getResponsiveUrls(publicId: string): Record<string, string> {
 }
 
 // Smart image size selection based on container width
-export function getSmartImageUrl(
-	publicId: string, 
-	containerWidth: number,
-	retina = true
-): string {
+export function getSmartImageUrl(publicId: string, containerWidth: number, retina = true): string {
 	// Account for retina displays
 	const targetWidth = retina ? containerWidth * 2 : containerWidth
-	
+
 	// Select appropriate size
 	if (targetWidth <= 600) {
 		return getOptimizedUrl(publicId, { width: imageSizes.small.width })

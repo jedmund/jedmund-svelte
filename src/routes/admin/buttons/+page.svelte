@@ -30,22 +30,42 @@
 			<div class="button-group">
 				<Button buttonSize="small" iconOnly>
 					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path d="M8 4v8m4-4H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<path
+							d="M8 4v8m4-4H4"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					</svg>
 				</Button>
 				<Button buttonSize="medium" iconOnly>
 					<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-						<path d="M9 5v8m4-4H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<path
+							d="M9 5v8m4-4H5"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					</svg>
 				</Button>
 				<Button buttonSize="large" iconOnly>
 					<svg slot="icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-						<path d="M10 6v8m4-4H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<path
+							d="M10 6v8m4-4H6"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					</svg>
 				</Button>
 				<Button buttonSize="icon" iconOnly variant="ghost">
 					<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-						<path d="M6 6l6 6m0-6l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<path
+							d="M6 6l6 6m0-6l-6 6"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					</svg>
 				</Button>
 			</div>
@@ -56,14 +76,25 @@
 			<div class="button-group">
 				<Button>
 					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path d="M8 4v8m4-4H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<path
+							d="M8 4v8m4-4H4"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					</svg>
 					Add Item
 				</Button>
 				<Button iconPosition="right" variant="secondary">
 					Next
 					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+						<path
+							d="M6 4l4 4-4 4"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
 				</Button>
 			</div>

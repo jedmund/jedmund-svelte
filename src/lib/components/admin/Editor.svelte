@@ -71,7 +71,7 @@
 			const timer = setTimeout(() => {
 				editor.commands.focus()
 			}, 100)
-			
+
 			return () => clearTimeout(timer)
 		}
 	})

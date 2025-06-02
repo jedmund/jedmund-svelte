@@ -13,16 +13,22 @@
 <svelte:head>
 	{#if post}
 		<title>{pageTitle} - jedmund</title>
-		<meta name="description" content={post.excerpt || `${post.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`} />
-		
+		<meta
+			name="description"
+			content={post.excerpt || `${post.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`}
+		/>
+
 		<!-- Open Graph meta tags -->
 		<meta property="og:title" content={pageTitle} />
-		<meta property="og:description" content={post.excerpt || `${post.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`} />
+		<meta
+			property="og:description"
+			content={post.excerpt || `${post.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`}
+		/>
 		<meta property="og:type" content="article" />
 		{#if post.attachments && post.attachments.length > 0}
 			<meta property="og:image" content={post.attachments[0].url} />
 		{/if}
-		
+
 		<!-- Article meta -->
 		<meta property="article:published_time" content={post.publishedAt} />
 		<meta property="article:author" content="jedmund" />
@@ -36,7 +42,7 @@
 		<div class="error-container">
 			<div class="error-content">
 				<h1>Post Not Found</h1>
-				<p>{error || 'The post you\'re looking for doesn\'t exist.'}</p>
+				<p>{error || "The post you're looking for doesn't exist."}</p>
 				<a href="/universe" class="back-link">← Back to Universe</a>
 			</div>
 		</div>

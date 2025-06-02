@@ -135,10 +135,7 @@
 		const handleClickOutside = (event: MouseEvent) => {
 			const target = event.target as Node
 			// Don't close if clicking inside the trigger button or the popover itself
-			if (
-				triggerElement?.contains(target) ||
-				popoverElement?.contains(target)
-			) {
+			if (triggerElement?.contains(target) || popoverElement?.contains(target)) {
 				return
 			}
 			onClose()
@@ -172,7 +169,7 @@
 
 		{#each config.fields as field}
 			{#if field.type === 'input'}
-				<Input 
+				<Input
 					label={field.label}
 					bind:value={data[field.key]}
 					placeholder={field.placeholder}
@@ -180,7 +177,7 @@
 					onchange={() => handleFieldUpdate(field.key, data[field.key])}
 				/>
 			{:else if field.type === 'textarea'}
-				<Input 
+				<Input
 					type="textarea"
 					label={field.label}
 					bind:value={data[field.key]}
@@ -190,7 +187,7 @@
 					onchange={() => handleFieldUpdate(field.key, data[field.key])}
 				/>
 			{:else if field.type === 'date'}
-				<Input 
+				<Input
 					type="date"
 					label={field.label}
 					bind:value={data[field.key]}
@@ -217,14 +214,14 @@
 				</div>
 			{:else if field.type === 'tags'}
 				<div class="tags-section">
-					<Input 
+					<Input
 						label={field.label}
 						bind:value={data.tagInput}
 						onkeydown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddTag())}
-						placeholder={field.placeholder || "Add tags..."}
+						placeholder={field.placeholder || 'Add tags...'}
 					/>
 					<button type="button" onclick={onAddTag} class="add-tag-btn">Add</button>
-					
+
 					{#if data[field.key] && data[field.key].length > 0}
 						<div class="tags">
 							{#each data[field.key] as tag}
@@ -458,7 +455,6 @@
 			}
 		}
 	}
-
 
 	@include breakpoint('phone') {
 		.metadata-popover {

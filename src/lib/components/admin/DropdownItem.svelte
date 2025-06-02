@@ -5,12 +5,7 @@
 		disabled?: boolean
 	}
 
-	let {
-		onclick,
-		variant = 'default',
-		disabled = false,
-		children
-	}: Props = $props()
+	let { onclick, variant = 'default', disabled = false, children }: Props = $props()
 
 	function handleClick(event: MouseEvent) {
 		if (disabled) return

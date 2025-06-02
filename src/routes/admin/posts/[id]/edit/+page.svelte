@@ -171,7 +171,6 @@
 		}
 	}
 
-
 	function handleMetadataPopover(event: MouseEvent) {
 		const target = event.target as Node
 		// Don't close if clicking inside the metadata button or anywhere in a metadata popover
@@ -183,7 +182,6 @@
 		}
 		showMetadata = false
 	}
-
 
 	$effect(() => {
 		if (showMetadata) {
@@ -240,7 +238,7 @@
 							onAddTag={addTag}
 							onRemoveTag={removeTag}
 							onDelete={openDeleteConfirmation}
-							onClose={() => showMetadata = false}
+							onClose={() => (showMetadata = false)}
 						/>
 					{/if}
 				</div>
@@ -372,7 +370,6 @@
 			color: $grey-10;
 		}
 	}
-
 
 	.btn {
 		padding: $unit-2x $unit-3x;

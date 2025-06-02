@@ -51,7 +51,7 @@
 			font-weight: 600;
 			margin: 0 0 $unit-3x;
 			color: $grey-10;
-			}
+		}
 	}
 
 	.form-row {

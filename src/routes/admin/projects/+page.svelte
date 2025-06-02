@@ -233,7 +233,8 @@
 					{#if selectedStatusFilter === 'all' && selectedTypeFilter === 'all'}
 						No projects found. Create your first project!
 					{:else}
-						No projects found matching the current filters. Try adjusting your filters or create a new project.
+						No projects found matching the current filters. Try adjusting your filters or create a
+						new project.
 					{/if}
 				</p>
 			</div>
@@ -263,8 +264,6 @@
 />
 
 <style lang="scss">
-
-
 	.error {
 		text-align: center;
 		padding: $unit-6x;

@@ -258,7 +258,12 @@
 				<div class="file-list-header">
 					<h3>Files to Upload</h3>
 					<div class="file-actions">
-						<Button variant="secondary" buttonSize="small" onclick={clearAll} disabled={isUploading}>
+						<Button
+							variant="secondary"
+							buttonSize="small"
+							onclick={clearAll}
+							disabled={isUploading}
+						>
 							Clear All
 						</Button>
 						<Button

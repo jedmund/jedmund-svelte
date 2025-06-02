@@ -50,19 +50,19 @@
 		const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
 		if (diffInSeconds < 60) return 'just now'
-		
+
 		const minutes = Math.floor(diffInSeconds / 60)
 		if (diffInSeconds < 3600) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-		
+
 		const hours = Math.floor(diffInSeconds / 3600)
 		if (diffInSeconds < 86400) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
-		
+
 		const days = Math.floor(diffInSeconds / 86400)
 		if (diffInSeconds < 2592000) return `${days} ${days === 1 ? 'day' : 'days'} ago`
-		
+
 		const months = Math.floor(diffInSeconds / 2592000)
 		if (diffInSeconds < 31536000) return `${months} ${months === 1 ? 'month' : 'months'} ago`
-		
+
 		const years = Math.floor(diffInSeconds / 31536000)
 		return `${years} ${years === 1 ? 'year' : 'years'} ago`
 	}
@@ -90,17 +90,17 @@
 	// Get thumbnail - try cover photo first, then first photo
 	function getThumbnailUrl(): string | null {
 		if (album.coverPhotoId && album.photos.length > 0) {
-			const coverPhoto = album.photos.find(p => p.id === album.coverPhotoId)
+			const coverPhoto = album.photos.find((p) => p.id === album.coverPhotoId)
 			if (coverPhoto) {
 				return coverPhoto.thumbnailUrl || coverPhoto.url
 			}
 		}
-		
+
 		// Fallback to first photo
 		if (album.photos.length > 0) {
 			return album.photos[0].thumbnailUrl || album.photos[0].url
 		}
-		
+
 		return null
 	}
 
@@ -133,15 +133,15 @@
 
 	<div class="album-info">
 		<h3 class="album-title">{album.title}</h3>
-		<AdminByline 
+		<AdminByline
 			sections={[
 				album.isPhotography ? 'Photography' : 'Album',
 				album.status === 'published' ? 'Published' : 'Draft',
 				`${getPhotoCount()} ${getPhotoCount() === 1 ? 'photo' : 'photos'}`,
-				album.status === 'published' && album.publishedAt 
+				album.status === 'published' && album.publishedAt
 					? `Published ${formatRelativeTime(album.publishedAt)}`
 					: `Created ${formatRelativeTime(album.createdAt)}`
-			]} 
+			]}
 		/>
 	</div>
 

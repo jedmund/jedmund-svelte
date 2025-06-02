@@ -24,7 +24,7 @@ export async function trackMediaUsage(references: MediaUsageReference[]) {
 	if (references.length === 0) return
 
 	// Use upsert to handle duplicates gracefully
-	const operations = references.map(ref => 
+	const operations = references.map((ref) =>
 		prisma.mediaUsage.upsert({
 			where: {
 				mediaId_contentType_contentId_fieldName: {
@@ -84,7 +84,7 @@ export async function updateMediaUsage(
 		// Add new usage references
 		if (mediaIds.length > 0) {
 			await tx.mediaUsage.createMany({
-				data: mediaIds.map(mediaId => ({
+				data: mediaIds.map((mediaId) => ({
 					mediaId,
 					contentType,
 					contentId,
@@ -170,15 +170,15 @@ export async function getMediaUsage(mediaId: number): Promise<MediaUsageDisplay[
  */
 function getFieldDisplayName(fieldName: string): string {
 	const displayNames: Record<string, string> = {
-		'featuredImage': 'Featured Image',
-		'logoUrl': 'Logo',
-		'gallery': 'Gallery',
-		'content': 'Content',
-		'coverPhotoId': 'Cover Photo',
-		'photoId': 'Photo',
-		'attachments': 'Attachments'
+		featuredImage: 'Featured Image',
+		logoUrl: 'Logo',
+		gallery: 'Gallery',
+		content: 'Content',
+		coverPhotoId: 'Cover Photo',
+		photoId: 'Photo',
+		attachments: 'Attachments'
 	}
-	
+
 	return displayNames[fieldName] || fieldName
 }
 
@@ -195,8 +195,8 @@ export function extractMediaIds(data: any, fieldName: string): number[] {
 			// Gallery/attachments are arrays of media objects with id property
 			if (Array.isArray(value)) {
 				return value
-					.map(item => typeof item === 'object' ? item.id : parseInt(item))
-					.filter(id => !isNaN(id))
+					.map((item) => (typeof item === 'object' ? item.id : parseInt(item)))
+					.filter((id) => !isNaN(id))
 			}
 			return []
 

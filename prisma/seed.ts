@@ -101,7 +101,8 @@ async function main() {
 				slug: 'granblue-team',
 				title: 'granblue.team',
 				subtitle: 'Comprehensive web app for Granblue Fantasy players',
-				description: 'A comprehensive web application for Granblue Fantasy players to track raids, manage crews, and optimize team compositions. Features real-time raid tracking, character databases, and community tools.',
+				description:
+					'A comprehensive web application for Granblue Fantasy players to track raids, manage crews, and optimize team compositions. Features real-time raid tracking, character databases, and community tools.',
 				year: 2022,
 				client: 'Personal Project',
 				role: 'Full-Stack Developer',
@@ -119,7 +120,8 @@ async function main() {
 				slug: 'subway-board',
 				title: 'Subway Board',
 				subtitle: 'Beautiful, minimalist NYC subway dashboard',
-				description: 'A beautiful, minimalist dashboard displaying real-time NYC subway arrival times. Clean interface inspired by the classic subway map design with live MTA data integration.',
+				description:
+					'A beautiful, minimalist dashboard displaying real-time NYC subway arrival times. Clean interface inspired by the classic subway map design with live MTA data integration.',
 				year: 2023,
 				client: 'Personal Project',
 				role: 'Developer & Designer',
@@ -136,7 +138,8 @@ async function main() {
 				slug: 'siero-discord',
 				title: 'Siero for Discord',
 				subtitle: 'Discord bot for Granblue Fantasy communities',
-				description: 'A Discord bot for Granblue Fantasy communities providing character lookups, raid notifications, and server management tools. Serves thousands of users across multiple servers.',
+				description:
+					'A Discord bot for Granblue Fantasy communities providing character lookups, raid notifications, and server management tools. Serves thousands of users across multiple servers.',
 				year: 2021,
 				client: 'Personal Project',
 				role: 'Bot Developer',
@@ -153,7 +156,8 @@ async function main() {
 				slug: 'homelab',
 				title: 'Homelab',
 				subtitle: 'Self-hosted infrastructure on Kubernetes',
-				description: 'Self-hosted infrastructure running on Kubernetes with monitoring, media servers, and development environments. Includes automated deployments and backup strategies.',
+				description:
+					'Self-hosted infrastructure running on Kubernetes with monitoring, media servers, and development environments. Includes automated deployments and backup strategies.',
 				year: 2023,
 				client: 'Personal Project',
 				role: 'DevOps Engineer',
@@ -181,11 +185,13 @@ async function main() {
 						{ type: 'paragraph', content: 'This is my first essay on the new CMS!' },
 						{
 							type: 'paragraph',
-							content: 'The system now uses a simplified post type system with just essays and posts.'
+							content:
+								'The system now uses a simplified post type system with just essays and posts.'
 						},
 						{
 							type: 'paragraph',
-							content: 'Essays are perfect for longer-form content with titles and excerpts, while posts are great for quick thoughts and updates.'
+							content:
+								'Essays are perfect for longer-form content with titles and excerpts, while posts are great for quick thoughts and updates.'
 						}
 					]
 				},
@@ -203,7 +209,8 @@ async function main() {
 					blocks: [
 						{
 							type: 'paragraph',
-							content: 'Just pushed a major update to the site. The new simplified post types are working great! 🎉'
+							content:
+								'Just pushed a major update to the site. The new simplified post types are working great! 🎉'
 						}
 					]
 				},
@@ -221,7 +228,8 @@ async function main() {
 					blocks: [
 						{
 							type: 'paragraph',
-							content: 'Design systems have become essential for maintaining consistency across large products.'
+							content:
+								'Design systems have become essential for maintaining consistency across large products.'
 						},
 						{
 							type: 'paragraph',
@@ -229,7 +237,8 @@ async function main() {
 						},
 						{
 							type: 'paragraph',
-							content: 'Too rigid, and designers feel boxed in. Too flexible, and you lose consistency.'
+							content:
+								'Too rigid, and designers feel boxed in. Too flexible, and you lose consistency.'
 						}
 					]
 				},
@@ -264,7 +273,8 @@ async function main() {
 					blocks: [
 						{
 							type: 'paragraph',
-							content: 'Built a small CLI tool over the weekend. Sometimes the best projects come from scratching your own itch.'
+							content:
+								'Built a small CLI tool over the weekend. Sometimes the best projects come from scratching your own itch.'
 						}
 					]
 				},

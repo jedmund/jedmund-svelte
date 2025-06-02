@@ -114,8 +114,6 @@
 		}
 	}
 
-
-
 	// Mock post object for metadata popover
 	const mockPost = $derived({
 		id: null,
@@ -171,7 +169,7 @@
 						onAddTag={addTag}
 						onRemoveTag={removeTag}
 						onDelete={() => {}}
-						onClose={() => showMetadata = false}
+						onClose={() => (showMetadata = false)}
 					/>
 				{/if}
 			</div>
@@ -251,7 +249,6 @@
 			color: $grey-10;
 		}
 	}
-
 
 	.btn {
 		padding: $unit-2x $unit-3x;

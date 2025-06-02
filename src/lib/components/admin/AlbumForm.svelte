@@ -40,7 +40,11 @@
 	$effect(() => {
 		if (initialData && mode === 'edit') {
 			// Parse album content structure
-			if (initialData.content && typeof initialData.content === 'object' && 'type' in initialData.content) {
+			if (
+				initialData.content &&
+				typeof initialData.content === 'object' &&
+				'type' in initialData.content
+			) {
 				const albumContent = initialData.content as any
 				if (albumContent.type === 'album') {
 					// Album content structure: { type: 'album', gallery: [mediaIds], description: JSONContent }
@@ -56,7 +60,7 @@
 				// Fallback to regular content
 				content = initialData.content || { type: 'doc', content: [] }
 			}
-			
+
 			// Load gallery from initialData if provided directly
 			if (initialData.gallery) {
 				gallery = initialData.gallery
@@ -80,7 +84,7 @@
 			})
 
 			const mediaResults = await Promise.all(mediaPromises)
-			gallery = mediaResults.filter(media => media !== null)
+			gallery = mediaResults.filter((media) => media !== null)
 		} catch (error) {
 			console.error('Failed to load gallery media:', error)
 		}
@@ -114,9 +118,9 @@
 				postType: 'album',
 				status: newStatus,
 				content,
-				gallery: gallery.map(media => media.id),
+				gallery: gallery.map((media) => media.id),
 				featuredImage: gallery.length > 0 ? gallery[0].id : undefined,
-				tags: tags.trim() ? tags.split(',').map(tag => tag.trim()) : []
+				tags: tags.trim() ? tags.split(',').map((tag) => tag.trim()) : []
 			}
 
 			const url = mode === 'edit' ? `/api/posts/${postId}` : '/api/posts'
@@ -169,7 +173,7 @@
 		if (mode === 'create') {
 			return title.trim().length > 0 || gallery.length > 0 || tags.trim().length > 0
 		}
-		
+
 		// For edit mode, compare with initial data
 		return (
 			title !== (initialData?.title || '') ||
@@ -197,19 +201,23 @@
 		</div>
 		<div class="header-actions">
 			{#if mode === 'create'}
-				<Button variant="secondary" onclick={handleCancel} disabled={isSaving}>
-					Cancel
-				</Button>
-				<Button variant="secondary" onclick={() => handleSave('draft')} disabled={!isValid || isSaving}>
+				<Button variant="secondary" onclick={handleCancel} disabled={isSaving}>Cancel</Button>
+				<Button
+					variant="secondary"
+					onclick={() => handleSave('draft')}
+					disabled={!isValid || isSaving}
+				>
 					{isSaving ? 'Saving...' : 'Save Draft'}
 				</Button>
-				<Button variant="primary" onclick={() => handleSave('published')} disabled={!isValid || isSaving}>
+				<Button
+					variant="primary"
+					onclick={() => handleSave('published')}
+					disabled={!isValid || isSaving}
+				>
 					{isSaving ? 'Publishing...' : 'Publish Album'}
 				</Button>
 			{:else}
-				<Button variant="secondary" onclick={handleCancel} disabled={isSaving}>
-					Cancel
-				</Button>
+				<Button variant="secondary" onclick={handleCancel} disabled={isSaving}>Cancel</Button>
 				<Button variant="primary" onclick={() => handleSave()} disabled={!isValid || isSaving}>
 					{isSaving ? 'Saving...' : 'Save Changes'}
 				</Button>

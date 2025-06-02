@@ -16,9 +16,9 @@ export const GET: RequestHandler = async (event) => {
 			where: { slug },
 			include: {
 				photos: {
-					where: { 
+					where: {
 						status: 'published',
-						showInPhotos: true 
+						showInPhotos: true
 					},
 					orderBy: { displayOrder: 'asc' },
 					select: {
@@ -33,11 +33,11 @@ export const GET: RequestHandler = async (event) => {
 					}
 				},
 				_count: {
-					select: { 
+					select: {
 						photos: {
-							where: { 
+							where: {
 								status: 'published',
-								showInPhotos: true 
+								showInPhotos: true
 							}
 						}
 					}

@@ -13,7 +13,7 @@ export const PATCH: RequestHandler = async (event) => {
 	try {
 		const { id } = event.params
 		const mediaId = parseInt(id)
-		
+
 		if (isNaN(mediaId)) {
 			return errorResponse('Invalid media ID', 400)
 		}
@@ -57,7 +57,6 @@ export const PATCH: RequestHandler = async (event) => {
 			description: updatedMedia.description,
 			updatedAt: updatedMedia.updatedAt
 		})
-
 	} catch (error) {
 		logger.error('Media metadata update error', error as Error)
 		return errorResponse('Failed to update media metadata', 500)

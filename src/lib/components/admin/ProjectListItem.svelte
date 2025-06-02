@@ -39,19 +39,19 @@
 		const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
 		if (diffInSeconds < 60) return 'just now'
-		
+
 		const minutes = Math.floor(diffInSeconds / 60)
 		if (diffInSeconds < 3600) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-		
+
 		const hours = Math.floor(diffInSeconds / 3600)
 		if (diffInSeconds < 86400) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
-		
+
 		const days = Math.floor(diffInSeconds / 86400)
 		if (diffInSeconds < 2592000) return `${days} ${days === 1 ? 'day' : 'days'} ago`
-		
+
 		const months = Math.floor(diffInSeconds / 2592000)
 		if (diffInSeconds < 31536000) return `${months} ${months === 1 ? 'month' : 'months'} ago`
-		
+
 		const years = Math.floor(diffInSeconds / 31536000)
 		return `${years} ${years === 1 ? 'year' : 'years'} ago`
 	}
@@ -81,11 +81,10 @@
 		function handleCloseDropdowns() {
 			isDropdownOpen = false
 		}
-		
+
 		document.addEventListener('closeDropdowns', handleCloseDropdowns)
 		return () => document.removeEventListener('closeDropdowns', handleCloseDropdowns)
 	})
-
 </script>
 
 <div
@@ -103,23 +102,19 @@
 
 	<div class="project-info">
 		<h3 class="project-title">{project.title}</h3>
-		<AdminByline 
+		<AdminByline
 			sections={[
 				project.projectType === 'work' ? 'Work' : 'Labs',
 				project.status === 'published' ? 'Published' : 'Draft',
-				project.status === 'published' && project.publishedAt 
+				project.status === 'published' && project.publishedAt
 					? `Published ${formatRelativeTime(project.publishedAt)}`
 					: `Created ${formatRelativeTime(project.createdAt)}`
-			]} 
+			]}
 		/>
 	</div>
 
 	<div class="dropdown-container">
-		<button 
-			class="action-button" 
-			onclick={handleToggleDropdown} 
-			aria-label="Project actions"
-		>
+		<button class="action-button" onclick={handleToggleDropdown} aria-label="Project actions">
 			<svg
 				width="20"
 				height="20"
@@ -201,7 +196,6 @@
 		text-overflow: ellipsis;
 	}
 
-
 	.dropdown-container {
 		position: relative;
 		flex-shrink: 0;
@@ -265,5 +259,4 @@
 		background-color: $grey-90;
 		margin: $unit-half 0;
 	}
-
 </style>

@@ -577,7 +577,7 @@
 							triggerElement={metadataButtonElement}
 							onUpdate={handleMetadataUpdate}
 							onDelete={handleMetadataDelete}
-							onClose={() => isMetadataOpen = false}
+							onClose={() => (isMetadataOpen = false)}
 						/>
 					{/if}
 				</div>

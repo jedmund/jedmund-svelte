@@ -15,9 +15,12 @@
 
 	const getPostTypeLabel = (postType: string) => {
 		switch (postType) {
-			case 'post': return 'Post'
-			case 'essay': return 'Essay'
-			default: return 'Post'
+			case 'post':
+				return 'Post'
+			case 'essay':
+				return 'Essay'
+			default:
+				return 'Post'
 		}
 	}
 
@@ -85,9 +88,7 @@
 		{/if}
 
 		<div class="card-footer">
-			<a href="/universe/{post.slug}" class="read-more">
-				Read more →
-			</a>
+			<a href="/universe/{post.slug}" class="read-more"> Read more → </a>
 			<UniverseIcon class="universe-icon" />
 		</div>
 	</div>

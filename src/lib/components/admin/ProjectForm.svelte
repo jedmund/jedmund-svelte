@@ -108,7 +108,6 @@
 		formData.caseStudyContent = content
 	}
 
-
 	async function handleSave() {
 		// Check if we're on the case study tab and should save editor content
 		if (activeTab === 'case-study' && editorRef) {
@@ -134,7 +133,6 @@
 				return
 			}
 
-	
 			const payload = {
 				title: formData.title,
 				subtitle: formData.subtitle,
@@ -236,7 +234,11 @@
 						dropdownActions={[
 							{ label: 'Save as Draft', status: 'draft' },
 							{ label: 'List Only', status: 'list-only', show: formData.status !== 'list-only' },
-							{ label: 'Password Protected', status: 'password-protected', show: formData.status !== 'password-protected' }
+							{
+								label: 'Password Protected',
+								status: 'password-protected',
+								show: formData.status !== 'password-protected'
+							}
 						]}
 					/>
 				{/if}
@@ -350,8 +352,6 @@
 			padding: 0 $unit-2x $unit-2x;
 		}
 	}
-
-
 
 	.tab-panels {
 		position: relative;

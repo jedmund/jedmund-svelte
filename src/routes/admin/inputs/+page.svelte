@@ -28,7 +28,7 @@
 					bind:value={textValue}
 					helpText="This is a helpful hint"
 				/>
-				
+
 				<Input
 					type="email"
 					label="Email Input"
@@ -36,7 +36,7 @@
 					bind:value={emailValue}
 					required
 				/>
-				
+
 				<Input
 					type="password"
 					label="Password Input"
@@ -56,7 +56,7 @@
 					placeholder="https://example.com"
 					bind:value={urlValue}
 				/>
-				
+
 				<Input
 					type="search"
 					label="Search Input"
@@ -65,11 +65,11 @@
 					prefixIcon
 				>
 					<svg slot="prefix" width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
-						<path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
+						<path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
 					</svg>
 				</Input>
-				
+
 				<Input
 					type="number"
 					label="Number Input"
@@ -78,12 +78,8 @@
 					max={100}
 					step={5}
 				/>
-				
-				<Input
-					type="color"
-					label="Color Input"
-					bind:value={colorValue}
-				/>
+
+				<Input type="color" label="Color Input" bind:value={colorValue} />
 			</div>
 		</section>
 
@@ -102,23 +98,11 @@
 		<section>
 			<h2>Input Sizes</h2>
 			<div class="input-group">
-				<Input
-					buttonSize="small"
-					label="Small Input"
-					placeholder="Small size"
-				/>
-				
-				<Input
-					buttonSize="medium"
-					label="Medium Input"
-					placeholder="Medium size (default)"
-				/>
-				
-				<Input
-					buttonSize="large"
-					label="Large Input"
-					placeholder="Large size"
-				/>
+				<Input buttonSize="small" label="Small Input" placeholder="Small size" />
+
+				<Input buttonSize="medium" label="Medium Input" placeholder="Medium size (default)" />
+
+				<Input buttonSize="large" label="Large Input" placeholder="Large size" />
 			</div>
 		</section>
 
@@ -129,46 +113,49 @@
 					label="Input with Error"
 					placeholder="Try typing something"
 					bind:value={withErrorValue}
-					error={withErrorValue.length > 0 && withErrorValue.length < 3 ? "Too short! Minimum 3 characters" : ""}
+					error={withErrorValue.length > 0 && withErrorValue.length < 3
+						? 'Too short! Minimum 3 characters'
+						: ''}
 				/>
-				
-				<Input
-					label="Disabled Input"
-					bind:value={disabledValue}
-					disabled
-				/>
-				
-				<Input
-					label="Readonly Input"
-					bind:value={readonlyValue}
-					readonly
-				/>
+
+				<Input label="Disabled Input" bind:value={disabledValue} disabled />
+
+				<Input label="Readonly Input" bind:value={readonlyValue} readonly />
 			</div>
 		</section>
 
 		<section>
 			<h2>Input with Icons</h2>
 			<div class="input-group">
-				<Input
-					label="With Prefix Icon"
-					placeholder="Username"
-					prefixIcon
-				>
+				<Input label="With Prefix Icon" placeholder="Username" prefixIcon>
 					<svg slot="prefix" width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/>
-						<path d="M4 14c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5" />
+						<path
+							d="M4 14c0-2.21 1.79-4 4-4s4 1.79 4 4"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					</svg>
 				</Input>
-				
-				<Input
-					label="With Suffix Icon"
-					placeholder="Email"
-					type="email"
-					suffixIcon
-				>
+
+				<Input label="With Suffix Icon" placeholder="Email" type="email" suffixIcon>
 					<svg slot="suffix" width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<rect x="2" y="4" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
-						<path d="M2 5l6 3 6-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						<rect
+							x="2"
+							y="4"
+							width="12"
+							height="8"
+							rx="1"
+							stroke="currentColor"
+							stroke-width="1.5"
+						/>
+						<path
+							d="M2 5l6 3 6-3"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					</svg>
 				</Input>
 			</div>
@@ -184,7 +171,7 @@
 				showCharCount
 				helpText="Keep it brief"
 			/>
-			
+
 			<Input
 				type="textarea"
 				label="Tweet-style Input"
@@ -198,19 +185,15 @@
 		<section>
 			<h2>Form Example</h2>
 			<form class="demo-form" on:submit|preventDefault>
-				<Input
-					label="Project Name"
-					placeholder="My Awesome Project"
-					required
-				/>
-				
+				<Input label="Project Name" placeholder="My Awesome Project" required />
+
 				<Input
 					type="url"
 					label="Project URL"
 					placeholder="https://example.com"
 					helpText="Include the full URL with https://"
 				/>
-				
+
 				<Input
 					type="textarea"
 					label="Project Description"
@@ -219,7 +202,7 @@
 					maxLength={500}
 					showCharCount
 				/>
-				
+
 				<div class="form-actions">
 					<Button variant="secondary">Cancel</Button>
 					<Button variant="primary" type="submit">Save Project</Button>

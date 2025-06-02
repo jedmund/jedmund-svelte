@@ -19,7 +19,7 @@
 
 	const formatExif = (exifData: any) => {
 		if (!exifData) return null
-		
+
 		const formatSpeed = (speed: string) => {
 			if (speed?.includes('/')) return speed
 			if (speed?.includes('s')) return speed
@@ -34,7 +34,9 @@
 				exifData.aperture,
 				formatSpeed(exifData.shutterSpeed),
 				exifData.iso ? `ISO ${exifData.iso}` : null
-			].filter(Boolean).join(' • '),
+			]
+				.filter(Boolean)
+				.join(' • '),
 			location: exifData.location,
 			dateTaken: exifData.dateTaken
 		}
@@ -45,15 +47,28 @@
 
 <svelte:head>
 	{#if photo && album}
-		<title>{photo.title || photo.caption || `Photo ${navigation?.currentIndex}`} - {album.title}</title>
-		<meta name="description" content={photo.description || photo.caption || `Photo from ${album.title}`} />
-		
+		<title
+			>{photo.title || photo.caption || `Photo ${navigation?.currentIndex}`} - {album.title}</title
+		>
+		<meta
+			name="description"
+			content={photo.description || photo.caption || `Photo from ${album.title}`}
+		/>
+
 		<!-- Open Graph meta tags -->
-		<meta property="og:title" content="{photo.title || photo.caption || `Photo ${navigation?.currentIndex}`} - {album.title}" />
-		<meta property="og:description" content={photo.description || photo.caption || `Photo from ${album.title}`} />
+		<meta
+			property="og:title"
+			content="{photo.title ||
+				photo.caption ||
+				`Photo ${navigation?.currentIndex}`} - {album.title}"
+		/>
+		<meta
+			property="og:description"
+			content={photo.description || photo.caption || `Photo from ${album.title}`}
+		/>
 		<meta property="og:type" content="article" />
 		<meta property="og:image" content={photo.url} />
-		
+
 		<!-- Article meta -->
 		<meta property="article:author" content="jedmund" />
 		{#if exif?.dateTaken}
@@ -68,7 +83,7 @@
 	<div class="error-container">
 		<div class="error-content">
 			<h1>Photo Not Found</h1>
-			<p>{error || 'The photo you\'re looking for doesn\'t exist.'}</p>
+			<p>{error || "The photo you're looking for doesn't exist."}</p>
 			<a href="/photos" class="back-link">← Back to Photos</a>
 		</div>
 	</div>
@@ -88,14 +103,26 @@
 				{#if navigation.prevPhoto}
 					<a href="/photos/{album.slug}/{navigation.prevPhoto.id}" class="nav-btn prev">
 						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M12.5 15L7.5 10L12.5 5"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 						Previous
 					</a>
 				{:else}
 					<div class="nav-btn disabled">
 						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M12.5 15L7.5 10L12.5 5"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 						Previous
 					</div>
@@ -105,14 +132,26 @@
 					<a href="/photos/{album.slug}/{navigation.nextPhoto.id}" class="nav-btn next">
 						Next
 						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M7.5 5L12.5 10L7.5 15"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</a>
 				{:else}
 					<div class="nav-btn disabled">
 						Next
 						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M7.5 5L12.5 10L7.5 15"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</div>
 				{/if}
@@ -122,8 +161,8 @@
 		<!-- Photo Display -->
 		<main class="photo-main">
 			<div class="photo-container">
-				<img 
-					src={photo.url} 
+				<img
+					src={photo.url}
 					alt={photo.caption || photo.title || 'Photo'}
 					class="main-photo"
 					loading="eager"
@@ -149,7 +188,7 @@
 				{#if exif}
 					<div class="photo-exif">
 						<h3>Photo Details</h3>
-						
+
 						{#if exif.camera}
 							<div class="exif-item">
 								<span class="label">Camera</span>
@@ -240,17 +279,17 @@
 	.photo-page {
 		min-height: 100vh;
 		display: grid;
-		grid-template-areas: 
-			"header header"
-			"main details";
+		grid-template-areas:
+			'header header'
+			'main details';
 		grid-template-columns: 1fr 400px;
 		grid-template-rows: auto 1fr;
 
 		@include breakpoint('tablet') {
-			grid-template-areas: 
-				"header"
-				"main"
-				"details";
+			grid-template-areas:
+				'header'
+				'main'
+				'details';
 			grid-template-columns: 1fr;
 			grid-template-rows: auto 1fr auto;
 		}

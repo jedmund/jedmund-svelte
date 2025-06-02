@@ -48,13 +48,17 @@
 				label: 'Slug',
 				placeholder: 'post-slug'
 			},
-			...(postType === 'essay' ? [{
-				type: 'textarea' as const,
-				key: 'excerpt',
-				label: 'Excerpt',
-				rows: 3,
-				placeholder: 'Brief description...'
-			}] : []),
+			...(postType === 'essay'
+				? [
+						{
+							type: 'textarea' as const,
+							key: 'excerpt',
+							label: 'Excerpt',
+							rows: 3,
+							placeholder: 'Brief description...'
+						}
+					]
+				: []),
 			{
 				type: 'tags',
 				key: 'tags',
@@ -97,7 +101,7 @@
 	})
 </script>
 
-<GenericMetadataPopover 
+<GenericMetadataPopover
 	{config}
 	bind:data={popoverData}
 	{triggerElement}

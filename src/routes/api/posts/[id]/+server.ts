@@ -2,7 +2,13 @@ import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
-import { updateMediaUsage, removeMediaUsage, extractMediaIds, trackMediaUsage, type MediaUsageReference } from '$lib/server/media-usage.js'
+import {
+	updateMediaUsage,
+	removeMediaUsage,
+	extractMediaIds,
+	trackMediaUsage,
+	type MediaUsageReference
+} from '$lib/server/media-usage.js'
 
 // GET /api/posts/[id] - Get a single post
 export const GET: RequestHandler = async (event) => {
@@ -93,7 +99,8 @@ export const PUT: RequestHandler = async (event) => {
 				linkUrl: data.link_url,
 				linkDescription: data.linkDescription,
 				featuredImage: featuredImageId,
-				attachments: data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
+				attachments:
+					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
 				tags: data.tags,
 				publishedAt: data.publishedAt
 			}
@@ -109,7 +116,7 @@ export const PUT: RequestHandler = async (event) => {
 
 			// Track featured image
 			const featuredImageIds = extractMediaIds(post, 'featuredImage')
-			featuredImageIds.forEach(mediaId => {
+			featuredImageIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'post',
@@ -120,7 +127,7 @@ export const PUT: RequestHandler = async (event) => {
 
 			// Track attachments
 			const attachmentIds = extractMediaIds(post, 'attachments')
-			attachmentIds.forEach(mediaId => {
+			attachmentIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'post',
@@ -131,7 +138,7 @@ export const PUT: RequestHandler = async (event) => {
 
 			// Track media in post content
 			const contentIds = extractMediaIds(post, 'content')
-			contentIds.forEach(mediaId => {
+			contentIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'post',

@@ -41,10 +41,8 @@
 		<section class="test-section">
 			<h2>Single Selection Mode</h2>
 			<p>Test selecting a single media item.</p>
-			
-			<Button variant="primary" onclick={openSingleModal}>
-				Open Single Selection Modal
-			</Button>
+
+			<Button variant="primary" onclick={openSingleModal}>Open Single Selection Modal</Button>
 
 			{#if selectedSingleMedia}
 				<div class="selected-media">
@@ -58,7 +56,10 @@
 							<p><strong>Size:</strong> {formatFileSize(selectedSingleMedia.size)}</p>
 							<p><strong>Type:</strong> {selectedSingleMedia.mimeType}</p>
 							{#if selectedSingleMedia.width && selectedSingleMedia.height}
-								<p><strong>Dimensions:</strong> {selectedSingleMedia.width}×{selectedSingleMedia.height}</p>
+								<p>
+									<strong>Dimensions:</strong>
+									{selectedSingleMedia.width}×{selectedSingleMedia.height}
+								</p>
 							{/if}
 						</div>
 					</div>
@@ -69,10 +70,8 @@
 		<section class="test-section">
 			<h2>Multiple Selection Mode</h2>
 			<p>Test selecting multiple media items.</p>
-			
-			<Button variant="primary" onclick={openMultipleModal}>
-				Open Multiple Selection Modal
-			</Button>
+
+			<Button variant="primary" onclick={openMultipleModal}>Open Multiple Selection Modal</Button>
 
 			{#if selectedMultipleMedia.length > 0}
 				<div class="selected-media">
@@ -97,11 +96,14 @@
 		<section class="test-section">
 			<h2>Image Only Selection</h2>
 			<p>Test selecting only image files.</p>
-			
-			<Button variant="secondary" onclick={() => {
-				showSingleModal = true
-				// This will be passed to the modal for image-only filtering
-			}}>
+
+			<Button
+				variant="secondary"
+				onclick={() => {
+					showSingleModal = true
+					// This will be passed to the modal for image-only filtering
+				}}
+			>
 				Open Image Selection Modal
 			</Button>
 		</section>

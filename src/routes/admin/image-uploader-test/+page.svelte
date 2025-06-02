@@ -39,12 +39,11 @@
 
 <AdminPage title="ImageUploader Test" subtitle="Test the new direct upload functionality">
 	<div class="test-container">
-		
 		<!-- Basic Image Upload -->
 		<section class="test-section">
 			<h2>Basic Image Upload</h2>
 			<p>Standard image upload with alt text support.</p>
-			
+
 			<ImageUploader
 				label="Featured Image"
 				bind:value={singleImage}
@@ -58,7 +57,7 @@
 		<section class="test-section">
 			<h2>Square Logo Upload</h2>
 			<p>Image upload with 1:1 aspect ratio constraint.</p>
-			
+
 			<ImageUploader
 				label="Company Logo"
 				bind:value={logoImage}
@@ -75,7 +74,7 @@
 		<section class="test-section">
 			<h2>Banner Image Upload</h2>
 			<p>Wide banner image with 16:9 aspect ratio.</p>
-			
+
 			<ImageUploader
 				label="Hero Banner"
 				bind:value={bannerImage}
@@ -95,9 +94,7 @@
 				<button type="button" class="btn btn-primary" onclick={logAllValues}>
 					Log All Values
 				</button>
-				<button type="button" class="btn btn-ghost" onclick={clearAll}>
-					Clear All
-				</button>
+				<button type="button" class="btn btn-ghost" onclick={clearAll}> Clear All </button>
 			</div>
 		</section>
 
@@ -107,36 +104,53 @@
 			<div class="values-display">
 				<div class="value-item">
 					<h4>Single Image:</h4>
-					<pre>{JSON.stringify(singleImage ? {
-						id: singleImage.id,
-						filename: singleImage.filename,
-						altText: singleImage.altText,
-						description: singleImage.description
-					} : null, null, 2)}</pre>
+					<pre>{JSON.stringify(
+							singleImage
+								? {
+										id: singleImage.id,
+										filename: singleImage.filename,
+										altText: singleImage.altText,
+										description: singleImage.description
+									}
+								: null,
+							null,
+							2
+						)}</pre>
 				</div>
-				
+
 				<div class="value-item">
 					<h4>Logo Image:</h4>
-					<pre>{JSON.stringify(logoImage ? {
-						id: logoImage.id,
-						filename: logoImage.filename,
-						altText: logoImage.altText,
-						description: logoImage.description
-					} : null, null, 2)}</pre>
+					<pre>{JSON.stringify(
+							logoImage
+								? {
+										id: logoImage.id,
+										filename: logoImage.filename,
+										altText: logoImage.altText,
+										description: logoImage.description
+									}
+								: null,
+							null,
+							2
+						)}</pre>
 				</div>
-				
+
 				<div class="value-item">
 					<h4>Banner Image:</h4>
-					<pre>{JSON.stringify(bannerImage ? {
-						id: bannerImage.id,
-						filename: bannerImage.filename,
-						altText: bannerImage.altText,
-						description: bannerImage.description
-					} : null, null, 2)}</pre>
+					<pre>{JSON.stringify(
+							bannerImage
+								? {
+										id: bannerImage.id,
+										filename: bannerImage.filename,
+										altText: bannerImage.altText,
+										description: bannerImage.description
+									}
+								: null,
+							null,
+							2
+						)}</pre>
 				</div>
 			</div>
 		</section>
-
 	</div>
 </AdminPage>
 

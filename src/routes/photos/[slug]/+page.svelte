@@ -8,14 +8,16 @@
 	const error = $derived(data.error)
 
 	// Transform album data to PhotoItem format for PhotoGrid
-	const photoItems = $derived(album?.photos?.map((photo: any) => ({
-		id: `photo-${photo.id}`,
-		src: photo.url,
-		alt: photo.caption || photo.filename,
-		caption: photo.caption,
-		width: photo.width || 400,
-		height: photo.height || 400
-	})) ?? [])
+	const photoItems = $derived(
+		album?.photos?.map((photo: any) => ({
+			id: `photo-${photo.id}`,
+			src: photo.url,
+			alt: photo.caption || photo.filename,
+			caption: photo.caption,
+			width: photo.width || 400,
+			height: photo.height || 400
+		})) ?? []
+	)
 
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString)
@@ -56,11 +58,11 @@
 		<!-- Album Card -->
 		<div class="album-card">
 			<h1 class="album-title">{album.title}</h1>
-			
+
 			{#if album.description}
 				<p class="album-description">{album.description}</p>
 			{/if}
-			
+
 			<div class="album-meta">
 				{#if album.date}
 					<span class="meta-item">📅 {formatDate(album.date)}</span>
@@ -68,13 +70,15 @@
 				{#if album.location}
 					<span class="meta-item">📍 {album.location}</span>
 				{/if}
-				<span class="meta-item">📷 {album.photos?.length || 0} photo{(album.photos?.length || 0) !== 1 ? 's' : ''}</span>
+				<span class="meta-item"
+					>📷 {album.photos?.length || 0} photo{(album.photos?.length || 0) !== 1 ? 's' : ''}</span
+				>
 			</div>
 		</div>
 
 		<!-- Photo Grid -->
 		{#if photoItems.length > 0}
-			<PhotoGrid photoItems={photoItems} albumSlug={album.slug} />
+			<PhotoGrid {photoItems} albumSlug={album.slug} />
 		{:else}
 			<div class="empty-album">
 				<p>This album doesn't contain any photos yet.</p>

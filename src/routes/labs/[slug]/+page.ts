@@ -4,7 +4,9 @@ import type { Project } from '$lib/types/project'
 export const load: PageLoad = async ({ params, fetch }) => {
 	try {
 		// Find project by slug - we'll fetch all published, list-only, and password-protected projects
-		const response = await fetch(`/api/projects?projectType=labs&includeListOnly=true&includePasswordProtected=true`)
+		const response = await fetch(
+			`/api/projects?projectType=labs&includeListOnly=true&includePasswordProtected=true`
+		)
 		if (!response.ok) {
 			throw new Error('Failed to fetch projects')
 		}

@@ -26,7 +26,7 @@
 
 	function handleMediaSelect(media: Media | Media[]) {
 		const mediaArray = Array.isArray(media) ? media : [media]
-		const newImages = mediaArray.map(m => ({
+		const newImages = mediaArray.map((m) => ({
 			id: m.id,
 			url: m.url,
 			alt: m.altText || '',
@@ -40,7 +40,7 @@
 			// Add to existing images
 			const existingImages = node.attrs.images || []
 			const currentIds = existingImages.map((img: any) => img.id)
-			const uniqueNewImages = newImages.filter(img => !currentIds.includes(img.id))
+			const uniqueNewImages = newImages.filter((img) => !currentIds.includes(img.id))
 			updateAttributes({ images: [...existingImages, ...uniqueNewImages] })
 		}
 
@@ -87,12 +87,7 @@
 			<div class={`edra-gallery-grid ${layout === 'masonry' ? 'masonry' : 'grid'}`}>
 				{#each images as image}
 					<div class="edra-gallery-item">
-						<img
-							src={image.url}
-							alt={image.alt}
-							title={image.title}
-							loading="lazy"
-						/>
+						<img src={image.url} alt={image.alt} title={image.title} loading="lazy" />
 						{#if editor?.isEditable}
 							<button
 								class="edra-gallery-item-remove"
@@ -125,7 +120,7 @@
 						<Columns />
 					</button>
 				</div>
-				
+
 				<div class="edra-gallery-toolbar-section">
 					<select
 						class="edra-gallery-columns-select"
@@ -141,18 +136,10 @@
 				</div>
 
 				<div class="edra-gallery-toolbar-section">
-					<button
-						class="edra-toolbar-button"
-						onclick={handleAddImages}
-						title="Add Images"
-					>
+					<button class="edra-toolbar-button" onclick={handleAddImages} title="Add Images">
 						<Plus />
 					</button>
-					<button
-						class="edra-toolbar-button"
-						onclick={handleEditGallery}
-						title="Edit Gallery"
-					>
+					<button class="edra-toolbar-button" onclick={handleEditGallery} title="Edit Gallery">
 						<Edit />
 					</button>
 					<button
@@ -345,7 +332,7 @@
 		.edra-gallery-grid.grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
-		
+
 		.edra-gallery-grid.masonry {
 			column-count: 2;
 		}

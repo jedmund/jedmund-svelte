@@ -6,7 +6,7 @@ export const load: PageLoad = async ({ fetch }) => {
 		if (!response.ok) {
 			throw new Error('Failed to fetch photos')
 		}
-		
+
 		const data = await response.json()
 		return {
 			photoItems: data.photoItems || [],
@@ -14,7 +14,7 @@ export const load: PageLoad = async ({ fetch }) => {
 		}
 	} catch (error) {
 		console.error('Error loading photos:', error)
-		
+
 		// Fallback to empty array if API fails
 		return {
 			photoItems: [],

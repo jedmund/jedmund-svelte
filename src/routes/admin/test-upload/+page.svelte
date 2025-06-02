@@ -189,12 +189,12 @@
 			font-weight: 700;
 			margin: 0;
 			color: $grey-10;
-			}
+		}
 
 		.back-link {
 			color: $grey-40;
 			text-decoration: none;
-	
+
 			&:hover {
 				color: $grey-20;
 			}
@@ -218,12 +218,12 @@
 
 		h2 {
 			margin: 0 0 $unit-2x;
-			}
+		}
 
 		p {
 			color: $grey-30;
 			margin-bottom: $unit-3x;
-			}
+		}
 	}
 
 	.status {
@@ -246,7 +246,7 @@
 		h3 {
 			font-size: 1rem;
 			margin-bottom: $unit-2x;
-			}
+		}
 
 		ol {
 			margin: 0;
@@ -255,7 +255,7 @@
 			li {
 				margin-bottom: $unit;
 				color: $grey-30;
-					}
+			}
 		}
 	}
 
@@ -269,7 +269,7 @@
 
 		h3 {
 			margin: 0 0 $unit-3x;
-			}
+		}
 	}
 
 	.results-section {
@@ -282,7 +282,7 @@
 
 		h3 {
 			margin: 0 0 $unit-3x;
-			}
+		}
 	}
 
 	.image-grid {
@@ -311,7 +311,7 @@
 				font-size: 0.875rem;
 				color: $grey-40;
 				margin-bottom: $unit;
-					}
+			}
 
 			.url {
 				display: block;
@@ -328,7 +328,7 @@
 				padding: 2px 8px;
 				font-size: 0.75rem;
 				border-radius: 4px;
-		
+
 				&.local {
 					background: #e6f0ff;
 					color: #0066cc;
@@ -351,7 +351,7 @@
 
 		h3 {
 			margin: 0 0 $unit-3x;
-			}
+		}
 
 		pre {
 			background: $grey-95;

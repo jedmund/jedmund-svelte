@@ -238,7 +238,8 @@
 					{#if photographyFilter === 'all'}
 						No albums found. Create your first album!
 					{:else}
-						No albums found matching the current filters. Try adjusting your filters or create a new album.
+						No albums found matching the current filters. Try adjusting your filters or create a new
+						album.
 					{/if}
 				</p>
 			</div>

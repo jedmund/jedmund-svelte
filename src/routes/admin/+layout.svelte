@@ -23,7 +23,7 @@
 	})
 
 	const currentPath = $derived($page.url.pathname)
-	
+
 	// Pages that should use the card metaphor (no .admin-content wrapper)
 	const cardLayoutPages = ['/admin']
 	const useCardLayout = $derived(cardLayoutPages.includes(currentPath))

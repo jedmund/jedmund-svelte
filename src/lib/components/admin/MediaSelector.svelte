@@ -12,12 +12,7 @@
 		loading?: boolean
 	}
 
-	let {
-		mode,
-		fileType = 'all',
-		selectedIds = [],
-		loading = $bindable(false)
-	}: Props = $props()
+	let { mode, fileType = 'all', selectedIds = [], loading = $bindable(false) }: Props = $props()
 
 	const dispatch = createEventDispatcher<{
 		select: Media[]
@@ -37,7 +32,7 @@
 	// Initialize selected media from IDs
 	$effect(() => {
 		if (selectedIds.length > 0 && media.length > 0) {
-			selectedMedia = media.filter(item => selectedIds.includes(item.id))
+			selectedMedia = media.filter((item) => selectedIds.includes(item.id))
 			dispatch('select', selectedMedia)
 		}
 	})
@@ -80,15 +75,15 @@
 			if (!auth) return
 
 			let url = `/api/media?page=${page}&limit=24`
-			
+
 			if (filterType !== 'all') {
 				url += `&mimeType=${filterType}`
 			}
-			
+
 			if (photographyFilter !== 'all') {
 				url += `&isPhotography=${photographyFilter}`
 			}
-			
+
 			if (searchQuery) {
 				url += `&search=${encodeURIComponent(searchQuery)}`
 			}
@@ -102,17 +97,16 @@
 			}
 
 			const data = await response.json()
-			
+
 			if (page === 1) {
 				media = data.media
 			} else {
 				media = [...media, ...data.media]
 			}
-			
+
 			currentPage = page
 			totalPages = data.pagination.totalPages
 			total = data.pagination.total
-
 		} catch (error) {
 			console.error('Error loading media:', error)
 		} finally {
@@ -125,14 +119,14 @@
 			selectedMedia = [item]
 			dispatch('select', selectedMedia)
 		} else {
-			const isSelected = selectedMedia.some(m => m.id === item.id)
-			
+			const isSelected = selectedMedia.some((m) => m.id === item.id)
+
 			if (isSelected) {
-				selectedMedia = selectedMedia.filter(m => m.id !== item.id)
+				selectedMedia = selectedMedia.filter((m) => m.id !== item.id)
 			} else {
 				selectedMedia = [...selectedMedia, item]
 			}
-			
+
 			dispatch('select', selectedMedia)
 		}
 	}
@@ -161,7 +155,7 @@
 	}
 
 	function isSelected(item: Media): boolean {
-		return selectedMedia.some(m => m.id === item.id)
+		return selectedMedia.some((m) => m.id === item.id)
 	}
 
 	// Computed properties
@@ -174,18 +168,14 @@
 	<!-- Search and Filter Controls -->
 	<div class="controls">
 		<div class="search-filters">
-			<Input
-				type="search"
-				placeholder="Search media files..."
-				bind:value={searchQuery}
-			/>
-			
+			<Input type="search" placeholder="Search media files..." bind:value={searchQuery} />
+
 			<select bind:value={filterType} class="filter-select">
 				<option value="all">All Files</option>
 				<option value="image">Images</option>
 				<option value="video">Videos</option>
 			</select>
-			
+
 			<select bind:value={photographyFilter} class="filter-select">
 				<option value="all">All Media</option>
 				<option value="true">Photography</option>
@@ -216,10 +206,16 @@
 			</div>
 		{:else if media.length === 0}
 			<div class="empty-state">
-				<svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-					<circle cx="8.5" cy="8.5" r=".5" fill="currentColor"/>
-					<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none"/>
+				<svg
+					width="64"
+					height="64"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2" />
+					<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
+					<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none" />
 				</svg>
 				<h3>No media found</h3>
 				<p>Try adjusting your search or upload some files</p>
@@ -236,17 +232,36 @@
 						<!-- Thumbnail -->
 						<div class="media-thumbnail">
 							{#if item.mimeType?.startsWith('image/')}
-								<img 
-									src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} 
+								<img
+									src={item.mimeType === 'image/svg+xml' ? item.url : item.thumbnailUrl || item.url}
 									alt={item.filename}
 									loading="lazy"
 								/>
 							{:else}
 								<div class="media-placeholder">
-									<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-										<circle cx="8.5" cy="8.5" r=".5" fill="currentColor"/>
-										<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none"/>
+									<svg
+										width="32"
+										height="32"
+										viewBox="0 0 24 24"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<rect
+											x="3"
+											y="5"
+											width="18"
+											height="14"
+											rx="2"
+											stroke="currentColor"
+											stroke-width="2"
+										/>
+										<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
+										<path
+											d="M3 16l5-5 3 3 4-4 4 4"
+											stroke="currentColor"
+											stroke-width="2"
+											fill="none"
+										/>
 									</svg>
 								</div>
 							{/if}
@@ -254,19 +269,27 @@
 							<!-- Selection Indicator -->
 							{#if mode === 'multiple'}
 								<div class="selection-checkbox">
-									<input 
-										type="checkbox" 
-										checked={isSelected(item)}
-										readonly
-									/>
+									<input type="checkbox" checked={isSelected(item)} readonly />
 								</div>
 							{/if}
 
 							<!-- Selected Overlay -->
 							{#if isSelected(item)}
 								<div class="selected-overlay">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									<svg
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<path
+											d="M9 12l2 2 4-4"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
 									</svg>
 								</div>
 							{/if}
@@ -280,8 +303,17 @@
 							<div class="media-indicators">
 								{#if item.isPhotography}
 									<span class="indicator-pill photography" title="Photography">
-										<svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-											<polygon points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26" fill="currentColor"/>
+										<svg
+											width="10"
+											height="10"
+											viewBox="0 0 24 24"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<polygon
+												points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26"
+												fill="currentColor"
+											/>
 										</svg>
 										Photo
 									</span>
@@ -291,9 +323,7 @@
 										Alt
 									</span>
 								{:else}
-									<span class="indicator-pill no-alt-text" title="No alt text">
-										No Alt
-									</span>
+									<span class="indicator-pill no-alt-text" title="No alt text"> No Alt </span>
 								{/if}
 							</div>
 							<div class="media-meta">
@@ -310,12 +340,7 @@
 			<!-- Load More Button -->
 			{#if hasMore}
 				<div class="load-more-container">
-					<Button 
-						variant="ghost" 
-						onclick={loadMore} 
-						disabled={loading}
-						class="load-more-button"
-					>
+					<Button variant="ghost" onclick={loadMore} disabled={loading} class="load-more-button">
 						{#if loading}
 							<LoadingSpinner buttonSize="small" />
 							Loading...

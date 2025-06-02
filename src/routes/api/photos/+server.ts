@@ -13,13 +13,13 @@ export const GET: RequestHandler = async (event) => {
 
 		// Fetch published photography albums
 		const albums = await prisma.album.findMany({
-			where: { 
+			where: {
 				status: 'published',
 				isPhotography: true
 			},
 			include: {
 				photos: {
-					where: { 
+					where: {
 						status: 'published'
 					},
 					orderBy: { displayOrder: 'asc' },
@@ -66,8 +66,8 @@ export const GET: RequestHandler = async (event) => {
 
 		// Transform albums to PhotoAlbum format
 		const photoAlbums: PhotoAlbum[] = albums
-			.filter(album => album.photos.length > 0) // Only include albums with published photos
-			.map(album => ({
+			.filter((album) => album.photos.length > 0) // Only include albums with published photos
+			.map((album) => ({
 				id: `album-${album.id}`,
 				slug: album.slug, // Add slug for navigation
 				title: album.title,
@@ -80,7 +80,7 @@ export const GET: RequestHandler = async (event) => {
 					width: album.photos[0].width || 400,
 					height: album.photos[0].height || 400
 				},
-				photos: album.photos.map(photo => ({
+				photos: album.photos.map((photo) => ({
 					id: `photo-${photo.id}`,
 					src: photo.url,
 					alt: photo.caption || photo.filename,
@@ -92,7 +92,7 @@ export const GET: RequestHandler = async (event) => {
 			}))
 
 		// Transform individual photos to Photo format
-		const photos: Photo[] = individualPhotos.map(photo => ({
+		const photos: Photo[] = individualPhotos.map((photo) => ({
 			id: `photo-${photo.id}`,
 			src: photo.url,
 			alt: photo.title || photo.caption || photo.filename,

@@ -34,7 +34,7 @@
 	function handleDrop(event: DragEvent) {
 		event.preventDefault()
 		dragActive = false
-		
+
 		const droppedFiles = Array.from(event.dataTransfer?.files || [])
 		addFiles(droppedFiles)
 	}
@@ -47,10 +47,13 @@
 
 	function addFiles(newFiles: File[]) {
 		// Filter for image files
-		const imageFiles = newFiles.filter(file => file.type.startsWith('image/'))
-		
+		const imageFiles = newFiles.filter((file) => file.type.startsWith('image/'))
+
 		if (imageFiles.length !== newFiles.length) {
-			uploadErrors = [...uploadErrors, `${newFiles.length - imageFiles.length} non-image files were skipped`]
+			uploadErrors = [
+				...uploadErrors,
+				`${newFiles.length - imageFiles.length} non-image files were skipped`
+			]
 		}
 
 		files = [...files, ...imageFiles]
@@ -98,7 +101,7 @@
 				const response = await fetch('/api/media/upload', {
 					method: 'POST',
 					headers: {
-						'Authorization': `Basic ${auth}`
+						Authorization: `Basic ${auth}`
 					},
 					body: formData
 				})
@@ -145,8 +148,8 @@
 
 	<div class="upload-container">
 		<!-- Drop Zone -->
-		<div 
-			class="drop-zone" 
+		<div
+			class="drop-zone"
 			class:active={dragActive}
 			class:has-files={files.length > 0}
 			ondragover={handleDragOver}
@@ -156,12 +159,54 @@
 			<div class="drop-zone-content">
 				{#if files.length === 0}
 					<div class="upload-icon">
-						<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+						<svg
+							width="48"
+							height="48"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<polyline
+								points="14,2 14,8 20,8"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<line
+								x1="16"
+								y1="13"
+								x2="8"
+								y2="13"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<line
+								x1="16"
+								y1="17"
+								x2="8"
+								y2="17"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<polyline
+								points="10,9 9,9 8,9"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</div>
 					<h3>Drop images here</h3>
@@ -174,7 +219,7 @@
 					</div>
 				{/if}
 			</div>
-			
+
 			<input
 				bind:this={fileInput}
 				type="file"
@@ -183,9 +228,9 @@
 				onchange={handleFileSelect}
 				class="hidden-input"
 			/>
-			
-			<button 
-				type="button" 
+
+			<button
+				type="button"
 				class="drop-zone-button"
 				onclick={() => fileInput.click()}
 				disabled={isUploading}
@@ -200,13 +245,18 @@
 				<div class="file-list-header">
 					<h3>Files to Upload</h3>
 					<div class="file-actions">
-						<Button variant="secondary" buttonSize="small" onclick={clearAll} disabled={isUploading}>
+						<Button
+							variant="secondary"
+							buttonSize="small"
+							onclick={clearAll}
+							disabled={isUploading}
+						>
 							Clear All
 						</Button>
-						<Button 
-							variant="primary" 
-							buttonSize="small" 
-							onclick={uploadFiles} 
+						<Button
+							variant="primary"
+							buttonSize="small"
+							onclick={uploadFiles}
 							disabled={isUploading || files.length === 0}
 						>
 							{#if isUploading}
@@ -229,26 +279,33 @@
 									<div class="file-icon">📄</div>
 								{/if}
 							</div>
-							
+
 							<div class="file-info">
 								<div class="file-name">{file.name}</div>
 								<div class="file-size">{formatFileSize(file.size)}</div>
-								
+
 								{#if uploadProgress[file.name]}
 									<div class="progress-bar">
 										<div class="progress-fill" style="width: {uploadProgress[file.name]}%"></div>
 									</div>
 								{/if}
 							</div>
-							
+
 							{#if !isUploading}
-								<button 
-									type="button" 
+								<button
+									type="button"
 									class="remove-button"
 									onclick={() => removeFile(index)}
 									title="Remove file"
 								>
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<svg
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+									>
 										<line x1="18" y1="6" x2="6" y2="18"></line>
 										<line x1="6" y1="6" x2="18" y2="18"></line>
 									</svg>
@@ -267,7 +324,7 @@
 					<div class="success-message">
 						✅ Successfully uploaded {successCount} file{successCount !== 1 ? 's' : ''}
 						{#if successCount === files.length && uploadErrors.length === 0}
-							<br><small>Redirecting to media library...</small>
+							<br /><small>Redirecting to media library...</small>
 						{/if}
 					</div>
 				{/if}
@@ -324,7 +381,7 @@
 
 	.drop-zone-content {
 		pointer-events: none;
-		
+
 		.upload-icon {
 			color: $grey-50;
 			margin-bottom: $unit-2x;
@@ -492,7 +549,7 @@
 		.success-message {
 			color: #16a34a;
 			margin-bottom: $unit-2x;
-			
+
 			small {
 				color: $grey-50;
 			}

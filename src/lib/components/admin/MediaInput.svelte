@@ -52,40 +52,40 @@
 
 	// Computed properties
 	const hasValue = $derived(
-		mode === 'single' 
+		mode === 'single'
 			? value !== null && value !== undefined
 			: Array.isArray(value) && value.length > 0
 	)
 
 	const displayText = $derived(
-		!hasValue 
-			? placeholder 
+		!hasValue
+			? placeholder
 			: mode === 'single' && value && !Array.isArray(value)
 				? value.filename
 				: mode === 'multiple' && Array.isArray(value)
-					? value.length === 1 
+					? value.length === 1
 						? `${value.length} file selected`
 						: `${value.length} files selected`
 					: placeholder
 	)
 
 	const selectedIds = $derived(
-		!hasValue 
+		!hasValue
 			? []
 			: mode === 'single' && value && !Array.isArray(value)
 				? [value.id]
 				: mode === 'multiple' && Array.isArray(value)
-					? value.map(item => item.id)
+					? value.map((item) => item.id)
 					: []
 	)
 
 	const modalTitle = $derived(
-		mode === 'single' ? `Select ${fileType === 'image' ? 'Image' : 'Media'}` : `Select ${fileType === 'image' ? 'Images' : 'Media'}`
+		mode === 'single'
+			? `Select ${fileType === 'image' ? 'Image' : 'Media'}`
+			: `Select ${fileType === 'image' ? 'Images' : 'Media'}`
 	)
 
-	const confirmText = $derived(
-		mode === 'single' ? 'Select' : 'Select Files'
-	)
+	const confirmText = $derived(mode === 'single' ? 'Select' : 'Select Files')
 </script>
 
 <div class="media-input">
@@ -106,10 +106,29 @@
 							<img src={value.thumbnailUrl} alt={value.filename} />
 						{:else}
 							<div class="media-placeholder">
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-									<circle cx="8.5" cy="8.5" r=".5" fill="currentColor"/>
-									<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none"/>
+								<svg
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<rect
+										x="3"
+										y="5"
+										width="18"
+										height="14"
+										rx="2"
+										stroke="currentColor"
+										stroke-width="2"
+									/>
+									<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
+									<path
+										d="M3 16l5-5 3 3 4-4 4 4"
+										stroke="currentColor"
+										stroke-width="2"
+										fill="none"
+									/>
 								</svg>
 							</div>
 						{/if}
@@ -133,10 +152,29 @@
 									<img src={item.thumbnailUrl} alt={item.filename} />
 								{:else}
 									<div class="media-placeholder">
-										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-											<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-											<circle cx="8.5" cy="8.5" r=".5" fill="currentColor"/>
-											<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none"/>
+										<svg
+											width="16"
+											height="16"
+											viewBox="0 0 24 24"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<rect
+												x="3"
+												y="5"
+												width="18"
+												height="14"
+												rx="2"
+												stroke="currentColor"
+												stroke-width="2"
+											/>
+											<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
+											<path
+												d="M3 16l5-5 3 3 4-4 4 4"
+												stroke="currentColor"
+												stroke-width="2"
+												fill="none"
+											/>
 										</svg>
 									</div>
 								{/if}
@@ -168,9 +206,7 @@
 			class:placeholder={!hasValue}
 		/>
 		<div class="input-actions">
-			<Button variant="ghost" onclick={openModal}>
-				Browse
-			</Button>
+			<Button variant="ghost" onclick={openModal}>Browse</Button>
 			{#if hasValue}
 				<Button variant="ghost" onclick={handleClear} aria-label="Clear selection">
 					<svg
@@ -205,7 +241,7 @@
 		{fileType}
 		{selectedIds}
 		title={modalTitle}
-		confirmText={confirmText}
+		{confirmText}
 		onselect={handleMediaSelect}
 	/>
 </div>
@@ -349,7 +385,7 @@
 		background: transparent;
 		font-size: 0.875rem;
 		color: $grey-10;
-		
+
 		&:focus {
 			outline: none;
 		}

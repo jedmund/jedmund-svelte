@@ -8,7 +8,11 @@ import {
 	checkAdminAuth
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
-import { trackMediaUsage, extractMediaIds, type MediaUsageReference } from '$lib/server/media-usage.js'
+import {
+	trackMediaUsage,
+	extractMediaIds,
+	type MediaUsageReference
+} from '$lib/server/media-usage.js'
 
 // GET /api/posts - List all posts
 export const GET: RequestHandler = async (event) => {
@@ -126,7 +130,8 @@ export const POST: RequestHandler = async (event) => {
 				linkUrl: data.link_url,
 				linkDescription: data.linkDescription,
 				featuredImage: featuredImageId,
-				attachments: data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
+				attachments:
+					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
 				tags: data.tags,
 				publishedAt: data.publishedAt
 			}
@@ -138,7 +143,7 @@ export const POST: RequestHandler = async (event) => {
 
 			// Track featured image
 			const featuredImageIds = extractMediaIds({ featuredImage: featuredImageId }, 'featuredImage')
-			featuredImageIds.forEach(mediaId => {
+			featuredImageIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'post',
@@ -173,7 +178,7 @@ export const POST: RequestHandler = async (event) => {
 
 			// Track media in post content
 			const contentIds = extractMediaIds({ content: postContent }, 'content')
-			contentIds.forEach(mediaId => {
+			contentIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'post',

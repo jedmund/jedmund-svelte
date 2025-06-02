@@ -2,12 +2,12 @@
 	import PhotoItem from '$components/PhotoItem.svelte'
 	import type { PhotoItem as PhotoItemType } from '$lib/types/photos'
 
-	const { 
+	const {
 		photoItems,
-		albumSlug 
-	}: { 
+		albumSlug
+	}: {
 		photoItems: PhotoItemType[]
-		albumSlug?: string 
+		albumSlug?: string
 	} = $props()
 </script>
 

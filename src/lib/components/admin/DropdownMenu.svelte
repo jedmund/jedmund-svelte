@@ -17,12 +17,7 @@
 		divider?: boolean
 	}
 
-	let {
-		isOpen = $bindable(),
-		triggerElement,
-		items,
-		onClose
-	}: Props = $props()
+	let { isOpen = $bindable(), triggerElement, items, onClose }: Props = $props()
 
 	let dropdownElement: HTMLDivElement
 	const dispatch = createEventDispatcher()
@@ -35,7 +30,7 @@
 
 		const rect = triggerElement.getBoundingClientRect()
 		const dropdownWidth = 180
-		
+
 		return {
 			top: rect.bottom + 4,
 			left: rect.right - dropdownWidth
@@ -51,7 +46,7 @@
 
 	function handleOutsideClick(event: MouseEvent) {
 		if (!dropdownElement || !isOpen) return
-		
+
 		const target = event.target as HTMLElement
 		if (!dropdownElement.contains(target) && !triggerElement?.contains(target)) {
 			isOpen = false

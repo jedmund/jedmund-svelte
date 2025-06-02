@@ -70,9 +70,9 @@ export const DELETE: RequestHandler = async (event) => {
 			where: { id }
 		})
 
-		logger.info('Photo deleted from album', { 
-			photoId: id, 
-			albumId: photo.albumId 
+		logger.info('Photo deleted from album', {
+			photoId: id,
+			albumId: photo.albumId
 		})
 
 		return new Response(null, { status: 204 })

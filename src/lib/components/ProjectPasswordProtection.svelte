@@ -32,7 +32,7 @@
 		error = ''
 
 		// Simulate a small delay for better UX
-		await new Promise(resolve => setTimeout(resolve, 500))
+		await new Promise((resolve) => setTimeout(resolve, 500))
 
 		if (password === correctPassword) {
 			// Store in session storage
@@ -63,7 +63,13 @@
 	{#snippet passwordHeader()}
 		<div class="password-header">
 			<div class="lock-icon">
-				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<svg
+					width="48"
+					height="48"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
 					<path
 						d="M18 11H6C5.45 11 5 11.45 5 12V19C5 19.55 5.45 20 6 20H18C18.55 20 19 19.55 19 19V12C19 11.45 18.55 11 18 11Z"
 						stroke="currentColor"
@@ -98,9 +104,9 @@
 						onkeypress={handleKeyPress}
 						disabled={isLoading}
 					/>
-					<Button 
-						variant="primary" 
-						onclick={handleSubmit} 
+					<Button
+						variant="primary"
+						onclick={handleSubmit}
 						disabled={isLoading || !password.trim()}
 						class="submit-button"
 					>
@@ -135,7 +141,7 @@
 		.lock-icon {
 			color: $grey-40;
 			margin-bottom: $unit-3x;
-			
+
 			svg {
 				display: block;
 				margin: 0 auto;
@@ -191,7 +197,9 @@
 			border: 1px solid $grey-80;
 			border-radius: $unit;
 			font-size: 1rem;
-			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+			transition:
+				border-color 0.2s ease,
+				box-shadow 0.2s ease;
 
 			&:focus {
 				outline: none;

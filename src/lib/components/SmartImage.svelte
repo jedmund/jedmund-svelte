@@ -41,9 +41,9 @@
 					actualContainerWidth = entry.contentRect.width
 				}
 			})
-			
+
 			resizeObserver.observe(imgElement.parentElement)
-			
+
 			return () => {
 				resizeObserver.disconnect()
 			}
@@ -53,12 +53,12 @@
 	// Smart image URL selection
 	function getImageUrl(): string {
 		if (!media.url) return ''
-		
+
 		// SVG files should always use the original URL (they're vector, no thumbnails needed)
 		if (media.mimeType === 'image/svg+xml' || media.url.endsWith('.svg')) {
 			return media.url
 		}
-		
+
 		// For local development, use what we have
 		if (media.url.startsWith('/local-uploads')) {
 			// For larger containers, prefer original over thumbnail
@@ -82,7 +82,7 @@
 		if (media.mimeType === 'image/svg+xml' || media.url.endsWith('.svg')) {
 			return ''
 		}
-		
+
 		if (!media.url || media.url.startsWith('/local-uploads')) {
 			// For local images, just provide the main options
 			const sources = []
@@ -103,11 +103,11 @@
 	// Compute styles
 	function getImageStyles(): string {
 		let styles = ''
-		
+
 		if (aspectRatio) {
 			styles += `aspect-ratio: ${aspectRatio.replace(':', '/')};`
 		}
-		
+
 		return styles
 	}
 </script>

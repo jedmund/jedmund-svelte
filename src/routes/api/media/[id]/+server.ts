@@ -1,7 +1,12 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { deleteFile, extractPublicId } from '$lib/server/cloudinary'
-import { jsonResponse, errorResponse, checkAdminAuth, parseRequestBody } from '$lib/server/api-utils'
+import {
+	jsonResponse,
+	errorResponse,
+	checkAdminAuth,
+	parseRequestBody
+} from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
 // GET /api/media/[id] - Get a single media item

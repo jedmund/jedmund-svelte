@@ -41,7 +41,7 @@
 		} else {
 			onSelect(selectedMedia)
 		}
-		
+
 		handleClose()
 	}
 
@@ -59,8 +59,10 @@
 	const canConfirm = $derived(selectedMedia.length > 0)
 	const selectionCount = $derived(selectedMedia.length)
 	const footerText = $derived(
-		mode === 'single' 
-			? canConfirm ? '1 item selected' : 'No item selected'
+		mode === 'single'
+			? canConfirm
+				? '1 item selected'
+				: 'No item selected'
 			: `${selectionCount} item${selectionCount !== 1 ? 's' : ''} selected`
 	)
 </script>
@@ -117,14 +119,8 @@
 				<span class="selection-count">{footerText}</span>
 			</div>
 			<div class="footer-actions">
-				<Button variant="ghost" onclick={handleCancel} disabled={isLoading}>
-					Cancel
-				</Button>
-				<Button 
-					variant="primary" 
-					onclick={handleConfirm} 
-					disabled={!canConfirm || isLoading}
-				>
+				<Button variant="ghost" onclick={handleCancel} disabled={isLoading}>Cancel</Button>
+				<Button variant="primary" onclick={handleConfirm} disabled={!canConfirm || isLoading}>
 					{confirmText}
 				</Button>
 			</div>

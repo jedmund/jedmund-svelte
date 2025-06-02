@@ -80,13 +80,13 @@
 			font-size: 1.25rem;
 			font-weight: 700;
 			color: $grey-10;
-			}
+		}
 
 		p {
 			margin: 0 0 $unit-4x;
 			color: $grey-20;
 			line-height: 1.5;
-			}
+		}
 	}
 
 	.modal-actions {

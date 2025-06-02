@@ -1,6 +1,11 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth, parseRequestBody } from '$lib/server/api-utils'
+import {
+	jsonResponse,
+	errorResponse,
+	checkAdminAuth,
+	parseRequestBody
+} from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
 // POST /api/albums/[id]/photos - Add a photo to an album
@@ -84,10 +89,10 @@ export const POST: RequestHandler = async (event) => {
 			}
 		})
 
-		logger.info('Photo added to album', { 
-			albumId, 
-			photoId: photo.id, 
-			mediaId: body.mediaId 
+		logger.info('Photo added to album', {
+			albumId,
+			photoId: photo.id,
+			mediaId: body.mediaId
 		})
 
 		// Return photo with media information for frontend compatibility
@@ -141,7 +146,7 @@ export const PUT: RequestHandler = async (event) => {
 
 		// Update photo display order
 		const photo = await prisma.photo.update({
-			where: { 
+			where: {
 				id: body.photoId,
 				albumId // Ensure photo belongs to this album
 			},
@@ -150,10 +155,10 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		})
 
-		logger.info('Photo order updated', { 
-			albumId, 
-			photoId: body.photoId, 
-			displayOrder: body.displayOrder 
+		logger.info('Photo order updated', {
+			albumId,
+			photoId: body.photoId,
+			displayOrder: body.displayOrder
 		})
 
 		return jsonResponse(photo)
@@ -178,9 +183,9 @@ export const DELETE: RequestHandler = async (event) => {
 	try {
 		const url = new URL(event.request.url)
 		const photoId = url.searchParams.get('photoId')
-		
+
 		logger.info('DELETE photo request', { albumId, photoId })
-		
+
 		if (!photoId || isNaN(parseInt(photoId))) {
 			return errorResponse('Photo ID is required as query parameter', 400)
 		}
@@ -199,7 +204,7 @@ export const DELETE: RequestHandler = async (event) => {
 
 		// Check if photo exists in this album
 		const photo = await prisma.photo.findFirst({
-			where: { 
+			where: {
 				id: photoIdNum,
 				albumId: albumId // Ensure photo belongs to this album
 			}
@@ -236,9 +241,9 @@ export const DELETE: RequestHandler = async (event) => {
 			where: { id: photoIdNum }
 		})
 
-		logger.info('Photo removed from album', { 
-			photoId: photoIdNum, 
-			albumId: albumId 
+		logger.info('Photo removed from album', {
+			photoId: photoIdNum,
+			albumId: albumId
 		})
 
 		return new Response(null, { status: 204 })

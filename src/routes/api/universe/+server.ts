@@ -12,13 +12,13 @@ export interface UniverseItem {
 	content?: any
 	publishedAt: string
 	createdAt: string
-	
+
 	// Post-specific fields
 	postType?: string
 	linkUrl?: string
 	linkDescription?: string
 	attachments?: any
-	
+
 	// Album-specific fields
 	description?: string
 	location?: string
@@ -36,7 +36,7 @@ export const GET: RequestHandler = async (event) => {
 
 		// Fetch published posts
 		const posts = await prisma.post.findMany({
-			where: { 
+			where: {
 				status: 'published',
 				publishedAt: { not: null }
 			},
@@ -58,7 +58,7 @@ export const GET: RequestHandler = async (event) => {
 
 		// Fetch published albums marked for Universe
 		const albums = await prisma.album.findMany({
-			where: { 
+			where: {
 				status: 'published',
 				showInUniverse: true
 			},
@@ -88,7 +88,7 @@ export const GET: RequestHandler = async (event) => {
 		})
 
 		// Transform posts to universe items
-		const postItems: UniverseItem[] = posts.map(post => ({
+		const postItems: UniverseItem[] = posts.map((post) => ({
 			id: post.id,
 			type: 'post' as const,
 			slug: post.slug,
@@ -104,7 +104,7 @@ export const GET: RequestHandler = async (event) => {
 		}))
 
 		// Transform albums to universe items
-		const albumItems: UniverseItem[] = albums.map(album => ({
+		const albumItems: UniverseItem[] = albums.map((album) => ({
 			id: album.id,
 			type: 'album' as const,
 			slug: album.slug,
@@ -120,8 +120,9 @@ export const GET: RequestHandler = async (event) => {
 		}))
 
 		// Combine and sort by publishedAt
-		const allItems = [...postItems, ...albumItems]
-			.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+		const allItems = [...postItems, ...albumItems].sort(
+			(a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+		)
 
 		// Apply pagination
 		const paginatedItems = allItems.slice(offset, offset + limit)

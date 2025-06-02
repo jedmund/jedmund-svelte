@@ -8,10 +8,10 @@
 	}
 
 	let { formData = $bindable() }: Props = $props()
-	
+
 	// Convert gallery array to Media objects for GalleryUploader
 	let galleryMedia = $state<Media[]>([])
-	
+
 	// Update galleryMedia when gallery changes
 	$effect(() => {
 		if (formData.gallery && Array.isArray(formData.gallery)) {
@@ -44,13 +44,13 @@
 			galleryMedia = []
 		}
 	})
-	
+
 	function handleGalleryUpload(media: Media[]) {
 		// Store as Media objects in the gallery field
 		formData.gallery = media
 		galleryMedia = media
 	}
-	
+
 	function handleGalleryReorder(media: Media[]) {
 		formData.gallery = media
 		galleryMedia = media
@@ -59,7 +59,7 @@
 
 <div class="form-section">
 	<h2>Project Gallery</h2>
-	
+
 	<GalleryUploader
 		label="Gallery Images"
 		value={galleryMedia}

@@ -95,7 +95,7 @@
 	})
 </script>
 
-<GenericMetadataPopover 
+<GenericMetadataPopover
 	{config}
 	bind:data={popoverData}
 	{triggerElement}

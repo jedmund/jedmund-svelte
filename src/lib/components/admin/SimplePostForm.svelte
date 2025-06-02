@@ -42,7 +42,7 @@
 	})
 	const charCount = $derived(textContent().length)
 	const isOverLimit = $derived(charCount > maxLength)
-	
+
 	// Check if form has content
 	const hasContent = $derived(() => {
 		// For posts, check if either content exists or it's a link with URL
@@ -228,7 +228,6 @@
 			gap: $unit-2x;
 		}
 	}
-
 
 	.composer-container {
 		max-width: 600px;

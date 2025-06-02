@@ -6,7 +6,7 @@
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import MediaLibraryModal from '../../../admin/MediaLibraryModal.svelte'
 	import { onMount } from 'svelte'
-	
+
 	const { editor, deleteNode }: NodeViewProps = $props()
 
 	let isMediaLibraryOpen = $state(false)
@@ -28,11 +28,15 @@
 	function handleMediaSelect(media: Media | Media[]) {
 		const selectedMedia = Array.isArray(media) ? media[0] : media
 		if (selectedMedia) {
-			editor.chain().focus().setImage({ 
-				src: selectedMedia.url,
-				alt: selectedMedia.altText || '',
-				title: selectedMedia.description || ''
-			}).run()
+			editor
+				.chain()
+				.focus()
+				.setImage({
+					src: selectedMedia.url,
+					alt: selectedMedia.altText || '',
+					title: selectedMedia.description || ''
+				})
+				.run()
 		}
 		isMediaLibraryOpen = false
 	}
@@ -74,11 +78,15 @@
 
 			if (response.ok) {
 				const media = await response.json()
-				editor.chain().focus().setImage({ 
-					src: media.url,
-					alt: media.altText || '',
-					title: media.description || ''
-				}).run()
+				editor
+					.chain()
+					.focus()
+					.setImage({
+						src: media.url,
+						alt: media.altText || '',
+						title: media.description || ''
+					})
+					.run()
 			} else {
 				console.error('Failed to upload image:', response.status)
 				alert('Failed to upload image. Please try again.')
@@ -123,7 +131,7 @@
 				<Upload class="edra-media-placeholder-icon" />
 				<span class="edra-media-placeholder-text">Upload Image</span>
 			</button>
-			
+
 			<button
 				class="edra-media-placeholder-option"
 				onclick={handleBrowseLibrary}
@@ -219,8 +227,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	:global(.edra-media-placeholder-icon) {
