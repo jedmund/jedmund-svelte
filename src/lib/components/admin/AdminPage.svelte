@@ -48,6 +48,8 @@
 	}
 
 	.page-header {
+		box-sizing: border-box;
+		min-height: 110px;
 		padding: $unit-4x;
 
 		@include breakpoint('phone') {

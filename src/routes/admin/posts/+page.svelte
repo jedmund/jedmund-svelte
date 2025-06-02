@@ -2,8 +2,10 @@
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
+	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import PostDropdown from '$lib/components/admin/PostDropdown.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
+	import Select from '$lib/components/admin/Select.svelte'
 
 	interface Post {
 		id: number
@@ -28,9 +30,16 @@
 	let error = $state('')
 	let total = $state(0)
 	let postTypeCounts = $state<Record<string, number>>({})
-	
+
 	// Filter state
 	let selectedFilter = $state<string>('all')
+
+	// Create filter options
+	const filterOptions = $derived([
+		{ value: 'all', label: 'All posts' },
+		{ value: 'post', label: 'Posts' },
+		{ value: 'essay', label: 'Essays' }
+	])
 
 	const postTypeIcons: Record<string, string> = {
 		post: '💭',
@@ -88,7 +97,7 @@
 				post: 0,
 				essay: 0
 			}
-			
+
 			posts.forEach((post) => {
 				// Normalize legacy types to simplified types
 				if (post.postType === 'blog') {
@@ -115,15 +124,13 @@
 		if (selectedFilter === 'all') {
 			filteredPosts = posts
 		} else if (selectedFilter === 'post') {
-			filteredPosts = posts.filter(post => 
+			filteredPosts = posts.filter((post) =>
 				['post', 'microblog', 'link', 'photo'].includes(post.postType)
 			)
 		} else if (selectedFilter === 'essay') {
-			filteredPosts = posts.filter(post => 
-				['essay', 'blog'].includes(post.postType)
-			)
+			filteredPosts = posts.filter((post) => ['essay', 'blog'].includes(post.postType))
 		} else {
-			filteredPosts = posts.filter(post => post.postType === selectedFilter)
+			filteredPosts = posts.filter((post) => post.postType === selectedFilter)
 		}
 	}
 
@@ -144,7 +151,7 @@
 		// Try to extract text from content JSON
 		if (post.content) {
 			let textContent = ''
-			
+
 			if (typeof post.content === 'object' && post.content.content) {
 				// BlockNote/TipTap format
 				function extractText(node: any): string {
@@ -166,7 +173,9 @@
 
 		// Fallback to link description for link posts
 		if (post.linkDescription) {
-			return post.linkDescription.length > 150 ? post.linkDescription.substring(0, 150) + '...' : post.linkDescription
+			return post.linkDescription.length > 150
+				? post.linkDescription.substring(0, 150) + '...'
+				: post.linkDescription
 		}
 
 		// Default fallback
@@ -186,8 +195,8 @@
 		} else if (diffDays < 7) {
 			return `${diffDays} days ago`
 		} else {
-			return date.toLocaleDateString('en-US', { 
-				month: 'short', 
+			return date.toLocaleDateString('en-US', {
+				month: 'short',
 				day: 'numeric',
 				year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
 			})
@@ -196,7 +205,7 @@
 
 	function getDisplayTitle(post: Post): string {
 		if (post.title) return post.title
-		
+
 		// For posts without titles, create a meaningful display title
 		if (post.linkUrl) {
 			try {
@@ -206,46 +215,38 @@
 				return 'Link post'
 			}
 		}
-		
+
 		const snippet = getPostSnippet(post)
-		if (snippet && snippet !== `${postTypeLabels[post.postType] || post.postType} without content`) {
+		if (
+			snippet &&
+			snippet !== `${postTypeLabels[post.postType] || post.postType} without content`
+		) {
 			return snippet.length > 50 ? snippet.substring(0, 50) + '...' : snippet
 		}
-		
+
 		return `${postTypeLabels[post.postType] || post.postType}`
 	}
 </script>
 
 <AdminPage>
-	<header slot="header">
-		<h1>Universe</h1>
-		<div class="header-actions">
-			<select bind:value={selectedFilter} onchange={handleFilterChange} class="filter-select">
-				<option value="all">All posts ({postTypeCounts.all || 0})</option>
-				<option value="post">Posts ({postTypeCounts.post || 0})</option>
-				<option value="essay">Essays ({postTypeCounts.essay || 0})</option>
-			</select>
+	<AdminHeader title="Universe" slot="header">
+		{#snippet actions()}
 			<PostDropdown />
-		</div>
-	</header>
+		{/snippet}
+	</AdminHeader>
 
 	{#if error}
 		<div class="error-message">{error}</div>
 	{:else}
-		<!-- Stats -->
-		<div class="posts-stats">
-			<div class="stat">
-				<span class="stat-value">{postTypeCounts.all || 0}</span>
-				<span class="stat-label">Total posts</span>
-			</div>
-			<div class="stat">
-				<span class="stat-value">{postTypeCounts.post || 0}</span>
-				<span class="stat-label">Posts</span>
-			</div>
-			<div class="stat">
-				<span class="stat-value">{postTypeCounts.essay || 0}</span>
-				<span class="stat-label">Essays</span>
-			</div>
+		<!-- Filters -->
+		<div class="filters">
+			<Select
+				bind:value={selectedFilter}
+				options={filterOptions}
+				size="small"
+				variant="minimal"
+				onchange={handleFilterChange}
+			/>
 		</div>
 
 		<!-- Posts List -->
@@ -288,12 +289,30 @@
 
 						<div class="post-content">
 							<h3 class="post-title">{getDisplayTitle(post)}</h3>
-							
+
 							{#if post.linkUrl}
 								<div class="post-link">
-									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-										<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									<svg
+										width="14"
+										height="14"
+										viewBox="0 0 24 24"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<path
+											d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+										<path
+											d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
 									</svg>
 									<span class="link-url">{post.linkUrl}</span>
 								</div>
@@ -318,8 +337,20 @@
 								<span class="edit-hint">Click to edit</span>
 							</div>
 							<div class="post-indicator">
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+								<svg
+									width="16"
+									height="16"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<path
+										d="M9 18l6-6-6-6"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
 								</svg>
 							</div>
 						</div>
@@ -333,40 +364,11 @@
 <style lang="scss">
 	@import '$styles/variables.scss';
 
-	header {
+	.filters {
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-
-		h1 {
-			font-size: 1.75rem;
-			font-weight: 700;
-			margin: 0;
-			color: $grey-10;
-		}
-	}
-
-	.header-actions {
-		display: flex;
-		align-items: center;
 		gap: $unit-2x;
-
-		.filter-select {
-			padding: $unit $unit-3x;
-			border: 1px solid $grey-80;
-			border-radius: 50px;
-			background: white;
-			font-size: 0.925rem;
-			color: $grey-20;
-			cursor: pointer;
-			min-width: 160px;
-
-			&:focus {
-				outline: none;
-				border-color: $grey-40;
-			}
-		}
+		align-items: center;
+		margin-bottom: $unit-4x;
 	}
 
 	.error-message {
@@ -377,38 +379,6 @@
 		border: 1px solid rgba(239, 68, 68, 0.2);
 		text-align: center;
 		margin-bottom: $unit-4x;
-	}
-
-	.posts-stats {
-		display: flex;
-		gap: $unit-4x;
-		margin-bottom: $unit-4x;
-		padding: $unit-4x;
-		background: $grey-95;
-		border-radius: $unit-2x;
-		
-		@media (max-width: 480px) {
-			gap: $unit-3x;
-			padding: $unit-3x;
-		}
-
-		.stat {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: $unit-half;
-
-			.stat-value {
-				font-size: 2rem;
-				font-weight: 700;
-				color: $grey-10;
-			}
-
-			.stat-label {
-				font-size: 0.875rem;
-				color: $grey-40;
-			}
-		}
 	}
 
 	.loading-container {

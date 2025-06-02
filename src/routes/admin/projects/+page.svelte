@@ -2,8 +2,11 @@
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
+	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import ProjectListItem from '$lib/components/admin/ProjectListItem.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import Button from '$lib/components/admin/Button.svelte'
+	import Select from '$lib/components/admin/Select.svelte'
 
 	interface Project {
 		id: number
@@ -19,11 +22,23 @@
 	}
 
 	let projects = $state<Project[]>([])
+	let filteredProjects = $state<Project[]>([])
 	let isLoading = $state(true)
 	let error = $state('')
 	let showDeleteModal = $state(false)
 	let projectToDelete = $state<Project | null>(null)
 	let activeDropdown = $state<number | null>(null)
+	let statusCounts = $state<Record<string, number>>({})
+
+	// Filter state
+	let selectedFilter = $state<string>('all')
+
+	// Create filter options
+	const filterOptions = $derived([
+		{ value: 'all', label: 'All projects' },
+		{ value: 'published', label: 'Published' },
+		{ value: 'draft', label: 'Draft' }
+	])
 
 	onMount(async () => {
 		await loadProjects()
@@ -61,6 +76,17 @@
 
 			const data = await response.json()
 			projects = data.projects
+
+			// Calculate status counts
+			const counts: Record<string, number> = {
+				all: projects.length,
+				published: projects.filter((p) => p.status === 'published').length,
+				draft: projects.filter((p) => p.status === 'draft').length
+			}
+			statusCounts = counts
+
+			// Apply initial filter
+			applyFilter()
 		} catch (err) {
 			error = 'Failed to load projects'
 			console.error(err)
@@ -139,88 +165,91 @@
 		showDeleteModal = false
 		projectToDelete = null
 	}
+
+	function applyFilter() {
+		if (selectedFilter === 'all') {
+			filteredProjects = projects
+		} else {
+			filteredProjects = projects.filter((project) => project.status === selectedFilter)
+		}
+	}
+
+	function handleFilterChange() {
+		applyFilter()
+	}
 </script>
 
 <AdminPage>
-	<header slot="header">
-		<h1>Projects</h1>
-		<div class="header-actions">
-			<a href="/admin/projects/new" class="btn btn-primary">New Project</a>
-		</div>
-	</header>
+	<AdminHeader title="Projects" slot="header">
+		{#snippet actions()}
+			<Button variant="primary" size="large" href="/admin/projects/new">New Project</Button>
+		{/snippet}
+	</AdminHeader>
 
 	{#if error}
 		<div class="error">{error}</div>
-	{:else if isLoading}
-		<div class="loading">
-			<div class="spinner"></div>
-			<p>Loading projects...</p>
-		</div>
-	{:else if projects.length === 0}
-		<div class="empty-state">
-			<p>No projects found. Create your first project!</p>
-		</div>
 	{:else}
-		<div class="projects-list">
-			{#each projects as project}
-				<ProjectListItem
-					{project}
-					isDropdownActive={activeDropdown === project.id}
-					ontoggleDropdown={handleToggleDropdown}
-					onedit={handleEdit}
-					ontogglePublish={handleTogglePublish}
-					ondelete={handleDelete}
-				/>
-			{/each}
+		<!-- Filters -->
+		<div class="filters">
+			<Select
+				bind:value={selectedFilter}
+				options={filterOptions}
+				size="small"
+				variant="minimal"
+				onchange={handleFilterChange}
+			/>
 		</div>
+
+		<!-- Projects List -->
+		{#if isLoading}
+			<div class="loading">
+				<div class="spinner"></div>
+				<p>Loading projects...</p>
+			</div>
+		{:else if filteredProjects.length === 0}
+			<div class="empty-state">
+				<p>
+					{#if selectedFilter === 'all'}
+						No projects found. Create your first project!
+					{:else}
+						No {selectedFilter} projects found. Try a different filter or create a new project.
+					{/if}
+				</p>
+			</div>
+		{:else}
+			<div class="projects-list">
+				{#each filteredProjects as project}
+					<ProjectListItem
+						{project}
+						isDropdownActive={activeDropdown === project.id}
+						ontoggleDropdown={handleToggleDropdown}
+						onedit={handleEdit}
+						ontogglePublish={handleTogglePublish}
+						ondelete={handleDelete}
+					/>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 </AdminPage>
 
 <DeleteConfirmationModal
 	bind:isOpen={showDeleteModal}
 	title="Delete project?"
-	message={projectToDelete ? `Are you sure you want to delete "${projectToDelete.title}"? This action cannot be undone.` : ''}
+	message={projectToDelete
+		? `Are you sure you want to delete "${projectToDelete.title}"? This action cannot be undone.`
+		: ''}
 	onConfirm={confirmDelete}
 	onCancel={cancelDelete}
 />
 
 <style lang="scss">
-	header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
 
-		h1 {
-			font-size: 1.75rem;
-			font-weight: 700;
-			margin: 0;
-			color: $grey-10;
-			}
-	}
-
-	.header-actions {
+	.filters {
 		display: flex;
 		gap: $unit-2x;
-	}
-
-	.btn {
-		padding: $unit-2x $unit-3x;
-		border-radius: 50px;
-		text-decoration: none;
-		font-size: 0.925rem;
-		transition: all 0.2s ease;
-		border: none;
-		cursor: pointer;
-
-		&.btn-primary {
-			background-color: $grey-10;
-			color: white;
-
-			&:hover {
-				background-color: $grey-20;
-			}
-		}
+		align-items: center;
+		margin-bottom: $unit-4x;
 	}
 
 	.error {
@@ -246,7 +275,7 @@
 
 		p {
 			margin: 0;
-			}
+		}
 	}
 
 	@keyframes spin {
@@ -262,7 +291,7 @@
 
 		p {
 			margin: 0;
-			}
+		}
 	}
 
 	.projects-list {

@@ -120,7 +120,7 @@
 
 	function handleMediaUpdate(updatedMedia: Media) {
 		// Update the media item in the list
-		const index = media.findIndex(m => m.id === updatedMedia.id)
+		const index = media.findIndex((m) => m.id === updatedMedia.id)
 		if (index !== -1) {
 			media[index] = updatedMedia
 		}
@@ -145,7 +145,7 @@
 	}
 
 	function selectAllMedia() {
-		selectedMediaIds = new Set(media.map(m => m.id))
+		selectedMediaIds = new Set(media.map((m) => m.id))
 	}
 
 	function clearSelection() {
@@ -155,11 +155,11 @@
 
 	async function handleBulkDelete() {
 		if (selectedMediaIds.size === 0) return
-		
+
 		const confirmation = confirm(
 			`Are you sure you want to delete ${selectedMediaIds.size} media file${selectedMediaIds.size > 1 ? 's' : ''}? This action cannot be undone and will remove these files from any content that references them.`
 		)
-		
+
 		if (!confirmation) return
 
 		try {
@@ -170,11 +170,11 @@
 			const response = await fetch('/api/media/bulk-delete', {
 				method: 'DELETE',
 				headers: {
-					'Authorization': `Basic ${auth}`,
+					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ 
-					mediaIds: Array.from(selectedMediaIds) 
+				body: JSON.stringify({
+					mediaIds: Array.from(selectedMediaIds)
 				})
 			})
 
@@ -183,10 +183,10 @@
 			}
 
 			const result = await response.json()
-			
+
 			// Remove deleted media from the list
-			media = media.filter(m => !selectedMediaIds.has(m.id))
-			
+			media = media.filter((m) => !selectedMediaIds.has(m.id))
+
 			// Clear selection and exit multiselect mode
 			selectedMediaIds.clear()
 			selectedMediaIds = new Set()
@@ -194,7 +194,6 @@
 
 			// Reload to get updated total count
 			await loadMedia(currentPage)
-
 		} catch (err) {
 			error = 'Failed to delete media files. Please try again.'
 			console.error('Failed to delete media:', err)
@@ -215,7 +214,7 @@
 				const response = await fetch(`/api/media/${mediaId}`, {
 					method: 'PUT',
 					headers: {
-						'Authorization': `Basic ${auth}`,
+						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({ isPhotography: true })
@@ -230,17 +229,14 @@
 			await Promise.all(promises)
 
 			// Update local media items
-			media = media.map(item => 
-				selectedMediaIds.has(item.id) 
-					? { ...item, isPhotography: true }
-					: item
+			media = media.map((item) =>
+				selectedMediaIds.has(item.id) ? { ...item, isPhotography: true } : item
 			)
 
 			// Clear selection
 			selectedMediaIds.clear()
 			selectedMediaIds = new Set()
 			isMultiSelectMode = false
-
 		} catch (err) {
 			error = 'Failed to mark items as photography. Please try again.'
 			console.error('Failed to mark as photography:', err)
@@ -259,7 +255,7 @@
 				const response = await fetch(`/api/media/${mediaId}`, {
 					method: 'PUT',
 					headers: {
-						'Authorization': `Basic ${auth}`,
+						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({ isPhotography: false })
@@ -274,17 +270,14 @@
 			await Promise.all(promises)
 
 			// Update local media items
-			media = media.map(item => 
-				selectedMediaIds.has(item.id) 
-					? { ...item, isPhotography: false }
-					: item
+			media = media.map((item) =>
+				selectedMediaIds.has(item.id) ? { ...item, isPhotography: false } : item
 			)
 
 			// Clear selection
 			selectedMediaIds.clear()
 			selectedMediaIds = new Set()
 			isMultiSelectMode = false
-
 		} catch (err) {
 			error = 'Failed to remove photography status. Please try again.'
 			console.error('Failed to unmark photography:', err)
@@ -319,19 +312,6 @@
 		<div class="error">{error}</div>
 	{:else}
 		<div class="media-controls">
-			<div class="media-stats">
-				<div class="stat">
-					<span class="stat-value">{total}</span>
-					<span class="stat-label">Total files</span>
-				</div>
-				{#if isMultiSelectMode}
-					<div class="stat">
-						<span class="stat-value">{selectedMediaIds.size}</span>
-						<span class="stat-label">Selected</span>
-					</div>
-				{/if}
-			</div>
-
 			<div class="filters">
 				<select bind:value={filterType} onchange={handleFilterChange} class="filter-select">
 					<option value="all">All types</option>
@@ -357,8 +337,19 @@
 					prefixIcon
 					wrapperClass="search-input-wrapper"
 				>
-					<svg slot="prefix" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+					<svg
+						slot="prefix"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+						/>
 					</svg>
 				</Input>
 			</div>
@@ -367,14 +358,14 @@
 		{#if isMultiSelectMode && media.length > 0}
 			<div class="bulk-actions">
 				<div class="bulk-actions-left">
-					<button 
+					<button
 						onclick={selectAllMedia}
 						class="btn btn-secondary btn-small"
 						disabled={selectedMediaIds.size === media.length}
 					>
 						Select All ({media.length})
 					</button>
-					<button 
+					<button
 						onclick={clearSelection}
 						class="btn btn-secondary btn-small"
 						disabled={selectedMediaIds.size === 0}
@@ -384,26 +375,28 @@
 				</div>
 				<div class="bulk-actions-right">
 					{#if selectedMediaIds.size > 0}
-						<button 
+						<button
 							onclick={handleBulkMarkPhotography}
 							class="btn btn-secondary btn-small"
 							title="Mark selected items as photography"
 						>
 							📸 Mark Photography
 						</button>
-						<button 
+						<button
 							onclick={handleBulkUnmarkPhotography}
 							class="btn btn-secondary btn-small"
 							title="Remove photography status from selected items"
 						>
 							🚫 Remove Photography
 						</button>
-						<button 
+						<button
 							onclick={handleBulkDelete}
 							class="btn btn-danger btn-small"
 							disabled={isDeleting}
 						>
-							{isDeleting ? 'Deleting...' : `Delete ${selectedMediaIds.size} file${selectedMediaIds.size > 1 ? 's' : ''}`}
+							{isDeleting
+								? 'Deleting...'
+								: `Delete ${selectedMediaIds.size} file${selectedMediaIds.size > 1 ? 's' : ''}`}
 						</button>
 					{/if}
 				</div>
@@ -423,8 +416,8 @@
 					<div class="media-item-wrapper" class:multiselect={isMultiSelectMode}>
 						{#if isMultiSelectMode}
 							<div class="selection-checkbox">
-								<input 
-									type="checkbox" 
+								<input
+									type="checkbox"
 									checked={selectedMediaIds.has(item.id)}
 									onchange={() => toggleMediaSelection(item.id)}
 									id="media-{item.id}"
@@ -432,15 +425,19 @@
 								<label for="media-{item.id}" class="checkbox-label"></label>
 							</div>
 						{/if}
-						<button 
-							class="media-item" 
+						<button
+							class="media-item"
 							type="button"
-							onclick={() => isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
+							onclick={() =>
+								isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
 							title="{isMultiSelectMode ? 'Click to select' : 'Click to edit'} {item.filename}"
 							class:selected={isMultiSelectMode && selectedMediaIds.has(item.id)}
 						>
 							{#if item.mimeType.startsWith('image/')}
-								<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
+								<img
+									src={item.mimeType === 'image/svg+xml' ? item.url : item.thumbnailUrl || item.url}
+									alt={item.altText || item.filename}
+								/>
 							{:else}
 								<div class="file-placeholder">
 									<span class="file-type">{getFileType(item.mimeType)}</span>
@@ -451,8 +448,17 @@
 								<div class="media-indicators">
 									{#if item.isPhotography}
 										<span class="indicator-pill photography" title="Photography">
-											<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-												<polygon points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26" fill="currentColor"/>
+											<svg
+												width="12"
+												height="12"
+												viewBox="0 0 24 24"
+												fill="none"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<polygon
+													points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26"
+													fill="currentColor"
+												/>
 											</svg>
 											Photo
 										</span>
@@ -462,9 +468,7 @@
 											Alt
 										</span>
 									{:else}
-										<span class="indicator-pill no-alt-text" title="No alt text">
-											No Alt
-										</span>
+										<span class="indicator-pill no-alt-text" title="No alt text"> No Alt </span>
 									{/if}
 								</div>
 								<span class="filesize">{formatFileSize(item.size)}</span>
@@ -479,8 +483,8 @@
 					<div class="media-row-wrapper" class:multiselect={isMultiSelectMode}>
 						{#if isMultiSelectMode}
 							<div class="selection-checkbox">
-								<input 
-									type="checkbox" 
+								<input
+									type="checkbox"
 									checked={selectedMediaIds.has(item.id)}
 									onchange={() => toggleMediaSelection(item.id)}
 									id="media-row-{item.id}"
@@ -488,16 +492,22 @@
 								<label for="media-row-{item.id}" class="checkbox-label"></label>
 							</div>
 						{/if}
-						<button 
-							class="media-row" 
+						<button
+							class="media-row"
 							type="button"
-							onclick={() => isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
+							onclick={() =>
+								isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
 							title="{isMultiSelectMode ? 'Click to select' : 'Click to edit'} {item.filename}"
 							class:selected={isMultiSelectMode && selectedMediaIds.has(item.id)}
 						>
 							<div class="media-preview">
 								{#if item.mimeType.startsWith('image/')}
-									<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
+									<img
+										src={item.mimeType === 'image/svg+xml'
+											? item.url
+											: item.thumbnailUrl || item.url}
+										alt={item.altText || item.filename}
+									/>
 								{:else}
 									<div class="file-icon">{getFileType(item.mimeType)}</div>
 								{/if}
@@ -508,8 +518,17 @@
 									<div class="media-indicators">
 										{#if item.isPhotography}
 											<span class="indicator-pill photography" title="Photography">
-												<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-													<polygon points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26" fill="currentColor"/>
+												<svg
+													width="12"
+													height="12"
+													viewBox="0 0 24 24"
+													fill="none"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<polygon
+														points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26"
+														fill="currentColor"
+													/>
 												</svg>
 												Photo
 											</span>
@@ -519,9 +538,7 @@
 												Alt
 											</span>
 										{:else}
-											<span class="indicator-pill no-alt-text" title="No alt text">
-												No Alt
-											</span>
+											<span class="indicator-pill no-alt-text" title="No alt text"> No Alt </span>
 										{/if}
 									</div>
 								</div>
@@ -541,8 +558,20 @@
 							</div>
 							<div class="media-indicator">
 								{#if !isMultiSelectMode}
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									<svg
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<path
+											d="M9 18L15 12L9 6"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
 									</svg>
 								{/if}
 							</div>
@@ -648,25 +677,6 @@
 		flex-wrap: wrap;
 	}
 
-	.media-stats {
-		.stat {
-			display: flex;
-			flex-direction: column;
-			gap: $unit-half;
-
-			.stat-value {
-				font-size: 1.5rem;
-				font-weight: 700;
-				color: $grey-10;
-				}
-
-			.stat-label {
-				font-size: 0.875rem;
-				color: $grey-40;
-				}
-		}
-	}
-
 	.filters {
 		display: flex;
 		gap: $unit-2x;
@@ -758,7 +768,7 @@
 			.file-type {
 				font-size: 0.875rem;
 				color: $grey-40;
-				}
+			}
 		}
 
 		.media-info {
@@ -842,7 +852,7 @@
 				border-radius: $unit;
 				font-size: 0.75rem;
 				color: $grey-40;
-				}
+			}
 		}
 
 		.media-details {
@@ -905,7 +915,7 @@
 				border: 1px solid $grey-80;
 				border-radius: 50px;
 				font-size: 0.75rem;
-					color: $grey-30;
+				color: $grey-30;
 				cursor: pointer;
 				transition: all 0.2s ease;
 
@@ -999,7 +1009,7 @@
 				left: $unit;
 				z-index: 10;
 
-				input[type="checkbox"] {
+				input[type='checkbox'] {
 					opacity: 0;
 					position: absolute;
 					pointer-events: none;

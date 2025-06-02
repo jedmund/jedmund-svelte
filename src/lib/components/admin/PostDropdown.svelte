@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation'
 	import UniverseComposer from './UniverseComposer.svelte'
 	import Button from './Button.svelte'
+	import ChevronDownIcon from '$icons/chevron-down.svg?raw'
 
 	let isOpen = $state(false)
 	let buttonRef: HTMLElement
@@ -54,6 +55,7 @@
 	<Button
 		bind:this={buttonRef}
 		variant="primary"
+		size="large"
 		onclick={(e) => {
 			e.stopPropagation()
 			isOpen = !isOpen
@@ -62,15 +64,9 @@
 	>
 		New Post
 		{#snippet icon()}
-			<svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="chevron">
-				<path
-					d="M3 4.5L6 7.5L9 4.5"
-					stroke="currentColor"
-					stroke-width="1.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				/>
-			</svg>
+			<div class="chevron">
+				{@html ChevronDownIcon}
+			</div>
 		{/snippet}
 	</Button>
 
@@ -86,39 +82,49 @@
 				>
 					{#snippet icon()}
 						<div class="dropdown-icon">
-						{#if type.value === 'essay'}
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-								<path
-									d="M3 5C3 3.89543 3.89543 3 5 3H11L17 9V15C17 16.1046 16.1046 17 15 17H5C3.89543 17 3 16.1046 3 15V5Z"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<path d="M11 3V9H17" stroke="currentColor" stroke-width="1.5" />
-								<path
-									d="M7 13H13"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-								<path
-									d="M7 10H13"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-							</svg>
-						{:else if type.value === 'post'}
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-								<path
-									d="M4 3C2.89543 3 2 3.89543 2 5V11C2 12.1046 2.89543 13 4 13H6L8 16V13H13C14.1046 13 15 12.1046 15 11V5C15 3.89543 14.1046 3 13 3H4Z"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<path d="M5 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-								<path d="M5 9H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-							</svg>
-						{/if}
-					</div>
+							{#if type.value === 'essay'}
+								<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+									<path
+										d="M3 5C3 3.89543 3.89543 3 5 3H11L17 9V15C17 16.1046 16.1046 17 15 17H5C3.89543 17 3 16.1046 3 15V5Z"
+										stroke="currentColor"
+										stroke-width="1.5"
+									/>
+									<path d="M11 3V9H17" stroke="currentColor" stroke-width="1.5" />
+									<path
+										d="M7 13H13"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+									/>
+									<path
+										d="M7 10H13"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+									/>
+								</svg>
+							{:else if type.value === 'post'}
+								<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+									<path
+										d="M4 3C2.89543 3 2 3.89543 2 5V11C2 12.1046 2.89543 13 4 13H6L8 16V13H13C14.1046 13 15 12.1046 15 11V5C15 3.89543 14.1046 3 13 3H4Z"
+										stroke="currentColor"
+										stroke-width="1.5"
+									/>
+									<path
+										d="M5 7H12"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+									/>
+									<path
+										d="M5 9H10"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+									/>
+								</svg>
+							{/if}
+						</div>
 					{/snippet}
 					<span class="dropdown-label">{type.label}</span>
 				</Button>
@@ -142,22 +148,11 @@
 		position: relative;
 	}
 
-	// Button styles are now handled by the Button component
-	// Override primary button color to match original design
-	:global(.dropdown-container .btn-primary) {
-		background-color: $grey-10;
-		
-		&:hover:not(:disabled) {
-			background-color: $grey-20;
-		}
-		
-		&:active:not(:disabled) {
-			background-color: $grey-30;
-		}
-	}
-
 	.chevron {
 		transition: transform 0.2s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.dropdown-menu {

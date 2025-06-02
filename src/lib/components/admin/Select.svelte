@@ -1,162 +1,212 @@
 <script lang="ts">
+	import type { HTMLSelectAttributes } from 'svelte/elements'
+	import ChevronDownIcon from '$icons/chevron-down.svg?raw'
+
 	interface Option {
 		value: string
 		label: string
 	}
 
-	interface Props {
-		label?: string
-		value?: string
+	interface Props extends Omit<HTMLSelectAttributes, 'size'> {
 		options: Option[]
-		error?: string
-		helpText?: string
-		required?: boolean
-		disabled?: boolean
-		placeholder?: string
-		class?: string
+		value?: string
+		size?: 'small' | 'medium' | 'large'
+		variant?: 'default' | 'minimal'
+		fullWidth?: boolean
+		pill?: boolean
 	}
 
 	let {
-		label,
-		value = $bindable(''),
 		options,
-		error,
-		helpText,
-		required = false,
-		disabled = false,
-		placeholder = 'Select an option',
-		class: className = ''
+		value = $bindable(),
+		size = 'medium',
+		variant = 'default',
+		fullWidth = false,
+		pill = true,
+		class: className = '',
+		...restProps
 	}: Props = $props()
 </script>
 
-<div class="select-wrapper {className}">
-	{#if label}
-		<label class="select-label">
-			{label}
-			{#if required}
-				<span class="required">*</span>
-			{/if}
-		</label>
-	{/if}
-
-	<div class="select-container" class:error>
-		<select
-			bind:value
-			{disabled}
-			class="select-input"
-			class:error
-		>
-			{#if placeholder}
-				<option value="" disabled hidden>{placeholder}</option>
-			{/if}
-			{#each options as option}
-				<option value={option.value}>{option.label}</option>
-			{/each}
-		</select>
-		<div class="select-arrow">
-			<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg>
-		</div>
+<div class="select-wrapper">
+	<select
+		bind:value
+		class="select select-{size} select-{variant} {className}"
+		class:select-full-width={fullWidth}
+		class:select-pill={pill}
+		{...restProps}
+	>
+		{#each options as option}
+			<option value={option.value}>{option.label}</option>
+		{/each}
+	</select>
+	<div class="select-icon">
+		{@html ChevronDownIcon}
 	</div>
-
-	{#if error}
-		<div class="error-message">{error}</div>
-	{/if}
-
-	{#if helpText && !error}
-		<div class="help-text">{helpText}</div>
-	{/if}
 </div>
 
 <style lang="scss">
 	.select-wrapper {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-		width: 100%;
-	}
-
-	.select-label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: $grey-20;
-		margin: 0;
-
-		.required {
-			color: $red-50;
-			margin-left: 2px;
-		}
-	}
-
-	.select-container {
 		position: relative;
-		
-		&.error {
-			.select-input {
-				border-color: $red-50;
-				box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-			}
-		}
+		display: inline-block;
 	}
 
-	.select-input {
-		width: 100%;
-		padding: $unit $unit-2x;
-		border: 1px solid $grey-80;
-		border-radius: $corner-radius;
-		background: $grey-100;
-		color: $grey-10;
-		font-size: 0.875rem;
-		line-height: 1.5;
-		appearance: none;
+	.select {
+		box-sizing: border-box;
+		color: $grey-20;
 		cursor: pointer;
+		font-family: inherit;
 		transition: all 0.2s ease;
-
-		&:hover:not(:disabled) {
-			border-color: $grey-70;
-		}
+		appearance: none;
+		padding-right: 36px;
 
 		&:focus {
 			outline: none;
-			border-color: $blue-50;
-			box-shadow: 0 0 0 3px rgba(20, 130, 193, 0.1);
 		}
 
 		&:disabled {
-			background: $grey-95;
 			color: $grey-60;
 			cursor: not-allowed;
+			opacity: 0.6;
 		}
 
-		&.error {
-			border-color: $red-50;
+		// Default variant
+		&.select-default {
+			border: 1px solid $grey-80;
+			background: white;
+			font-weight: 500;
+
+			&:focus {
+				border-color: $blue-50;
+				box-shadow: 0 0 0 3px rgba(20, 130, 193, 0.1);
+			}
+
+			&:disabled {
+				background: $grey-95;
+			}
+		}
+
+		// Minimal variant
+		&.select-minimal {
+			border: none;
+			background: transparent;
+			font-weight: 500;
+
+			&:hover {
+				background: $grey-95;
+			}
+
+			&:focus {
+				background: $grey-95;
+			}
+
+			&:disabled {
+				background: transparent;
+			}
+		}
+
+		// Size variants for default variant (accounting for border)
+		&.select-default {
+			&.select-small {
+				padding: calc($unit - 1px) calc($unit * 1.5);
+				font-size: 13px;
+				min-height: 28px;
+				min-width: 120px;
+			}
+
+			&.select-medium {
+				padding: calc($unit - 1px) $unit-2x;
+				font-size: 14px;
+				min-height: 36px;
+				min-width: 160px;
+			}
+
+			&.select-large {
+				padding: calc($unit * 1.5 - 1px) $unit-3x;
+				font-size: 15px;
+				min-height: 44px;
+				min-width: 180px;
+			}
+		}
+
+		// Size variants for minimal variant (no border, card-sized border radius)
+		&.select-minimal {
+			&.select-small {
+				padding: $unit calc($unit * 1.5);
+				font-size: 13px;
+				min-height: 28px;
+				min-width: 120px;
+				border-radius: 8px;
+			}
+
+			&.select-medium {
+				padding: $unit $unit-2x;
+				font-size: 14px;
+				min-height: 36px;
+				min-width: 160px;
+				border-radius: 8px;
+			}
+
+			&.select-large {
+				padding: calc($unit * 1.5) $unit-3x;
+				font-size: 15px;
+				min-height: 44px;
+				min-width: 180px;
+				border-radius: 8px;
+			}
+		}
+
+		// Shape variants for default variant only (minimal already has card radius)
+		&.select-default.select-pill {
+			&.select-small {
+				border-radius: 20px;
+			}
+			&.select-medium {
+				border-radius: 24px;
+			}
+			&.select-large {
+				border-radius: 28px;
+			}
+		}
+
+		&.select-default:not(.select-pill) {
+			&.select-small {
+				border-radius: 6px;
+			}
+			&.select-medium {
+				border-radius: 8px;
+			}
+			&.select-large {
+				border-radius: 10px;
+			}
+		}
+
+		// Width variants
+		&.select-full-width {
+			width: 100%;
+			min-width: auto;
 		}
 	}
 
-	.select-arrow {
+	.select-icon {
 		position: absolute;
-		right: $unit-2x;
+		right: 12px;
 		top: 50%;
 		transform: translateY(-50%);
-		color: $grey-40;
 		pointer-events: none;
-		transition: color 0.2s ease;
+		color: $grey-60;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
 	}
 
-	.select-container:hover .select-arrow {
-		color: $grey-30;
-	}
-
-	.error-message {
-		font-size: 0.75rem;
-		color: $red-50;
-		margin: 0;
-	}
-
-	.help-text {
-		font-size: 0.75rem;
-		color: $grey-40;
-		margin: 0;
+	// Full width handling for wrapper
+	.select-wrapper:has(.select-full-width) {
+		width: 100%;
 	}
 </style>

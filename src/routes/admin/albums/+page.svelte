@@ -2,8 +2,10 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
+	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import DataTable from '$lib/components/admin/DataTable.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
+	import Select from '$lib/components/admin/Select.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 
 	// State
@@ -15,6 +17,13 @@
 
 	// Filter state
 	let photographyFilter = $state<string>('all')
+
+	// Filter options
+	const filterOptions = [
+		{ value: 'all', label: 'All albums' },
+		{ value: 'true', label: 'Photography albums' },
+		{ value: 'false', label: 'Regular albums' }
+	]
 
 	const columns = [
 		{
@@ -100,11 +109,10 @@
 			// Calculate album type counts
 			const counts: Record<string, number> = {
 				all: albums.length,
-				photography: albums.filter(a => a.isPhotography).length,
-				regular: albums.filter(a => !a.isPhotography).length
+				photography: albums.filter((a) => a.isPhotography).length,
+				regular: albums.filter((a) => !a.isPhotography).length
 			}
 			albumTypeCounts = counts
-
 		} catch (err) {
 			error = 'Failed to load albums'
 			console.error(err)
@@ -127,41 +135,24 @@
 </script>
 
 <AdminPage>
-	<header slot="header">
-		<h1>Albums</h1>
-		<div class="header-actions">
-			<Button variant="primary" onclick={handleNewAlbum}>
-				New Album
-			</Button>
-		</div>
-	</header>
+	<AdminHeader title="Albums" slot="header">
+		{#snippet actions()}
+			<Button variant="primary" size="large" onclick={handleNewAlbum}>New Album</Button>
+		{/snippet}
+	</AdminHeader>
 
 	{#if error}
 		<div class="error">{error}</div>
 	{:else}
-		<!-- Albums Stats -->
-		<div class="albums-stats">
-			<div class="stat">
-				<span class="stat-value">{albumTypeCounts.all || 0}</span>
-				<span class="stat-label">Total albums</span>
-			</div>
-			<div class="stat">
-				<span class="stat-value">{albumTypeCounts.photography || 0}</span>
-				<span class="stat-label">Photography albums</span>
-			</div>
-			<div class="stat">
-				<span class="stat-value">{albumTypeCounts.regular || 0}</span>
-				<span class="stat-label">Regular albums</span>
-			</div>
-		</div>
-
 		<!-- Filters -->
 		<div class="filters">
-			<select bind:value={photographyFilter} onchange={handleFilterChange} class="filter-select">
-				<option value="all">All albums</option>
-				<option value="true">Photography albums</option>
-				<option value="false">Regular albums</option>
-			</select>
+			<Select
+				bind:value={photographyFilter}
+				options={filterOptions}
+				size="small"
+				variant="minimal"
+				onchange={handleFilterChange}
+			/>
 		</div>
 
 		<!-- Albums Table -->
@@ -184,25 +175,6 @@
 <style lang="scss">
 	@import '$styles/variables.scss';
 
-	header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-
-		h1 {
-			font-size: 1.75rem;
-			font-weight: 700;
-			margin: 0;
-			color: $grey-10;
-		}
-	}
-
-	.header-actions {
-		display: flex;
-		gap: $unit-2x;
-		align-items: center;
-	}
 
 	.error {
 		background: rgba(239, 68, 68, 0.1);
@@ -213,53 +185,11 @@
 		margin-bottom: $unit-4x;
 	}
 
-	.albums-stats {
-		display: flex;
-		gap: $unit-4x;
-		margin-bottom: $unit-4x;
-		padding: $unit-4x;
-		background: $grey-95;
-		border-radius: $unit-2x;
-
-		.stat {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: $unit-half;
-
-			.stat-value {
-				font-size: 2rem;
-				font-weight: 700;
-				color: $grey-10;
-			}
-
-			.stat-label {
-				font-size: 0.875rem;
-				color: $grey-40;
-			}
-		}
-	}
-
 	.filters {
 		display: flex;
 		gap: $unit-2x;
 		align-items: center;
 		margin-bottom: $unit-4x;
-	}
-
-	.filter-select {
-		padding: $unit $unit-3x;
-		border: 1px solid $grey-80;
-		border-radius: 50px;
-		background: white;
-		font-size: 0.925rem;
-		color: $grey-20;
-		cursor: pointer;
-
-		&:focus {
-			outline: none;
-			border-color: $grey-40;
-		}
 	}
 
 	.loading-container {
