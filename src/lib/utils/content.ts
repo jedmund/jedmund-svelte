@@ -8,18 +8,20 @@ export const renderEdraContent = (content: any): string => {
 
 	const renderBlock = (block: any): string => {
 		switch (block.type) {
-			case 'heading':
+			case 'heading': {
 				const level = block.attrs?.level || block.level || 1
 				const headingText = block.content || block.text || ''
 				return `<h${level}>${headingText}</h${level}>`
+			}
 
-			case 'paragraph':
+			case 'paragraph': {
 				const paragraphText = block.content || block.text || ''
 				if (!paragraphText) return '<p><br></p>'
 				return `<p>${paragraphText}</p>`
+			}
 
 			case 'bulletList':
-			case 'ul':
+			case 'ul': {
 				const listItems = (block.content || [])
 					.map((item: any) => {
 						const itemText = item.content || item.text || ''
@@ -27,9 +29,10 @@ export const renderEdraContent = (content: any): string => {
 					})
 					.join('')
 				return `<ul>${listItems}</ul>`
+			}
 
 			case 'orderedList':
-			case 'ol':
+			case 'ol': {
 				const orderedItems = (block.content || [])
 					.map((item: any) => {
 						const itemText = item.content || item.text || ''
@@ -37,34 +40,39 @@ export const renderEdraContent = (content: any): string => {
 					})
 					.join('')
 				return `<ol>${orderedItems}</ol>`
+			}
 
-			case 'blockquote':
+			case 'blockquote': {
 				const quoteText = block.content || block.text || ''
 				return `<blockquote><p>${quoteText}</p></blockquote>`
+			}
 
 			case 'codeBlock':
-			case 'code':
+			case 'code': {
 				const codeText = block.content || block.text || ''
 				const language = block.attrs?.language || block.language || ''
 				return `<pre><code class="language-${language}">${codeText}</code></pre>`
+			}
 
-			case 'image':
+			case 'image': {
 				const src = block.attrs?.src || block.src || ''
 				const alt = block.attrs?.alt || block.alt || ''
 				const caption = block.attrs?.caption || block.caption || ''
 				return `<figure><img src="${src}" alt="${alt}" />${caption ? `<figcaption>${caption}</figcaption>` : ''}</figure>`
+			}
 
 			case 'hr':
 			case 'horizontalRule':
 				return '<hr>'
 
-			default:
+			default: {
 				// For simple text content
 				const text = block.content || block.text || ''
 				if (text) {
 					return `<p>${text}</p>`
 				}
 				return ''
+			}
 		}
 	}
 
