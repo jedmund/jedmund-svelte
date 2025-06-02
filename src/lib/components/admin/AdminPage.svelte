@@ -51,6 +51,7 @@
 		box-sizing: border-box;
 		min-height: 110px;
 		padding: $unit-4x;
+		display: flex;
 
 		@include breakpoint('phone') {
 			padding: $unit-3x;

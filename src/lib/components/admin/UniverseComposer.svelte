@@ -86,7 +86,7 @@
 
 	function switchToEssay() {
 		const contentParam = content ? encodeURIComponent(JSON.stringify(content)) : ''
-		goto(`/admin/universe/compose?type=essay${contentParam ? `&content=${contentParam}` : ''}`)
+		goto(`/admin/posts/new?type=essay${contentParam ? `&content=${contentParam}` : ''}`)
 	}
 
 	function generateSlug(title: string): string {
@@ -151,8 +151,8 @@
 
 	function handleMediaSelect(media: Media | Media[]) {
 		const mediaArray = Array.isArray(media) ? media : [media]
-		const currentIds = attachedPhotos.map(p => p.id)
-		const newMedia = mediaArray.filter(m => !currentIds.includes(m.id))
+		const currentIds = attachedPhotos.map((p) => p.id)
+		const newMedia = mediaArray.filter((m) => !currentIds.includes(m.id))
 		attachedPhotos = [...attachedPhotos, ...newMedia]
 	}
 
@@ -161,7 +161,7 @@
 	}
 
 	function removePhoto(photoId: number) {
-		attachedPhotos = attachedPhotos.filter(p => p.id !== photoId)
+		attachedPhotos = attachedPhotos.filter((p) => p.id !== photoId)
 	}
 
 	function handlePhotoClick(photo: Media) {
@@ -176,7 +176,7 @@
 
 	function handleMediaUpdate(updatedMedia: Media) {
 		// Update the photo in the attachedPhotos array
-		attachedPhotos = attachedPhotos.map(photo => 
+		attachedPhotos = attachedPhotos.map((photo) =>
 			photo.id === updatedMedia.id ? updatedMedia : photo
 		)
 	}
@@ -206,7 +206,7 @@
 		let postData: any = {
 			content,
 			status: 'published',
-			attachedPhotos: attachedPhotos.map(photo => photo.id)
+			attachedPhotos: attachedPhotos.map((photo) => photo.id)
 		}
 
 		if (postType === 'essay') {
@@ -234,9 +234,15 @@
 		}
 
 		try {
+			const auth = localStorage.getItem('admin_auth')
+			const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+			if (auth) {
+				headers.Authorization = `Basic ${auth}`
+			}
+
 			const response = await fetch('/api/posts', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers,
 				body: JSON.stringify(postData)
 			})
 
@@ -330,7 +336,6 @@
 					</div>
 				{/if}
 
-
 				{#if attachedPhotos.length > 0}
 					<div class="attached-photos">
 						{#each attachedPhotos as photo}
@@ -340,11 +345,7 @@
 									onclick={() => handlePhotoClick(photo)}
 									title="View media details"
 								>
-									<img 
-										src={photo.url} 
-										alt={photo.altText || ''} 
-										class="photo-preview"
-									/>
+									<img src={photo.url} alt={photo.altText || ''} class="photo-preview" />
 								</button>
 								<button
 									class="remove-photo"
@@ -580,7 +581,6 @@
 					</div>
 				{/if}
 
-
 				{#if attachedPhotos.length > 0}
 					<div class="attached-photos">
 						{#each attachedPhotos as photo}
@@ -590,11 +590,7 @@
 									onclick={() => handlePhotoClick(photo)}
 									title="View media details"
 								>
-									<img 
-										src={photo.url} 
-										alt={photo.altText || ''} 
-										class="photo-preview"
-									/>
+									<img src={photo.url} alt={photo.altText || ''} class="photo-preview" />
 								</button>
 								<button
 									class="remove-photo"
@@ -903,11 +899,8 @@
 		background: white;
 		border-radius: $unit-2x;
 		border: 1px solid $grey-80;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		overflow: hidden;
 		width: 100%;
-		max-width: 800px;
-		margin: 0 auto;
 
 		.composer-body {
 			display: flex;
@@ -997,7 +990,7 @@
 
 	.photo-item {
 		position: relative;
-		
+
 		.photo-button {
 			border: none;
 			background: none;
@@ -1010,7 +1003,7 @@
 				transform: scale(1.05);
 			}
 		}
-		
+
 		:global(.photo-preview) {
 			width: 64px;
 			height: 64px;
@@ -1018,7 +1011,7 @@
 			border-radius: 12px;
 			display: block;
 		}
-		
+
 		.remove-photo {
 			position: absolute;
 			top: -6px;

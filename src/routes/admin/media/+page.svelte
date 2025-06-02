@@ -335,7 +335,7 @@
 				{viewMode === 'grid' ? '📋' : '🖼️'}
 				{viewMode === 'grid' ? 'List' : 'Grid'}
 			</Button>
-			<Button variant="primary" size="large" onclick={openUploadModal}>Upload Media</Button>
+			<Button variant="primary" size="large" onclick={openUploadModal}>Upload...</Button>
 		{/snippet}
 	</AdminHeader>
 
@@ -650,7 +650,7 @@
 <!-- Media Upload Modal -->
 <MediaUploadModal
 	bind:isOpen={isUploadModalOpen}
-	onClose={() => isUploadModalOpen = false}
+	onClose={() => (isUploadModalOpen = false)}
 	onUploadComplete={handleUploadComplete}
 />
 

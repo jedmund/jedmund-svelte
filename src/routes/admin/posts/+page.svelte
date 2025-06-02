@@ -5,9 +5,9 @@
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import PostListItem from '$lib/components/admin/PostListItem.svelte'
-	import PostDropdown from '$lib/components/admin/PostDropdown.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
+	import UniverseComposer from '$lib/components/admin/UniverseComposer.svelte'
 
 	interface Post {
 		id: number
@@ -35,6 +35,9 @@
 
 	// Filter state
 	let selectedFilter = $state<string>('all')
+
+	// Composer state
+	let showInlineComposer = $state(true)
 
 	// Create filter options
 	const filterOptions = $derived([
@@ -140,18 +143,30 @@
 		applyFilter()
 	}
 
+	function handleComposerSaved() {
+		// Reload posts when a new post is created
+		loadPosts()
+	}
 </script>
 
 <AdminPage>
-	<AdminHeader title="Universe" slot="header">
-		{#snippet actions()}
-			<PostDropdown />
-		{/snippet}
-	</AdminHeader>
+	<AdminHeader title="Universe" slot="header" />
 
 	{#if error}
 		<div class="error-message">{error}</div>
 	{:else}
+		<!-- Inline Composer -->
+		{#if showInlineComposer}
+			<div class="composer-section">
+				<UniverseComposer
+					isOpen={true}
+					initialMode="page"
+					initialPostType="post"
+					on:saved={handleComposerSaved}
+				/>
+			</div>
+		{/if}
+
 		<!-- Filters -->
 		<AdminFilters>
 			{#snippet left()}
@@ -241,5 +256,8 @@
 		gap: $unit-2x;
 	}
 
-
+	.composer-section {
+		margin-bottom: $unit-4x;
+		padding: 0 $unit;
+	}
 </style>
