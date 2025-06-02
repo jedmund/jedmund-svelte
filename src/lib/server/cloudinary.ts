@@ -77,11 +77,8 @@ export async function uploadFile(
 	customOptions?: any
 ): Promise<UploadResult> {
 	try {
-		// TEMPORARY: Force Cloudinary usage for testing SVG uploads
-		const FORCE_CLOUDINARY_IN_DEV = true; // Toggle this to test
-		
 		// Use local storage in development or when Cloudinary is not configured
-		if ((dev && !FORCE_CLOUDINARY_IN_DEV) || !isCloudinaryConfigured()) {
+		if (dev || !isCloudinaryConfigured()) {
 			logger.info('Using local storage for file upload')
 			const localResult = await uploadFileLocally(file, type)
 
