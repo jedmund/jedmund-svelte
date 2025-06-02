@@ -47,19 +47,20 @@ export const GET: RequestHandler = async (event) => {
 			}
 		})
 
-		// Enrich photos with media information
+		// Enrich photos with media information using proper media usage tracking
 		const photosWithMedia = album.photos.map(photo => {
-			// Try to find matching media by filename since we don't have direct relationship
-			const media = Array.from(mediaMap.values()).find(m => m.filename === photo.filename)
+			// Find the corresponding media usage record for this photo
+			const usage = mediaUsages.find(u => u.media && u.media.filename === photo.filename)
+			const media = usage?.media
 			
 			return {
 				...photo,
-				mediaId: media?.id,
-				altText: media?.altText,
-				description: media?.description,
-				isPhotography: media?.isPhotography,
-				mimeType: media?.mimeType,
-				size: media?.size
+				mediaId: media?.id || null,
+				altText: media?.altText || '',
+				description: media?.description || photo.caption || '',
+				isPhotography: media?.isPhotography || false,
+				mimeType: media?.mimeType || 'image/jpeg',
+				size: media?.size || 0
 			}
 		})
 

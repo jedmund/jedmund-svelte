@@ -69,7 +69,7 @@
 			const response = await fetch('/api/albums', {
 				method: 'POST',
 				headers: {
-					'Authorization': `Basic ${auth}`,
+					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(albumData)
@@ -81,10 +81,9 @@
 			}
 
 			const album = await response.json()
-			
+
 			// Redirect to album edit page or albums list
 			goto(`/admin/albums/${album.id}/edit`)
-
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to create album'
 			console.error('Failed to create album:', err)
@@ -96,7 +95,6 @@
 	function handleCancel() {
 		goto('/admin/albums')
 	}
-
 
 	const canSave = $derived(title.trim().length > 0 && slug.trim().length > 0)
 </script>
@@ -115,46 +113,14 @@
 					/>
 				</svg>
 			</button>
-			<h1>New Album</h1>
 		</div>
 		<div class="header-actions">
-			<div class="publish-dropdown">
-				<Button
-					variant="primary"
-					buttonSize="large"
-					onclick={() => handleSave('published')}
-					disabled={!canSave || isSaving}
-				>
-					{isSaving ? 'Publishing...' : 'Publish'}
-				</Button>
-				<Button
-					variant="ghost"
-					iconOnly
-					buttonSize="large"
-					onclick={(e) => {
-						e.stopPropagation()
-						isPublishDropdownOpen = !isPublishDropdownOpen
-					}}
-					disabled={isSaving}
-				>
-					<svg slot="icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
-						<path
-							d="M3 4.5L6 7.5L9 4.5"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-				</Button>
-				{#if isPublishDropdownOpen}
-					<DropdownMenuContainer>
-						<DropdownItem onclick={() => {handleSave('draft'); isPublishDropdownOpen = false}}>
-							Save as Draft
-						</DropdownItem>
-					</DropdownMenuContainer>
-				{/if}
-			</div>
+			<PublishDropdown
+				onPublish={() => handleSave('published')}
+				onSaveDraft={() => handleSave('draft')}
+				disabled={!canSave || isSaving}
+				isLoading={isSaving}
+			/>
 		</div>
 	</header>
 
@@ -165,7 +131,7 @@
 
 		<div class="form-section">
 			<h2>Album Details</h2>
-			
+
 			<Input
 				label="Title"
 				bind:value={title}
@@ -329,7 +295,6 @@
 			font-weight: 600;
 			margin: 0;
 			color: $grey-10;
-			border-bottom: 1px solid $grey-85;
 			padding-bottom: $unit-2x;
 		}
 	}

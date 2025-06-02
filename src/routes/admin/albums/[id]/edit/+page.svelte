@@ -34,10 +34,6 @@
 	let isMediaLibraryOpen = $state(false)
 	let albumPhotos = $state<any[]>([])
 	let isManagingPhotos = $state(false)
-	let isUploading = $state(false)
-	let uploadProgress = $state<Record<string, number>>({})
-	let uploadErrors = $state<string[]>([])
-	let fileInput: HTMLInputElement
 
 	// Media details modal state
 	let isMediaDetailsOpen = $state(false)
@@ -189,14 +185,32 @@
 
 		try {
 			isManagingPhotos = true
+			error = '' // Clear any previous errors
+
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
 				goto('/admin/login')
 				return
 			}
 
+			// Check for duplicates before adding
+			const existingMediaIds = albumPhotos.map((p) => p.mediaId).filter(Boolean)
+			const newMedia = mediaArray.filter((media) => !existingMediaIds.includes(media.id))
+
+			if (newMedia.length === 0) {
+				error = 'All selected photos are already in this album'
+				return
+			}
+
+			if (newMedia.length < mediaArray.length) {
+				console.log(
+					`Skipping ${mediaArray.length - newMedia.length} photos that are already in the album`
+				)
+			}
+
 			// Add photos to album via API
-			for (const media of mediaArray) {
+			const addedPhotos = []
+			for (const media of newMedia) {
 				const response = await fetch(`/api/albums/${album.id}/photos`, {
 					method: 'POST',
 					headers: {
@@ -205,22 +219,28 @@
 					},
 					body: JSON.stringify({
 						mediaId: media.id,
-						displayOrder: albumPhotos.length
+						displayOrder: albumPhotos.length + addedPhotos.length
 					})
 				})
 
 				if (!response.ok) {
-					throw new Error(`Failed to add photo ${media.filename}`)
+					const errorData = await response.text()
+					throw new Error(`Failed to add photo ${media.filename}: ${response.status} ${errorData}`)
 				}
 
 				const photo = await response.json()
-				albumPhotos = [...albumPhotos, photo]
+				addedPhotos.push(photo)
 			}
+
+			// Update local state with all added photos
+			albumPhotos = [...albumPhotos, ...addedPhotos]
 
 			// Update album photo count
 			if (album._count) {
 				album._count.photos = albumPhotos.length
 			}
+
+			console.log(`Successfully added ${addedPhotos.length} photos to album`)
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to add photos'
 			console.error('Failed to add photos:', err)
@@ -230,38 +250,62 @@
 		}
 	}
 
-	async function handleRemovePhoto(photoId: number) {
-		if (!confirm('Are you sure you want to remove this photo from the album?')) {
-			return
+	async function handleRemovePhoto(photoId: number, skipConfirmation = false) {
+		const photoToRemove = albumPhotos.find((p) => p.id === photoId)
+		if (!photoToRemove) {
+			error = 'Photo not found in album'
+			return false
+		}
+
+		if (
+			!skipConfirmation &&
+			!confirm(
+				`Remove "${photoToRemove.filename || 'this photo'}" from this album?\n\nNote: This will only remove it from the album. The original photo will remain in your media library.`
+			)
+		) {
+			return false
 		}
 
 		try {
 			isManagingPhotos = true
+			error = '' // Clear any previous errors
+
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
 				goto('/admin/login')
-				return
+				return false
 			}
 
-			const response = await fetch(`/api/photos/${photoId}`, {
+			console.log(`Attempting to remove photo with ID: ${photoId} from album ${album.id}`)
+			console.log('Photo to remove:', photoToRemove)
+
+			const response = await fetch(`/api/albums/${album.id}/photos?photoId=${photoId}`, {
 				method: 'DELETE',
 				headers: { Authorization: `Basic ${auth}` }
 			})
 
+			console.log(`DELETE response status: ${response.status}`)
+
 			if (!response.ok) {
-				throw new Error('Failed to remove photo from album')
+				const errorData = await response.text()
+				console.error(`Delete failed: ${response.status} ${errorData}`)
+				throw new Error(`Failed to remove photo: ${response.status} ${errorData}`)
 			}
 
-			// Remove from local state
+			// Remove from local state only after successful API call
 			albumPhotos = albumPhotos.filter((photo) => photo.id !== photoId)
 
 			// Update album photo count
 			if (album._count) {
 				album._count.photos = albumPhotos.length
 			}
+
+			console.log(`Successfully removed photo ${photoId} from album`)
+			return true
 		} catch (err) {
-			error = err instanceof Error ? err.message : 'Failed to remove photo'
+			error = err instanceof Error ? err.message : 'Failed to remove photo from album'
 			console.error('Failed to remove photo:', err)
+			return false
 		} finally {
 			isManagingPhotos = false
 		}
@@ -394,109 +438,55 @@
 		}
 	}
 
-	// Direct upload functions
-	function handleFileSelect(event: Event) {
-		const target = event.target as HTMLInputElement
-		const files = Array.from(target.files || [])
-		if (files.length > 0) {
-			uploadFilesToAlbum(files)
-		}
-		// Reset input so same files can be selected again
-		target.value = ''
-	}
-
-	async function uploadFilesToAlbum(files: File[]) {
-		if (files.length === 0) return
-
-		isUploading = true
-		uploadErrors = []
-		uploadProgress = {}
-
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-			return
-		}
-
-		// Filter for image files
-		const imageFiles = files.filter((file) => file.type.startsWith('image/'))
-
-		if (imageFiles.length !== files.length) {
-			uploadErrors = [
-				...uploadErrors,
-				`${files.length - imageFiles.length} non-image files were skipped`
-			]
-		}
-
+	// Handle new photos added through GalleryUploader (uploads or library selections)
+	async function handleGalleryAdd(newPhotos: any[]) {
 		try {
-			// Upload each file and add to album
-			for (const file of imageFiles) {
-				try {
-					// First upload the file to media library
-					const formData = new FormData()
-					formData.append('file', file)
-
-					// If this is a photography album, mark the uploaded media as photography
-					if (isPhotography) {
-						formData.append('isPhotography', 'true')
-					}
-
-					const uploadResponse = await fetch('/api/media/upload', {
-						method: 'POST',
-						headers: {
-							Authorization: `Basic ${auth}`
-						},
-						body: formData
-					})
-
-					if (!uploadResponse.ok) {
-						const error = await uploadResponse.json()
-						uploadErrors = [...uploadErrors, `${file.name}: ${error.message || 'Upload failed'}`]
-						continue
-					}
-
-					const media = await uploadResponse.json()
-					uploadProgress = { ...uploadProgress, [file.name]: 50 }
-
-					// Then add the uploaded media to the album
-					const addResponse = await fetch(`/api/albums/${album.id}/photos`, {
-						method: 'POST',
-						headers: {
-							Authorization: `Basic ${auth}`,
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							mediaId: media.id,
-							displayOrder: albumPhotos.length
-						})
-					})
-
-					if (!addResponse.ok) {
-						uploadErrors = [...uploadErrors, `${file.name}: Failed to add to album`]
-						continue
-					}
-
-					const photo = await addResponse.json()
-					albumPhotos = [...albumPhotos, photo]
-					uploadProgress = { ...uploadProgress, [file.name]: 100 }
-				} catch (err) {
-					uploadErrors = [...uploadErrors, `${file.name}: Network error`]
+			if (newPhotos.length > 0) {
+				// Check if these are new uploads (have File objects) or library selections (have media IDs)
+				const uploadsToAdd = newPhotos.filter(photo => photo instanceof File || !photo.id)
+				const libraryPhotosToAdd = newPhotos.filter(photo => photo.id && !(photo instanceof File))
+				
+				// Handle new uploads
+				if (uploadsToAdd.length > 0) {
+					await handleAddPhotosFromUpload(uploadsToAdd)
+				}
+				
+				// Handle library selections
+				if (libraryPhotosToAdd.length > 0) {
+					await handleAddPhotos(libraryPhotosToAdd)
 				}
 			}
-
-			// Update album photo count
-			if (album._count) {
-				album._count.photos = albumPhotos.length
-			}
-		} finally {
-			isUploading = false
-			// Clear progress after a delay
-			setTimeout(() => {
-				uploadProgress = {}
-				uploadErrors = []
-			}, 3000)
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to add photos'
+			console.error('Failed to add photos:', err)
 		}
 	}
+
+	// Handle photo removal from GalleryUploader
+	async function handleGalleryRemove(itemToRemove: any, index: number) {
+		try {
+			// Find the photo ID to remove
+			const photoId = itemToRemove.id
+			if (!photoId) {
+				error = 'Cannot remove photo: no photo ID found'
+				return
+			}
+			
+			// Call the existing remove photo function
+			const success = await handleRemovePhoto(photoId, true) // Skip confirmation since user clicked remove
+			if (!success) {
+				// If removal failed, we need to reset the gallery state
+				// Force a reactivity update
+				albumPhotos = [...albumPhotos]
+			}
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to remove photo'
+			console.error('Failed to remove photo:', err)
+			// Reset gallery state on error
+			albumPhotos = [...albumPhotos]
+		}
+	}
+
 
 	function generateSlug(text: string): string {
 		return text
@@ -511,7 +501,6 @@
 			slug = generateSlug(title)
 		}
 	})
-
 
 	const canSave = $derived(title.trim().length > 0 && slug.trim().length > 0)
 </script>
@@ -670,70 +659,14 @@
 
 			<!-- Photo Management -->
 			<div class="form-section">
-				<div class="section-header">
-					<h2>Photos ({albumPhotos.length})</h2>
-					<div class="photo-actions">
-						<Button
-							variant="secondary"
-							onclick={() => fileInput.click()}
-							disabled={isManagingPhotos || isUploading}
-						>
-							<svg
-								slot="icon"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M21 15V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V15M17 8L12 3M12 3L7 8M12 3V15"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>
-							{isUploading ? 'Uploading...' : 'Upload from Computer'}
-						</Button>
-						<Button
-							variant="secondary"
-							onclick={() => (isMediaLibraryOpen = true)}
-							disabled={isManagingPhotos || isUploading}
-						>
-							<svg
-								slot="icon"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M21 21L15 15L21 21ZM3 9C3 8.17157 3.67157 7.5 4.5 7.5H19.5C20.3284 7.5 21 8.17157 21 9V18C21 18.8284 20.3284 19.5 19.5 19.5H4.5C3.67157 19.5 3 18.8284 3 18V9Z"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-								<path
-									d="M9 13.5L12 10.5L15 13.5"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>
-							Add from Library
-						</Button>
-					</div>
-				</div>
+				<h2>Photos ({albumPhotos.length})</h2>
 
 				<GalleryUploader
 					label="Album Photos"
 					bind:value={albumPhotos}
-					onUpload={handleAddPhotosFromUpload}
+					onUpload={handleGalleryAdd}
 					onReorder={handlePhotoReorder}
+					onRemove={handleGalleryRemove}
 					showBrowseLibrary={true}
 					placeholder="Add photos to this album by uploading or selecting from your media library"
 					helpText="Drag photos to reorder them. Click on photos to edit metadata."
@@ -811,7 +744,6 @@
 		gap: $unit-2x;
 	}
 
-
 	.btn-icon {
 		width: 40px;
 		height: 40px;
@@ -872,7 +804,6 @@
 			font-weight: 600;
 			margin: 0;
 			color: $grey-10;
-			border-bottom: 1px solid $grey-85;
 			padding-bottom: $unit-2x;
 		}
 
@@ -1141,18 +1072,6 @@
 		}
 	}
 
-	// Photo actions styles
-	.photo-actions {
-		display: flex;
-		gap: $unit-2x;
-	}
-
-	.empty-actions {
-		display: flex;
-		gap: $unit-2x;
-		justify-content: center;
-		margin-top: $unit-3x;
-	}
 
 	// Upload status styles
 	.upload-status {

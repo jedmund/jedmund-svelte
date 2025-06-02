@@ -9,9 +9,10 @@
 
 	interface Props {
 		label: string
-		value?: Media[]
-		onUpload: (media: Media[]) => void
-		onReorder?: (media: Media[]) => void
+		value?: any[] // Changed from Media[] to any[] to be more flexible
+		onUpload: (media: any[]) => void
+		onReorder?: (media: any[]) => void
+		onRemove?: (item: any, index: number) => void // New callback for removals
 		maxItems?: number
 		allowAltText?: boolean
 		required?: boolean
@@ -27,6 +28,7 @@
 		value = $bindable([]),
 		onUpload,
 		onReorder,
+		onRemove,
 		maxItems = 20,
 		allowAltText = true,
 		required = false,
@@ -151,7 +153,8 @@
 			setTimeout(() => {
 				const newValue = [...(value || []), ...uploadedMedia]
 				value = newValue
-				onUpload(newValue)
+				// Only pass the newly uploaded media, not the entire gallery
+				onUpload(uploadedMedia)
 				isUploading = false
 				uploadProgress = {}
 			}, 500)
@@ -196,21 +199,36 @@
 		}
 	}
 
-	// Remove individual image
+	// Remove individual image - now passes the item to be removed instead of doing it locally
 	function handleRemoveImage(index: number) {
-		if (!value) return
-		const newValue = value.filter((_, i) => i !== index)
-		value = newValue
-		onUpload(newValue)
+		if (!value || !value[index]) return
+		
+		const itemToRemove = value[index]
+		// Call the onRemove callback if provided, otherwise fall back to onUpload
+		if (onRemove) {
+			onRemove(itemToRemove, index)
+		} else {
+			// Fallback: remove locally and call onUpload
+			const newValue = value.filter((_, i) => i !== index)
+			value = newValue
+			onUpload(newValue)
+		}
 		uploadError = null
 	}
 
 	// Update alt text on server
-	async function handleAltTextChange(media: Media, newAltText: string) {
-		if (!media) return
+	async function handleAltTextChange(item: any, newAltText: string) {
+		if (!item) return
 		
 		try {
-			const response = await authenticatedFetch(`/api/media/${media.id}/metadata`, {
+			// For album photos, use mediaId; for direct media objects, use id
+			const mediaId = item.mediaId || item.id
+			if (!mediaId) {
+				console.error('No media ID found for alt text update')
+				return
+			}
+			
+			const response = await authenticatedFetch(`/api/media/${mediaId}/metadata`, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json'
@@ -223,7 +241,7 @@
 			if (response.ok) {
 				const updatedData = await response.json()
 				if (value) {
-					const index = value.findIndex(m => m.id === media.id)
+					const index = value.findIndex(v => (v.mediaId || v.id) === mediaId)
 					if (index !== -1) {
 						value[index] = { ...value[index], altText: updatedData.altText, updatedAt: updatedData.updatedAt }
 						value = [...value]
@@ -290,18 +308,20 @@
 		isMediaLibraryOpen = true
 	}
 
-	function handleMediaSelect(selectedMedia: Media | Media[]) {
+	function handleMediaSelect(selectedMedia: any | any[]) {
 		// For gallery mode, selectedMedia will be an array
 		const mediaArray = Array.isArray(selectedMedia) ? selectedMedia : [selectedMedia]
 		
 		// Add selected media to existing gallery (avoid duplicates)
-		const currentIds = value?.map(m => m.id) || []
+		// Check both id and mediaId to handle different object types
+		const currentIds = value?.map(m => m.mediaId || m.id) || []
 		const newMedia = mediaArray.filter(media => !currentIds.includes(media.id))
 		
 		if (newMedia.length > 0) {
 			const updatedGallery = [...(value || []), ...newMedia]
 			value = updatedGallery
-			onUpload(updatedGallery)
+			// Only pass the newly selected media, not the entire gallery
+			onUpload(newMedia)
 		}
 	}
 
@@ -445,7 +465,22 @@
 					<!-- Image Preview -->
 					<div class="image-preview">
 						<SmartImage 
-							{media}
+							media={{
+								id: media.mediaId || media.id,
+								filename: media.filename,
+								originalName: media.originalName || media.filename,
+								mimeType: media.mimeType || 'image/jpeg',
+								size: media.size || 0,
+								url: media.url,
+								thumbnailUrl: media.thumbnailUrl,
+								width: media.width,
+								height: media.height,
+								altText: media.altText,
+								description: media.description,
+								isPhotography: media.isPhotography || false,
+								createdAt: media.createdAt,
+								updatedAt: media.updatedAt
+							}}
 							alt={media.altText || media.filename || 'Gallery image'}
 							containerWidth={300}
 							loading="lazy"

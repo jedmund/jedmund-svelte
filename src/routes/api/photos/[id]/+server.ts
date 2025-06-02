@@ -31,7 +31,8 @@ export const GET: RequestHandler = async (event) => {
 	}
 }
 
-// DELETE /api/photos/[id] - Delete a photo (remove from album)
+// DELETE /api/photos/[id] - Delete a photo completely (removes photo record and media usage)
+// NOTE: This deletes the photo entirely. Use DELETE /api/albums/[id]/photos to remove from album only.
 export const DELETE: RequestHandler = async (event) => {
 	// Check authentication
 	if (!checkAdminAuth(event)) {

@@ -20,8 +20,7 @@ export const GET: RequestHandler = async (event) => {
 			include: {
 				photos: {
 					where: { 
-						status: 'published',
-						showInPhotos: true 
+						status: 'published'
 					},
 					orderBy: { displayOrder: 'asc' },
 					select: {
