@@ -314,15 +314,22 @@
 		// For gallery mode, selectedMedia will be an array
 		const mediaArray = Array.isArray(selectedMedia) ? selectedMedia : [selectedMedia]
 
-		// Add selected media to existing gallery (avoid duplicates)
-		// Check both id and mediaId to handle different object types
-		const currentIds = value?.map((m) => m.mediaId || m.id) || []
-		const newMedia = mediaArray.filter((media) => !currentIds.includes(media.id))
+		// Filter out duplicates before passing to parent
+		// Create a comprehensive set of existing IDs (both id and mediaId)
+		const existingIds = new Set()
+		value?.forEach((m) => {
+			if (m.id) existingIds.add(m.id)
+			if (m.mediaId) existingIds.add(m.mediaId)
+		})
+
+		// Filter out any media that already exists (check both id and potential mediaId)
+		const newMedia = mediaArray.filter((media) => {
+			return !existingIds.has(media.id) && !existingIds.has(media.mediaId)
+		})
 
 		if (newMedia.length > 0) {
-			const updatedGallery = [...(value || []), ...newMedia]
-			value = updatedGallery
-			// Only pass the newly selected media, not the entire gallery
+			// Don't modify the value array here - let the parent component handle it
+			// through the API calls and then update the bound value
 			onUpload(newMedia)
 		}
 	}
@@ -467,7 +474,7 @@
 	<!-- Image Gallery -->
 	{#if hasImages}
 		<div class="image-gallery">
-			{#each value as media, index (media.id)}
+			{#each value as media, index (`${media.mediaId || media.id || index}`)}
 				<div
 					class="gallery-item"
 					class:dragging={draggedIndex === index}

@@ -99,7 +99,47 @@
 
 			const album = await response.json()
 
-			// Redirect to album edit page or albums list
+			// Add selected photos to the newly created album
+			if (albumPhotos.length > 0) {
+				console.log(`Adding ${albumPhotos.length} photos to newly created album ${album.id}`)
+				
+				try {
+					const addedPhotos = []
+					for (let i = 0; i < albumPhotos.length; i++) {
+						const media = albumPhotos[i]
+						console.log(`Adding photo ${media.id} to album ${album.id}`)
+						
+						const photoResponse = await fetch(`/api/albums/${album.id}/photos`, {
+							method: 'POST',
+							headers: {
+								Authorization: `Basic ${auth}`,
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								mediaId: media.id,
+								displayOrder: i
+							})
+						})
+
+						if (!photoResponse.ok) {
+							const errorData = await photoResponse.text()
+							console.error(`Failed to add photo ${media.filename}:`, photoResponse.status, errorData)
+							// Continue with other photos even if one fails
+						} else {
+							const photo = await photoResponse.json()
+							addedPhotos.push(photo)
+							console.log(`Successfully added photo ${photo.id} to album`)
+						}
+					}
+					
+					console.log(`Successfully added ${addedPhotos.length} out of ${albumPhotos.length} photos to album`)
+				} catch (photoError) {
+					console.error('Error adding photos to album:', photoError)
+					// Don't fail the whole creation - just log the error
+				}
+			}
+
+			// Redirect to album edit page
 			goto(`/admin/albums/${album.id}/edit`)
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to create album'

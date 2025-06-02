@@ -213,7 +213,11 @@
 
 			// Add photos to album via API
 			const addedPhotos = []
+			console.log('Adding photos to album:', newMedia.map(m => ({ id: m.id, filename: m.filename })))
+			
 			for (const media of newMedia) {
+				console.log(`Adding photo ${media.id} (${media.filename}) to album ${album.id}`)
+				
 				const response = await fetch(`/api/albums/${album.id}/photos`, {
 					method: 'POST',
 					headers: {
@@ -226,17 +230,23 @@
 					})
 				})
 
+				console.log(`API response for media ${media.id}:`, response.status, response.statusText)
+
 				if (!response.ok) {
 					const errorData = await response.text()
+					console.error(`Failed to add photo ${media.filename}:`, response.status, errorData)
 					throw new Error(`Failed to add photo ${media.filename}: ${response.status} ${errorData}`)
 				}
 
 				const photo = await response.json()
+				console.log('Photo added successfully:', photo)
 				addedPhotos.push(photo)
 			}
 
+			console.log('All photos added, updating local state. Added photos:', addedPhotos)
 			// Update local state with all added photos
 			albumPhotos = [...albumPhotos, ...addedPhotos]
+			console.log('Updated albumPhotos array:', albumPhotos.length, 'photos')
 
 			// Update album photo count
 			if (album._count) {
