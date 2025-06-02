@@ -34,25 +34,34 @@
 	// Calculate columns based on breakpoints
 	const columnsPerRow = $derived(windowWidth <= 400 ? 3 : windowWidth <= 600 ? 4 : 6)
 	
-	const showMoreThumbnail = $derived(maxThumbnails && totalCount && totalCount > maxThumbnails - 1)
+	// Make maxThumbnails responsive - use fewer thumbnails on smaller screens
+	const responsiveMaxThumbnails = $derived(
+		maxThumbnails ? (windowWidth <= 400 ? 3 : windowWidth <= 600 ? 4 : maxThumbnails) : undefined
+	)
+	
+	const showMoreThumbnail = $derived(
+		responsiveMaxThumbnails && totalCount && totalCount > responsiveMaxThumbnails - 1
+	)
 	
 	// Determine how many thumbnails to show
 	const displayItems = $derived(
-		!maxThumbnails || !showMoreThumbnail
+		!responsiveMaxThumbnails || !showMoreThumbnail
 			? items
-			: items.slice(0, maxThumbnails - 1) // Show actual thumbnails, leave last slot for "+N"
+			: items.slice(0, responsiveMaxThumbnails - 1) // Show actual thumbnails, leave last slot for "+N"
 	)
+	
 	const remainingCount = $derived(
-		showMoreThumbnail ? (totalCount || items.length) - (maxThumbnails - 1) : 0
+		showMoreThumbnail ? (totalCount || items.length) - (responsiveMaxThumbnails - 1) : 0
 	)
+	
 	const totalSlots = $derived(
-		maxThumbnails 
-			? maxThumbnails
+		responsiveMaxThumbnails
+			? responsiveMaxThumbnails
 			: Math.ceil((displayItems.length + (showMoreThumbnail ? 1 : 0)) / columnsPerRow) * columnsPerRow
 	)
 
 	// Convert items to image URLs for lightbox
-	const lightboxImages = $derived(items.map(item => item.url))
+	const lightboxImages = $derived(items.map((item) => item.url))
 
 	const selectImage = (index: number) => {
 		selectedIndex = index
