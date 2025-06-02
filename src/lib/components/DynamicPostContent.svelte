@@ -1,5 +1,6 @@
 <script lang="ts">
 	import LinkCard from './LinkCard.svelte'
+	import Slideshow from './Slideshow.svelte'
 
 	let { post }: { post: any } = $props()
 
@@ -127,19 +128,40 @@
 		</div>
 	{/if}
 
-	{#if post.attachments && Array.isArray(post.attachments) && post.attachments.length > 0}
-		<div class="post-attachments">
-			<h3>Attachments</h3>
-			<div class="attachments-grid">
-				{#each post.attachments as attachment}
-					<div class="attachment-item">
-						<img src={attachment.url} alt={attachment.caption || 'Attachment'} loading="lazy" />
-						{#if attachment.caption}
-							<p class="attachment-caption">{attachment.caption}</p>
-						{/if}
-					</div>
-				{/each}
+	{#if post.album && post.album.photos && post.album.photos.length > 0}
+		<!-- Album slideshow -->
+		<div class="post-album">
+			<div class="album-header">
+				<h3>{post.album.title}</h3>
+				{#if post.album.description}
+					<p class="album-description">{post.album.description}</p>
+				{/if}
 			</div>
+			<Slideshow 
+				items={post.album.photos.map(photo => ({
+					url: photo.url,
+					thumbnailUrl: photo.thumbnailUrl,
+					caption: photo.caption,
+					alt: photo.caption || post.album.title
+				}))}
+				alt={post.album.title}
+				aspectRatio="4/3"
+			/>
+		</div>
+	{:else if post.attachments && Array.isArray(post.attachments) && post.attachments.length > 0}
+		<!-- Regular attachments -->
+		<div class="post-attachments">
+			<h3>Photos</h3>
+			<Slideshow 
+				items={post.attachments.map(attachment => ({
+					url: attachment.url,
+					thumbnailUrl: attachment.thumbnailUrl,
+					caption: attachment.caption,
+					alt: attachment.caption || 'Photo'
+				}))}
+				alt="Post photos"
+				aspectRatio="4/3"
+			/>
 		</div>
 	{/if}
 
@@ -228,6 +250,7 @@
 		max-width: 600px;
 	}
 
+	.post-album,
 	.post-attachments {
 		margin-bottom: $unit-4x;
 
@@ -237,26 +260,20 @@
 			margin: 0 0 $unit-2x;
 			color: $grey-20;
 		}
+	}
 
-		.attachments-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-			gap: $unit-2x;
+	.album-header {
+		margin-bottom: $unit-3x;
+
+		h3 {
+			margin-bottom: $unit;
 		}
 
-		.attachment-item {
-			img {
-				width: 100%;
-				height: auto;
-				border-radius: $unit;
-			}
-
-			.attachment-caption {
-				margin: $unit 0 0;
-				font-size: 0.875rem;
-				color: $grey-40;
-				font-style: italic;
-			}
+		.album-description {
+			margin: 0;
+			font-size: 0.9rem;
+			color: $grey-40;
+			line-height: 1.5;
 		}
 	}
 

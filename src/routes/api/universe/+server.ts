@@ -25,6 +25,7 @@ export interface UniverseItem {
 	date?: string
 	photosCount?: number
 	coverPhoto?: any
+	photos?: any[]
 }
 
 // GET /api/universe - Get mixed feed of published posts and albums
@@ -74,13 +75,15 @@ export const GET: RequestHandler = async (event) => {
 					select: { photos: true }
 				},
 				photos: {
-					take: 1,
+					take: 6, // Fetch enough for 5 thumbnails + 1 background
 					orderBy: { displayOrder: 'asc' },
 					select: {
 						id: true,
 						url: true,
 						thumbnailUrl: true,
-						caption: true
+						caption: true,
+						width: true,
+						height: true
 					}
 				}
 			},
@@ -114,7 +117,8 @@ export const GET: RequestHandler = async (event) => {
 			location: album.location || undefined,
 			date: album.date?.toISOString(),
 			photosCount: album._count.photos,
-			coverPhoto: album.photos[0] || null,
+			coverPhoto: album.photos[0] || null, // Keep for backward compatibility
+			photos: album.photos, // Add all photos for slideshow
 			publishedAt: album.createdAt.toISOString(), // Albums use createdAt as publishedAt
 			createdAt: album.createdAt.toISOString()
 		}))

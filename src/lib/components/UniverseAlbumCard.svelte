@@ -1,5 +1,6 @@
 <script lang="ts">
 	import UniverseIcon from '$icons/universe.svg'
+	import Slideshow from './Slideshow.svelte'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
 	let { album }: { album: UniverseItem } = $props()
@@ -12,6 +13,25 @@
 			year: 'numeric'
 		})
 	}
+
+	// Convert photos to slideshow items
+	const slideshowItems = $derived(
+		album.photos && album.photos.length > 0 
+			? album.photos.map(photo => ({
+				url: photo.url,
+				thumbnailUrl: photo.thumbnailUrl,
+				caption: photo.caption,
+				alt: photo.caption || album.title
+			}))
+			: album.coverPhoto 
+				? [{
+					url: album.coverPhoto.url,
+					thumbnailUrl: album.coverPhoto.thumbnailUrl,
+					caption: album.coverPhoto.caption,
+					alt: album.coverPhoto.caption || album.title
+				}]
+				: []
+	)
 </script>
 
 <article class="universe-album-card">
@@ -23,16 +43,17 @@
 			</time>
 		</div>
 
-		{#if album.coverPhoto}
-			<div class="album-cover">
-				<img
-					src={album.coverPhoto.thumbnailUrl || album.coverPhoto.url}
-					alt={album.coverPhoto.caption || album.title}
-					loading="lazy"
+		{#if slideshowItems.length > 0}
+			<div class="album-slideshow">
+				<Slideshow 
+					items={slideshowItems}
+					alt={album.title}
+					aspectRatio="3/2"
+					showThumbnails={slideshowItems.length > 1}
+					maxThumbnails={6}
+					totalCount={album.photosCount}
+					showMoreLink="/photos/{album.slug}"
 				/>
-				<div class="photo-count-overlay">
-					{album.photosCount || 0} photo{(album.photosCount || 0) !== 1 ? 's' : ''}
-				</div>
 			</div>
 		{/if}
 
@@ -108,32 +129,10 @@
 		font-weight: 400;
 	}
 
-	.album-cover {
+	.album-slideshow {
 		position: relative;
 		width: 100%;
-		height: 200px;
-		border-radius: $unit;
-		overflow: hidden;
 		margin-bottom: $unit-3x;
-		background: $grey-95;
-
-		img {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-		}
-
-		.photo-count-overlay {
-			position: absolute;
-			bottom: $unit;
-			right: $unit;
-			background: rgba(0, 0, 0, 0.8);
-			color: white;
-			padding: $unit-half $unit-2x;
-			border-radius: 50px;
-			font-size: 0.75rem;
-			font-weight: 500;
-		}
 	}
 
 	.album-info {

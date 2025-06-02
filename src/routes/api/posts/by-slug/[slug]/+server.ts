@@ -20,7 +20,18 @@ export const GET: RequestHandler = async (event) => {
 						id: true,
 						slug: true,
 						title: true,
-						description: true
+						description: true,
+						photos: {
+							orderBy: { displayOrder: 'asc' },
+							select: {
+								id: true,
+								url: true,
+								thumbnailUrl: true,
+								caption: true,
+								width: true,
+								height: true
+							}
+						}
 					}
 				},
 				photo: {
