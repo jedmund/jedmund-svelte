@@ -95,7 +95,7 @@
 
 	.modal {
 		background-color: white;
-		border-radius: 16px;
+		border-radius: $card-corner-radius;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		position: relative;
 		max-height: 90vh;
@@ -126,7 +126,7 @@
 	}
 
 	:global(.close-button) {
-		position: absolute;
+		position: absolute !important;
 		top: $unit-2x;
 		right: $unit-2x;
 		z-index: 1;

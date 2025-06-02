@@ -7,6 +7,7 @@
 	import Select from '$lib/components/admin/Select.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
+	import MediaUploadModal from '$lib/components/admin/MediaUploadModal.svelte'
 	import type { Media } from '@prisma/client'
 
 	let media = $state<Media[]>([])
@@ -41,6 +42,7 @@
 	// Modal states
 	let selectedMedia = $state<Media | null>(null)
 	let isDetailsModalOpen = $state(false)
+	let isUploadModalOpen = $state(false)
 
 	// Multiselect states
 	let selectedMediaIds = $state<Set<number>>(new Set())
@@ -143,6 +145,15 @@
 		if (index !== -1) {
 			media[index] = updatedMedia
 		}
+	}
+
+	function handleUploadComplete() {
+		// Reload media list after successful upload
+		loadMedia(currentPage)
+	}
+
+	function openUploadModal() {
+		isUploadModalOpen = true
 	}
 
 	// Multiselect functions
@@ -324,7 +335,7 @@
 				{viewMode === 'grid' ? '📋' : '🖼️'}
 				{viewMode === 'grid' ? 'List' : 'Grid'}
 			</Button>
-			<Button variant="primary" size="large" href="/admin/media/upload">Upload Media</Button>
+			<Button variant="primary" size="large" onclick={openUploadModal}>Upload Media</Button>
 		{/snippet}
 	</AdminHeader>
 
@@ -431,7 +442,7 @@
 		{:else if media.length === 0}
 			<div class="empty-state">
 				<p>No media files found.</p>
-				<a href="/admin/media/upload" class="btn btn-primary">Upload your first file</a>
+				<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
 			</div>
 		{:else if viewMode === 'grid'}
 			<div class="media-grid">
@@ -634,6 +645,13 @@
 	media={selectedMedia}
 	onClose={handleModalClose}
 	onUpdate={handleMediaUpdate}
+/>
+
+<!-- Media Upload Modal -->
+<MediaUploadModal
+	bind:isOpen={isUploadModalOpen}
+	onClose={() => isUploadModalOpen = false}
+	onUploadComplete={handleUploadComplete}
 />
 
 <style lang="scss">

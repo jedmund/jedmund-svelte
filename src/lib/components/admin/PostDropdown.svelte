@@ -19,7 +19,7 @@
 
 		if (type === 'essay') {
 			// Essays go straight to the full page
-			goto('/admin/universe/compose?type=essay')
+			goto('/admin/posts/new?type=essay')
 		} else if (type === 'post') {
 			// Posts open in modal
 			selectedType = 'post'

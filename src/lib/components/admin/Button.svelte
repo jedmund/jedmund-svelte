@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { HTMLButtonAttributes } from 'svelte/elements'
-	
+
 	interface Props extends HTMLButtonAttributes {
 		variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'text' | 'overlay'
 		size?: 'small' | 'medium' | 'large' | 'icon'
@@ -10,6 +10,7 @@
 		fullWidth?: boolean
 		loading?: boolean
 		active?: boolean
+		href?: string
 		class?: string
 	}
 
@@ -24,6 +25,7 @@
 		active = false,
 		disabled = false,
 		type = 'button',
+		href,
 		class: className = '',
 		children,
 		onclick,
@@ -33,10 +35,10 @@
 	// Compute button classes
 	const buttonClass = $derived(() => {
 		const classes = ['btn']
-		
+
 		// Variant
 		classes.push(`btn-${variant}`)
-		
+
 		// Size
 		if (!iconOnly) {
 			classes.push(`btn-${size}`)
@@ -44,16 +46,16 @@
 			classes.push('btn-icon')
 			classes.push(`btn-icon-${size}`)
 		}
-		
+
 		// States
 		if (active) classes.push('active')
 		if (loading) classes.push('loading')
 		if (fullWidth) classes.push('full-width')
 		if (!pill && !iconOnly) classes.push('btn-square')
-		
+
 		// Custom class
 		if (className) classes.push(className)
-		
+
 		return classes.join(' ')
 	})
 
@@ -63,58 +65,101 @@
 	const showSpinner = $derived(loading && !iconOnly)
 </script>
 
-<button
-	class={buttonClass()}
-	{type}
-	disabled={disabled || loading}
-	{onclick}
-	{...restProps}
->
-	{#if showSpinner}
-		<svg class="btn-spinner" width="16" height="16" viewBox="0 0 16 16">
-			<circle
-				cx="8"
-				cy="8"
-				r="6"
-				stroke="currentColor"
-				stroke-width="2"
-				fill="none"
-				stroke-dasharray="25"
-				stroke-dashoffset="25"
-				stroke-linecap="round"
-			>
-				<animateTransform
-					attributeName="transform"
-					type="rotate"
-					from="0 8 8"
-					to="360 8 8"
-					dur="1s"
-					repeatCount="indefinite"
-				/>
-			</circle>
-		</svg>
-	{/if}
-	
-	{#if hasIcon && iconPosition === 'left' && !iconOnly}
-		<span class="btn-icon-wrapper">
+{#if href}
+	<a {href} class={buttonClass()} class:disabled={disabled || loading} {...restProps}>
+		{#if showSpinner}
+			<svg class="btn-spinner" width="16" height="16" viewBox="0 0 16 16">
+				<circle
+					cx="8"
+					cy="8"
+					r="6"
+					stroke="currentColor"
+					stroke-width="2"
+					fill="none"
+					stroke-dasharray="25"
+					stroke-dashoffset="25"
+					stroke-linecap="round"
+				>
+					<animateTransform
+						attributeName="transform"
+						type="rotate"
+						from="0 8 8"
+						to="360 8 8"
+						dur="1s"
+						repeatCount="indefinite"
+					/>
+				</circle>
+			</svg>
+		{/if}
+
+		{#if hasIcon && iconPosition === 'left' && !iconOnly}
+			<span class="btn-icon-wrapper">
+				<slot name="icon" />
+			</span>
+		{/if}
+
+		{#if hasDefaultSlot && !iconOnly}
+			<span class="btn-label">
+				<slot />
+			</span>
+		{:else if iconOnly && hasIcon}
 			<slot name="icon" />
-		</span>
-	{/if}
-	
-	{#if hasDefaultSlot && !iconOnly}
-		<span class="btn-label">
-			<slot />
-		</span>
-	{:else if iconOnly && hasIcon}
-		<slot name="icon" />
-	{/if}
-	
-	{#if hasIcon && iconPosition === 'right' && !iconOnly}
-		<span class="btn-icon-wrapper">
+		{/if}
+
+		{#if hasIcon && iconPosition === 'right' && !iconOnly}
+			<span class="btn-icon-wrapper">
+				<slot name="icon" />
+			</span>
+		{/if}
+	</a>
+{:else}
+	<button class={buttonClass()} {type} disabled={disabled || loading} {onclick} {...restProps}>
+		{#if showSpinner}
+			<svg class="btn-spinner" width="16" height="16" viewBox="0 0 16 16">
+				<circle
+					cx="8"
+					cy="8"
+					r="6"
+					stroke="currentColor"
+					stroke-width="2"
+					fill="none"
+					stroke-dasharray="25"
+					stroke-dashoffset="25"
+					stroke-linecap="round"
+				>
+					<animateTransform
+						attributeName="transform"
+						type="rotate"
+						from="0 8 8"
+						to="360 8 8"
+						dur="1s"
+						repeatCount="indefinite"
+					/>
+				</circle>
+			</svg>
+		{/if}
+
+		{#if hasIcon && iconPosition === 'left' && !iconOnly}
+			<span class="btn-icon-wrapper">
+				<slot name="icon" />
+			</span>
+		{/if}
+
+		{#if hasDefaultSlot && !iconOnly}
+			<span class="btn-label">
+				<slot />
+			</span>
+		{:else if iconOnly && hasIcon}
 			<slot name="icon" />
-		</span>
-	{/if}
-</button>
+		{/if}
+
+		{#if hasIcon && iconPosition === 'right' && !iconOnly}
+			<span class="btn-icon-wrapper">
+				<slot name="icon" />
+			</span>
+		{/if}
+	</button>
+{/if}
 
 <style lang="scss">
 	@import '$styles/variables.scss';
@@ -132,10 +177,14 @@
 		outline: none;
 		position: relative;
 		white-space: nowrap;
+		text-decoration: none;
+		box-sizing: border-box;
 
-		&:disabled {
+		&:disabled,
+		&.disabled {
 			opacity: 0.5;
 			cursor: not-allowed;
+			pointer-events: none;
 		}
 
 		&.loading {
@@ -144,6 +193,12 @@
 
 		&.full-width {
 			width: 100%;
+		}
+
+		// Ensure consistent styling for both button and anchor elements
+		&:focus {
+			outline: 2px solid rgba(59, 130, 246, 0.5);
+			outline-offset: 2px;
 		}
 	}
 
@@ -186,7 +241,7 @@
 	.btn-icon {
 		padding: 0;
 		border-radius: 8px;
-		
+
 		&.btn-icon-small {
 			width: 28px;
 			height: 28px;
