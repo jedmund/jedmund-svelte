@@ -12,14 +12,16 @@ export interface Post {
 	content: string
 	excerpt?: string
 	images?: string[]
-	link?: {
-		url: string
-		title?: string
-		description?: string
-		image?: string
-		favicon?: string
-		siteName?: string
-	} | string
+	link?:
+		| {
+				url: string
+				title?: string
+				description?: string
+				image?: string
+				favicon?: string
+				siteName?: string
+		  }
+		| string
 }
 
 const postsDirectory = path.join(process.cwd(), 'src/lib/posts')

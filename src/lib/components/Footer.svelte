@@ -1,6 +1,6 @@
 <script lang="ts">
 	const currentYear = new Date().getFullYear()
-	
+
 	const socialLinks = [
 		{ name: 'Bluesky', url: 'https://bsky.app/profile/jedmund.com' },
 		{ name: 'Mastodon', url: 'https://fireplace.cafe/@jedmund' },

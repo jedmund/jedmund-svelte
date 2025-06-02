@@ -25,13 +25,13 @@
 		</time>
 	</header>
 
-	{#if post.type === 'image' && post.images}
+	{#if post.images && post.images.length > 0}
 		<div class="post-images">
 			<ImagePost images={post.images} alt={post.title || 'Post image'} />
 		</div>
 	{/if}
 
-	{#if post.type === 'link' && post.link}
+	{#if post.link}
 		<div class="post-link-preview">
 			<LinkCard link={post.link} />
 		</div>
@@ -51,24 +51,44 @@
 		max-width: 784px;
 		margin: 0 auto;
 
-		&.note {
+		// Post type styles for simplified post types
+		&.post {
 			.post-body {
-				font-size: 1.1rem;
+				font-size: 1.125rem;
 			}
 		}
-		
-		&.image {
-			.post-images {
-				margin-bottom: $unit-4x;
+
+		&.essay {
+			.post-body {
+				font-size: 1.125rem;
+				line-height: 1.5;
 			}
 		}
-		
-		&.link {
-			.post-link-preview {
-				margin-bottom: $unit-4x;
-				max-width: 600px;
+
+		// Legacy type support
+		&.note,
+		&.microblog {
+			.post-body {
+				font-size: 1.125rem;
 			}
 		}
+
+		&.blog {
+			.post-body {
+				font-size: 1.125rem;
+				line-height: 1.5;
+			}
+		}
+	}
+
+	// Content-specific styles
+	.post-images {
+		margin-bottom: $unit-4x;
+	}
+
+	.post-link-preview {
+		margin-bottom: $unit-4x;
+		max-width: 600px;
 	}
 
 	.post-header {
@@ -91,8 +111,8 @@
 	}
 
 	.post-body {
-		color: $grey-20;
-		line-height: 1.6;
+		color: $grey-10;
+		line-height: 1.5;
 
 		:global(h2) {
 			margin: $unit-4x 0 $unit-2x;

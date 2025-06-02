@@ -50,7 +50,7 @@
 		cursor: pointer;
 		border-radius: $image-corner-radius;
 		overflow: hidden;
-		
+
 		// Use mask as a fallback for better clipping
 		-webkit-mask-image: -webkit-radial-gradient(white, black);
 		mask-image: radial-gradient(white, black);

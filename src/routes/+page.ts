@@ -1,36 +1,34 @@
 import type { PageLoad } from './$types'
 import type { Album } from '$lib/types/lastfm'
+import type { Project } from '$lib/types/project'
 
 export const load: PageLoad = async ({ fetch }) => {
 	try {
-		// const [albums, steamGames, psnGames] = await Promise.all([
-		const [albums] = await Promise.all([
-			fetchRecentAlbums(fetch)
-			// fetchRecentSteamGames(fetch),
-			// fetchRecentPSNGames(fetch)
-		])
+		// Fetch albums first
+		let albums: Album[] = []
+		try {
+			albums = await fetchRecentAlbums(fetch)
+		} catch (albumError) {
+			console.error('Error fetching albums:', albumError)
+		}
 
-		// const response = await fetch('/api/giantbomb', {
-		// 	method: 'POST',
-		// 	body: JSON.stringify({ games: psnGames }),
-		// 	headers: {
-		// 		'Content-Type': 'application/json'
-		// 	}
-		// })
+		// Fetch projects
+		let projectsData = { projects: [] as Project[], pagination: null }
+		try {
+			projectsData = await fetchProjects(fetch)
+		} catch (projectError) {
+			console.error('Error fetching projects:', projectError)
+		}
 
-		// const games = await response.json()
 		return {
-			albums
-			// games: games,
-			// steamGames: steamGames,
-			// psnGames: psnGames
+			albums,
+			projects: projectsData.projects || []
 		}
 	} catch (err) {
-		console.error('Error fetching data:', err)
+		console.error('Error in load function:', err)
 		return {
 			albums: [],
-			games: [],
-			error: err instanceof Error ? err.message : 'An unknown error occurred'
+			projects: []
 		}
 	}
 }
@@ -54,6 +52,18 @@ async function fetchRecentPSNGames(fetch: typeof window.fetch): Promise<Serializ
 	const response = await fetch('/api/psn')
 	if (!response.ok) {
 		throw new Error(`Failed to fetch recent game: ${response.status}`)
+	}
+	return await response.json()
+}
+
+async function fetchProjects(
+	fetch: typeof window.fetch
+): Promise<{ projects: Project[]; pagination: any }> {
+	const response = await fetch(
+		'/api/projects?projectType=work&includeListOnly=true&includePasswordProtected=true'
+	)
+	if (!response.ok) {
+		throw new Error(`Failed to fetch projects: ${response.status}`)
 	}
 	return await response.json()
 }

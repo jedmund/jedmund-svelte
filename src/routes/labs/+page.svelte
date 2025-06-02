@@ -4,15 +4,28 @@
 
 	const { data }: { data: PageData } = $props()
 
-	const projects = $derived(data.projects)
+	const projects = $derived(data.projects || [])
+	const error = $derived(data.error)
 </script>
 
 <div class="labs-container">
-	<div class="projects-grid">
-		{#each projects as project}
-			<LabCard {project} />
-		{/each}
-	</div>
+	{#if error}
+		<div class="error-message">
+			<h2>Unable to load projects</h2>
+			<p>{error}</p>
+		</div>
+	{:else if projects.length === 0}
+		<div class="empty-message">
+			<h2>No projects yet</h2>
+			<p>Labs projects will appear here once published.</p>
+		</div>
+	{:else}
+		<div class="projects-grid">
+			{#each projects as project}
+				<LabCard {project} />
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -34,5 +47,28 @@
 		@include breakpoint('phone') {
 			gap: $unit-2x;
 		}
+	}
+
+	.error-message,
+	.empty-message {
+		text-align: center;
+		padding: $unit-6x $unit-3x;
+
+		h2 {
+			font-size: 1.5rem;
+			font-weight: 600;
+			margin: 0 0 $unit-2x;
+			color: $grey-10;
+		}
+
+		p {
+			margin: 0;
+			color: $grey-40;
+			line-height: 1.5;
+		}
+	}
+
+	.error-message h2 {
+		color: $red-60;
 	}
 </style>

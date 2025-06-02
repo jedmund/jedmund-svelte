@@ -34,6 +34,10 @@ npm run preview
 
 This is a SvelteKit personal portfolio site for @jedmund that integrates with multiple external APIs to display real-time data about music listening habits and gaming activity.
 
+We are using Svelte 5 in Runes mode, so make sure to only write solutions that will work with that newer syntax.
+
+Make sure to use the CSS variables that are defined across the various files in `src/assets/styles`. When making new colors or defining new variables, check that it doesn't exist first, then define it.
+
 ### Key Architecture Components
 
 **API Integration Layer** (`src/routes/api/`)

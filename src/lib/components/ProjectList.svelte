@@ -1,52 +1,12 @@
 <script lang="ts">
 	import ProjectItem from '$components/ProjectItem.svelte'
+	import type { Project } from '$lib/types/project'
 
-	import MaitsuLogo from '$illos/logo-maitsu.svg?component'
-	import SlackLogo from '$illos/logo-slack.svg?component'
-	import FigmaLogo from '$illos/logo-figma.svg?component'
-	import PinterestLogo from '$illos/logo-pinterest.svg?component'
-	import SVGHoverEffect from '$components/SVGHoverEffect.svelte'
-
-	interface Project {
-		SVGComponent: typeof SvelteComponent
-		backgroundColor: string
-		name: string
-		description: string
-		highlightColor: string
+	interface Props {
+		projects: Project[]
 	}
 
-	const projects: Project[] = [
-		{
-			SVGComponent: MaitsuLogo,
-			backgroundColor: '#FFF7EA',
-			name: 'Maitsu',
-			description: "Maitsu is a hobby journal that helps people make something new every week.",
-			highlightColor: '#F77754'
-		},
-		{
-			SVGComponent: SlackLogo,
-			backgroundColor: '#4a154b',
-			name: 'Slack',
-			description:
-				'At Slack, I helped redefine strategy for Workflows and other features in under the automation umbrella.',
-			highlightColor: '#611F69'
-		},
-		{
-			SVGComponent: FigmaLogo,
-			backgroundColor: '#2c2c2c',
-			name: 'Figma',
-			description: 'At Figma, I designed features and led R&D and strategy for the nascent prototyping team.',
-			highlightColor: '#0ACF83'
-		},
-		{
-			SVGComponent: PinterestLogo,
-			backgroundColor: '#f7f7f7',
-			name: 'Pinterest',
-			description:
-				'At Pinterest, I was the first product design hired, and touched almost every part of the product.',
-			highlightColor: '#CB1F27'
-		}
-	]
+	let { projects = [] }: Props = $props()
 </script>
 
 <section class="projects">
@@ -54,16 +14,32 @@
 		<li>
 			<div class="intro-card">
 				<p class="intro-text">
-					<span class="highlighted">@jedmund</span> is a software designer and strategist based out of San Francisco.
+					<span class="highlighted">@jedmund</span> is a software designer and strategist based out of
+					San Francisco.
 				</p>
 				<p class="intro-text">
-					In his 15 year career, he's focused his design practice on building tools that help people connect with technology—and their own creativity.
+					In his 15 year career, he's focused his design practice on building tools that help people
+					connect with technology—and their own creativity.
 				</p>
 			</div>
 		</li>
+		{#if projects.length === 0}
+			<li>
+				<div class="no-projects">No projects found</div>
+			</li>
+		{/if}
 		{#each projects as project, index}
 			<li>
-				<ProjectItem {...project} {index} />
+				<ProjectItem
+					logoUrl={project.logoUrl}
+					backgroundColor={project.backgroundColor || '#f7f7f7'}
+					name={project.title}
+					slug={project.slug}
+					description={project.description || ''}
+					highlightColor={project.highlightColor || '#333'}
+					status={project.status}
+					{index}
+				/>
 			</li>
 		{/each}
 	</ul>
@@ -74,7 +50,7 @@
 		display: flex;
 		justify-content: center;
 		width: 100%;
-		
+
 		ul {
 			display: flex;
 			flex-direction: column;
@@ -108,7 +84,13 @@
 		}
 
 		.highlighted {
-			color: #D0290D;
+			color: #d0290d;
 		}
+	}
+
+	.no-projects {
+		padding: $unit-3x;
+		text-align: center;
+		color: $grey-40;
 	}
 </style>

@@ -3,27 +3,38 @@
 	import SegmentedController from './SegmentedController.svelte'
 
 	let scrollY = $state(0)
-	let hasScrolled = $state(false)
-	let gradientOpacity = $derived(Math.min(scrollY / 40, 1))
+	// Smooth gradient opacity from 0 to 1 over the first 100px of scroll
+	let gradientOpacity = $derived(Math.min(scrollY / 100, 1))
+	// Padding transition happens more quickly
+	let paddingProgress = $derived(Math.min(scrollY / 50, 1))
 
 	$effect(() => {
-		const handleScroll = () => {
+		let ticking = false
+
+		const updateScroll = () => {
 			scrollY = window.scrollY
-			
-			// Add hysteresis to prevent flickering
-			if (!hasScrolled && scrollY > 30) {
-				hasScrolled = true
-			} else if (hasScrolled && scrollY < 20) {
-				hasScrolled = false
+			ticking = false
+		}
+
+		const handleScroll = () => {
+			if (!ticking) {
+				requestAnimationFrame(updateScroll)
+				ticking = true
 			}
 		}
 
-		window.addEventListener('scroll', handleScroll)
+		// Set initial value
+		scrollY = window.scrollY
+
+		window.addEventListener('scroll', handleScroll, { passive: true })
 		return () => window.removeEventListener('scroll', handleScroll)
 	})
 </script>
 
-<header class="site-header {hasScrolled ? 'scrolled' : ''}" style="--gradient-opacity: {gradientOpacity}">
+<header
+	class="site-header"
+	style="--gradient-opacity: {gradientOpacity}; --padding-progress: {paddingProgress}"
+>
 	<div class="header-content">
 		<a href="/about" class="header-link" aria-label="@jedmund">
 			<Avatar />
@@ -39,32 +50,33 @@
 		z-index: 100;
 		display: flex;
 		justify-content: center;
-		padding: $unit-5x 0;
-		transition:
-			padding 0.3s ease,
-			background 0.3s ease;
+		// Smooth padding transition based on scroll
+		padding: calc($unit-5x - ($unit-5x - $unit-2x) * var(--padding-progress)) 0;
 		pointer-events: none;
+		// Add a very subtle transition to smooth out any remaining jitter
+		transition: padding 0.1s ease-out;
 
-		&.scrolled {
-			padding: $unit-2x 0;
-
-			&::before {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				height: 120px;
-				background: linear-gradient(to bottom, rgba(0, 0, 0, calc(0.15 * var(--gradient-opacity))), transparent);
-				backdrop-filter: blur(calc(6px * var(--gradient-opacity)));
-				-webkit-backdrop-filter: blur(calc(6px * var(--gradient-opacity)));
-				mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);
-				-webkit-mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);
-				pointer-events: none;
-				z-index: -1;
-				opacity: var(--gradient-opacity);
-				transition: opacity 0.2s ease;
-			}
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 120px;
+			background: linear-gradient(
+				to bottom,
+				rgba(0, 0, 0, 0.15),
+				transparent
+			);
+			backdrop-filter: blur(6px);
+			-webkit-backdrop-filter: blur(6px);
+			mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);
+			-webkit-mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);
+			pointer-events: none;
+			z-index: -1;
+			opacity: var(--gradient-opacity);
+			// Add a very subtle transition to smooth out any remaining jitter
+			transition: opacity 0.1s ease-out;
 		}
 	}
 
