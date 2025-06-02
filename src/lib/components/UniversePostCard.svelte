@@ -100,8 +100,8 @@
 	.post-excerpt {
 		p {
 			margin: 0;
-			color: $grey-20;
-			font-size: 1rem;
+			color: $grey-10;
+			font-size: 1.125rem;
 			line-height: 1.5;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;

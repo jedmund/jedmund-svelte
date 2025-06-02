@@ -112,13 +112,13 @@
 		// Post type styles
 		&.post {
 			.post-body {
-				font-size: 1.05rem;
+				font-size: 1.125rem;
 			}
 		}
 
 		&.essay {
 			.post-body {
-				font-size: 1rem;
+				font-size: 1.125rem;
 				line-height: 1.7;
 			}
 		}
@@ -192,15 +192,15 @@
 
 		.album-description {
 			margin: 0;
-			font-size: 0.9rem;
-			color: $grey-40;
+			font-size: 1.125rem;
+			color: $grey-10;
 			line-height: 1.5;
 		}
 	}
 
 	.post-body {
-		color: $grey-20;
-		line-height: 1.6;
+		color: $grey-10;
+		line-height: 1.5;
 
 		:global(h1) {
 			margin: $unit-5x 0 $unit-3x;

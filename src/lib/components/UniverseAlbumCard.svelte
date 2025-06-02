@@ -44,7 +44,12 @@
 
 	<div class="album-info">
 		<h2 class="card-title">
-			<a href="/photos/{album.slug}" class="card-title-link" onclick={(e) => e.preventDefault()} tabindex="-1">{album.title}</a>
+			<a
+				href="/photos/{album.slug}"
+				class="card-title-link"
+				onclick={(e) => e.preventDefault()}
+				tabindex="-1">{album.title}</a
+			>
 		</h2>
 
 		{#if album.description}
@@ -78,8 +83,8 @@
 
 	.album-description {
 		margin: 0;
-		color: $grey-20;
-		font-size: 1rem;
+		color: $grey-10;
+		font-size: 1.125rem;
 		line-height: 1.5;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
