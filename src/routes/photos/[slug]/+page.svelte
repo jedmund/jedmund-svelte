@@ -48,13 +48,6 @@
 	</div>
 {:else if album}
 	<div class="album-page">
-		<!-- Breadcrumb -->
-		<nav class="breadcrumb">
-			<a href="/photos">Photos</a>
-			<span class="separator">→</span>
-			<span class="current">{album.title}</span>
-		</nav>
-
 		<!-- Album Card -->
 		<div class="album-card">
 			<h1 class="album-title">{album.title}</h1>
@@ -136,41 +129,20 @@
 		}
 	}
 
-	.breadcrumb {
-		margin-bottom: $unit-4x;
-		font-size: 0.875rem;
-		color: $grey-40;
-
-		a {
-			color: $grey-40;
-			text-decoration: none;
-			transition: color 0.2s ease;
-
-			&:hover {
-				color: $grey-20;
-			}
-		}
-
-		.separator {
-			margin: 0 $unit;
-		}
-
-		.current {
-			color: $grey-20;
-		}
-	}
-
 	.album-card {
 		background: $grey-100;
 		border: 1px solid $grey-90;
 		border-radius: $card-corner-radius;
 		padding: $unit-6x;
-		margin-bottom: $unit-6x;
+		margin-bottom: $unit-3x;
 		text-align: center;
+
+		@include breakpoint('tablet') {
+			margin-bottom: $unit-2x;
+		}
 
 		@include breakpoint('phone') {
 			padding: $unit-4x $unit-3x;
-			margin-bottom: $unit-4x;
 		}
 	}
 

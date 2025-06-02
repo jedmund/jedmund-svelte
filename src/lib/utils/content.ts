@@ -214,9 +214,12 @@ function renderTiptapContent(doc: any): string {
 
 	// Helper to escape HTML
 	const escapeHtml = (str: string): string => {
-		const div = document.createElement('div')
-		div.textContent = str
-		return div.innerHTML
+		return str
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#039;')
 	}
 
 	return doc.content.map(renderNode).join('')
