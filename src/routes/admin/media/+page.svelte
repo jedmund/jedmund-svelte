@@ -320,7 +320,7 @@
 		{#snippet actions()}
 			<Button
 				variant="secondary"
-				size="large"
+				buttonSize="large"
 				onclick={toggleMultiSelectMode}
 				class={isMultiSelectMode ? 'active' : ''}
 			>
@@ -329,13 +329,13 @@
 			</Button>
 			<Button
 				variant="secondary"
-				size="large"
+				buttonSize="large"
 				onclick={() => (viewMode = viewMode === 'grid' ? 'list' : 'grid')}
 			>
 				{viewMode === 'grid' ? '📋' : '🖼️'}
 				{viewMode === 'grid' ? 'List' : 'Grid'}
 			</Button>
-			<Button variant="primary" size="large" onclick={openUploadModal}>Upload...</Button>
+			<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload...</Button>
 		{/snippet}
 	</AdminHeader>
 
@@ -348,14 +348,14 @@
 				<Select
 					bind:value={filterType}
 					options={typeFilterOptions}
-					size="small"
+					buttonSize="small"
 					variant="minimal"
 					onchange={handleFilterChange}
 				/>
 				<Select
 					bind:value={photographyFilter}
 					options={photographyFilterOptions}
-					size="small"
+					buttonSize="small"
 					variant="minimal"
 					onchange={handleFilterChange}
 				/>
@@ -366,7 +366,7 @@
 					bind:value={searchQuery}
 					onkeydown={(e) => e.key === 'Enter' && handleSearch()}
 					placeholder="Search files..."
-					size="small"
+					buttonSize="small"
 					fullWidth={false}
 					pill={true}
 					prefixIcon

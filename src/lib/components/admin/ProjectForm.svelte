@@ -10,6 +10,7 @@
 	import ProjectGalleryForm from './ProjectGalleryForm.svelte'
 	import ProjectStylingForm from './ProjectStylingForm.svelte'
 	import Button from './Button.svelte'
+	import StatusDropdown from './StatusDropdown.svelte'
 	import { projectSchema } from '$lib/schemas/project'
 	import type { Project, ProjectFormData } from '$lib/types/project'
 	import { defaultProjectFormData } from '$lib/types/project'
@@ -28,7 +29,6 @@
 	let successMessage = $state('')
 	let activeTab = $state('metadata')
 	let validationErrors = $state<Record<string, string>>({})
-	let showPublishMenu = $state(false)
 
 	// Form data
 	let formData = $state<ProjectFormData>({ ...defaultProjectFormData })
@@ -195,29 +195,7 @@
 	async function handleStatusChange(newStatus: string) {
 		formData.status = newStatus as any
 		await handleSave()
-		showPublishMenu = false
 	}
-
-	function togglePublishMenu() {
-		showPublishMenu = !showPublishMenu
-	}
-
-	// Close menu when clicking outside
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target as HTMLElement
-		if (!target.closest('.save-actions')) {
-			showPublishMenu = false
-		}
-	}
-
-	$effect(() => {
-		if (showPublishMenu) {
-			document.addEventListener('click', handleClickOutside)
-			return () => {
-				document.removeEventListener('click', handleClickOutside)
-			}
-		}
-	})
 </script>
 
 <AdminPage>
@@ -244,65 +222,24 @@
 		</div>
 		<div class="header-actions">
 			{#if !isLoading}
-				<div class="save-actions">
-					<Button variant="primary" onclick={handleSave} disabled={isSaving} class="save-button">
-						{isSaving ? 'Saving...' : 
-						 formData.status === 'published' ? 'Save' :
-						 formData.status === 'list-only' ? 'Save List-Only' :
-						 formData.status === 'password-protected' ? 'Save Protected' :
-						 'Save Draft'}
+				{#if formData.status === 'published'}
+					<Button variant="primary" buttonSize="large" onclick={handleSave} disabled={isSaving}>
+						{isSaving ? 'Saving...' : 'Save'}
 					</Button>
-					<Button
-						variant="ghost"
-						iconOnly
-						size="medium"
-						active={showPublishMenu}
-						onclick={togglePublishMenu}
+				{:else}
+					<StatusDropdown
+						currentStatus={formData.status}
+						onStatusChange={handleStatusChange}
 						disabled={isSaving}
-						class="chevron-button"
-					>
-						<svg
-							slot="icon"
-							width="12"
-							height="12"
-							viewBox="0 0 12 12"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M3 4.5L6 7.5L9 4.5"
-								stroke="currentColor"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</Button>
-					{#if showPublishMenu}
-						<div class="publish-menu">
-							{#if formData.status !== 'draft'}
-								<Button variant="ghost" onclick={() => handleStatusChange('draft')} class="menu-item" fullWidth>
-									Save as Draft
-								</Button>
-							{/if}
-							{#if formData.status !== 'published'}
-								<Button variant="ghost" onclick={() => handleStatusChange('published')} class="menu-item" fullWidth>
-									Publish
-								</Button>
-							{/if}
-							{#if formData.status !== 'list-only'}
-								<Button variant="ghost" onclick={() => handleStatusChange('list-only')} class="menu-item" fullWidth>
-									List Only
-								</Button>
-							{/if}
-							{#if formData.status !== 'password-protected'}
-								<Button variant="ghost" onclick={() => handleStatusChange('password-protected')} class="menu-item" fullWidth>
-									Password Protected
-								</Button>
-							{/if}
-						</div>
-					{/if}
-				</div>
+						isLoading={isSaving}
+						primaryAction={{ label: 'Publish', status: 'published' }}
+						dropdownActions={[
+							{ label: 'Save as Draft', status: 'draft' },
+							{ label: 'List Only', status: 'list-only', show: formData.status !== 'list-only' },
+							{ label: 'Password Protected', status: 'password-protected', show: formData.status !== 'password-protected' }
+						]}
+					/>
+				{/if}
 			{/if}
 		</div>
 	</header>
@@ -414,54 +351,7 @@
 		}
 	}
 
-	.save-actions {
-		position: relative;
-		display: flex;
-		gap: $unit-half;
-	}
 
-	/* Button-specific styles handled by Button component */
-
-	/* Custom button styles */
-	:global(.save-button) {
-		border-top-right-radius: 0;
-		border-bottom-right-radius: 0;
-		padding-right: $unit-2x;
-	}
-
-	:global(.chevron-button) {
-		border-top-left-radius: 0;
-		border-bottom-left-radius: 0;
-		border-left: 1px solid rgba(255, 255, 255, 0.2);
-
-		svg {
-			display: block;
-			transition: transform 0.2s ease;
-		}
-
-		&.active svg {
-			transform: rotate(180deg);
-		}
-	}
-
-	.publish-menu {
-		position: absolute;
-		top: 100%;
-		right: 0;
-		margin-top: $unit;
-		background: white;
-		border-radius: $unit;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-		overflow: hidden;
-		min-width: 120px;
-		z-index: 100;
-
-		/* Menu item styles handled by Button component */
-		:global(.menu-item) {
-			text-align: left;
-			justify-content: flex-start;
-		}
-	}
 
 	.tab-panels {
 		position: relative;

@@ -206,28 +206,54 @@
 		}
 	})
 
-	// Custom image paste handler
-	function handleImagePaste(view: any, event: ClipboardEvent) {
-		const item = event.clipboardData?.items[0]
+	// Custom paste handler for both images and text
+	function handlePaste(view: any, event: ClipboardEvent) {
+		const clipboardData = event.clipboardData
+		if (!clipboardData) return false
 
-		if (item?.type.indexOf('image') !== 0) {
-			return false
+		// Check for images first
+		const imageItem = Array.from(clipboardData.items).find(item => item.type.indexOf('image') === 0)
+		if (imageItem) {
+			const file = imageItem.getAsFile()
+			if (!file) return false
+
+			// Check file size (2MB max)
+			const filesize = file.size / 1024 / 1024
+			if (filesize > 2) {
+				alert(`Image too large! File size: ${filesize.toFixed(2)} MB (max 2MB)`)
+				return true
+			}
+
+			// Upload to our media API
+			uploadImage(file)
+			return true // Prevent default paste behavior
 		}
 
-		const file = item.getAsFile()
-		if (!file) return false
-
-		// Check file size (2MB max)
-		const filesize = file.size / 1024 / 1024
-		if (filesize > 2) {
-			alert(`Image too large! File size: ${filesize.toFixed(2)} MB (max 2MB)`)
-			return true
+		// Handle text paste - strip HTML formatting
+		const htmlData = clipboardData.getData('text/html')
+		const plainText = clipboardData.getData('text/plain')
+		
+		if (htmlData && plainText) {
+			// If we have both HTML and plain text, use plain text to strip formatting
+			event.preventDefault()
+			
+			// Use editor commands to insert text so all callbacks are triggered
+			const editorInstance = (view as any).editor
+			if (editorInstance) {
+				editorInstance.chain().focus().insertContent(plainText).run()
+			} else {
+				// Fallback to manual transaction
+				const { state, dispatch } = view
+				const { selection } = state
+				const transaction = state.tr.insertText(plainText, selection.from, selection.to)
+				dispatch(transaction)
+			}
+			
+			return true // Prevent default paste behavior
 		}
 
-		// Upload to our media API
-		uploadImage(file)
-
-		return true // Prevent default paste behavior
+		// Let default handling take care of plain text only
+		return false
 	}
 
 	async function uploadImage(file: File) {
@@ -321,9 +347,10 @@
 					attributes: {
 						class: 'prose prose-sm max-w-none focus:outline-none'
 					},
-					handlePaste: handleImagePaste
+					handlePaste: handlePaste
 				}
-			}
+			},
+			placeholder
 		)
 
 		// Add placeholder

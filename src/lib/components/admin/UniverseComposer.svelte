@@ -17,6 +17,7 @@
 	export let initialMode: 'modal' | 'page' = 'modal'
 	export let initialPostType: 'post' | 'essay' = 'post'
 	export let initialContent: JSONContent | undefined = undefined
+	export let closeOnSave = true
 
 	type PostType = 'post' | 'essay'
 	type ComposerMode = 'modal' | 'page'
@@ -67,8 +68,7 @@
 	}
 
 	function resetComposer() {
-		postType = 'post'
-		mode = 'modal'
+		postType = initialPostType
 		content = {
 			type: 'doc',
 			content: [{ type: 'paragraph' }]
@@ -248,7 +248,9 @@
 
 			if (response.ok) {
 				resetComposer()
-				isOpen = false
+				if (closeOnSave) {
+					isOpen = false
+				}
 				dispatch('saved')
 				if (postType === 'essay') {
 					goto('/admin/posts')
@@ -372,7 +374,7 @@
 						<Button
 							variant="ghost"
 							iconOnly
-							size="icon"
+							buttonSize="icon"
 							onclick={toggleLinkFields}
 							active={showLinkFields}
 							title="Add link"
@@ -403,7 +405,7 @@
 						<Button
 							variant="ghost"
 							iconOnly
-							size="icon"
+							buttonSize="icon"
 							onclick={handlePhotoUpload}
 							title="Add image"
 							class="tool-button"
@@ -432,7 +434,7 @@
 						<Button
 							variant="ghost"
 							iconOnly
-							size="icon"
+							buttonSize="icon"
 							onclick={() => (isMediaLibraryOpen = true)}
 							title="Browse library"
 							class="tool-button"
@@ -525,7 +527,7 @@
 			<Button
 				variant="ghost"
 				iconOnly
-				size="icon"
+				buttonSize="icon"
 				onclick={switchToEssay}
 				title="Switch to essay mode"
 				class="floating-expand-button"
@@ -617,7 +619,7 @@
 						<Button
 							variant="ghost"
 							iconOnly
-							size="icon"
+							buttonSize="icon"
 							onclick={toggleLinkFields}
 							active={showLinkFields}
 							title="Add link"
@@ -648,7 +650,7 @@
 						<Button
 							variant="ghost"
 							iconOnly
-							size="icon"
+							buttonSize="icon"
 							onclick={handlePhotoUpload}
 							title="Add image"
 							class="tool-button"
@@ -677,7 +679,7 @@
 						<Button
 							variant="ghost"
 							iconOnly
-							size="icon"
+							buttonSize="icon"
 							onclick={() => (isMediaLibraryOpen = true)}
 							title="Browse library"
 							class="tool-button"

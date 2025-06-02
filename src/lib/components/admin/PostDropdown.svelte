@@ -55,7 +55,7 @@
 	<Button
 		bind:this={buttonRef}
 		variant="primary"
-		size="large"
+		buttonSize="large"
 		onclick={(e) => {
 			e.stopPropagation()
 			isOpen = !isOpen

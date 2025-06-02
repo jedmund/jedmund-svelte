@@ -20,9 +20,9 @@
   <div class="section">
     <h4>Sizes</h4>
     <div class="button-grid">
-      <Button variant="primary" size="small">Small</Button>
-      <Button variant="primary" size="medium">Medium</Button>
-      <Button variant="primary" size="large">Large</Button>
+      <Button variant="primary" buttonSize="small">Small</Button>
+      <Button variant="primary" buttonSize="medium">Medium</Button>
+      <Button variant="primary" buttonSize="large">Large</Button>
     </div>
   </div>
   

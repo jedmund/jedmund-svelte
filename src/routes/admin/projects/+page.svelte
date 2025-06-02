@@ -31,7 +31,6 @@
 	let error = $state('')
 	let showDeleteModal = $state(false)
 	let projectToDelete = $state<Project | null>(null)
-	let activeDropdown = $state<number | null>(null)
 	let statusCounts = $state<Record<string, number>>({})
 
 	// Filter state
@@ -53,7 +52,7 @@
 
 	onMount(async () => {
 		await loadProjects()
-		// Close dropdown when clicking outside
+		// Handle clicks outside dropdowns
 		document.addEventListener('click', handleOutsideClick)
 		return () => document.removeEventListener('click', handleOutsideClick)
 	})
@@ -61,7 +60,8 @@
 	function handleOutsideClick(event: MouseEvent) {
 		const target = event.target as HTMLElement
 		if (!target.closest('.dropdown-container')) {
-			activeDropdown = null
+			// Close any open dropdowns by telling all ProjectListItems
+			document.dispatchEvent(new CustomEvent('closeDropdowns'))
 		}
 	}
 
@@ -106,20 +106,11 @@
 		}
 	}
 
-	function handleToggleDropdown(event: CustomEvent<{ projectId: number; event: MouseEvent }>) {
-		event.detail.event.stopPropagation()
-		activeDropdown = activeDropdown === event.detail.projectId ? null : event.detail.projectId
-	}
-
-	function handleEdit(event: CustomEvent<{ project: Project; event: MouseEvent }>) {
-		event.detail.event.stopPropagation()
+	function handleEdit(event: CustomEvent<{ project: Project }>) {
 		goto(`/admin/projects/${event.detail.project.id}/edit`)
 	}
 
-	async function handleTogglePublish(event: CustomEvent<{ project: Project; event: MouseEvent }>) {
-		event.detail.event.stopPropagation()
-		activeDropdown = null
-
+	async function handleTogglePublish(event: CustomEvent<{ project: Project }>) {
 		const project = event.detail.project
 
 		try {
@@ -143,9 +134,7 @@
 		}
 	}
 
-	function handleDelete(event: CustomEvent<{ project: Project; event: MouseEvent }>) {
-		event.detail.event.stopPropagation()
-		activeDropdown = null
+	function handleDelete(event: CustomEvent<{ project: Project }>) {
 		projectToDelete = event.detail.project
 		showDeleteModal = true
 	}
@@ -205,7 +194,7 @@
 <AdminPage>
 	<AdminHeader title="Projects" slot="header">
 		{#snippet actions()}
-			<Button variant="primary" size="large" href="/admin/projects/new">New Project</Button>
+			<Button variant="primary" buttonSize="large" href="/admin/projects/new">New Project</Button>
 		{/snippet}
 	</AdminHeader>
 
@@ -253,8 +242,6 @@
 				{#each filteredProjects as project}
 					<ProjectListItem
 						{project}
-						isDropdownActive={activeDropdown === project.id}
-						ontoggleDropdown={handleToggleDropdown}
 						onedit={handleEdit}
 						ontogglePublish={handleTogglePublish}
 						ondelete={handleDelete}

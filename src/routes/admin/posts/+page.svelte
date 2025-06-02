@@ -162,6 +162,7 @@
 					isOpen={true}
 					initialMode="page"
 					initialPostType="post"
+					closeOnSave={false}
 					on:saved={handleComposerSaved}
 				/>
 			</div>

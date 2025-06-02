@@ -53,8 +53,9 @@
 		showLinkBubbleMenu = true,
 		showTableBubbleMenu = true,
 		onUpdate,
-		children
-	}: EdraProps = $props()
+		children,
+		placeholder = undefined
+	}: EdraProps & { placeholder?: string } = $props()
 
 	let element = $state<HTMLElement>()
 
@@ -90,7 +91,8 @@
 					editor = undefined
 					editor = props.editor
 				}
-			}
+			},
+			placeholder
 		)
 		return () => editor?.destroy()
 	})

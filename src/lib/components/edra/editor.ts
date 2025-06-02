@@ -29,7 +29,8 @@ export const initiateEditor = (
 	content?: Content,
 	limit?: number,
 	extensions?: Extensions,
-	options?: Partial<EditorOptions>
+	options?: Partial<EditorOptions>,
+	placeholder?: string
 ): Editor => {
 	const editor = new Editor({
 		element: element,
@@ -107,7 +108,7 @@ export const initiateEditor = (
 					if (node.type.name === 'heading') {
 						return 'What’s the title?'
 					} else if (node.type.name === 'paragraph') {
-						return 'Press / or write something ...'
+						return placeholder || 'Press / or write something ...'
 					}
 					return ''
 				}

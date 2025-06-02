@@ -235,9 +235,9 @@
 					>
 						<!-- Thumbnail -->
 						<div class="media-thumbnail">
-							{#if item.thumbnailUrl}
+							{#if item.mimeType?.startsWith('image/')}
 								<img 
-									src={item.thumbnailUrl} 
+									src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} 
 									alt={item.filename}
 									loading="lazy"
 								/>
@@ -317,7 +317,7 @@
 						class="load-more-button"
 					>
 						{#if loading}
-							<LoadingSpinner size="small" />
+							<LoadingSpinner buttonSize="small" />
 							Loading...
 						{:else}
 							Load More

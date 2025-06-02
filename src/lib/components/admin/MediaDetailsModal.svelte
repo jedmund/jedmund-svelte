@@ -246,7 +246,7 @@
 							<span class="label">URL:</span>
 							<div class="url-section">
 								<span class="url-text">{media.url}</span>
-								<Button variant="ghost" size="small" onclick={copyUrl}>
+								<Button variant="ghost" buttonSize="small" onclick={copyUrl}>
 									Copy
 								</Button>
 							</div>

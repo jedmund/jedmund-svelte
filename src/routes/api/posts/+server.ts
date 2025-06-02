@@ -67,6 +67,20 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		const data = await event.request.json()
 
+		// Generate slug if not provided
+		if (!data.slug) {
+			if (data.title) {
+				// Generate slug from title
+				data.slug = data.title
+					.toLowerCase()
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/^-+|-+$/g, '')
+			} else {
+				// Generate timestamp-based slug for posts without titles
+				data.slug = `post-${Date.now()}`
+			}
+		}
+
 		// Set publishedAt if status is published
 		if (data.status === 'published') {
 			data.publishedAt = new Date()

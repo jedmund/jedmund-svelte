@@ -188,22 +188,55 @@
 	</div>
 	<div class="project-content">
 		<p class="project-description">{@html highlightedDescription}</p>
-		
+
 		{#if isListOnly}
 			<div class="status-indicator list-only">
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-					<path d="M20.188 10.934c.388.472.612 1.057.612 1.686 0 .63-.224 1.214-.612 1.686a11.79 11.79 0 01-1.897 1.853c-1.481 1.163-3.346 2.24-5.291 2.24-1.945 0-3.81-1.077-5.291-2.24A11.79 11.79 0 016.812 14.32C6.224 13.648 6 13.264 6 12.62c0-.63.224-1.214.612-1.686A11.79 11.79 0 018.709 9.08c1.481-1.163 3.346-2.24 5.291-2.24 1.945 0 3.81 1.077 5.291 2.24a11.79 11.79 0 011.897 1.853z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					<path d="M2 2l20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+					<path
+						d="M20.188 10.934c.388.472.612 1.057.612 1.686 0 .63-.224 1.214-.612 1.686a11.79 11.79 0 01-1.897 1.853c-1.481 1.163-3.346 2.24-5.291 2.24-1.945 0-3.81-1.077-5.291-2.24A11.79 11.79 0 016.812 14.32C6.224 13.648 6 13.264 6 12.62c0-.63.224-1.214.612-1.686A11.79 11.79 0 018.709 9.08c1.481-1.163 3.346-2.24 5.291-2.24 1.945 0 3.81 1.077 5.291 2.24a11.79 11.79 0 011.897 1.853z"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+					<path d="M2 2l20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
 				</svg>
 				<span>Coming Soon</span>
 			</div>
 		{:else if isPasswordProtected}
 			<div class="status-indicator password-protected">
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-					<circle cx="12" cy="16" r="1" fill="currentColor"/>
-					<path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<rect
+						x="3"
+						y="11"
+						width="18"
+						height="11"
+						rx="2"
+						ry="2"
+						stroke="currentColor"
+						stroke-width="2"
+					/>
+					<circle cx="12" cy="16" r="1" fill="currentColor" />
+					<path
+						d="M7 11V7a5 5 0 0 1 10 0v4"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
 				</svg>
 				<span>Password Required</span>
 			</div>
@@ -248,7 +281,7 @@
 		}
 
 		&.odd {
-			flex-direction: row-reverse;
+			// flex-direction: row-reverse;
 		}
 	}
 

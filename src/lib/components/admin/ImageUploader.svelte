@@ -283,11 +283,11 @@
 						<!-- Overlay with actions -->
 						<div class="preview-overlay">
 							<div class="preview-actions">
-								<Button variant="overlay" size="small" onclick={handleBrowseClick}>
+								<Button variant="overlay" buttonSize="small" onclick={handleBrowseClick}>
 									<RefreshIcon slot="icon" width="12" height="12" />
 								</Button>
 								
-								<Button variant="overlay" size="small" onclick={handleRemove}>
+								<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
 									<svg slot="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 										<polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 										<path d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -306,7 +306,7 @@
 									label="Alt Text"
 									bind:value={altTextValue}
 									placeholder="Describe this image for screen readers"
-									size="small"
+									buttonSize="small"
 									onblur={handleAltTextChange}
 								/>
 								
@@ -316,7 +316,7 @@
 									bind:value={descriptionValue}
 									placeholder="Additional description or caption"
 									rows={2}
-									size="small"
+									buttonSize="small"
 									onblur={handleDescriptionChange}
 								/>
 							</div>
@@ -338,12 +338,12 @@
 					<!-- Overlay with actions -->
 					<div class="preview-overlay">
 						<div class="preview-actions">
-							<Button variant="overlay" size="small" onclick={handleBrowseClick}>
+							<Button variant="overlay" buttonSize="small" onclick={handleBrowseClick}>
 								<RefreshIcon slot="icon" width="16" height="16" />
 								Replace
 							</Button>
 							
-							<Button variant="overlay" size="small" onclick={handleRemove}>
+							<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
 								<svg slot="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 									<polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 									<path d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

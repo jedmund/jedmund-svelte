@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { createEventDispatcher } from 'svelte'
+	import { createEventDispatcher, onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
 
 	interface Project {
@@ -21,17 +21,17 @@
 
 	interface Props {
 		project: Project
-		isDropdownActive?: boolean
 	}
 
-	let { project, isDropdownActive = false }: Props = $props()
+	let { project }: Props = $props()
 
 	const dispatch = createEventDispatcher<{
-		toggleDropdown: { projectId: number; event: MouseEvent }
-		edit: { project: Project; event: MouseEvent }
-		togglePublish: { project: Project; event: MouseEvent }
-		delete: { project: Project; event: MouseEvent }
+		edit: { project: Project }
+		togglePublish: { project: Project }
+		delete: { project: Project }
 	}>()
+
+	let isDropdownOpen = $state(false)
 
 	function formatRelativeTime(dateString: string): string {
 		const date = new Date(dateString)
@@ -61,20 +61,31 @@
 	}
 
 	function handleToggleDropdown(event: MouseEvent) {
-		dispatch('toggleDropdown', { projectId: project.id, event })
+		event.stopPropagation()
+		isDropdownOpen = !isDropdownOpen
 	}
 
-	function handleEdit(event: MouseEvent) {
-		dispatch('edit', { project, event })
+	function handleEdit() {
+		dispatch('edit', { project })
 	}
 
-	function handleTogglePublish(event: MouseEvent) {
-		dispatch('togglePublish', { project, event })
+	function handleTogglePublish() {
+		dispatch('togglePublish', { project })
 	}
 
-	function handleDelete(event: MouseEvent) {
-		dispatch('delete', { project, event })
+	function handleDelete() {
+		dispatch('delete', { project })
 	}
+
+	onMount(() => {
+		function handleCloseDropdowns() {
+			isDropdownOpen = false
+		}
+		
+		document.addEventListener('closeDropdowns', handleCloseDropdowns)
+		return () => document.removeEventListener('closeDropdowns', handleCloseDropdowns)
+	})
+
 </script>
 
 <div
@@ -104,7 +115,11 @@
 	</div>
 
 	<div class="dropdown-container">
-		<button class="action-button" onclick={handleToggleDropdown} aria-label="Project actions">
+		<button 
+			class="action-button" 
+			onclick={handleToggleDropdown} 
+			aria-label="Project actions"
+		>
 			<svg
 				width="20"
 				height="20"
@@ -118,14 +133,14 @@
 			</svg>
 		</button>
 
-		{#if isDropdownActive}
+		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" onclick={handleEdit}> Edit project </button>
+				<button class="dropdown-item" onclick={handleEdit}>Edit project</button>
 				<button class="dropdown-item" onclick={handleTogglePublish}>
 					{project.status === 'published' ? 'Unpublish' : 'Publish'} project
 				</button>
 				<div class="dropdown-divider"></div>
-				<button class="dropdown-item delete" onclick={handleDelete}> Delete project </button>
+				<button class="dropdown-item danger" onclick={handleDelete}>Delete project</button>
 			</div>
 		{/if}
 	</div>
@@ -240,7 +255,7 @@
 			background-color: $grey-95;
 		}
 
-		&.delete {
+		&.danger {
 			color: $red-60;
 		}
 	}
@@ -250,4 +265,5 @@
 		background-color: $grey-90;
 		margin: $unit-half 0;
 	}
+
 </style>

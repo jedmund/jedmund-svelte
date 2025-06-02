@@ -16,8 +16,8 @@
 
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
-		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
 		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
+		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' }
 	]
 
@@ -28,9 +28,9 @@
 	const activeIndex = $derived(
 		currentPath === '/'
 			? 0
-			: currentPath.startsWith('/photos')
+			: currentPath.startsWith('/labs')
 				? 1
-				: currentPath.startsWith('/labs')
+				: currentPath.startsWith('/photos')
 					? 2
 					: currentPath.startsWith('/universe')
 						? 3

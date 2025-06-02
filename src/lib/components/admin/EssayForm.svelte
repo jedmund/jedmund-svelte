@@ -204,7 +204,7 @@
 				<Button
 					variant="primary"
 					iconOnly
-					size="medium"
+					buttonSize="medium"
 					active={showPublishMenu}
 					onclick={togglePublishMenu}
 					disabled={isSaving}
@@ -295,7 +295,7 @@
 										placeholder="Add tags..."
 										wrapperClass="tag-input"
 									/>
-									<Button variant="secondary" size="small" type="button" onclick={addTag}>
+									<Button variant="secondary" buttonSize="small" type="button" onclick={addTag}>
 										Add
 									</Button>
 								</div>
@@ -307,7 +307,7 @@
 												<Button
 													variant="ghost"
 													iconOnly
-													size="small"
+													buttonSize="small"
 													onclick={() => removeTag(tag)}
 													aria-label="Remove {tag}"
 												>

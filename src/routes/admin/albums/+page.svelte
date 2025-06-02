@@ -206,7 +206,7 @@
 <AdminPage>
 	<AdminHeader title="Albums" slot="header">
 		{#snippet actions()}
-			<Button variant="primary" size="large" onclick={handleNewAlbum}>New Album</Button>
+			<Button variant="primary" buttonSize="large" onclick={handleNewAlbum}>New Album</Button>
 		{/snippet}
 	</AdminHeader>
 
@@ -219,7 +219,7 @@
 				<Select
 					bind:value={photographyFilter}
 					options={filterOptions}
-					size="small"
+					buttonSize="small"
 					variant="minimal"
 					onchange={handleFilterChange}
 				/>

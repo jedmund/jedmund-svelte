@@ -6,6 +6,9 @@
 	import Editor from '$lib/components/admin/Editor.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import MetadataPopover from '$lib/components/admin/MetadataPopover.svelte'
+	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import Button from '$lib/components/admin/Button.svelte'
+	import SaveActionsGroup from '$lib/components/admin/SaveActionsGroup.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
 	let post = $state<any>(null)
@@ -22,9 +25,8 @@
 	let tags = $state<string[]>([])
 	let tagInput = $state('')
 	let showMetadata = $state(false)
-	let isPublishDropdownOpen = $state(false)
-	let publishButtonRef: HTMLButtonElement
 	let metadataButtonRef: HTMLButtonElement
+	let showDeleteConfirmation = $state(false)
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -142,9 +144,12 @@
 		}
 	}
 
-	async function handleDelete() {
-		if (!confirm('Are you sure you want to delete this post?')) return
+	function openDeleteConfirmation() {
+		showMetadata = false
+		showDeleteConfirmation = true
+	}
 
+	async function handleDelete() {
 		const auth = localStorage.getItem('admin_auth')
 		if (!auth) {
 			goto('/admin/login')
@@ -158,6 +163,7 @@
 			})
 
 			if (response.ok) {
+				showDeleteConfirmation = false
 				goto('/admin/posts')
 			}
 		} catch (error) {
@@ -165,11 +171,6 @@
 		}
 	}
 
-	function handlePublishDropdown(event: MouseEvent) {
-		if (!publishButtonRef?.contains(event.target as Node)) {
-			isPublishDropdownOpen = false
-		}
-	}
 
 	function handleMetadataPopover(event: MouseEvent) {
 		const target = event.target as Node
@@ -183,12 +184,6 @@
 		showMetadata = false
 	}
 
-	$effect(() => {
-		if (isPublishDropdownOpen) {
-			document.addEventListener('click', handlePublishDropdown)
-			return () => document.removeEventListener('click', handlePublishDropdown)
-		}
-	})
 
 	$effect(() => {
 		if (showMetadata) {
@@ -244,48 +239,17 @@
 							bind:tagInput
 							onAddTag={addTag}
 							onRemoveTag={removeTag}
-							onDelete={handleDelete}
+							onDelete={openDeleteConfirmation}
 						/>
 					{/if}
 				</div>
-				{#if status === 'draft'}
-					<div class="publish-dropdown">
-						<button
-							bind:this={publishButtonRef}
-							class="btn btn-primary"
-							onclick={(e) => {
-								e.stopPropagation()
-								isPublishDropdownOpen = !isPublishDropdownOpen
-							}}
-							disabled={saving}
-						>
-							{saving ? 'Saving...' : 'Publish'}
-							<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-								<path
-									d="M3 4.5L6 7.5L9 4.5"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>
-						</button>
-						{#if isPublishDropdownOpen}
-							<div class="dropdown-menu">
-								<button class="dropdown-item" onclick={() => handleSave('published')}>
-									<span>Publish now</span>
-								</button>
-								<button class="dropdown-item" onclick={() => handleSave('draft')}>
-									<span>Keep as draft</span>
-								</button>
-							</div>
-						{/if}
-					</div>
-				{:else}
-					<button class="btn btn-primary" onclick={() => handleSave()} disabled={saving}>
-						{saving ? 'Saving...' : 'Save Changes'}
-					</button>
-				{/if}
+				<SaveActionsGroup
+					{status}
+					onSave={handleSave}
+					disabled={saving}
+					isLoading={saving}
+					canSave={true}
+				/>
 			</div>
 		{/if}
 	</header>
@@ -318,6 +282,15 @@
 		<div class="error">Post not found</div>
 	{/if}
 </AdminPage>
+
+<DeleteConfirmationModal
+	bind:isOpen={showDeleteConfirmation}
+	title="Delete Post?"
+	message="Are you sure you want to delete this post? This action cannot be undone."
+	confirmText="Delete Post"
+	onConfirm={handleDelete}
+	onCancel={() => (showDeleteConfirmation = false)}
+/>
 
 <style lang="scss">
 	@import '$styles/variables.scss';
@@ -399,9 +372,6 @@
 		}
 	}
 
-	.publish-dropdown {
-		position: relative;
-	}
 
 	.btn {
 		padding: $unit-2x $unit-3x;
@@ -417,15 +387,6 @@
 		&:disabled {
 			opacity: 0.6;
 			cursor: not-allowed;
-		}
-
-		&.btn-primary {
-			background-color: $grey-10;
-			color: white;
-
-			&:hover:not(:disabled) {
-				background-color: $grey-20;
-			}
 		}
 
 		&.btn-small {

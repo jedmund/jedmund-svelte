@@ -103,19 +103,19 @@
 			<h2>Input Sizes</h2>
 			<div class="input-group">
 				<Input
-					size="small"
+					buttonSize="small"
 					label="Small Input"
 					placeholder="Small size"
 				/>
 				
 				<Input
-					size="medium"
+					buttonSize="medium"
 					label="Medium Input"
 					placeholder="Medium size (default)"
 				/>
 				
 				<Input
-					size="large"
+					buttonSize="large"
 					label="Large Input"
 					placeholder="Large size"
 				/>

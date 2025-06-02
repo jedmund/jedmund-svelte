@@ -200,17 +200,17 @@
 				<div class="file-list-header">
 					<h3>Files to Upload</h3>
 					<div class="file-actions">
-						<Button variant="secondary" size="small" onclick={clearAll} disabled={isUploading}>
+						<Button variant="secondary" buttonSize="small" onclick={clearAll} disabled={isUploading}>
 							Clear All
 						</Button>
 						<Button 
 							variant="primary" 
-							size="small" 
+							buttonSize="small" 
 							onclick={uploadFiles} 
 							disabled={isUploading || files.length === 0}
 						>
 							{#if isUploading}
-								<LoadingSpinner size="small" />
+								<LoadingSpinner buttonSize="small" />
 								Uploading...
 							{:else}
 								Upload {files.length} File{files.length !== 1 ? 's' : ''}

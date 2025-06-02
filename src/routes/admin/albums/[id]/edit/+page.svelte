@@ -11,6 +11,7 @@
 	import MediaLibraryModal from '$lib/components/admin/MediaLibraryModal.svelte'
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import GalleryUploader from '$lib/components/admin/GalleryUploader.svelte'
+	import SaveActionsGroup from '$lib/components/admin/SaveActionsGroup.svelte'
 
 	// Form state
 	let album = $state<any>(null)
@@ -28,7 +29,7 @@
 	let isSaving = $state(false)
 	let error = $state('')
 	let isDeleteModalOpen = $state(false)
-	
+
 	// Photo management state
 	let isMediaLibraryOpen = $state(false)
 	let albumPhotos = $state<any[]>([])
@@ -37,7 +38,7 @@
 	let uploadProgress = $state<Record<string, number>>({})
 	let uploadErrors = $state<string[]>([])
 	let fileInput: HTMLInputElement
-	
+
 	// Media details modal state
 	let isMediaDetailsOpen = $state(false)
 	let selectedMedia = $state<any>(null)
@@ -72,7 +73,7 @@
 			}
 
 			album = await response.json()
-			
+
 			// Populate form fields
 			title = album.title || ''
 			slug = album.slug || ''
@@ -82,10 +83,9 @@
 			isPhotography = album.isPhotography || false
 			showInUniverse = album.showInUniverse || false
 			status = album.status || 'draft'
-			
+
 			// Populate photos
 			albumPhotos = album.photos || []
-
 		} catch (err) {
 			error = 'Failed to load album'
 			console.error('Failed to load album:', err)
@@ -129,7 +129,7 @@
 			const response = await fetch(`/api/albums/${album.id}`, {
 				method: 'PUT',
 				headers: {
-					'Authorization': `Basic ${auth}`,
+					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(albumData)
@@ -142,11 +142,10 @@
 
 			const updatedAlbum = await response.json()
 			album = updatedAlbum
-			
+
 			if (publishStatus) {
 				status = publishStatus
 			}
-
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to update album'
 			console.error('Failed to update album:', err)
@@ -174,7 +173,6 @@
 			}
 
 			goto('/admin/albums')
-
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to delete album'
 			console.error('Failed to delete album:', err)
@@ -188,7 +186,7 @@
 	// Photo management functions
 	async function handleAddPhotos(selectedMedia: any | any[]) {
 		const mediaArray = Array.isArray(selectedMedia) ? selectedMedia : [selectedMedia]
-		
+
 		try {
 			isManagingPhotos = true
 			const auth = localStorage.getItem('admin_auth')
@@ -202,7 +200,7 @@
 				const response = await fetch(`/api/albums/${album.id}/photos`, {
 					method: 'POST',
 					headers: {
-						'Authorization': `Basic ${auth}`,
+						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
@@ -218,12 +216,11 @@
 				const photo = await response.json()
 				albumPhotos = [...albumPhotos, photo]
 			}
-			
+
 			// Update album photo count
 			if (album._count) {
 				album._count.photos = albumPhotos.length
 			}
-
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to add photos'
 			console.error('Failed to add photos:', err)
@@ -248,7 +245,7 @@
 
 			const response = await fetch(`/api/photos/${photoId}`, {
 				method: 'DELETE',
-				headers: { 'Authorization': `Basic ${auth}` }
+				headers: { Authorization: `Basic ${auth}` }
 			})
 
 			if (!response.ok) {
@@ -256,13 +253,12 @@
 			}
 
 			// Remove from local state
-			albumPhotos = albumPhotos.filter(photo => photo.id !== photoId)
-			
+			albumPhotos = albumPhotos.filter((photo) => photo.id !== photoId)
+
 			// Update album photo count
 			if (album._count) {
 				album._count.photos = albumPhotos.length
 			}
-
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to remove photo'
 			console.error('Failed to remove photo:', err)
@@ -303,8 +299,8 @@
 
 	function handleMediaUpdate(updatedMedia: any) {
 		// Update the photo in the album photos list
-		const photoIndex = albumPhotos.findIndex(photo => 
-			(photo.mediaId || photo.id) === updatedMedia.id
+		const photoIndex = albumPhotos.findIndex(
+			(photo) => (photo.mediaId || photo.id) === updatedMedia.id
 		)
 		if (photoIndex !== -1) {
 			// Update the photo with new media information
@@ -317,7 +313,7 @@
 			}
 			albumPhotos = [...albumPhotos] // Trigger reactivity
 		}
-		
+
 		// Update selectedMedia for the modal
 		selectedMedia = updatedMedia
 	}
@@ -331,11 +327,11 @@
 			}
 
 			// Update display order for each photo
-			const updatePromises = reorderedPhotos.map((photo, index) => 
+			const updatePromises = reorderedPhotos.map((photo, index) =>
 				fetch(`/api/albums/${album.id}/photos`, {
 					method: 'PUT',
 					headers: {
-						'Authorization': `Basic ${auth}`,
+						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
@@ -346,10 +342,9 @@
 			)
 
 			await Promise.all(updatePromises)
-			
+
 			// Update local state
 			albumPhotos = reorderedPhotos
-			
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to reorder photos'
 			console.error('Failed to reorder photos:', err)
@@ -370,7 +365,7 @@
 				const response = await fetch(`/api/albums/${album.id}/photos`, {
 					method: 'POST',
 					headers: {
-						'Authorization': `Basic ${auth}`,
+						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
@@ -386,12 +381,11 @@
 				const photo = await response.json()
 				albumPhotos = [...albumPhotos, photo]
 			}
-			
+
 			// Update album photo count
 			if (album._count) {
 				album._count.photos = albumPhotos.length
 			}
-
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to add photos to album'
 			console.error('Failed to add photos to album:', err)
@@ -425,10 +419,13 @@
 		}
 
 		// Filter for image files
-		const imageFiles = files.filter(file => file.type.startsWith('image/'))
-		
+		const imageFiles = files.filter((file) => file.type.startsWith('image/'))
+
 		if (imageFiles.length !== files.length) {
-			uploadErrors = [...uploadErrors, `${files.length - imageFiles.length} non-image files were skipped`]
+			uploadErrors = [
+				...uploadErrors,
+				`${files.length - imageFiles.length} non-image files were skipped`
+			]
 		}
 
 		try {
@@ -438,7 +435,7 @@
 					// First upload the file to media library
 					const formData = new FormData()
 					formData.append('file', file)
-					
+
 					// If this is a photography album, mark the uploaded media as photography
 					if (isPhotography) {
 						formData.append('isPhotography', 'true')
@@ -447,7 +444,7 @@
 					const uploadResponse = await fetch('/api/media/upload', {
 						method: 'POST',
 						headers: {
-							'Authorization': `Basic ${auth}`
+							Authorization: `Basic ${auth}`
 						},
 						body: formData
 					})
@@ -465,7 +462,7 @@
 					const addResponse = await fetch(`/api/albums/${album.id}/photos`, {
 						method: 'POST',
 						headers: {
-							'Authorization': `Basic ${auth}`,
+							Authorization: `Basic ${auth}`,
 							'Content-Type': 'application/json'
 						},
 						body: JSON.stringify({
@@ -482,7 +479,6 @@
 					const photo = await addResponse.json()
 					albumPhotos = [...albumPhotos, photo]
 					uploadProgress = { ...uploadProgress, [file.name]: 100 }
-
 				} catch (err) {
 					uploadErrors = [...uploadErrors, `${file.name}: Network error`]
 				}
@@ -492,7 +488,6 @@
 			if (album._count) {
 				album._count.photos = albumPhotos.length
 			}
-
 		} finally {
 			isUploading = false
 			// Clear progress after a delay
@@ -517,6 +512,7 @@
 		}
 	})
 
+
 	const canSave = $derived(title.trim().length > 0 && slug.trim().length > 0)
 </script>
 
@@ -535,10 +531,14 @@
 						/>
 					</svg>
 				</button>
-				<h1>🖼️ Edit Album</h1>
 			</div>
 			<div class="header-actions">
-				<Button variant="ghost" onclick={() => isDeleteModalOpen = true} disabled={isSaving}>
+				<Button
+					variant="ghost"
+					buttonSize="large"
+					onclick={() => (isDeleteModalOpen = true)}
+					disabled={isSaving}
+				>
 					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
 						<path
 							d="M6 3V2C6 1.44772 6.44772 1 7 1H9C9.55228 1 10 1.44772 10 2V3M13 4H3M5 7V12M8 7V12M11 7V12M4 4L4.5 13C4.55228 13.5523 4.99772 14 5.5 14H10.5C11.0023 14 11.4477 13.5523 11.5 13L12 4H4Z"
@@ -550,14 +550,13 @@
 					</svg>
 					Delete
 				</Button>
-				{#if status === 'draft'}
-					<Button variant="secondary" onclick={() => handleSave('published')} disabled={!canSave || isSaving}>
-						{isSaving ? 'Publishing...' : 'Publish'}
-					</Button>
-				{/if}
-				<Button variant="primary" onclick={() => handleSave()} disabled={!canSave || isSaving}>
-					{isSaving ? 'Saving...' : 'Save Changes'}
-				</Button>
+				<SaveActionsGroup
+					{status}
+					onSave={handleSave}
+					disabled={isSaving}
+					isLoading={isSaving}
+					{canSave}
+				/>
 			</div>
 		{/if}
 	</header>
@@ -569,9 +568,7 @@
 	{:else if error && !album}
 		<div class="error-container">
 			<div class="error-message">{error}</div>
-			<Button variant="secondary" onclick={handleCancel}>
-				Back to Albums
-			</Button>
+			<Button variant="secondary" onclick={handleCancel}>Back to Albums</Button>
 		</div>
 	{:else if album}
 		<div class="album-form">
@@ -581,7 +578,7 @@
 
 			<div class="form-section">
 				<h2>Album Details</h2>
-				
+
 				<Input
 					label="Title"
 					bind:value={title}
@@ -644,7 +641,8 @@
 							<span class="toggle-slider"></span>
 							<div class="toggle-content">
 								<span class="toggle-title">Photography Album</span>
-								<span class="toggle-description">Show this album in the photography experience</span>
+								<span class="toggle-description">Show this album in the photography experience</span
+								>
 							</div>
 						</label>
 					</div>
@@ -675,30 +673,62 @@
 				<div class="section-header">
 					<h2>Photos ({albumPhotos.length})</h2>
 					<div class="photo-actions">
-						<Button 
-							variant="secondary" 
+						<Button
+							variant="secondary"
 							onclick={() => fileInput.click()}
 							disabled={isManagingPhotos || isUploading}
 						>
-							<svg slot="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M21 15V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V15M17 8L12 3M12 3L7 8M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<svg
+								slot="icon"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M21 15V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V15M17 8L12 3M12 3L7 8M12 3V15"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
 							</svg>
 							{isUploading ? 'Uploading...' : 'Upload from Computer'}
 						</Button>
-						<Button 
-							variant="secondary" 
-							onclick={() => isMediaLibraryOpen = true}
+						<Button
+							variant="secondary"
+							onclick={() => (isMediaLibraryOpen = true)}
 							disabled={isManagingPhotos || isUploading}
 						>
-							<svg slot="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M21 21L15 15L21 21ZM3 9C3 8.17157 3.67157 7.5 4.5 7.5H19.5C20.3284 7.5 21 8.17157 21 9V18C21 18.8284 20.3284 19.5 19.5 19.5H4.5C3.67157 19.5 3 18.8284 3 18V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-								<path d="M9 13.5L12 10.5L15 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<svg
+								slot="icon"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M21 21L15 15L21 21ZM3 9C3 8.17157 3.67157 7.5 4.5 7.5H19.5C20.3284 7.5 21 8.17157 21 9V18C21 18.8284 20.3284 19.5 19.5 19.5H4.5C3.67157 19.5 3 18.8284 3 18V9Z"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+								<path
+									d="M9 13.5L12 10.5L15 13.5"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
 							</svg>
 							Add from Library
 						</Button>
 					</div>
 				</div>
-				
+
 				<GalleryUploader
 					label="Album Photos"
 					bind:value={albumPhotos}
@@ -739,7 +769,7 @@
 	message="Are you sure you want to delete this album? This action cannot be undone."
 	confirmText="Delete Album"
 	onConfirm={handleDelete}
-	onCancel={() => isDeleteModalOpen = false}
+	onCancel={() => (isDeleteModalOpen = false)}
 />
 
 <!-- Media Library Modal -->
@@ -780,6 +810,7 @@
 		align-items: center;
 		gap: $unit-2x;
 	}
+
 
 	.btn-icon {
 		width: 40px;
@@ -849,7 +880,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			
+
 			h2 {
 				border-bottom: none;
 				padding-bottom: 0;

@@ -5,6 +5,8 @@
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Editor from '$lib/components/admin/Editor.svelte'
 	import MetadataPopover from '$lib/components/admin/MetadataPopover.svelte'
+	import Button from '$lib/components/admin/Button.svelte'
+	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
 	let loading = $state(false)
@@ -19,8 +21,6 @@
 	let tags = $state<string[]>([])
 	let tagInput = $state('')
 	let showMetadata = $state(false)
-	let isPublishDropdownOpen = $state(false)
-	let publishButtonRef: HTMLButtonElement
 	let metadataButtonRef: HTMLButtonElement
 
 	const postTypeConfig = {
@@ -36,7 +36,7 @@
 		if (type && ['post', 'essay'].includes(type)) {
 			postType = type as typeof postType
 		}
-		
+
 		// Generate initial slug based on title
 		generateSlug()
 	})
@@ -114,11 +114,6 @@
 		}
 	}
 
-	function handlePublishDropdown(event: MouseEvent) {
-		if (!publishButtonRef?.contains(event.target as Node)) {
-			isPublishDropdownOpen = false
-		}
-	}
 
 	function handleMetadataPopover(event: MouseEvent) {
 		const target = event.target as Node
@@ -132,12 +127,6 @@
 		showMetadata = false
 	}
 
-	$effect(() => {
-		if (isPublishDropdownOpen) {
-			document.addEventListener('click', handlePublishDropdown)
-			return () => document.removeEventListener('click', handlePublishDropdown)
-		}
-	})
 
 	$effect(() => {
 		if (showMetadata) {
@@ -204,38 +193,12 @@
 					/>
 				{/if}
 			</div>
-			<div class="publish-dropdown">
-				<button
-					bind:this={publishButtonRef}
-					class="btn btn-primary"
-					onclick={(e) => {
-						e.stopPropagation()
-						isPublishDropdownOpen = !isPublishDropdownOpen
-					}}
-					disabled={saving}
-				>
-					{saving ? 'Saving...' : 'Publish'}
-					<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-						<path
-							d="M3 4.5L6 7.5L9 4.5"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-				</button>
-				{#if isPublishDropdownOpen}
-					<div class="dropdown-menu">
-						<button class="dropdown-item" onclick={() => handleSave('published')}>
-							<span>Publish now</span>
-						</button>
-						<button class="dropdown-item" onclick={() => handleSave('draft')}>
-							<span>Save as draft</span>
-						</button>
-					</div>
-				{/if}
-			</div>
+			<PublishDropdown
+				onPublish={() => handleSave('published')}
+				onSaveDraft={() => handleSave('draft')}
+				disabled={saving}
+				isLoading={saving}
+			/>
 		</div>
 	</header>
 
@@ -307,9 +270,6 @@
 		}
 	}
 
-	.publish-dropdown {
-		position: relative;
-	}
 
 	.btn {
 		padding: $unit-2x $unit-3x;
@@ -325,15 +285,6 @@
 		&:disabled {
 			opacity: 0.6;
 			cursor: not-allowed;
-		}
-
-		&.btn-primary {
-			background-color: $grey-10;
-			color: white;
-
-			&:hover:not(:disabled) {
-				background-color: $grey-20;
-			}
 		}
 	}
 

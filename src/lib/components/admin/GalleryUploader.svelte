@@ -475,7 +475,7 @@
 								label="Alt Text"
 								value={media.altText || ''}
 								placeholder="Describe this image"
-								size="small"
+								buttonSize="small"
 								onblur={(e) => handleAltTextChange(media, e.target.value)}
 							/>
 						</div>

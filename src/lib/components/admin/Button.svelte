@@ -3,7 +3,7 @@
 
 	interface Props extends HTMLButtonAttributes {
 		variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'text' | 'overlay'
-		size?: 'small' | 'medium' | 'large' | 'icon'
+		buttonSize?: 'small' | 'medium' | 'large' | 'icon'
 		iconOnly?: boolean
 		iconPosition?: 'left' | 'right'
 		pill?: boolean
@@ -16,7 +16,7 @@
 
 	let {
 		variant = 'primary',
-		size = 'medium',
+		buttonSize = 'medium',
 		iconOnly = false,
 		iconPosition = 'left',
 		pill = true,
@@ -41,10 +41,10 @@
 
 		// Size
 		if (!iconOnly) {
-			classes.push(`btn-${size}`)
+			classes.push(`btn-${buttonSize}`)
 		} else {
 			classes.push('btn-icon')
-			classes.push(`btn-icon-${size}`)
+			classes.push(`btn-icon-${buttonSize}`)
 		}
 
 		// States
@@ -254,8 +254,8 @@
 		}
 
 		&.btn-icon-large {
-			width: 40px;
-			height: 40px;
+			width: 44px;
+			height: 44px;
 			border-radius: 10px;
 		}
 

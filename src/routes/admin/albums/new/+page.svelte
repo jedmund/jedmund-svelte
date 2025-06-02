@@ -4,6 +4,7 @@
 	import Button from '$lib/components/admin/Button.svelte'
 	import Input from '$lib/components/admin/Input.svelte'
 	import FormFieldWrapper from '$lib/components/admin/FormFieldWrapper.svelte'
+	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
 
 	// Form state
 	let title = $state('')
@@ -96,6 +97,7 @@
 		goto('/admin/albums')
 	}
 
+
 	const canSave = $derived(title.trim().length > 0 && slug.trim().length > 0)
 </script>
 
@@ -116,15 +118,43 @@
 			<h1>New Album</h1>
 		</div>
 		<div class="header-actions">
-			<Button variant="secondary" onclick={handleCancel} disabled={isSaving}>
-				Cancel
-			</Button>
-			<Button variant="ghost" onclick={() => handleSave('draft')} disabled={!canSave || isSaving}>
-				{isSaving ? 'Saving...' : 'Save Draft'}
-			</Button>
-			<Button variant="primary" onclick={() => handleSave('published')} disabled={!canSave || isSaving}>
-				{isSaving ? 'Publishing...' : 'Publish'}
-			</Button>
+			<div class="publish-dropdown">
+				<Button
+					variant="primary"
+					buttonSize="large"
+					onclick={() => handleSave('published')}
+					disabled={!canSave || isSaving}
+				>
+					{isSaving ? 'Publishing...' : 'Publish'}
+				</Button>
+				<Button
+					variant="ghost"
+					iconOnly
+					buttonSize="large"
+					onclick={(e) => {
+						e.stopPropagation()
+						isPublishDropdownOpen = !isPublishDropdownOpen
+					}}
+					disabled={isSaving}
+				>
+					<svg slot="icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+						<path
+							d="M3 4.5L6 7.5L9 4.5"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				</Button>
+				{#if isPublishDropdownOpen}
+					<DropdownMenuContainer>
+						<DropdownItem onclick={() => {handleSave('draft'); isPublishDropdownOpen = false}}>
+							Save as Draft
+						</DropdownItem>
+					</DropdownMenuContainer>
+				{/if}
+			</div>
 		</div>
 	</header>
 
@@ -246,6 +276,12 @@
 		display: flex;
 		align-items: center;
 		gap: $unit-2x;
+	}
+
+	.publish-dropdown {
+		position: relative;
+		display: flex;
+		gap: $unit-half;
 	}
 
 	.btn-icon {
