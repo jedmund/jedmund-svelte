@@ -1,101 +1,10 @@
 <script lang="ts">
 	import LinkCard from './LinkCard.svelte'
 	import Slideshow from './Slideshow.svelte'
+	import { formatDate } from '$lib/utils/date'
+	import { renderEdraContent } from '$lib/utils/content'
 
 	let { post }: { post: any } = $props()
-
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString)
-		return date.toLocaleDateString('en-US', {
-			month: 'long',
-			day: 'numeric',
-			year: 'numeric'
-		})
-	}
-
-	const getPostTypeLabel = (postType: string) => {
-		switch (postType) {
-			case 'post':
-				return 'Post'
-			case 'essay':
-				return 'Essay'
-			default:
-				return 'Post'
-		}
-	}
-
-	// Render Edra/BlockNote JSON content to HTML
-	const renderEdraContent = (content: any): string => {
-		if (!content) return ''
-
-		// Handle both { blocks: [...] } and { content: [...] } formats
-		const blocks = content.blocks || content.content || []
-		if (!Array.isArray(blocks)) return ''
-
-		const renderBlock = (block: any): string => {
-			switch (block.type) {
-				case 'heading':
-					const level = block.attrs?.level || block.level || 1
-					const headingText = block.content || block.text || ''
-					return `<h${level}>${headingText}</h${level}>`
-
-				case 'paragraph':
-					const paragraphText = block.content || block.text || ''
-					if (!paragraphText) return '<p><br></p>'
-					return `<p>${paragraphText}</p>`
-
-				case 'bulletList':
-				case 'ul':
-					const listItems = (block.content || [])
-						.map((item: any) => {
-							const itemText = item.content || item.text || ''
-							return `<li>${itemText}</li>`
-						})
-						.join('')
-					return `<ul>${listItems}</ul>`
-
-				case 'orderedList':
-				case 'ol':
-					const orderedItems = (block.content || [])
-						.map((item: any) => {
-							const itemText = item.content || item.text || ''
-							return `<li>${itemText}</li>`
-						})
-						.join('')
-					return `<ol>${orderedItems}</ol>`
-
-				case 'blockquote':
-					const quoteText = block.content || block.text || ''
-					return `<blockquote><p>${quoteText}</p></blockquote>`
-
-				case 'codeBlock':
-				case 'code':
-					const codeText = block.content || block.text || ''
-					const language = block.attrs?.language || block.language || ''
-					return `<pre><code class="language-${language}">${codeText}</code></pre>`
-
-				case 'image':
-					const src = block.attrs?.src || block.src || ''
-					const alt = block.attrs?.alt || block.alt || ''
-					const caption = block.attrs?.caption || block.caption || ''
-					return `<figure><img src="${src}" alt="${alt}" />${caption ? `<figcaption>${caption}</figcaption>` : ''}</figure>`
-
-				case 'hr':
-				case 'horizontalRule':
-					return '<hr>'
-
-				default:
-					// For simple text content
-					const text = block.content || block.text || ''
-					if (text) {
-						return `<p>${text}</p>`
-					}
-					return ''
-			}
-		}
-
-		return blocks.map(renderBlock).join('')
-	}
 
 	const renderedContent = $derived(post.content ? renderEdraContent(post.content) : '')
 </script>
@@ -103,9 +12,6 @@
 <article class="post-content {post.postType}">
 	<header class="post-header">
 		<div class="post-meta">
-			<span class="post-type-badge">
-				{getPostTypeLabel(post.postType)}
-			</span>
 			<time class="post-date" datetime={post.publishedAt}>
 				{formatDate(post.publishedAt)}
 			</time>
@@ -137,8 +43,8 @@
 					<p class="album-description">{post.album.description}</p>
 				{/if}
 			</div>
-			<Slideshow 
-				items={post.album.photos.map(photo => ({
+			<Slideshow
+				items={post.album.photos.map((photo) => ({
 					url: photo.url,
 					thumbnailUrl: photo.thumbnailUrl,
 					caption: photo.caption,
@@ -152,8 +58,8 @@
 		<!-- Regular attachments -->
 		<div class="post-attachments">
 			<h3>Photos</h3>
-			<Slideshow 
-				items={post.attachments.map(attachment => ({
+			<Slideshow
+				items={post.attachments.map((attachment) => ({
 					url: attachment.url,
 					thumbnailUrl: attachment.thumbnailUrl,
 					caption: attachment.caption,
@@ -214,17 +120,6 @@
 		align-items: center;
 		gap: $unit-2x;
 		margin-bottom: $unit-3x;
-	}
-
-	.post-type-badge {
-		background: $blue-60;
-		color: white;
-		padding: $unit-half $unit-2x;
-		border-radius: 50px;
-		font-size: 0.75rem;
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
 	}
 
 	.post-date {

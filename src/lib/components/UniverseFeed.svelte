@@ -26,7 +26,7 @@
 	.universe-feed {
 		display: flex;
 		flex-direction: column;
-		gap: $unit-4x;
+		gap: $unit-3x;
 	}
 
 	.empty-state {

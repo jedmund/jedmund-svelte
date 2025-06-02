@@ -33,31 +33,32 @@
 
 	// Calculate columns based on breakpoints
 	const columnsPerRow = $derived(windowWidth <= 400 ? 3 : windowWidth <= 600 ? 4 : 6)
-	
+
 	// Make maxThumbnails responsive - use fewer thumbnails on smaller screens
 	const responsiveMaxThumbnails = $derived(
 		maxThumbnails ? (windowWidth <= 400 ? 3 : windowWidth <= 600 ? 4 : maxThumbnails) : undefined
 	)
-	
+
 	const showMoreThumbnail = $derived(
 		responsiveMaxThumbnails && totalCount && totalCount > responsiveMaxThumbnails - 1
 	)
-	
+
 	// Determine how many thumbnails to show
 	const displayItems = $derived(
 		!responsiveMaxThumbnails || !showMoreThumbnail
 			? items
 			: items.slice(0, responsiveMaxThumbnails - 1) // Show actual thumbnails, leave last slot for "+N"
 	)
-	
+
 	const remainingCount = $derived(
 		showMoreThumbnail ? (totalCount || items.length) - (responsiveMaxThumbnails - 1) : 0
 	)
-	
+
 	const totalSlots = $derived(
 		responsiveMaxThumbnails
 			? responsiveMaxThumbnails
-			: Math.ceil((displayItems.length + (showMoreThumbnail ? 1 : 0)) / columnsPerRow) * columnsPerRow
+			: Math.ceil((displayItems.length + (showMoreThumbnail ? 1 : 0)) / columnsPerRow) *
+					columnsPerRow
 	)
 
 	// Convert items to image URLs for lightbox
@@ -105,16 +106,16 @@
 	<div class="slideshow">
 		<TiltCard>
 			<div class="main-image image-container" onclick={() => openLightbox()}>
-				<img 
-					src={items[selectedIndex].url} 
-					alt={items[selectedIndex].alt || `${alt} ${selectedIndex + 1}`} 
+				<img
+					src={items[selectedIndex].url}
+					alt={items[selectedIndex].alt || `${alt} ${selectedIndex + 1}`}
 				/>
 				{#if items[selectedIndex].caption}
 					<div class="image-caption">{items[selectedIndex].caption}</div>
 				{/if}
 			</div>
 		</TiltCard>
-		
+
 		{#if showThumbnails}
 			<div class="thumbnails">
 				{#each Array(totalSlots) as _, index}
@@ -125,9 +126,9 @@
 							onclick={() => selectImage(index)}
 							aria-label="View image {index + 1}"
 						>
-							<img 
-								src={displayItems[index].thumbnailUrl || displayItems[index].url} 
-								alt="{displayItems[index].alt || alt} thumbnail {index + 1}" 
+							<img
+								src={displayItems[index].thumbnailUrl || displayItems[index].url}
+								alt="{displayItems[index].alt || alt} thumbnail {index + 1}"
 							/>
 						</button>
 					{:else if index === displayItems.length && showMoreThumbnail}
@@ -137,14 +138,14 @@
 							aria-label="View all {totalCount || items.length} photos"
 						>
 							{#if items[displayItems.length]}
-								<img 
-									src={items[displayItems.length].thumbnailUrl || items[displayItems.length].url} 
+								<img
+									src={items[displayItems.length].thumbnailUrl || items[displayItems.length].url}
 									alt="View all photos"
 									class="blurred-bg"
 								/>
 							{:else if items[items.length - 1]}
-								<img 
-									src={items[items.length - 1].thumbnailUrl || items[items.length - 1].url} 
+								<img
+									src={items[items.length - 1].thumbnailUrl || items[items.length - 1].url}
 									alt="View all photos"
 									class="blurred-bg"
 								/>
@@ -162,7 +163,7 @@
 	</div>
 {/if}
 
-<Lightbox images={lightboxImages} bind:selectedIndex bind:isOpen={lightboxOpen} alt={alt} />
+<Lightbox images={lightboxImages} bind:selectedIndex bind:isOpen={lightboxOpen} {alt} />
 
 <style lang="scss">
 	.image-container {
@@ -267,6 +268,18 @@
 			transform: scale(0.98);
 		}
 
+		&:focus-visible {
+			outline: none;
+
+			&::before {
+				border-color: $red-90;
+			}
+
+			&::after {
+				border-color: $grey-100;
+			}
+		}
+
 		&.active {
 			&::before {
 				border-color: $red-60;
@@ -313,6 +326,18 @@
 			&:hover {
 				.show-more-overlay {
 					background: rgba(0, 0, 0, 0.7);
+				}
+			}
+
+			&:focus-visible {
+				outline: none;
+
+				&::before {
+					border-color: $red-90;
+				}
+
+				.show-more-overlay {
+					box-shadow: inset 0 0 0 3px rgba($red-90, 0.5);
 				}
 			}
 		}
