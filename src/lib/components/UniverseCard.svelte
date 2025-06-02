@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 	import UniverseIcon from '$icons/universe.svg'
+	import PhotosIcon from '$icons/photos.svg'
 	import { formatDate } from '$lib/utils/date'
 	import { goto } from '$app/navigation'
 
@@ -55,12 +56,18 @@
 					{formatDate(item.publishedAt)}
 				</time>
 			</a>
-			<UniverseIcon class="universe-icon" />
+			{#if type === 'album'}
+			<PhotosIcon class="card-icon" />
+		{:else}
+			<UniverseIcon class="card-icon" />
+		{/if}
 		</div>
 	</div>
 </article>
 
 <style lang="scss">
+	@import '../../assets/styles/animations';
+
 	.universe-card {
 		width: 100%;
 		max-width: 700px;
@@ -107,7 +114,7 @@
 		transition: color 0.2s ease;
 	}
 
-	:global(.universe-icon) {
+	:global(.card-icon) {
 		width: 16px;
 		height: 16px;
 		fill: $grey-40;
@@ -120,7 +127,7 @@
 				color: $red-60;
 			}
 
-			:global(.universe-icon) {
+			:global(.card-icon) {
 				fill: $red-60;
 				transform: rotate(15deg);
 			}
@@ -143,14 +150,42 @@
 				color: $red-60;
 			}
 
-			:global(.universe-icon) {
+			:global(.card-icon) {
 				fill: $red-60;
-				transform: rotate(15deg);
+			}
+
+			:global(.card-icon rect:nth-child(1)) {
+				transition: all 0.3s ease;
+				height: 6px;
+				y: 2px;
+			}
+
+			:global(.card-icon rect:nth-child(2)) {
+				transition: all 0.3s ease;
+				height: 10px;
+				y: 2px;
+			}
+
+			:global(.card-icon rect:nth-child(3)) {
+				transition: all 0.3s ease;
+				height: 8px;
+				y: 10px;
+			}
+
+			:global(.card-icon rect:nth-child(4)) {
+				transition: all 0.3s ease;
+				height: 4px;
+				y: 14px;
 			}
 
 			:global(.card-title-link) {
 				color: $red-60;
 			}
+		}
+
+		// Base state for smooth transition back
+		:global(.card-icon rect) {
+			transition: all 0.3s ease;
 		}
 
 		:global(.card-title-link) {

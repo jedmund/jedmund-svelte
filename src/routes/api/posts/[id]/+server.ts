@@ -95,7 +95,6 @@ export const PUT: RequestHandler = async (event) => {
 				postType: data.type,
 				status: data.status,
 				content: postContent,
-				excerpt: data.excerpt,
 				linkUrl: data.link_url,
 				linkDescription: data.linkDescription,
 				featuredImage: featuredImageId,

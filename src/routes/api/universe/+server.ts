@@ -8,7 +8,6 @@ export interface UniverseItem {
 	type: 'post' | 'album'
 	slug: string
 	title?: string
-	excerpt?: string
 	content?: any
 	publishedAt: string
 	createdAt: string
@@ -47,7 +46,6 @@ export const GET: RequestHandler = async (event) => {
 				postType: true,
 				title: true,
 				content: true,
-				excerpt: true,
 				linkUrl: true,
 				linkDescription: true,
 				attachments: true,
@@ -96,7 +94,6 @@ export const GET: RequestHandler = async (event) => {
 			type: 'post' as const,
 			slug: post.slug,
 			title: post.title || undefined,
-			excerpt: post.excerpt || undefined,
 			content: post.content,
 			postType: post.postType,
 			linkUrl: post.linkUrl || undefined,
@@ -113,7 +110,6 @@ export const GET: RequestHandler = async (event) => {
 			slug: album.slug,
 			title: album.title,
 			description: album.description || undefined,
-			excerpt: album.description || undefined,
 			location: album.location || undefined,
 			date: album.date?.toISOString(),
 			photosCount: album._count.photos,

@@ -4,6 +4,16 @@
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
 	let { post }: { post: UniverseItem } = $props()
+
+	// Check if content is truncated
+	const isContentTruncated = $derived(() => {
+		if (post.content) {
+			// Check if the excerpt is shorter than the full content
+			const excerpt = getContentExcerpt(post.content)
+			return excerpt.endsWith('...')
+		}
+		return false
+	})
 </script>
 
 <UniverseCard item={post} type="post">
@@ -25,15 +35,13 @@
 		</div>
 	{/if}
 
-	<div class="post-excerpt">
-		{#if post.excerpt}
-			<p>{post.excerpt}</p>
-		{:else if post.content}
-			<p>{getContentExcerpt(post.content)}</p>
-		{/if}
-	</div>
+	{#if post.content}
+		<div class="post-excerpt">
+			<p>{getContentExcerpt(post.content, 150)}</p>
+		</div>
+	{/if}
 
-	{#if post.postType === 'essay'}
+	{#if post.postType === 'essay' && isContentTruncated}
 		<p>
 			<a href="/universe/{post.slug}" class="read-more" onclick={(e) => e.preventDefault()} tabindex="-1">Continue reading</a>
 		</p>
@@ -97,7 +105,7 @@
 			line-height: 1.5;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
-			-webkit-line-clamp: 4;
+			-webkit-line-clamp: 2;
 			overflow: hidden;
 		}
 	}

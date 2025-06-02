@@ -75,10 +75,6 @@
 		<div class="post-body">
 			{@html renderedContent}
 		</div>
-	{:else if post.excerpt}
-		<div class="post-body">
-			<p>{post.excerpt}</p>
-		</div>
 	{/if}
 
 	<footer class="post-footer">

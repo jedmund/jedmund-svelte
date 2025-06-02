@@ -5,7 +5,6 @@
 		post: any
 		postType: 'post' | 'essay'
 		slug: string
-		excerpt: string
 		tags: string[]
 		tagInput: string
 		triggerElement: HTMLElement
@@ -19,7 +18,6 @@
 		post,
 		postType,
 		slug = $bindable(),
-		excerpt = $bindable(),
 		tags = $bindable(),
 		tagInput = $bindable(),
 		triggerElement,
@@ -32,8 +30,6 @@
 	function handleFieldUpdate(key: string, value: any) {
 		if (key === 'slug') {
 			slug = value
-		} else if (key === 'excerpt') {
-			excerpt = value
 		} else if (key === 'tagInput') {
 			tagInput = value
 		}
@@ -48,17 +44,6 @@
 				label: 'Slug',
 				placeholder: 'post-slug'
 			},
-			...(postType === 'essay'
-				? [
-						{
-							type: 'textarea' as const,
-							key: 'excerpt',
-							label: 'Excerpt',
-							rows: 3,
-							placeholder: 'Brief description...'
-						}
-					]
-				: []),
 			{
 				type: 'tags',
 				key: 'tags',
@@ -79,7 +64,6 @@
 	// Create a reactive data object
 	let popoverData = $state({
 		slug,
-		excerpt,
 		tags,
 		tagInput,
 		createdAt: post.createdAt,
@@ -91,7 +75,6 @@
 	$effect(() => {
 		popoverData = {
 			slug,
-			excerpt,
 			tags,
 			tagInput,
 			createdAt: post.createdAt,

@@ -12,7 +12,6 @@
 		initialData?: {
 			title: string
 			slug: string
-			excerpt: string
 			content: JSONContent
 			tags: string[]
 			status: 'draft' | 'published'
@@ -33,7 +32,6 @@
 	// Form data
 	let title = $state(initialData?.title || '')
 	let slug = $state(initialData?.slug || '')
-	let excerpt = $state(initialData?.excerpt || '')
 	let content = $state<JSONContent>(initialData?.content || { type: 'doc', content: [] })
 	let tags = $state<string[]>(initialData?.tags || [])
 	let status = $state<'draft' | 'published'>(initialData?.status || 'draft')
@@ -103,7 +101,6 @@
 				postType: 'blog', // 'blog' is the database value for essays
 				status,
 				content,
-				excerpt,
 				tags
 			}
 
@@ -267,15 +264,6 @@
 							<Input label="Title" bind:value={title} required placeholder="Essay title" />
 
 							<Input label="Slug" bind:value={slug} placeholder="essay-url-slug" />
-
-							<Input
-								type="textarea"
-								label="Excerpt"
-								helpText="Brief description shown in post lists"
-								bind:value={excerpt}
-								rows={3}
-								placeholder="A brief summary of your essay..."
-							/>
 
 							<div class="tags-field">
 								<label class="input-label">Tags</label>

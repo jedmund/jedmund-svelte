@@ -73,17 +73,27 @@ export const renderEdraContent = (content: any): string => {
 
 // Extract text content from Edra JSON for excerpt
 export const getContentExcerpt = (content: any, maxLength = 200): string => {
-	if (!content || !content.content) return ''
+	if (!content) return ''
+
+	// Handle both { blocks: [...] } and { content: [...] } formats
+	const blocks = content.blocks || content.content || []
+	if (!Array.isArray(blocks)) return ''
 
 	const extractText = (node: any): string => {
+		// For block-level content
+		if (node.type && node.content && typeof node.content === 'string') {
+			return node.content
+		}
+		// For inline content with text property
 		if (node.text) return node.text
+		// For nested content
 		if (node.content && Array.isArray(node.content)) {
 			return node.content.map(extractText).join(' ')
 		}
 		return ''
 	}
 
-	const text = content.content.map(extractText).join(' ').trim()
+	const text = blocks.map(extractText).join(' ').trim()
 	if (text.length <= maxLength) return text
 	return text.substring(0, maxLength).trim() + '...'
 }

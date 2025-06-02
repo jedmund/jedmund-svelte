@@ -194,7 +194,7 @@
 	// Second item is Photos (index 2) - animation handled by individual rect animations
 
 	// Third item is Labs (index 3)
-	.nav-item:nth-of-type(3) :global(svg.animate) {
+	.nav-item:nth-of-type(2) :global(svg.animate) {
 		animation: tubeRotate 0.6s ease;
 		transform-origin: center bottom;
 	}
@@ -205,19 +205,19 @@
 	}
 
 	// Specific animation for photo masonry rectangles
-	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(1)) {
+	.nav-item:nth-of-type(3) :global(svg.animate rect:nth-child(1)) {
 		animation: masonryRect1 0.6s ease;
 	}
 
-	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(2)) {
+	.nav-item:nth-of-type(3) :global(svg.animate rect:nth-child(2)) {
 		animation: masonryRect2 0.6s ease;
 	}
 
-	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(3)) {
+	.nav-item:nth-of-type(3) :global(svg.animate rect:nth-child(3)) {
 		animation: masonryRect3 0.6s ease;
 	}
 
-	.nav-item:nth-of-type(2) :global(svg.animate rect:nth-child(4)) {
+	.nav-item:nth-of-type(3) :global(svg.animate rect:nth-child(4)) {
 		animation: masonryRect4 0.6s ease;
 	}
 </style>

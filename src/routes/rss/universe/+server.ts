@@ -88,7 +88,7 @@ export const GET: RequestHandler = async (event) => {
 				id: post.id.toString(),
 				title:
 					post.title || `${post.postType.charAt(0).toUpperCase() + post.postType.slice(1)} Post`,
-				description: post.excerpt || extractTextSummary(post.content) || '',
+				description: extractTextSummary(post.content) || '',
 				content: convertContentToHTML(post.content),
 				link: `${event.url.origin}/universe/${post.slug}`,
 				guid: `${event.url.origin}/universe/${post.slug}`,

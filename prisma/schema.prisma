@@ -46,7 +46,6 @@ model Post {
   postType           String    @db.VarChar(50) // blog, microblog, link, photo, album
   title              String?   @db.VarChar(255) // Optional for microblog posts
   content            Json?     // BlockNote JSON for blog/microblog
-  excerpt            String?   @db.Text
   
   // Type-specific fields
   linkUrl            String?   @db.VarChar(500)

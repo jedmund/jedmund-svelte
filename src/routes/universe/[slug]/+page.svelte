@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
 	import DynamicPostContent from '$components/DynamicPostContent.svelte'
+	import { getContentExcerpt } from '$lib/utils/content'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -8,6 +9,9 @@
 	const post = $derived(data.post)
 	const error = $derived(data.error)
 	const pageTitle = $derived(post?.title || 'Post')
+	const description = $derived(
+		post?.content ? getContentExcerpt(post.content, 160) : `${post?.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`
+	)
 </script>
 
 <svelte:head>
@@ -15,14 +19,14 @@
 		<title>{pageTitle} - jedmund</title>
 		<meta
 			name="description"
-			content={post.excerpt || `${post.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`}
+			content={description}
 		/>
 
 		<!-- Open Graph meta tags -->
 		<meta property="og:title" content={pageTitle} />
 		<meta
 			property="og:description"
-			content={post.excerpt || `${post.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`}
+			content={description}
 		/>
 		<meta property="og:type" content="article" />
 		{#if post.attachments && post.attachments.length > 0}

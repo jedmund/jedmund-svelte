@@ -125,7 +125,6 @@
 							.map((tag) => tag.trim())
 							.filter(Boolean)
 					: [],
-				excerpt: generateExcerpt(editorContent)
 			}
 
 			const url = mode === 'edit' ? `/api/posts/${postId}` : '/api/posts'
@@ -160,22 +159,6 @@
 		}
 	}
 
-	function generateExcerpt(content: JSONContent): string {
-		// Extract plain text from editor content for excerpt
-		if (!content?.content) return ''
-
-		let text = ''
-		const extractText = (node: any) => {
-			if (node.type === 'text') {
-				text += node.text
-			} else if (node.content) {
-				node.content.forEach(extractText)
-			}
-		}
-
-		content.content.forEach(extractText)
-		return text.substring(0, 200) + (text.length > 200 ? '...' : '')
-	}
 
 	async function handlePublish() {
 		status = 'published'
