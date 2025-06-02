@@ -8,6 +8,7 @@ import {
 	checkAdminAuth
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
+import { trackMediaUsage, extractMediaIds, type MediaUsageReference } from '$lib/server/media-usage.js'
 
 // GET /api/posts - List all posts
 export const GET: RequestHandler = async (event) => {
@@ -111,10 +112,68 @@ export const POST: RequestHandler = async (event) => {
 				linkUrl: data.link_url,
 				linkDescription: data.linkDescription,
 				featuredImage: featuredImageId,
+				attachments: data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
 				tags: data.tags,
 				publishedAt: data.publishedAt
 			}
 		})
+
+		// Track media usage
+		try {
+			const usageReferences: MediaUsageReference[] = []
+
+			// Track featured image
+			const featuredImageIds = extractMediaIds({ featuredImage: featuredImageId }, 'featuredImage')
+			featuredImageIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'post',
+					contentId: post.id,
+					fieldName: 'featuredImage'
+				})
+			})
+
+			// Track attached photos (for photo posts)
+			if (data.attachedPhotos && Array.isArray(data.attachedPhotos)) {
+				data.attachedPhotos.forEach((mediaId: number) => {
+					usageReferences.push({
+						mediaId,
+						contentType: 'post',
+						contentId: post.id,
+						fieldName: 'attachments'
+					})
+				})
+			}
+
+			// Track gallery (for album posts)
+			if (data.gallery && Array.isArray(data.gallery)) {
+				data.gallery.forEach((mediaId: number) => {
+					usageReferences.push({
+						mediaId,
+						contentType: 'post',
+						contentId: post.id,
+						fieldName: 'gallery'
+					})
+				})
+			}
+
+			// Track media in post content
+			const contentIds = extractMediaIds({ content: postContent }, 'content')
+			contentIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'post',
+					contentId: post.id,
+					fieldName: 'content'
+				})
+			})
+
+			if (usageReferences.length > 0) {
+				await trackMediaUsage(usageReferences)
+			}
+		} catch (error) {
+			logger.warn('Failed to track media usage for post', { postId: post.id, error })
+		}
 
 		logger.info('Post created', { id: post.id, title: post.title })
 		return jsonResponse(post)

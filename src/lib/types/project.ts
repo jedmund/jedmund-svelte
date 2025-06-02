@@ -1,3 +1,6 @@
+export type ProjectStatus = 'draft' | 'published' | 'list-only' | 'password-protected'
+export type ProjectType = 'work' | 'labs'
+
 export interface Project {
 	id: number
 	slug: string
@@ -7,7 +10,6 @@ export interface Project {
 	year: number
 	client: string | null
 	role: string | null
-	technologies: string[] | null
 	featuredImage: string | null
 	logoUrl: string | null
 	gallery: any[] | null
@@ -15,8 +17,10 @@ export interface Project {
 	caseStudyContent: any | null
 	backgroundColor: string | null
 	highlightColor: string | null
+	projectType: ProjectType
 	displayOrder: number
-	status: string
+	status: ProjectStatus
+	password: string | null
 	createdAt?: string
 	updatedAt?: string
 	publishedAt?: string | null
@@ -29,14 +33,15 @@ export interface ProjectFormData {
 	year: number
 	client: string
 	role: string
-	technologies: string
+	projectType: ProjectType
 	externalUrl: string
 	featuredImage: string | null
 	backgroundColor: string
 	highlightColor: string
 	logoUrl: string
 	gallery: any[] | null
-	status: 'draft' | 'published'
+	status: ProjectStatus
+	password: string
 	caseStudyContent: any
 }
 
@@ -47,7 +52,7 @@ export const defaultProjectFormData: ProjectFormData = {
 	year: new Date().getFullYear(),
 	client: '',
 	role: '',
-	technologies: '',
+	projectType: 'work',
 	externalUrl: '',
 	featuredImage: null,
 	backgroundColor: '',
@@ -55,6 +60,7 @@ export const defaultProjectFormData: ProjectFormData = {
 	logoUrl: '',
 	gallery: null,
 	status: 'draft',
+	password: '',
 	caseStudyContent: {
 		type: 'doc',
 		content: [{ type: 'paragraph' }]

@@ -3,8 +3,8 @@ import type { Project } from '$lib/types/project'
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	try {
-		// Find project by slug
-		const response = await fetch(`/api/projects?status=published`)
+		// Find project by slug - we'll fetch all published, list-only, and password-protected projects
+		const response = await fetch(`/api/projects?includeListOnly=true&includePasswordProtected=true`)
 		if (!response.ok) {
 			throw new Error('Failed to fetch projects')
 		}
@@ -13,6 +13,11 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		const project = data.projects.find((p: Project) => p.slug === params.slug)
 
 		if (!project) {
+			throw new Error('Project not found')
+		}
+
+		// Handle different project statuses
+		if (project.status === 'draft') {
 			throw new Error('Project not found')
 		}
 

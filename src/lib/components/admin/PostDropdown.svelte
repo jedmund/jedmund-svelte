@@ -6,29 +6,22 @@
 	let isOpen = $state(false)
 	let buttonRef: HTMLElement
 	let showComposer = $state(false)
-	let selectedType = $state<'post' | 'essay' | 'album'>('post')
+	let selectedType = $state<'post' | 'essay'>('post')
 
 	const postTypes = [
-		{ value: 'blog', label: 'Essay' },
-		{ value: 'microblog', label: 'Post' },
-		{ value: 'link', label: 'Link' },
-		{ value: 'photo', label: 'Photo' },
-		{ value: 'album', label: 'Album' }
+		{ value: 'essay', label: 'Essay' },
+		{ value: 'post', label: 'Post' }
 	]
 
 	function handleSelection(type: string) {
 		isOpen = false
 
-		if (type === 'blog') {
+		if (type === 'essay') {
 			// Essays go straight to the full page
 			goto('/admin/universe/compose?type=essay')
-		} else if (type === 'microblog' || type === 'link') {
-			// Posts and links open in modal
+		} else if (type === 'post') {
+			// Posts open in modal
 			selectedType = 'post'
-			showComposer = true
-		} else if (type === 'photo' || type === 'album') {
-			// Photos and albums will be handled later
-			selectedType = 'album'
 			showComposer = true
 		}
 	}
@@ -93,7 +86,7 @@
 				>
 					{#snippet icon()}
 						<div class="dropdown-icon">
-						{#if type.value === 'blog'}
+						{#if type.value === 'essay'}
 							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
 								<path
 									d="M3 5C3 3.89543 3.89543 3 5 3H11L17 9V15C17 16.1046 16.1046 17 15 17H5C3.89543 17 3 16.1046 3 15V5Z"
@@ -114,7 +107,7 @@
 									stroke-linecap="round"
 								/>
 							</svg>
-						{:else if type.value === 'microblog'}
+						{:else if type.value === 'post'}
 							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
 								<path
 									d="M4 3C2.89543 3 2 3.89543 2 5V11C2 12.1046 2.89543 13 4 13H6L8 16V13H13C14.1046 13 15 12.1046 15 11V5C15 3.89543 14.1046 3 13 3H4Z"
@@ -123,66 +116,6 @@
 								/>
 								<path d="M5 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
 								<path d="M5 9H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-							</svg>
-						{:else if type.value === 'link'}
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-								<path
-									d="M10 5H7C4.79086 5 3 6.79086 3 9C3 11.2091 4.79086 13 7 13H10M10 7H13C15.2091 7 17 8.79086 17 11C17 13.2091 15.2091 15 13 15H10"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-								<path
-									d="M7 10H13"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-							</svg>
-						{:else if type.value === 'photo'}
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-								<rect
-									x="3"
-									y="3"
-									width="14"
-									height="14"
-									rx="2"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<circle cx="8" cy="8" r="1.5" stroke="currentColor" stroke-width="1.5" />
-								<path
-									d="M3 14L7 10L10 13L13 10L17 14"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>
-						{:else if type.value === 'album'}
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-								<rect
-									x="3"
-									y="5"
-									width="14"
-									height="12"
-									rx="2"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<path
-									d="M5 5V3C5 1.89543 5.89543 1 7 1H13C14.1046 1 15 1.89543 15 3V5"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<circle cx="8" cy="10" r="1.5" stroke="currentColor" stroke-width="1.5" />
-								<path
-									d="M3 14L7 11L10 13L13 11L17 14"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
 							</svg>
 						{/if}
 					</div>

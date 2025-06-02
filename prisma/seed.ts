@@ -24,7 +24,7 @@ async function main() {
 				year: 2023,
 				client: 'Personal Project',
 				role: 'Founder & Designer',
-				technologies: ['React Native', 'TypeScript', 'Node.js', 'PostgreSQL'],
+				projectType: 'work',
 				featuredImage: '/images/projects/maitsu-cover.png',
 				backgroundColor: '#FFF7EA',
 				highlightColor: '#F77754',
@@ -43,7 +43,7 @@ async function main() {
 				year: 2022,
 				client: 'Slack Technologies',
 				role: 'Senior Product Designer',
-				technologies: ['Design Systems', 'User Research', 'Prototyping', 'Strategy'],
+				projectType: 'work',
 				featuredImage: '/images/projects/slack-cover.png',
 				backgroundColor: '#4a154b',
 				highlightColor: '#611F69',
@@ -62,7 +62,7 @@ async function main() {
 				year: 2019,
 				client: 'Figma Inc.',
 				role: 'Product Designer',
-				technologies: ['Product Design', 'Prototyping', 'User Research', 'Design Systems'],
+				projectType: 'work',
 				featuredImage: '/images/projects/figma-cover.png',
 				backgroundColor: '#2c2c2c',
 				highlightColor: '#0ACF83',
@@ -81,7 +81,7 @@ async function main() {
 				year: 2011,
 				client: 'Pinterest',
 				role: 'Product Designer #1',
-				technologies: ['Product Design', 'Mobile Design', 'Design Leadership', 'Visual Design'],
+				projectType: 'work',
 				featuredImage: '/images/projects/pinterest-cover.png',
 				backgroundColor: '#f7f7f7',
 				highlightColor: '#CB1F27',
@@ -92,7 +92,82 @@ async function main() {
 		})
 	])
 
-	console.log(`✅ Created ${projects.length} projects`)
+	console.log(`✅ Created ${projects.length} work projects`)
+
+	// Create Labs projects
+	const labsProjects = await Promise.all([
+		prisma.project.create({
+			data: {
+				slug: 'granblue-team',
+				title: 'granblue.team',
+				subtitle: 'Comprehensive web app for Granblue Fantasy players',
+				description: 'A comprehensive web application for Granblue Fantasy players to track raids, manage crews, and optimize team compositions. Features real-time raid tracking, character databases, and community tools.',
+				year: 2022,
+				client: 'Personal Project',
+				role: 'Full-Stack Developer',
+				externalUrl: 'https://granblue.team',
+				backgroundColor: '#1a1a2e',
+				highlightColor: '#16213e',
+				projectType: 'labs',
+				displayOrder: 1,
+				status: 'published',
+				publishedAt: new Date()
+			}
+		}),
+		prisma.project.create({
+			data: {
+				slug: 'subway-board',
+				title: 'Subway Board',
+				subtitle: 'Beautiful, minimalist NYC subway dashboard',
+				description: 'A beautiful, minimalist dashboard displaying real-time NYC subway arrival times. Clean interface inspired by the classic subway map design with live MTA data integration.',
+				year: 2023,
+				client: 'Personal Project',
+				role: 'Developer & Designer',
+				backgroundColor: '#0f4c81',
+				highlightColor: '#1e3a5f',
+				projectType: 'labs',
+				displayOrder: 2,
+				status: 'published',
+				publishedAt: new Date()
+			}
+		}),
+		prisma.project.create({
+			data: {
+				slug: 'siero-discord',
+				title: 'Siero for Discord',
+				subtitle: 'Discord bot for Granblue Fantasy communities',
+				description: 'A Discord bot for Granblue Fantasy communities providing character lookups, raid notifications, and server management tools. Serves thousands of users across multiple servers.',
+				year: 2021,
+				client: 'Personal Project',
+				role: 'Bot Developer',
+				backgroundColor: '#5865f2',
+				highlightColor: '#4752c4',
+				projectType: 'labs',
+				displayOrder: 3,
+				status: 'published',
+				publishedAt: new Date()
+			}
+		}),
+		prisma.project.create({
+			data: {
+				slug: 'homelab',
+				title: 'Homelab',
+				subtitle: 'Self-hosted infrastructure on Kubernetes',
+				description: 'Self-hosted infrastructure running on Kubernetes with monitoring, media servers, and development environments. Includes automated deployments and backup strategies.',
+				year: 2023,
+				client: 'Personal Project',
+				role: 'DevOps Engineer',
+				backgroundColor: '#ff6b35',
+				highlightColor: '#e55a2b',
+				projectType: 'labs',
+				displayOrder: 4,
+				status: 'published',
+				publishedAt: new Date()
+			}
+		})
+	])
+
+	console.log(`✅ Created ${labsProjects.length} labs projects`)
 
 	// Create test posts
 	const posts = await Promise.all([
@@ -157,6 +232,7 @@ async function main() {
 			date: new Date('2024-03-15'),
 			location: 'Tokyo, Japan',
 			status: 'published',
+			isPhotography: true,
 			showInUniverse: true
 		}
 	})
@@ -172,6 +248,8 @@ async function main() {
 				height: 1080,
 				caption: 'Tokyo Tower at sunset',
 				displayOrder: 1,
+				status: 'published',
+				showInPhotos: true,
 				exifData: {
 					camera: 'Sony A7III',
 					lens: '24-70mm f/2.8',
@@ -190,7 +268,9 @@ async function main() {
 				width: 1920,
 				height: 1080,
 				caption: 'The famous Shibuya crossing',
-				displayOrder: 2
+				displayOrder: 2,
+				status: 'published',
+				showInPhotos: true
 			}
 		})
 	])

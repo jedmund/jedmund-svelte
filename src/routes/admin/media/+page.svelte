@@ -15,12 +15,18 @@
 
 	// Filter states
 	let filterType = $state<string>('all')
+	let photographyFilter = $state<string>('all')
 	let searchQuery = $state('')
 	let searchTimeout: ReturnType<typeof setTimeout>
 
 	// Modal states
 	let selectedMedia = $state<Media | null>(null)
 	let isDetailsModalOpen = $state(false)
+
+	// Multiselect states
+	let selectedMediaIds = $state<Set<number>>(new Set())
+	let isMultiSelectMode = $state(false)
+	let isDeleting = $state(false)
 
 	onMount(async () => {
 		await loadMedia()
@@ -45,6 +51,9 @@
 			let url = `/api/media?page=${page}&limit=24`
 			if (filterType !== 'all') {
 				url += `&mimeType=${filterType}`
+			}
+			if (photographyFilter !== 'all') {
+				url += `&isPhotography=${photographyFilter}`
 			}
 			if (searchQuery) {
 				url += `&search=${encodeURIComponent(searchQuery)}`
@@ -116,12 +125,185 @@
 			media[index] = updatedMedia
 		}
 	}
+
+	// Multiselect functions
+	function toggleMultiSelectMode() {
+		isMultiSelectMode = !isMultiSelectMode
+		if (!isMultiSelectMode) {
+			selectedMediaIds.clear()
+			selectedMediaIds = new Set()
+		}
+	}
+
+	function toggleMediaSelection(mediaId: number) {
+		if (selectedMediaIds.has(mediaId)) {
+			selectedMediaIds.delete(mediaId)
+		} else {
+			selectedMediaIds.add(mediaId)
+		}
+		selectedMediaIds = new Set(selectedMediaIds) // Trigger reactivity
+	}
+
+	function selectAllMedia() {
+		selectedMediaIds = new Set(media.map(m => m.id))
+	}
+
+	function clearSelection() {
+		selectedMediaIds.clear()
+		selectedMediaIds = new Set()
+	}
+
+	async function handleBulkDelete() {
+		if (selectedMediaIds.size === 0) return
+		
+		const confirmation = confirm(
+			`Are you sure you want to delete ${selectedMediaIds.size} media file${selectedMediaIds.size > 1 ? 's' : ''}? This action cannot be undone and will remove these files from any content that references them.`
+		)
+		
+		if (!confirmation) return
+
+		try {
+			isDeleting = true
+			const auth = localStorage.getItem('admin_auth')
+			if (!auth) return
+
+			const response = await fetch('/api/media/bulk-delete', {
+				method: 'DELETE',
+				headers: {
+					'Authorization': `Basic ${auth}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ 
+					mediaIds: Array.from(selectedMediaIds) 
+				})
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to delete media files')
+			}
+
+			const result = await response.json()
+			
+			// Remove deleted media from the list
+			media = media.filter(m => !selectedMediaIds.has(m.id))
+			
+			// Clear selection and exit multiselect mode
+			selectedMediaIds.clear()
+			selectedMediaIds = new Set()
+			isMultiSelectMode = false
+
+			// Reload to get updated total count
+			await loadMedia(currentPage)
+
+		} catch (err) {
+			error = 'Failed to delete media files. Please try again.'
+			console.error('Failed to delete media:', err)
+		} finally {
+			isDeleting = false
+		}
+	}
+
+	async function handleBulkMarkPhotography() {
+		if (selectedMediaIds.size === 0) return
+
+		try {
+			const auth = localStorage.getItem('admin_auth')
+			if (!auth) return
+
+			// Update each selected media item
+			const promises = Array.from(selectedMediaIds).map(async (mediaId) => {
+				const response = await fetch(`/api/media/${mediaId}`, {
+					method: 'PUT',
+					headers: {
+						'Authorization': `Basic ${auth}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ isPhotography: true })
+				})
+
+				if (!response.ok) {
+					throw new Error(`Failed to update media ${mediaId}`)
+				}
+				return response.json()
+			})
+
+			await Promise.all(promises)
+
+			// Update local media items
+			media = media.map(item => 
+				selectedMediaIds.has(item.id) 
+					? { ...item, isPhotography: true }
+					: item
+			)
+
+			// Clear selection
+			selectedMediaIds.clear()
+			selectedMediaIds = new Set()
+			isMultiSelectMode = false
+
+		} catch (err) {
+			error = 'Failed to mark items as photography. Please try again.'
+			console.error('Failed to mark as photography:', err)
+		}
+	}
+
+	async function handleBulkUnmarkPhotography() {
+		if (selectedMediaIds.size === 0) return
+
+		try {
+			const auth = localStorage.getItem('admin_auth')
+			if (!auth) return
+
+			// Update each selected media item
+			const promises = Array.from(selectedMediaIds).map(async (mediaId) => {
+				const response = await fetch(`/api/media/${mediaId}`, {
+					method: 'PUT',
+					headers: {
+						'Authorization': `Basic ${auth}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ isPhotography: false })
+				})
+
+				if (!response.ok) {
+					throw new Error(`Failed to update media ${mediaId}`)
+				}
+				return response.json()
+			})
+
+			await Promise.all(promises)
+
+			// Update local media items
+			media = media.map(item => 
+				selectedMediaIds.has(item.id) 
+					? { ...item, isPhotography: false }
+					: item
+			)
+
+			// Clear selection
+			selectedMediaIds.clear()
+			selectedMediaIds = new Set()
+			isMultiSelectMode = false
+
+		} catch (err) {
+			error = 'Failed to remove photography status. Please try again.'
+			console.error('Failed to unmark photography:', err)
+		}
+	}
 </script>
 
 <AdminPage>
 	<header slot="header">
 		<h1>Media Library</h1>
 		<div class="header-actions">
+			<button
+				onclick={toggleMultiSelectMode}
+				class="btn btn-secondary"
+				class:active={isMultiSelectMode}
+			>
+				{isMultiSelectMode ? '✓' : '☐'}
+				{isMultiSelectMode ? 'Exit Select' : 'Select'}
+			</button>
 			<button
 				onclick={() => (viewMode = viewMode === 'grid' ? 'list' : 'grid')}
 				class="btn btn-secondary"
@@ -142,6 +324,12 @@
 					<span class="stat-value">{total}</span>
 					<span class="stat-label">Total files</span>
 				</div>
+				{#if isMultiSelectMode}
+					<div class="stat">
+						<span class="stat-value">{selectedMediaIds.size}</span>
+						<span class="stat-label">Selected</span>
+					</div>
+				{/if}
 			</div>
 
 			<div class="filters">
@@ -151,6 +339,12 @@
 					<option value="video">Videos</option>
 					<option value="audio">Audio</option>
 					<option value="application/pdf">PDFs</option>
+				</select>
+
+				<select bind:value={photographyFilter} onchange={handleFilterChange} class="filter-select">
+					<option value="all">All media</option>
+					<option value="true">Photography only</option>
+					<option value="false">Non-photography</option>
 				</select>
 
 				<Input
@@ -170,6 +364,52 @@
 			</div>
 		</div>
 
+		{#if isMultiSelectMode && media.length > 0}
+			<div class="bulk-actions">
+				<div class="bulk-actions-left">
+					<button 
+						onclick={selectAllMedia}
+						class="btn btn-secondary btn-small"
+						disabled={selectedMediaIds.size === media.length}
+					>
+						Select All ({media.length})
+					</button>
+					<button 
+						onclick={clearSelection}
+						class="btn btn-secondary btn-small"
+						disabled={selectedMediaIds.size === 0}
+					>
+						Clear Selection
+					</button>
+				</div>
+				<div class="bulk-actions-right">
+					{#if selectedMediaIds.size > 0}
+						<button 
+							onclick={handleBulkMarkPhotography}
+							class="btn btn-secondary btn-small"
+							title="Mark selected items as photography"
+						>
+							📸 Mark Photography
+						</button>
+						<button 
+							onclick={handleBulkUnmarkPhotography}
+							class="btn btn-secondary btn-small"
+							title="Remove photography status from selected items"
+						>
+							🚫 Remove Photography
+						</button>
+						<button 
+							onclick={handleBulkDelete}
+							class="btn btn-danger btn-small"
+							disabled={isDeleting}
+						>
+							{isDeleting ? 'Deleting...' : `Delete ${selectedMediaIds.size} file${selectedMediaIds.size > 1 ? 's' : ''}`}
+						</button>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
 		{#if isLoading}
 			<div class="loading">Loading media...</div>
 		{:else if media.length === 0}
@@ -180,71 +420,134 @@
 		{:else if viewMode === 'grid'}
 			<div class="media-grid">
 				{#each media as item}
-					<button 
-						class="media-item" 
-						type="button"
-						onclick={() => handleMediaClick(item)}
-						title="Click to edit {item.filename}"
-					>
-						{#if item.mimeType.startsWith('image/')}
-							<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
-						{:else}
-							<div class="file-placeholder">
-								<span class="file-type">{getFileType(item.mimeType)}</span>
+					<div class="media-item-wrapper" class:multiselect={isMultiSelectMode}>
+						{#if isMultiSelectMode}
+							<div class="selection-checkbox">
+								<input 
+									type="checkbox" 
+									checked={selectedMediaIds.has(item.id)}
+									onchange={() => toggleMediaSelection(item.id)}
+									id="media-{item.id}"
+								/>
+								<label for="media-{item.id}" class="checkbox-label"></label>
 							</div>
 						{/if}
-						<div class="media-info">
-							<span class="filename">{item.filename}</span>
-							<span class="filesize">{formatFileSize(item.size)}</span>
-							{#if item.altText}
-								<span class="alt-text" title="Alt text: {item.altText}">
-									Alt: {item.altText.length > 30 ? item.altText.substring(0, 30) + '...' : item.altText}
-								</span>
+						<button 
+							class="media-item" 
+							type="button"
+							onclick={() => isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
+							title="{isMultiSelectMode ? 'Click to select' : 'Click to edit'} {item.filename}"
+							class:selected={isMultiSelectMode && selectedMediaIds.has(item.id)}
+						>
+							{#if item.mimeType.startsWith('image/')}
+								<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
 							{:else}
-								<span class="no-alt-text">No alt text</span>
+								<div class="file-placeholder">
+									<span class="file-type">{getFileType(item.mimeType)}</span>
+								</div>
 							{/if}
-						</div>
-					</button>
+							<div class="media-info">
+								<span class="filename">{item.filename}</span>
+								<div class="media-indicators">
+									{#if item.isPhotography}
+										<span class="indicator-pill photography" title="Photography">
+											<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+												<polygon points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26" fill="currentColor"/>
+											</svg>
+											Photo
+										</span>
+									{/if}
+									{#if item.altText}
+										<span class="indicator-pill alt-text" title="Alt text: {item.altText}">
+											Alt
+										</span>
+									{:else}
+										<span class="indicator-pill no-alt-text" title="No alt text">
+											No Alt
+										</span>
+									{/if}
+								</div>
+								<span class="filesize">{formatFileSize(item.size)}</span>
+							</div>
+						</button>
+					</div>
 				{/each}
 			</div>
 		{:else}
 			<div class="media-list">
 				{#each media as item}
-					<button 
-						class="media-row" 
-						type="button"
-						onclick={() => handleMediaClick(item)}
-						title="Click to edit {item.filename}"
-					>
-						<div class="media-preview">
-							{#if item.mimeType.startsWith('image/')}
-								<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
-							{:else}
-								<div class="file-icon">{getFileType(item.mimeType)}</div>
-							{/if}
-						</div>
-						<div class="media-details">
-							<span class="filename">{item.filename}</span>
-							<span class="file-meta">
-								{getFileType(item.mimeType)} • {formatFileSize(item.size)}
-								{#if item.width && item.height}
-									• {item.width}×{item.height}px
+					<div class="media-row-wrapper" class:multiselect={isMultiSelectMode}>
+						{#if isMultiSelectMode}
+							<div class="selection-checkbox">
+								<input 
+									type="checkbox" 
+									checked={selectedMediaIds.has(item.id)}
+									onchange={() => toggleMediaSelection(item.id)}
+									id="media-row-{item.id}"
+								/>
+								<label for="media-row-{item.id}" class="checkbox-label"></label>
+							</div>
+						{/if}
+						<button 
+							class="media-row" 
+							type="button"
+							onclick={() => isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
+							title="{isMultiSelectMode ? 'Click to select' : 'Click to edit'} {item.filename}"
+							class:selected={isMultiSelectMode && selectedMediaIds.has(item.id)}
+						>
+							<div class="media-preview">
+								{#if item.mimeType.startsWith('image/')}
+									<img src={item.mimeType === 'image/svg+xml' ? item.url : (item.thumbnailUrl || item.url)} alt={item.altText || item.filename} />
+								{:else}
+									<div class="file-icon">{getFileType(item.mimeType)}</div>
 								{/if}
-							</span>
-							{#if item.altText}
-								<span class="alt-text-preview">
-									Alt: {item.altText}
+							</div>
+							<div class="media-details">
+								<div class="filename-row">
+									<span class="filename">{item.filename}</span>
+									<div class="media-indicators">
+										{#if item.isPhotography}
+											<span class="indicator-pill photography" title="Photography">
+												<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+													<polygon points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26" fill="currentColor"/>
+												</svg>
+												Photo
+											</span>
+										{/if}
+										{#if item.altText}
+											<span class="indicator-pill alt-text" title="Alt text: {item.altText}">
+												Alt
+											</span>
+										{:else}
+											<span class="indicator-pill no-alt-text" title="No alt text">
+												No Alt
+											</span>
+										{/if}
+									</div>
+								</div>
+								<span class="file-meta">
+									{getFileType(item.mimeType)} • {formatFileSize(item.size)}
+									{#if item.width && item.height}
+										• {item.width}×{item.height}px
+									{/if}
 								</span>
-							{:else}
-								<span class="no-alt-text-preview">No alt text</span>
-							{/if}
-						</div>
-						<div class="media-indicator">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-							</svg>
-						</div>
-					</button>
+								{#if item.altText}
+									<span class="alt-text-preview">
+										Alt: {item.altText}
+									</span>
+								{:else}
+									<span class="no-alt-text-preview">No alt text</span>
+								{/if}
+							</div>
+							<div class="media-indicator">
+								{#if !isMultiSelectMode}
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									</svg>
+								{/if}
+							</div>
+						</button>
+					</div>
 				{/each}
 			</div>
 		{/if}
@@ -467,7 +770,7 @@
 			.filename {
 				font-size: 0.875rem;
 				color: $grey-20;
-					white-space: nowrap;
+				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
 			}
@@ -477,19 +780,11 @@
 				color: $grey-40;
 			}
 
-			.alt-text {
-				font-size: 0.75rem;
-				color: $grey-30;
-				font-style: italic;
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
-			}
-
-			.no-alt-text {
-				font-size: 0.75rem;
-				color: $red-60;
-				font-style: italic;
+			.media-indicators {
+				display: flex;
+				gap: $unit-half;
+				flex-wrap: wrap;
+				margin: $unit-half 0;
 			}
 		}
 	}
@@ -556,10 +851,25 @@
 			flex-direction: column;
 			gap: $unit-half;
 
-			.filename {
-				font-size: 0.925rem;
-				color: $grey-20;
-				font-weight: 500;
+			.filename-row {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: $unit-2x;
+
+				.filename {
+					font-size: 0.925rem;
+					color: $grey-20;
+					font-weight: 500;
+					flex: 1;
+				}
+
+				.media-indicators {
+					display: flex;
+					gap: $unit-half;
+					flex-wrap: wrap;
+					flex-shrink: 0;
+				}
 			}
 
 			.file-meta {
@@ -638,6 +948,165 @@
 		.pagination-info {
 			font-size: 0.875rem;
 			color: $grey-40;
+		}
+	}
+
+	// Multiselect styles
+	.bulk-actions {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: $unit-2x $unit-3x;
+		background: $grey-95;
+		border-radius: $unit;
+		margin-bottom: $unit-3x;
+		gap: $unit-2x;
+
+		.bulk-actions-left,
+		.bulk-actions-right {
+			display: flex;
+			gap: $unit;
+		}
+
+		.btn-small {
+			padding: $unit $unit-2x;
+			font-size: 0.8rem;
+		}
+
+		.btn-danger {
+			background-color: $red-60;
+			color: white;
+
+			&:hover:not(:disabled) {
+				background-color: $red-50;
+			}
+
+			&:disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+			}
+		}
+	}
+
+	.media-item-wrapper,
+	.media-row-wrapper {
+		position: relative;
+
+		&.multiselect {
+			.selection-checkbox {
+				position: absolute;
+				top: $unit;
+				left: $unit;
+				z-index: 10;
+
+				input[type="checkbox"] {
+					opacity: 0;
+					position: absolute;
+					pointer-events: none;
+				}
+
+				.checkbox-label {
+					display: block;
+					width: 20px;
+					height: 20px;
+					border: 2px solid white;
+					border-radius: 4px;
+					background: rgba(0, 0, 0, 0.5);
+					cursor: pointer;
+					position: relative;
+					transition: all 0.2s ease;
+
+					&::after {
+						content: '';
+						position: absolute;
+						top: 2px;
+						left: 6px;
+						width: 4px;
+						height: 8px;
+						border: solid white;
+						border-width: 0 2px 2px 0;
+						transform: rotate(45deg);
+						opacity: 0;
+						transition: opacity 0.2s ease;
+					}
+				}
+
+				input:checked + .checkbox-label {
+					background: #3b82f6;
+					border-color: #3b82f6;
+
+					&::after {
+						opacity: 1;
+					}
+				}
+			}
+
+			.media-item,
+			.media-row {
+				&.selected {
+					background-color: rgba(59, 130, 246, 0.1);
+					border: 2px solid #3b82f6;
+				}
+			}
+		}
+	}
+
+	.media-row-wrapper.multiselect {
+		display: flex;
+		align-items: center;
+		gap: $unit-2x;
+
+		.selection-checkbox {
+			position: static;
+			top: auto;
+			left: auto;
+			z-index: auto;
+		}
+
+		.media-row {
+			flex: 1;
+		}
+	}
+
+	// Indicator pill styles
+	.indicator-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: $unit-half;
+		padding: 2px $unit;
+		border-radius: 4px;
+		font-size: 0.625rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		line-height: 1;
+
+		svg {
+			width: 10px;
+			height: 10px;
+			flex-shrink: 0;
+		}
+
+		&.photography {
+			background-color: rgba(139, 92, 246, 0.1);
+			color: #7c3aed;
+			border: 1px solid rgba(139, 92, 246, 0.2);
+
+			svg {
+				fill: #7c3aed;
+			}
+		}
+
+		&.alt-text {
+			background-color: rgba(34, 197, 94, 0.1);
+			color: #16a34a;
+			border: 1px solid rgba(34, 197, 94, 0.2);
+		}
+
+		&.no-alt-text {
+			background-color: rgba(239, 68, 68, 0.1);
+			color: #dc2626;
+			border: 1px solid rgba(239, 68, 68, 0.2);
 		}
 	}
 </style>

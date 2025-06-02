@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Input from './Input.svelte'
+	import Select from './Select.svelte'
 	import ImageUploader from './ImageUploader.svelte'
 	import type { ProjectFormData } from '$lib/types/project'
 
@@ -31,6 +32,17 @@
 		bind:value={formData.description}
 		rows={3}
 		placeholder="Short description for project cards"
+	/>
+
+	<Select
+		label="Project Type"
+		bind:value={formData.projectType}
+		error={validationErrors.projectType}
+		options={[
+			{ value: 'work', label: 'Work' },
+			{ value: 'labs', label: 'Labs' }
+		]}
+		helpText="Choose whether this project appears in the Work tab or Labs tab"
 	/>
 
 	<div class="form-row">
@@ -67,6 +79,31 @@
 		placeholder="Upload a featured image for this project"
 		showBrowseLibrary={true}
 	/>
+
+	<Select
+		label="Project Status"
+		bind:value={formData.status}
+		error={validationErrors.status}
+		options={[
+			{ value: 'draft', label: 'Draft (Hidden)' },
+			{ value: 'published', label: 'Published' },
+			{ value: 'list-only', label: 'List Only (No Access)' },
+			{ value: 'password-protected', label: 'Password Protected' }
+		]}
+		helpText="Control how this project appears on the public site"
+	/>
+
+	{#if formData.status === 'password-protected'}
+		<Input
+			type="password"
+			label="Project Password"
+			required
+			error={validationErrors.password}
+			bind:value={formData.password}
+			placeholder="Enter a password for this project"
+			helpText="Users will need this password to access the project details"
+		/>
+	{/if}
 </div>
 
 <style lang="scss">

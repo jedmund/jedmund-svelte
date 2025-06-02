@@ -1,15 +1,30 @@
-import { getPostBySlug } from '$lib/posts'
-import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ params }) => {
-	const post = await getPostBySlug(params.slug)
+export const load: PageServerLoad = async ({ params, fetch }) => {
+	try {
+		// Fetch the specific post by slug from the database
+		const response = await fetch(`/api/posts/by-slug/${params.slug}`)
+		
+		if (!response.ok) {
+			if (response.status === 404) {
+				return {
+					post: null,
+					error: 'Post not found'
+				}
+			}
+			throw new Error('Failed to fetch post')
+		}
 
-	if (!post) {
-		throw error(404, 'Post not found')
-	}
+		const post = await response.json()
 
-	return {
-		post
+		return {
+			post
+		}
+	} catch (error) {
+		console.error('Error loading post:', error)
+		return {
+			post: null,
+			error: 'Failed to load post'
+		}
 	}
 }

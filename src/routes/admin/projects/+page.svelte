@@ -176,14 +176,13 @@
 	{/if}
 </AdminPage>
 
-{#if showDeleteModal && projectToDelete}
-	<DeleteConfirmationModal
-		title="Delete project?"
-		message={`Are you sure you want to delete "${projectToDelete.title}"? This action cannot be undone.`}
-		onconfirm={confirmDelete}
-		oncancel={cancelDelete}
-	/>
-{/if}
+<DeleteConfirmationModal
+	bind:isOpen={showDeleteModal}
+	title="Delete project?"
+	message={projectToDelete ? `Are you sure you want to delete "${projectToDelete.title}"? This action cannot be undone.` : ''}
+	onConfirm={confirmDelete}
+	onCancel={cancelDelete}
+/>
 
 <style lang="scss">
 	header {

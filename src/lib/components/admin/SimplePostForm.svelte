@@ -7,7 +7,7 @@
 	import Input from './Input.svelte'
 
 	interface Props {
-		postType: 'microblog' | 'link'
+		postType: 'post'
 		postId?: number
 		initialData?: {
 			title?: string
@@ -45,21 +45,20 @@
 	
 	// Check if form has content
 	const hasContent = $derived(() => {
-		if (postType === 'microblog') {
-			return textContent().trim().length > 0
-		} else if (postType === 'link') {
-			return linkUrl && linkUrl.trim().length > 0
-		}
-		return false
+		// For posts, check if either content exists or it's a link with URL
+		const hasTextContent = textContent().trim().length > 0
+		const hasLinkContent = linkUrl && linkUrl.trim().length > 0
+		return hasTextContent || hasLinkContent
 	})
 
 	async function handleSave(publishStatus: 'draft' | 'published') {
-		if (postType === 'microblog' && isOverLimit) {
+		if (isOverLimit) {
 			error = 'Post is too long'
 			return
 		}
 
-		if (postType === 'link' && !linkUrl) {
+		// For link posts, URL is required
+		if (linkUrl && !linkUrl.trim()) {
 			error = 'Link URL is required'
 			return
 		}
@@ -75,15 +74,15 @@
 			}
 
 			const payload: any = {
-				postType,
-				status: publishStatus
+				type: 'post', // Use simplified post type
+				status: publishStatus,
+				content: content
 			}
 
-			if (postType === 'microblog') {
-				payload.content = content
-			} else if (postType === 'link') {
+			// Add link fields if they're provided
+			if (linkUrl && linkUrl.trim()) {
 				payload.title = title || linkUrl
-				payload.linkUrl = linkUrl
+				payload.link_url = linkUrl
 				payload.linkDescription = linkDescription
 			}
 

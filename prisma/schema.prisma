@@ -20,7 +20,6 @@ model Project {
   year               Int
   client             String?   @db.VarChar(255)
   role               String?   @db.VarChar(255)
-  technologies       Json?     // Array of tech stack
   featuredImage      String?   @db.VarChar(500)
   logoUrl            String?   @db.VarChar(500)
   gallery            Json?     // Array of image URLs
@@ -28,8 +27,10 @@ model Project {
   caseStudyContent   Json?     // BlockNote JSON format
   backgroundColor    String?   @db.VarChar(50)  // For project card styling
   highlightColor     String?   @db.VarChar(50)  // For project card accent
+  projectType        String    @default("work") @db.VarChar(50) // "work" or "labs"
   displayOrder       Int       @default(0)
-  status             String    @default("draft") @db.VarChar(50)
+  status             String    @default("draft") @db.VarChar(50) // "draft", "published", "list-only", "password-protected"
+  password           String?   @db.VarChar(255) // Required when status is "password-protected"
   publishedAt        DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
@@ -54,6 +55,7 @@ model Post {
   albumId            Int?
   
   featuredImage      String?   @db.VarChar(500)
+  attachments        Json?     // Array of media IDs for photo attachments
   tags               Json?     // Array of tags
   status             String    @default("draft") @db.VarChar(50)
   publishedAt        DateTime?
@@ -78,6 +80,7 @@ model Album {
   date               DateTime?
   location           String?   @db.VarChar(255)
   coverPhotoId       Int?
+  isPhotography      Boolean   @default(false)   // Show in photos experience
   status             String    @default("draft") @db.VarChar(50)
   showInUniverse     Boolean   @default(false)
   createdAt          DateTime  @default(now())
@@ -133,9 +136,32 @@ model Media {
   thumbnailUrl       String?   @db.Text
   width              Int?
   height             Int?
+  exifData           Json?                       // EXIF data for photos
   altText            String?   @db.Text          // Alt text for accessibility
   description        String?   @db.Text          // Optional description
-  usedIn             Json      @default("[]")    // Track where media is used
+  isPhotography      Boolean   @default(false)   // Star for photos experience
+  usedIn             Json      @default("[]")    // Track where media is used (legacy)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+  
+  // Relations
+  usage              MediaUsage[]
+}
+
+// Media usage tracking table
+model MediaUsage {
+  id                 Int       @id @default(autoincrement())
+  mediaId            Int
+  contentType        String    @db.VarChar(50)   // 'project', 'post', 'album'
+  contentId          Int
+  fieldName          String    @db.VarChar(100)  // 'featuredImage', 'logoUrl', 'gallery', 'content'
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  // Relations
+  media              Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  
+  @@unique([mediaId, contentType, contentId, fieldName])
+  @@index([mediaId])
+  @@index([contentType, contentId])
 }

@@ -10,6 +10,7 @@ import {
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { createSlug, ensureUniqueSlug } from '$lib/server/database'
+import { trackMediaUsage, extractMediaIds, type MediaUsageReference } from '$lib/server/media-usage.js'
 
 // GET /api/projects - List all projects
 export const GET: RequestHandler = async (event) => {
@@ -19,11 +20,32 @@ export const GET: RequestHandler = async (event) => {
 
 		// Get filter parameters
 		const status = event.url.searchParams.get('status')
+		const projectType = event.url.searchParams.get('projectType')
+		const includeListOnly = event.url.searchParams.get('includeListOnly') === 'true'
+		const includePasswordProtected = event.url.searchParams.get('includePasswordProtected') === 'true'
 
 		// Build where clause
 		const where: any = {}
+		
 		if (status) {
 			where.status = status
+		} else {
+			// Default behavior: determine which statuses to include
+			const allowedStatuses = ['published']
+			
+			if (includeListOnly) {
+				allowedStatuses.push('list-only')
+			}
+			
+			if (includePasswordProtected) {
+				allowedStatuses.push('password-protected')
+			}
+			
+			where.status = { in: allowedStatuses }
+		}
+		
+		if (projectType) {
+			where.projectType = projectType
 		}
 
 		// Get total count
@@ -83,7 +105,6 @@ export const POST: RequestHandler = async (event) => {
 				year: body.year,
 				client: body.client,
 				role: body.role,
-				technologies: body.technologies || [],
 				featuredImage: body.featuredImage,
 				logoUrl: body.logoUrl,
 				gallery: body.gallery || [],
@@ -91,11 +112,68 @@ export const POST: RequestHandler = async (event) => {
 				caseStudyContent: body.caseStudyContent,
 				backgroundColor: body.backgroundColor,
 				highlightColor: body.highlightColor,
+				projectType: body.projectType || 'work',
 				displayOrder: body.displayOrder || 0,
 				status: body.status || 'draft',
+				password: body.password || null,
 				publishedAt: body.status === 'published' ? new Date() : null
 			}
 		})
+
+		// Track media usage
+		try {
+			const usageReferences: MediaUsageReference[] = []
+
+			// Track featured image
+			const featuredImageIds = extractMediaIds(body, 'featuredImage')
+			featuredImageIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'project',
+					contentId: project.id,
+					fieldName: 'featuredImage'
+				})
+			})
+
+			// Track logo
+			const logoIds = extractMediaIds(body, 'logoUrl')
+			logoIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'project',
+					contentId: project.id,
+					fieldName: 'logoUrl'
+				})
+			})
+
+			// Track gallery images
+			const galleryIds = extractMediaIds(body, 'gallery')
+			galleryIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'project',
+					contentId: project.id,
+					fieldName: 'gallery'
+				})
+			})
+
+			// Track media in case study content
+			const contentIds = extractMediaIds(body, 'caseStudyContent')
+			contentIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'project',
+					contentId: project.id,
+					fieldName: 'content'
+				})
+			})
+
+			if (usageReferences.length > 0) {
+				await trackMediaUsage(usageReferences)
+			}
+		} catch (error) {
+			logger.warn('Failed to track media usage for project', { projectId: project.id, error })
+		}
 
 		logger.info('Project created', { id: project.id, slug: project.slug })
 

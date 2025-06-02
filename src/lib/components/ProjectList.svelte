@@ -37,6 +37,7 @@
 					slug={project.slug}
 					description={project.description || ''}
 					highlightColor={project.highlightColor || '#333'}
+					status={project.status}
 					{index}
 				/>
 			</li>

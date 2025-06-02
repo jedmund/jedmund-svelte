@@ -1,53 +1,57 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte'
 	import Button from './Button.svelte'
 
 	interface Props {
+		isOpen: boolean
 		title?: string
 		message: string
 		confirmText?: string
 		cancelText?: string
+		onConfirm: () => void
+		onCancel?: () => void
 	}
 
 	let {
+		isOpen = $bindable(),
 		title = 'Delete item?',
 		message,
 		confirmText = 'Delete',
-		cancelText = 'Cancel'
+		cancelText = 'Cancel',
+		onConfirm,
+		onCancel
 	}: Props = $props()
 
-	const dispatch = createEventDispatcher<{
-		confirm: void
-		cancel: void
-	}>()
-
 	function handleConfirm() {
-		dispatch('confirm')
+		onConfirm()
 	}
 
 	function handleCancel() {
-		dispatch('cancel')
+		isOpen = false
+		onCancel?.()
 	}
 
 	function handleBackdropClick() {
-		dispatch('cancel')
+		isOpen = false
+		onCancel?.()
 	}
 </script>
 
-<div class="modal-backdrop" onclick={handleBackdropClick}>
-	<div class="modal" onclick={(e) => e.stopPropagation()}>
-		<h2>{title}</h2>
-		<p>{message}</p>
-		<div class="modal-actions">
-			<Button variant="secondary" onclick={handleCancel}>
-				{cancelText}
-			</Button>
-			<Button variant="danger" onclick={handleConfirm}>
-				{confirmText}
-			</Button>
+{#if isOpen}
+	<div class="modal-backdrop" onclick={handleBackdropClick}>
+		<div class="modal" onclick={(e) => e.stopPropagation()}>
+			<h2>{title}</h2>
+			<p>{message}</p>
+			<div class="modal-actions">
+				<Button variant="secondary" onclick={handleCancel}>
+					{cancelText}
+				</Button>
+				<Button variant="danger" onclick={handleConfirm}>
+					{confirmText}
+				</Button>
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 <style lang="scss">
 	.modal-backdrop {

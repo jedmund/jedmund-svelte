@@ -19,7 +19,19 @@ export const projectSchema = z.object({
 		.regex(/^#[0-9A-Fa-f]{6}$/)
 		.optional()
 		.or(z.literal('')),
-	status: z.enum(['draft', 'published'])
-})
+	status: z.enum(['draft', 'published', 'list-only', 'password-protected']),
+	password: z.string().optional()
+}).refine(
+	(data) => {
+		if (data.status === 'password-protected') {
+			return data.password && data.password.trim().length > 0
+		}
+		return true
+	},
+	{
+		message: 'Password is required when status is password-protected',
+		path: ['password']
+	}
+)
 
 export type ProjectSchema = z.infer<typeof projectSchema>

@@ -15,10 +15,10 @@
 
 	export let isOpen = false
 	export let initialMode: 'modal' | 'page' = 'modal'
-	export let initialPostType: 'post' | 'essay' | 'album' = 'post'
+	export let initialPostType: 'post' | 'essay' = 'post'
 	export let initialContent: JSONContent | undefined = undefined
 
-	type PostType = 'post' | 'essay' | 'album'
+	type PostType = 'post' | 'essay'
 	type ComposerMode = 'modal' | 'page'
 
 	let postType: PostType = initialPostType
@@ -212,24 +212,24 @@
 		if (postType === 'essay') {
 			postData = {
 				...postData,
-				type: 'blog',
+				type: 'essay',
 				title: essayTitle,
 				slug: essaySlug,
 				excerpt: essayExcerpt,
 				tags: essayTags ? essayTags.split(',').map((tag) => tag.trim()) : []
 			}
-		} else if (showLinkFields) {
-			postData = {
-				...postData,
-				type: 'link',
-				linkUrl,
-				linkTitle,
-				linkDescription
-			}
 		} else {
+			// All other content is just a "post" with optional link data and attachments
 			postData = {
 				...postData,
-				type: attachedPhotos.length > 0 ? 'photo' : 'microblog'
+				type: 'post'
+			}
+
+			// Add link fields if present
+			if (showLinkFields) {
+				postData.link_url = linkUrl
+				postData.linkTitle = linkTitle
+				postData.linkDescription = linkDescription
 			}
 		}
 

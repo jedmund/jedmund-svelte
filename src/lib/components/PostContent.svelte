@@ -25,13 +25,13 @@
 		</time>
 	</header>
 
-	{#if post.type === 'image' && post.images}
+	{#if post.images && post.images.length > 0}
 		<div class="post-images">
 			<ImagePost images={post.images} alt={post.title || 'Post image'} />
 		</div>
 	{/if}
 
-	{#if post.type === 'link' && post.link}
+	{#if post.link}
 		<div class="post-link-preview">
 			<LinkCard link={post.link} />
 		</div>
@@ -51,24 +51,44 @@
 		max-width: 784px;
 		margin: 0 auto;
 
-		&.note {
+		// Post type styles for simplified post types
+		&.post {
+			.post-body {
+				font-size: 1.05rem;
+			}
+		}
+
+		&.essay {
+			.post-body {
+				font-size: 1rem;
+				line-height: 1.7;
+			}
+		}
+
+		// Legacy type support
+		&.note,
+		&.microblog {
 			.post-body {
 				font-size: 1.1rem;
 			}
 		}
 
-		&.image {
-			.post-images {
-				margin-bottom: $unit-4x;
+		&.blog {
+			.post-body {
+				font-size: 1rem;
+				line-height: 1.7;
 			}
 		}
+	}
 
-		&.link {
-			.post-link-preview {
-				margin-bottom: $unit-4x;
-				max-width: 600px;
-			}
-		}
+	// Content-specific styles
+	.post-images {
+		margin-bottom: $unit-4x;
+	}
+
+	.post-link-preview {
+		margin-bottom: $unit-4x;
+		max-width: 600px;
 	}
 
 	.post-header {

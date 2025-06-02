@@ -1,24 +1,32 @@
 <script lang="ts">
 	import type { PhotoItem, Photo, PhotoAlbum } from '$lib/types/photos'
 	import { isAlbum } from '$lib/types/photos'
+	import { goto } from '$app/navigation'
 
 	const {
 		item,
-		onPhotoClick
+		albumSlug // For when this is used within an album context
 	}: {
 		item: PhotoItem
-		onPhotoClick: (photo: Photo, albumPhotos?: Photo[]) => void
+		albumSlug?: string
 	} = $props()
 
 	let imageLoaded = $state(false)
 
 	function handleClick() {
 		if (isAlbum(item)) {
-			// For albums, open the cover photo with album navigation
-			onPhotoClick(item.coverPhoto, item.photos)
+			// Navigate to album page using the slug
+			goto(`/photos/${item.slug}`)
 		} else {
-			// For individual photos, open just that photo
-			onPhotoClick(item)
+			// For individual photos, check if we have album context
+			if (albumSlug) {
+				// Navigate to photo within album
+				const photoId = item.id.replace('photo-', '') // Remove 'photo-' prefix
+				goto(`/photos/${albumSlug}/${photoId}`)
+			} else {
+				// For standalone photos, navigate to a generic photo page (to be implemented)
+				console.log('Individual photo navigation not yet implemented')
+			}
 		}
 	}
 

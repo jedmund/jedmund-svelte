@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
+import { updateMediaUsage, removeMediaUsage, extractMediaIds, trackMediaUsage, type MediaUsageReference } from '$lib/server/media-usage.js'
 
 // GET /api/posts/[id] - Get a single post
 export const GET: RequestHandler = async (event) => {
@@ -92,10 +93,60 @@ export const PUT: RequestHandler = async (event) => {
 				linkUrl: data.link_url,
 				linkDescription: data.linkDescription,
 				featuredImage: featuredImageId,
+				attachments: data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
 				tags: data.tags,
 				publishedAt: data.publishedAt
 			}
 		})
+
+		// Update media usage tracking
+		try {
+			// Remove all existing usage for this post first
+			await removeMediaUsage('post', id)
+
+			// Track all current media usage in the updated post
+			const usageReferences: MediaUsageReference[] = []
+
+			// Track featured image
+			const featuredImageIds = extractMediaIds(post, 'featuredImage')
+			featuredImageIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'post',
+					contentId: id,
+					fieldName: 'featuredImage'
+				})
+			})
+
+			// Track attachments
+			const attachmentIds = extractMediaIds(post, 'attachments')
+			attachmentIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'post',
+					contentId: id,
+					fieldName: 'attachments'
+				})
+			})
+
+			// Track media in post content
+			const contentIds = extractMediaIds(post, 'content')
+			contentIds.forEach(mediaId => {
+				usageReferences.push({
+					mediaId,
+					contentType: 'post',
+					contentId: id,
+					fieldName: 'content'
+				})
+			})
+
+			// Add new usage references
+			if (usageReferences.length > 0) {
+				await trackMediaUsage(usageReferences)
+			}
+		} catch (error) {
+			logger.warn('Failed to update media usage for post', { postId: id, error })
+		}
 
 		logger.info('Post updated', { id })
 		return jsonResponse(post)
@@ -117,6 +168,10 @@ export const DELETE: RequestHandler = async (event) => {
 			return errorResponse('Invalid post ID', 400)
 		}
 
+		// Remove media usage tracking first
+		await removeMediaUsage('post', id)
+
+		// Delete the post
 		await prisma.post.delete({
 			where: { id }
 		})

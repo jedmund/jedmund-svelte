@@ -9,6 +9,7 @@
 		slug: string
 		description: string
 		highlightColor: string
+		status?: 'draft' | 'published' | 'list-only' | 'password-protected'
 		index?: number
 	}
 
@@ -19,10 +20,14 @@
 		slug,
 		description,
 		highlightColor,
+		status = 'published',
 		index = 0
 	}: Props = $props()
 
 	const isEven = $derived(index % 2 === 0)
+	const isClickable = $derived(status === 'published' || status === 'password-protected')
+	const isListOnly = $derived(status === 'list-only')
+	const isPasswordProtected = $derived(status === 'password-protected')
 
 	// Create highlighted description
 	const highlightedDescription = $derived(
@@ -151,21 +156,26 @@
 	}
 
 	function handleClick() {
-		goto(`/work/${slug}`)
+		if (isClickable) {
+			goto(`/work/${slug}`)
+		}
 	}
 </script>
 
 <div
 	class="project-item {isEven ? 'even' : 'odd'}"
+	class:clickable={isClickable}
+	class:list-only={isListOnly}
+	class:password-protected={isPasswordProtected}
 	bind:this={cardElement}
 	onclick={handleClick}
 	onkeydown={(e) => e.key === 'Enter' && handleClick()}
-	onmousemove={handleMouseMove}
-	onmouseenter={handleMouseEnter}
-	onmouseleave={handleMouseLeave}
+	onmousemove={isClickable ? handleMouseMove : undefined}
+	onmouseenter={isClickable ? handleMouseEnter : undefined}
+	onmouseleave={isClickable ? handleMouseLeave : undefined}
 	style="transform: {transform};"
-	role="button"
-	tabindex="0"
+	role={isClickable ? 'button' : 'article'}
+	tabindex={isClickable ? 0 : -1}
 >
 	<div class="project-logo" style="background-color: {backgroundColor}">
 		{#if svgContent}
@@ -178,6 +188,26 @@
 	</div>
 	<div class="project-content">
 		<p class="project-description">{@html highlightedDescription}</p>
+		
+		{#if isListOnly}
+			<div class="status-indicator list-only">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+					<path d="M20.188 10.934c.388.472.612 1.057.612 1.686 0 .63-.224 1.214-.612 1.686a11.79 11.79 0 01-1.897 1.853c-1.481 1.163-3.346 2.24-5.291 2.24-1.945 0-3.81-1.077-5.291-2.24A11.79 11.79 0 016.812 14.32C6.224 13.648 6 13.264 6 12.62c0-.63.224-1.214.612-1.686A11.79 11.79 0 018.709 9.08c1.481-1.163 3.346-2.24 5.291-2.24 1.945 0 3.81 1.077 5.291 2.24a11.79 11.79 0 011.897 1.853z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M2 2l20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+				</svg>
+				<span>Coming Soon</span>
+			</div>
+		{:else if isPasswordProtected}
+			<div class="status-indicator password-protected">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+					<circle cx="12" cy="16" r="1" fill="currentColor"/>
+					<path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+				<span>Password Required</span>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -192,15 +222,29 @@
 		border-radius: $card-corner-radius;
 		transition:
 			transform 0.15s ease-out,
-			box-shadow 0.15s ease-out;
+			box-shadow 0.15s ease-out,
+			opacity 0.15s ease-out;
 		transform-style: preserve-3d;
 		will-change: transform;
-		cursor: pointer;
+		cursor: default;
 
-		&:hover {
-			box-shadow:
-				0 10px 30px rgba(0, 0, 0, 0.1),
-				0 1px 8px rgba(0, 0, 0, 0.06);
+		&.clickable {
+			cursor: pointer;
+
+			&:hover {
+				box-shadow:
+					0 10px 30px rgba(0, 0, 0, 0.1),
+					0 1px 8px rgba(0, 0, 0, 0.06);
+			}
+		}
+
+		&.list-only {
+			opacity: 0.7;
+			background: $grey-97;
+		}
+
+		&.password-protected {
+			// Keep full interactivity for password-protected items
 		}
 
 		&.odd {
@@ -250,6 +294,27 @@
 		font-size: 1.125rem; // 18px
 		line-height: 1.3;
 		color: $grey-00;
+	}
+
+	.status-indicator {
+		display: flex;
+		align-items: center;
+		gap: $unit-half;
+		margin-top: $unit;
+		font-size: 0.875rem;
+		font-weight: 500;
+
+		&.list-only {
+			color: $grey-60;
+		}
+
+		&.password-protected {
+			color: $blue-50;
+		}
+
+		svg {
+			flex-shrink: 0;
+		}
 	}
 
 	@include breakpoint('phone') {

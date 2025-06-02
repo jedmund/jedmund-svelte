@@ -58,14 +58,15 @@
 			year: data.year || new Date().getFullYear(),
 			client: data.client || '',
 			role: data.role || '',
-			technologies: Array.isArray(data.technologies) ? data.technologies.join(', ') : '',
+			projectType: data.projectType || 'work',
 			externalUrl: data.externalUrl || '',
 			featuredImage: data.featuredImage || null,
 			backgroundColor: data.backgroundColor || '',
 			highlightColor: data.highlightColor || '',
 			logoUrl: data.logoUrl || '',
 			gallery: data.gallery || null,
-			status: (data.status as 'draft' | 'published') || 'draft',
+			status: data.status || 'draft',
+			password: data.password || '',
 			caseStudyContent: data.caseStudyContent || {
 				type: 'doc',
 				content: [{ type: 'paragraph' }]
@@ -84,7 +85,8 @@
 				externalUrl: formData.externalUrl || undefined,
 				backgroundColor: formData.backgroundColor || undefined,
 				highlightColor: formData.highlightColor || undefined,
-				status: formData.status
+				status: formData.status,
+				password: formData.password || undefined
 			})
 			validationErrors = {}
 			return true
@@ -132,6 +134,7 @@
 				return
 			}
 
+	
 			const payload = {
 				title: formData.title,
 				subtitle: formData.subtitle,
@@ -139,10 +142,7 @@
 				year: formData.year,
 				client: formData.client,
 				role: formData.role,
-				technologies: formData.technologies
-					.split(',')
-					.map((t) => t.trim())
-					.filter(Boolean),
+				projectType: formData.projectType,
 				externalUrl: formData.externalUrl,
 				featuredImage: formData.featuredImage,
 				logoUrl: formData.logoUrl,
@@ -150,6 +150,7 @@
 				backgroundColor: formData.backgroundColor,
 				highlightColor: formData.highlightColor,
 				status: formData.status,
+				password: formData.status === 'password-protected' ? formData.password : null,
 				caseStudyContent:
 					formData.caseStudyContent &&
 					formData.caseStudyContent.content &&
@@ -191,14 +192,8 @@
 		}
 	}
 
-	async function handlePublish() {
-		formData.status = 'published'
-		await handleSave()
-		showPublishMenu = false
-	}
-
-	async function handleUnpublish() {
-		formData.status = 'draft'
+	async function handleStatusChange(newStatus: string) {
+		formData.status = newStatus as any
 		await handleSave()
 		showPublishMenu = false
 	}
@@ -241,7 +236,11 @@
 			{#if !isLoading}
 				<div class="save-actions">
 					<Button variant="primary" onclick={handleSave} disabled={isSaving} class="save-button">
-						{isSaving ? 'Saving...' : formData.status === 'published' ? 'Save' : 'Save Draft'}
+						{isSaving ? 'Saving...' : 
+						 formData.status === 'published' ? 'Save' :
+						 formData.status === 'list-only' ? 'Save List-Only' :
+						 formData.status === 'password-protected' ? 'Save Protected' :
+						 'Save Draft'}
 					</Button>
 					<Button
 						variant="ghost"
@@ -271,13 +270,24 @@
 					</Button>
 					{#if showPublishMenu}
 						<div class="publish-menu">
-							{#if formData.status === 'published'}
-								<Button variant="ghost" onclick={handleUnpublish} class="menu-item" fullWidth>
-									Unpublish
+							{#if formData.status !== 'draft'}
+								<Button variant="ghost" onclick={() => handleStatusChange('draft')} class="menu-item" fullWidth>
+									Save as Draft
 								</Button>
-							{:else}
-								<Button variant="ghost" onclick={handlePublish} class="menu-item" fullWidth>
+							{/if}
+							{#if formData.status !== 'published'}
+								<Button variant="ghost" onclick={() => handleStatusChange('published')} class="menu-item" fullWidth>
 									Publish
+								</Button>
+							{/if}
+							{#if formData.status !== 'list-only'}
+								<Button variant="ghost" onclick={() => handleStatusChange('list-only')} class="menu-item" fullWidth>
+									List Only
+								</Button>
+							{/if}
+							{#if formData.status !== 'password-protected'}
+								<Button variant="ghost" onclick={() => handleStatusChange('password-protected')} class="menu-item" fullWidth>
+									Password Protected
 								</Button>
 							{/if}
 						</div>

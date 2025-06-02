@@ -24,6 +24,7 @@ export const GET: RequestHandler = async (event) => {
 		const mimeType = event.url.searchParams.get('mimeType')
 		const unused = event.url.searchParams.get('unused') === 'true'
 		const search = event.url.searchParams.get('search')
+		const isPhotography = event.url.searchParams.get('isPhotography')
 
 		// Build where clause
 		const where: any = {}
@@ -38,6 +39,10 @@ export const GET: RequestHandler = async (event) => {
 
 		if (search) {
 			where.filename = { contains: search, mode: 'insensitive' }
+		}
+
+		if (isPhotography !== null) {
+			where.isPhotography = isPhotography === 'true'
 		}
 
 		// Get total count
@@ -59,6 +64,7 @@ export const GET: RequestHandler = async (event) => {
 				width: true,
 				height: true,
 				usedIn: true,
+				isPhotography: true,
 				createdAt: true
 			}
 		})

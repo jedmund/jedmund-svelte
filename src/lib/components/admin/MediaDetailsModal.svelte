@@ -23,23 +23,61 @@
 	// Form state
 	let altText = $state('')
 	let description = $state('')
+	let isPhotography = $state(false)
 	let isSaving = $state(false)
 	let error = $state('')
 	let successMessage = $state('')
+
+	// Usage tracking state
+	let usage = $state<Array<{
+		contentType: string
+		contentId: number
+		contentTitle: string
+		fieldDisplayName: string
+		contentUrl?: string
+		createdAt: string
+	}>>([])
+	let loadingUsage = $state(false)
 
 	// Initialize form when media changes
 	$effect(() => {
 		if (media) {
 			altText = media.altText || ''
 			description = media.description || ''
+			isPhotography = media.isPhotography || false
 			error = ''
 			successMessage = ''
+			loadUsage()
 		}
 	})
+
+	// Load usage information
+	async function loadUsage() {
+		if (!media) return
+		
+		try {
+			loadingUsage = true
+			const response = await authenticatedFetch(`/api/media/${media.id}/usage`)
+			
+			if (response.ok) {
+				const data = await response.json()
+				usage = data.usage || []
+			} else {
+				console.warn('Failed to load media usage')
+				usage = []
+			}
+		} catch (error) {
+			console.error('Error loading media usage:', error)
+			usage = []
+		} finally {
+			loadingUsage = false
+		}
+	}
 
 	function handleClose() {
 		altText = ''
 		description = ''
+		isPhotography = false
 		error = ''
 		successMessage = ''
 		isOpen = false
@@ -53,14 +91,15 @@
 			isSaving = true
 			error = ''
 
-			const response = await authenticatedFetch(`/api/media/${media.id}/metadata`, {
-				method: 'PATCH',
+			const response = await authenticatedFetch(`/api/media/${media.id}`, {
+				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
 					altText: altText.trim() || null,
-					description: description.trim() || null
+					description: description.trim() || null,
+					isPhotography: isPhotography
 				})
 			})
 
@@ -240,25 +279,58 @@
 						fullWidth
 					/>
 
+					<!-- Photography Toggle -->
+					<div class="photography-toggle">
+						<label class="toggle-label">
+							<input
+								type="checkbox"
+								bind:checked={isPhotography}
+								disabled={isSaving}
+								class="toggle-input"
+							/>
+							<span class="toggle-slider"></span>
+							<div class="toggle-content">
+								<span class="toggle-title">Photography</span>
+								<span class="toggle-description">Show this media in the photography experience</span>
+							</div>
+						</label>
+					</div>
+
 					<!-- Usage Tracking -->
-					{#if media.usedIn && Array.isArray(media.usedIn) && media.usedIn.length > 0}
-						<div class="usage-section">
-							<h4>Used In</h4>
+					<div class="usage-section">
+						<h4>Used In</h4>
+						{#if loadingUsage}
+							<div class="usage-loading">
+								<div class="spinner"></div>
+								<span>Loading usage information...</span>
+							</div>
+						{:else if usage.length > 0}
 							<ul class="usage-list">
-								{#each media.usedIn as usage}
+								{#each usage as usageItem}
 									<li class="usage-item">
-										<span class="usage-type">{usage.contentType}</span>
-										<span class="usage-field">{usage.fieldName}</span>
+										<div class="usage-content">
+											<div class="usage-header">
+												{#if usageItem.contentUrl}
+													<a href={usageItem.contentUrl} class="usage-title" target="_blank" rel="noopener">
+														{usageItem.contentTitle}
+													</a>
+												{:else}
+													<span class="usage-title">{usageItem.contentTitle}</span>
+												{/if}
+												<span class="usage-type">{usageItem.contentType}</span>
+											</div>
+											<div class="usage-details">
+												<span class="usage-field">{usageItem.fieldDisplayName}</span>
+												<span class="usage-date">Added {new Date(usageItem.createdAt).toLocaleDateString()}</span>
+											</div>
+										</div>
 									</li>
 								{/each}
 							</ul>
-						</div>
-					{:else}
-						<div class="usage-section">
-							<h4>Usage</h4>
+						{:else}
 							<p class="no-usage">This media file is not currently used in any content.</p>
-						</div>
-					{/if}
+						{/if}
+					</div>
 				</div>
 			</div>
 
@@ -439,6 +511,76 @@
 		}
 	}
 
+	.photography-toggle {
+		.toggle-label {
+			display: flex;
+			align-items: center;
+			gap: $unit-3x;
+			cursor: pointer;
+			user-select: none;
+		}
+
+		.toggle-input {
+			position: absolute;
+			opacity: 0;
+			pointer-events: none;
+
+			&:checked + .toggle-slider {
+				background-color: $blue-60;
+
+				&::before {
+					transform: translateX(20px);
+				}
+			}
+
+			&:disabled + .toggle-slider {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+		}
+
+		.toggle-slider {
+			position: relative;
+			width: 44px;
+			height: 24px;
+			background-color: $grey-80;
+			border-radius: 12px;
+			transition: background-color 0.2s ease;
+			flex-shrink: 0;
+
+			&::before {
+				content: '';
+				position: absolute;
+				top: 2px;
+				left: 2px;
+				width: 20px;
+				height: 20px;
+				background-color: white;
+				border-radius: 50%;
+				transition: transform 0.2s ease;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+			}
+		}
+
+		.toggle-content {
+			display: flex;
+			flex-direction: column;
+			gap: $unit-half;
+
+			.toggle-title {
+				font-weight: 500;
+				color: $grey-10;
+				font-size: 0.875rem;
+			}
+
+			.toggle-description {
+				font-size: 0.75rem;
+				color: $grey-50;
+				line-height: 1.4;
+			}
+		}
+	}
+
 	.usage-section {
 		.usage-list {
 			list-style: none;
@@ -449,23 +591,80 @@
 			gap: $unit;
 		}
 
-		.usage-item {
+		.usage-loading {
 			display: flex;
 			align-items: center;
 			gap: $unit-2x;
 			padding: $unit-2x;
-			background: $grey-95;
-			border-radius: 8px;
+			color: $grey-50;
 
-			.usage-type {
-				font-weight: 500;
-				color: $grey-20;
-				text-transform: capitalize;
+			.spinner {
+				width: 16px;
+				height: 16px;
+				border: 2px solid $grey-90;
+				border-top: 2px solid $grey-50;
+				border-radius: 50%;
+				animation: spin 1s linear infinite;
+			}
+		}
+
+		.usage-item {
+			padding: $unit-3x;
+			background: $grey-95;
+			border-radius: 12px;
+			border: 1px solid $grey-90;
+
+			.usage-content {
+				display: flex;
+				flex-direction: column;
+				gap: $unit;
 			}
 
-			.usage-field {
-				color: $grey-40;
-				font-size: 0.875rem;
+			.usage-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: $unit-2x;
+
+				.usage-title {
+					font-weight: 600;
+					color: $grey-10;
+					text-decoration: none;
+					transition: color 0.2s ease;
+
+					&:hover {
+						color: $blue-60;
+					}
+				}
+
+				.usage-type {
+					background: $grey-85;
+					color: $grey-30;
+					padding: $unit-half $unit;
+					border-radius: 6px;
+					font-size: 0.75rem;
+					font-weight: 500;
+					text-transform: uppercase;
+					letter-spacing: 0.5px;
+					flex-shrink: 0;
+				}
+			}
+
+			.usage-details {
+				display: flex;
+				align-items: center;
+				gap: $unit-3x;
+
+				.usage-field {
+					color: $grey-40;
+					font-size: 0.875rem;
+					font-weight: 500;
+				}
+
+				.usage-date {
+					color: $grey-50;
+					font-size: 0.75rem;
+				}
 			}
 		}
 
@@ -509,6 +708,11 @@
 				font-size: 0.875rem;
 			}
 		}
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
 	}
 
 	// Responsive adjustments

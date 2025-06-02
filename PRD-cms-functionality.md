@@ -47,22 +47,17 @@ CREATE TABLE projects (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Posts table (for /universe)
+-- Posts table (for /universe) - Simplified to 2 types
 CREATE TABLE posts (
   id SERIAL PRIMARY KEY,
   slug VARCHAR(255) UNIQUE NOT NULL,
-  post_type VARCHAR(50) NOT NULL, -- blog, microblog, link, photo, album
-  title VARCHAR(255), -- Optional for microblog posts
-  content JSONB, -- Edra JSON for blog/microblog, optional for others
-  excerpt TEXT,
-
-  -- Type-specific fields
-  link_url VARCHAR(500), -- For link posts
-  link_description TEXT, -- For link posts
-  photo_id INTEGER REFERENCES photos(id), -- For photo posts
-  album_id INTEGER REFERENCES albums(id), -- For album posts
+  post_type VARCHAR(50) NOT NULL, -- 'post' or 'essay'
+  title VARCHAR(255), -- Required for essays, optional for posts
+  content JSONB, -- Edra JSON content
+  excerpt TEXT, -- For essays
 
   featured_image VARCHAR(500),
+  attachments JSONB, -- Array of media IDs for any attachments
   tags JSONB, -- Array of tags
   status VARCHAR(50) DEFAULT 'draft',
   published_at TIMESTAMP,
@@ -70,7 +65,7 @@ CREATE TABLE posts (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Albums table
+-- Albums table - Enhanced with photography curation
 CREATE TABLE albums (
   id SERIAL PRIMARY KEY,
   slug VARCHAR(255) UNIQUE NOT NULL,
@@ -79,6 +74,7 @@ CREATE TABLE albums (
   date DATE,
   location VARCHAR(255),
   cover_photo_id INTEGER REFERENCES photos(id),
+  is_photography BOOLEAN DEFAULT false, -- Show in photos experience
   status VARCHAR(50) DEFAULT 'draft',
   show_in_universe BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -109,17 +105,35 @@ CREATE TABLE photos (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Media table (general uploads)
+-- Media table (general uploads) - Enhanced with photography curation
 CREATE TABLE media (
   id SERIAL PRIMARY KEY,
   filename VARCHAR(255) NOT NULL,
+  original_name VARCHAR(255), -- Original filename from user
   mime_type VARCHAR(100) NOT NULL,
   size INTEGER NOT NULL,
   url TEXT NOT NULL,
   thumbnail_url TEXT,
   width INTEGER,
   height INTEGER,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  alt_text TEXT, -- Alt text for accessibility
+  description TEXT, -- Optional description
+  is_photography BOOLEAN DEFAULT false, -- Star for photos experience
+  used_in JSONB DEFAULT '[]', -- Legacy tracking field
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Media usage tracking table
+CREATE TABLE media_usage (
+  id SERIAL PRIMARY KEY,
+  media_id INTEGER REFERENCES media(id) ON DELETE CASCADE,
+  content_type VARCHAR(50) NOT NULL, -- 'project', 'post', 'album'
+  content_id INTEGER NOT NULL,
+  field_name VARCHAR(100) NOT NULL, -- 'featuredImage', 'logoUrl', 'gallery', 'content', 'attachments'
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(media_id, content_type, content_id, field_name)
 );
 ```
 
@@ -154,13 +168,22 @@ CREATE TABLE media (
   }
   ```
 
-#### Media Table Enhancement
+#### Media Usage Tracking System
+
+The system now uses a dedicated `media_usage` table for robust tracking:
 
 ```sql
--- Add content associations to media table
-ALTER TABLE media ADD COLUMN used_in JSONB DEFAULT '[]';
--- Example: [{ "type": "post", "id": 1 }, { "type": "project", "id": 3 }]
+-- MediaUsage tracks where each media file is used
+-- Replaces the simple used_in JSONB field with proper relational tracking
+-- Enables complex queries like "show all projects using this media"
+-- Supports bulk operations and reference cleanup
 ```
+
+**Benefits:**
+- Accurate usage tracking across all content types
+- Efficient queries for usage information
+- Safe bulk deletion with automatic reference cleanup
+- Detailed tracking by field (featuredImage, gallery, content, etc.)
 
 ### 3. Content Type Editors
 
@@ -221,17 +244,29 @@ const ImageBlock = {
 }
 ```
 
-### 5. Media Library Component
+### 5. Media Library System
 
-- **Modal Interface**: Opens from Edra toolbar or form fields
+#### Media Library Component
+
+- **Modal Interface**: Opens from Edra toolbar, form fields, or Browse Library buttons
 - **Features**:
-  - Grid view of all uploaded media
-  - Search by filename
-  - Filter by type (image/video)
-  - Filter by usage (unused/used)
-  - Upload new files
-  - Select existing media
+  - Grid and list view modes for uploaded media
+  - Search by filename and filter by type (image/video/audio/pdf)
+  - Usage information showing where each media is used
+  - Alt text editing and accessibility features
+  - Upload new files directly from modal
+  - Single and multi-select functionality
 - **Returns**: Media object with ID and URLs
+
+#### Multiselect & Bulk Operations
+
+- **Selection Interface**: Checkbox-based selection in both grid and list views
+- **Bulk Actions**:
+  - Select All / Clear Selection controls
+  - Bulk delete with confirmation
+  - Progress indicators and loading states
+- **Safe Deletion**: Automatic reference cleanup across all content types
+- **Reference Tracking**: Shows exactly where each media file is used before deletion
 
 ### 6. Image Processing Pipeline
 
@@ -252,45 +287,58 @@ const ImageBlock = {
 
 ```typescript
 // Projects
-GET / api / projects
-POST / api / projects
-GET / api / projects / [slug]
-PUT / api / projects / [id]
-DELETE / api / projects / [id]
+GET /api/projects
+POST /api/projects
+GET /api/projects/[slug]
+PUT /api/projects/[id]
+DELETE /api/projects/[id]
 
 // Posts
-GET / api / posts
-POST / api / posts
-GET / api / posts / [slug]
-PUT / api / posts / [id]
-DELETE / api / posts / [id]
+GET /api/posts
+POST /api/posts
+GET /api/posts/[slug]
+PUT /api/posts/[id]
+DELETE /api/posts/[id]
 
 // Albums & Photos
-GET / api / albums
-POST / api / albums
-GET / api / albums / [slug]
-PUT / api / albums / [id]
-DELETE / api / albums / [id]
-POST / api / albums / [id] / photos
-DELETE / api / photos / [id]
-PUT / api / photos / [id] / order
+GET /api/albums
+POST /api/albums
+GET /api/albums/[slug]
+PUT /api/albums/[id]
+DELETE /api/albums/[id]
+POST /api/albums/[id]/photos
+DELETE /api/photos/[id]
+PUT /api/photos/[id]/order
 
-// Media upload
-POST / api / media / upload
-POST / api / media / bulk - upload
-GET / api / media // Browse with filters
-DELETE / api / media / [id] // Delete if unused
-GET / api / media / [id] / usage // Check where media is used
+// Media Management
+POST /api/media/upload           // Single file upload
+POST /api/media/bulk-upload      // Multiple file upload
+GET /api/media                   // Browse with filters, pagination
+GET /api/media/[id]              // Get single media item
+PUT /api/media/[id]              // Update media (alt text, description)
+DELETE /api/media/[id]           // Delete single media item
+DELETE /api/media/bulk-delete    // Delete multiple media items
+GET /api/media/[id]/usage        // Check where media is used
+POST /api/media/backfill-usage   // Backfill usage tracking for existing content
 ```
 
 ### 8. Media Management & Cleanup
 
-#### Orphaned Media Prevention
+#### Advanced Usage Tracking
 
-- **Reference Tracking**: `used_in` field tracks all content using each media item
-- **On Save**: Update media associations when content is saved
-- **On Delete**: Remove associations when content is deleted
-- **Cleanup Task**: Periodic job to identify truly orphaned media
+- **MediaUsage Table**: Dedicated table for precise tracking of media usage
+- **Automatic Tracking**: All content saves automatically update usage references
+- **Field-Level Tracking**: Tracks specific fields (featuredImage, gallery, content, attachments)
+- **Content Type Support**: Projects, Posts, Albums with full reference tracking
+- **Real-time Usage Display**: Shows exactly where each media file is used
+
+#### Safe Deletion System
+
+- **Usage Validation**: Prevents deletion if media is in use (unless forced)
+- **Reference Cleanup**: Automatically removes deleted media from all content
+- **Bulk Operations**: Multi-select deletion with comprehensive reference cleanup
+- **Rich Text Cleanup**: Removes deleted media from Edra editor content (images, galleries)
+- **Atomic Operations**: All-or-nothing deletion ensures data consistency
 
 #### Edra Integration Details
 
@@ -322,13 +370,19 @@ const handleImageUpload = async (file) => {
 ### 9. Admin Interface
 
 - **Route**: `/admin` (completely separate from public routes)
-- **Dashboard**: Overview of all content types
+- **Dashboard**: Overview of all content types with quick stats
 - **Content Lists**:
-  - Projects with preview thumbnails
-  - Posts with publish status
-  - Albums with photo counts
-- **Content Editors**: Type-specific editing interfaces
-- **Media Library**: Browse all uploaded files
+  - Projects with preview thumbnails and status indicators
+  - Posts with publish status and type badges
+  - Albums with photo counts and metadata
+- **Content Editors**: Type-specific editing interfaces with rich text support
+- **Media Library**: Comprehensive media management with:
+  - Grid and list view modes
+  - Advanced search and filtering
+  - Usage tracking and reference display
+  - Alt text editing and accessibility features
+  - Bulk operations with multiselect interface
+  - Safe deletion with reference cleanup
 
 ### 10. Public Display Integration
 
@@ -462,60 +516,93 @@ Based on requirements discussion:
 4. **Project Templates**: Defer case study layout templates for later phase
 5. **Scheduled Publishing**: Not needed initially
 6. **RSS Feeds**: Required for all content types (projects, posts, photos)
-7. **Post Types**: Universe will support multiple post types:
-   - **Blog Post**: Title + long-form Edra content
-   - **Microblog**: No title, short-form Edra content
-   - **Link Post**: URL + optional commentary
-   - **Photo Post**: Single photo + caption
-   - **Album Post**: Reference to photo album
+7. **Post Types**: Simplified to two main types:
+   - **Post**: Simple content with optional attachments (replaces microblog, link, photo posts)
+   - **Essay**: Full editor with title/metadata + optional attachments (replaces blog posts)
+8. **Albums & Photo Curation**: Albums serve dual purposes:
+   - **Regular Albums**: Collections for case studies, UI galleries, design process
+   - **Photography Albums**: Curated collections for photo-centric experience
+   - Both album and media levels have `isPhotography` flags for flexible curation
+9. **Photo Curation Strategy**: Media items can be "starred for photos" regardless of usage context
+   - Same photo can exist in posts AND photo collections
+   - Editorial control over what constitutes "photography" vs "UI screenshots/sketches"
+   - Photography albums can contain mixed content if editorially appropriate
 
-## Current Status (December 2024)
+## Current Status (June 2024)
 
 ### Completed
 
 - ✅ Database setup with Prisma and PostgreSQL
 - ✅ Media management system with Cloudinary integration
 - ✅ Admin foundation (layout, navigation, auth, forms, data tables)
-- ✅ Edra rich text editor integration for case studies
-- ✅ Edra image uploads configured to use media API
+- ✅ Edra rich text editor integration for case studies and posts
+- ✅ Edra image and gallery extensions with MediaLibraryModal integration
 - ✅ Local development mode for media uploads (no Cloudinary usage)
 - ✅ Project CRUD system with metadata fields and enhanced schema
 - ✅ Project list view in admin with enhanced UI
 - ✅ Project forms with branding (logo, colors) and styling
 - ✅ Posts CRUD system with all post types (blog, microblog, link, photo, album)
+- ✅ Posts attachments field for multiple image support
 - ✅ Posts list view and editor in admin
-- ✅ Complete database schema matching PRD requirements
+- ✅ Complete database schema with MediaUsage tracking table
 - ✅ Media API endpoints with upload, bulk upload, and usage tracking
 - ✅ Component library for admin interface (buttons, inputs, modals, etc.)
-- ✅ Test page for verifying upload functionality
+- ✅ MediaLibraryModal for browsing and selecting media
+- ✅ Media details modal with alt text editing and usage information
+- ✅ Multiselect interface for bulk media operations
+- ✅ Safe bulk deletion with automatic reference cleanup
+- ✅ UniverseComposer with photo attachment support
+- ✅ Form integration with Browse Library functionality (ImageUploader, GalleryUploader)
+- ✅ Usage tracking backfill system for existing content
+- ✅ **Project Password Protection & Visibility System** (June 2024)
+  - ✅ Four project states: Published, List-only, Password-protected, Draft
+  - ✅ Password protection with session storage
+  - ✅ Visual indicators in project lists
+  - ✅ Admin interface updates with status dropdown
+  - ✅ API filtering for different visibility states
+- ✅ **RSS Feed Best Practices Implementation** (June 2024)
+  - ✅ Updated all RSS feeds with proper XML namespaces
+  - ✅ Full content support via content:encoded
+  - ✅ Enhanced HTTP headers with ETag and caching
+  - ✅ RFC 822 date formatting throughout
 
 ### In Progress
 
-- 🔄 Albums/Photos System - Schema implemented, UI components needed
+- 🔄 Content Simplification & Photo Curation System
 
 ### Next Steps
 
-1. **Media Library System** (Critical dependency for other features)
+1. **Content Model Updates** (Immediate Priority)
 
-   - Media library modal component
-   - Integration with existing media APIs
-   - Search and filter functionality within media browser
+   - Add `isPhotography` field to Media and Album tables via migration
+   - Simplify post types to just "post" and "essay"
+   - Update post creation UI to use simplified types
+   - Add photography toggle to media details modal
+   - Add photography indicator pills in admin interface
 
-2. **Albums & Photos Management Interface**
+2. **Albums & Photos Management Interface** 
 
-   - Album creation and management UI
+   - Album creation and management UI with photography toggle
    - Bulk photo upload interface with progress
    - Photo ordering within albums
    - Album cover selection
    - EXIF data extraction and display
+   - Photography album filtering and management
 
 3. **Enhanced Content Features**
 
-   - Photo/album post selectors using media library
-   - Featured image picker for projects
+   - Featured image picker for projects (using MediaLibraryModal)
    - Technology tag selector for projects
    - Auto-save functionality for all editors
-   - Gallery manager for project images
+   - Gallery manager for project images with drag-and-drop
+
+4. **Public Display Integration**
+
+   - Dynamic Work page displaying projects from database
+   - Universe page with mixed content feed (posts + essays)
+   - Photos page with photography albums only
+   - Individual content detail pages
+   - SEO meta tags and OpenGraph integration
 
 ## Phased Implementation Plan
 
@@ -542,10 +629,14 @@ Based on requirements discussion:
 
 - [x] Create media upload endpoint with Cloudinary integration
 - [x] Implement image processing pipeline (multiple sizes)
-- [x] Build media library API endpoints
-- [x] Create media association tracking system
+- [x] Build media library API endpoints with pagination and filtering
+- [x] Create advanced MediaUsage tracking system
 - [x] Add bulk upload endpoint for photos
-- [x] Create media usage tracking queries
+- [x] Build MediaLibraryModal component with search and selection
+- [x] Implement media details modal with alt text editing
+- [x] Create multiselect interface for bulk operations
+- [x] Add safe bulk deletion with reference cleanup
+- [x] Build usage tracking queries and backfill system
 
 ### Phase 3: Admin Foundation
 
@@ -556,21 +647,22 @@ Based on requirements discussion:
 - [x] Build data table component for list views
 - [x] Add loading and error states
 - [x] Create comprehensive admin UI component library
-- [ ] Create media library modal component
+- [x] Build complete media library system with modals and management
 
 ### Phase 4: Posts System (All Types)
 
 - [x] Create Edra Svelte wrapper component
-- [x] Implement custom image block for Edra
+- [x] Implement custom image and gallery blocks for Edra
 - [x] Build post type selector UI
 - [x] Create blog/microblog post editor
 - [x] Build link post form
 - [x] Create posts list view in admin
-- [x] Implement post CRUD APIs
+- [x] Implement post CRUD APIs with attachments support
 - [x] Post editor page with type-specific fields
-- [x] Complete posts database schema with all post types
+- [x] Complete posts database schema with attachments field
 - [x] Posts administration interface
-- [ ] Create photo post selector (needs media library modal)
+- [x] UniverseComposer with photo attachment support
+- [x] Integrate MediaLibraryModal with Edra editor
 - [ ] Build album post selector (needs albums system)
 - [ ] Add auto-save functionality
 
@@ -578,40 +670,56 @@ Based on requirements discussion:
 
 - [x] Build project form with all metadata fields
 - [x] Enhanced schema with branding fields (logo, colors)
-- [x] Project branding and styling forms
-- [x] Add optional Edra editor for case studies
-- [x] Create project CRUD APIs
+- [x] Project branding and styling forms with ImageUploader and GalleryUploader
+- [x] Add optional Edra editor for case studies with media support
+- [x] Create project CRUD APIs with usage tracking
 - [x] Build project list view with enhanced UI
+- [x] Integrate Browse Library functionality in project forms
 - [ ] Create technology tag selector
-- [ ] Implement featured image picker (needs media library modal)
 - [ ] Build gallery manager with drag-and-drop ordering
 - [ ] Add project ordering functionality
 
-### Phase 6: Photos & Albums System
+### Phase 6: Content Simplification & Photo Curation
+
+- [x] Add `isPhotography` field to Media table (migration)
+- [x] Add `isPhotography` field to Album table (migration) 
+- [x] Simplify post types to "post" and "essay" only
+- [x] Update UniverseComposer to use simplified post types
+- [x] Add photography toggle to MediaDetailsModal
+- [x] Add photography indicator pills throughout admin interface
+- [x] Update media and album APIs to handle photography flags
+
+### Phase 7: Photos & Albums System
 
 - [x] Complete database schema for albums and photos
 - [x] Photo/album CRUD API endpoints (albums endpoint exists)
-- [ ] Create album management interface
+- [x] Create album management interface with photography toggle
+- [x] **Album Photo Management** (Core functionality complete)
+  - [x] Add photos to albums interface using MediaLibraryModal
+  - [x] Remove photos from albums with confirmation
+  - [x] Photo grid display with hover overlays
+  - [x] Album-photo relationship API endpoints (POST /api/albums/[id]/photos, DELETE /api/photos/[id])
+  - [ ] Photo reordering within albums (drag-and-drop)
+  - [ ] Album cover photo selection
 - [ ] Build bulk photo uploader with progress
 - [ ] Implement EXIF data extraction for photos
-- [ ] Implement drag-and-drop photo ordering
 - [ ] Add individual photo publishing UI
 - [ ] Build photo metadata editor
-- [ ] Implement album cover selection
+- [ ] Add photography album filtering and management
 - [ ] Add "show in universe" toggle for albums
 
-### Phase 7: Public Display Updates
+### Phase 8: Public Display Updates
 
-- [ ] Replace static Work page with dynamic data
-- [ ] Update project detail pages
-- [ ] Build Universe mixed feed component
-- [ ] Create different card types for each post type
-- [ ] Update Photos page with dynamic albums/photos
-- [ ] Implement individual photo pages
-- [ ] Add Universe post detail pages
+- [x] Replace static Work page with dynamic data
+- [x] Update project detail pages
+- [x] Build Universe mixed feed component  
+- [x] Create different card types for each post type
+- [x] Update Photos page with dynamic albums/photos
+- [x] Implement individual photo pages
+- [x] Add Universe post detail pages
 - [ ] Ensure responsive design throughout
 
-### Phase 8: RSS Feeds & Final Polish
+### Phase 9: RSS Feeds & Final Polish
 
 - [ ] Implement RSS feed for projects
 - [ ] Create RSS feed for Universe posts
@@ -622,7 +730,7 @@ Based on requirements discussion:
 - [ ] Add search functionality to admin
 - [ ] Performance optimization pass
 
-### Phase 9: Production Deployment
+### Phase 10: Production Deployment
 
 - [ ] Set up PostgreSQL on Railway
 - [ ] Run migrations on production database
@@ -641,6 +749,85 @@ Based on requirements discussion:
 - [ ] Advanced media organization (folders/tags)
 - [ ] Analytics integration
 - [ ] Backup system
+
+## Albums & Photos System Implementation
+
+### Design Decisions Made (May 2024)
+
+1. **Simplified Post Types**: Reduced from 5 types (blog, microblog, link, photo, album) to 2 types:
+   - **Post**: Simple content with optional attachments (handles previous microblog, link, photo use cases)
+   - **Essay**: Full editor with title/metadata + attachments (handles previous blog use cases)
+
+2. **Photo Curation Strategy**: Dual-level curation system:
+   - **Media Level**: `isPhotography` boolean - stars individual media for photo experience
+   - **Album Level**: `isPhotography` boolean - marks entire albums for photo experience
+   - **Mixed Content**: Photography albums can contain non-photography media (Option A)
+   - **Default Behavior**: Both flags default to `false` to prevent accidental photo inclusion
+
+3. **Visual Indicators**: Pill-shaped tags to indicate photography status in admin interface
+
+4. **Album Flexibility**: Albums serve multiple purposes:
+   - Regular albums for case studies, UI collections, design process
+   - Photography albums for curated photo experience (Japan Trip, Street Photography)
+   - Same album system, different curation flags
+
+### Implementation Task List
+
+#### Phase 1: Database Updates
+- [x] Create migration to add `isPhotography` field to Media table
+- [x] Create migration to add `isPhotography` field to Album table
+- [x] Update Prisma schema with new fields
+- [x] Test migrations on local database
+
+#### Phase 2: API Updates
+- [x] Update Media API endpoints to handle `isPhotography` flag
+- [x] Update Album API endpoints to handle `isPhotography` flag
+- [x] Update media usage tracking to work with new flags
+- [x] Add filtering capabilities for photography content
+
+#### Phase 3: Admin Interface Updates
+- [x] Add photography toggle to MediaDetailsModal
+- [x] Add photography indicator pills for media items (grid and list views)
+- [x] Add photography indicator pills for albums
+- [x] Update media library filtering to include photography status
+- [x] Add bulk photography operations (mark/unmark multiple items)
+
+#### Phase 4: Post Type Simplification
+- [x] Update UniverseComposer to use only "post" and "essay" types
+- [x] Remove complex post type selector UI
+- [x] Update post creation flows
+- [x] Migrate existing posts to simplified types (if needed)
+- [x] Update post display logic to handle simplified types
+
+#### Phase 5: Album Management System
+- [x] Create album creation/editing interface with photography toggle
+- [x] Build album list view with photography indicators
+- [ ] **Critical Missing Feature: Album Photo Management**
+  - [ ] Add photo management section to album edit page
+  - [ ] Implement "Add Photos from Library" functionality using MediaLibraryModal
+  - [ ] Create photo grid display within album editor
+  - [ ] Add remove photo functionality (individual photos)
+  - [ ] Implement drag-and-drop photo reordering within albums
+  - [ ] Add album cover photo selection interface
+  - [ ] Update album API to handle photo associations
+  - [ ] Create album-photo relationship endpoints
+- [ ] Add bulk photo upload to albums with automatic photography detection
+
+#### Phase 6: Photography Experience
+- [ ] Build photography album filtering in admin
+- [ ] Create photography-focused views and workflows
+- [ ] Add batch operations for photo curation
+- [ ] Implement photography album public display
+- [ ] Add photography vs regular album distinction in frontend
+
+### Success Criteria
+
+- Admin can quickly toggle media items between regular and photography status
+- Albums can be easily marked for photography experience
+- Post creation is simplified to 2 clear choices
+- Photography albums display correctly in public photos section
+- Mixed content albums (photography + other) display all content as intended
+- Pill indicators clearly show photography status throughout admin interface
 
 ## Success Metrics
 

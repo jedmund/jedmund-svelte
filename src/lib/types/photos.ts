@@ -21,6 +21,7 @@ export interface Photo {
 
 export interface PhotoAlbum {
 	id: string
+	slug: string
 	title: string
 	description?: string
 	coverPhoto: Photo

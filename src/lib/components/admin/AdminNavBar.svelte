@@ -18,6 +18,7 @@
 		{ text: 'Dashboard', href: '/admin', icon: DashboardIcon },
 		{ text: 'Projects', href: '/admin/projects', icon: WorkIcon },
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
+		{ text: 'Albums', href: '/admin/albums', icon: PhotosIcon },
 		{ text: 'Media', href: '/admin/media', icon: PhotosIcon }
 	]
 
@@ -29,9 +30,11 @@
 				? 1
 				: currentPath.startsWith('/admin/posts')
 					? 2
-					: currentPath.startsWith('/admin/media')
+					: currentPath.startsWith('/admin/albums')
 						? 3
-						: -1
+						: currentPath.startsWith('/admin/media')
+							? 4
+							: -1
 	)
 </script>
 
@@ -134,8 +137,8 @@
 		}
 
 		.brand-logo {
-			height: 40px;
-			width: 40px;
+			height: 32px;
+			width: 32px;
 			display: flex;
 			align-items: center;
 			justify-content: center;

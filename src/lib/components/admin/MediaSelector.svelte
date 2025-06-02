@@ -31,6 +31,7 @@
 	let total = $state(0)
 	let searchQuery = $state('')
 	let filterType = $state<string>(fileType === 'all' ? 'all' : fileType)
+	let photographyFilter = $state<string>('all')
 	let searchTimeout: ReturnType<typeof setTimeout>
 
 	// Initialize selected media from IDs
@@ -60,6 +61,14 @@
 		}
 	})
 
+	// Watch for photography filter changes
+	$effect(() => {
+		if (photographyFilter !== undefined) {
+			currentPage = 1
+			loadMedia()
+		}
+	})
+
 	onMount(() => {
 		loadMedia()
 	})
@@ -74,6 +83,10 @@
 			
 			if (filterType !== 'all') {
 				url += `&mimeType=${filterType}`
+			}
+			
+			if (photographyFilter !== 'all') {
+				url += `&isPhotography=${photographyFilter}`
 			}
 			
 			if (searchQuery) {
@@ -172,6 +185,12 @@
 				<option value="image">Images</option>
 				<option value="video">Videos</option>
 			</select>
+			
+			<select bind:value={photographyFilter} class="filter-select">
+				<option value="all">All Media</option>
+				<option value="true">Photography</option>
+				<option value="false">Non-Photography</option>
+			</select>
 		</div>
 
 		{#if showSelectAll}
@@ -257,6 +276,25 @@
 						<div class="media-info">
 							<div class="media-filename" title={item.filename}>
 								{item.filename}
+							</div>
+							<div class="media-indicators">
+								{#if item.isPhotography}
+									<span class="indicator-pill photography" title="Photography">
+										<svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+											<polygon points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26" fill="currentColor"/>
+										</svg>
+										Photo
+									</span>
+								{/if}
+								{#if item.altText}
+									<span class="indicator-pill alt-text" title="Alt text: {item.altText}">
+										Alt
+									</span>
+								{:else}
+									<span class="indicator-pill no-alt-text" title="No alt text">
+										No Alt
+									</span>
+								{/if}
 							</div>
 							<div class="media-meta">
 								<span class="file-size">{formatFileSize(item.size)}</span>
@@ -478,11 +516,60 @@
 		text-overflow: ellipsis;
 	}
 
+	.media-indicators {
+		display: flex;
+		gap: $unit-half;
+		flex-wrap: wrap;
+		margin-bottom: $unit-half;
+	}
+
 	.media-meta {
 		display: flex;
 		gap: $unit;
 		font-size: 0.75rem;
 		color: $grey-40;
+	}
+
+	// Indicator pill styles
+	.indicator-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: $unit-half;
+		padding: 2px $unit;
+		border-radius: 4px;
+		font-size: 0.625rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		line-height: 1;
+
+		svg {
+			width: 8px;
+			height: 8px;
+			flex-shrink: 0;
+		}
+
+		&.photography {
+			background-color: rgba(139, 92, 246, 0.1);
+			color: #7c3aed;
+			border: 1px solid rgba(139, 92, 246, 0.2);
+
+			svg {
+				fill: #7c3aed;
+			}
+		}
+
+		&.alt-text {
+			background-color: rgba(34, 197, 94, 0.1);
+			color: #16a34a;
+			border: 1px solid rgba(34, 197, 94, 0.2);
+		}
+
+		&.no-alt-text {
+			background-color: rgba(239, 68, 68, 0.1);
+			color: #dc2626;
+			border: 1px solid rgba(239, 68, 68, 0.2);
+		}
 	}
 
 	.load-more-container {

@@ -59,7 +59,7 @@ async function fetchRecentPSNGames(fetch: typeof window.fetch): Promise<Serializ
 async function fetchProjects(
 	fetch: typeof window.fetch
 ): Promise<{ projects: Project[]; pagination: any }> {
-	const response = await fetch('/api/projects?status=published')
+	const response = await fetch('/api/projects?projectType=work&includeListOnly=true&includePasswordProtected=true')
 	if (!response.ok) {
 		throw new Error(`Failed to fetch projects: ${response.status}`)
 	}
