@@ -33,7 +33,7 @@
 	}: Props = $props()
 
 	// Compute button classes
-	const buttonClass = $derived(() => {
+	const buttonClass = $derived.by(() => {
 		const classes = ['btn']
 
 		// Variant
@@ -66,7 +66,7 @@
 </script>
 
 {#if href}
-	<a {href} class={buttonClass()} class:disabled={disabled || loading} {...restProps}>
+	<a {href} class={buttonClass} class:disabled={disabled || loading} {...restProps}>
 		{#if showSpinner}
 			<svg class="btn-spinner" width="16" height="16" viewBox="0 0 16 16">
 				<circle
@@ -113,7 +113,7 @@
 		{/if}
 	</a>
 {:else}
-	<button class={buttonClass()} {type} disabled={disabled || loading} {onclick} {...restProps}>
+	<button class={buttonClass} {type} disabled={disabled || loading} {onclick} {...restProps}>
 		{#if showSpinner}
 			<svg class="btn-spinner" width="16" height="16" viewBox="0 0 16 16">
 				<circle
