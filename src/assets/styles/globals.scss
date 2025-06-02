@@ -1,0 +1,35 @@
+// Global font family setting
+// This applies the cstd font to all elements by default
+* {
+	font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
+}
+
+// Global body styles
+body {
+	font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+// Heading font weights
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight: 500;
+}
+
+// Button and input font inheritance
+button,
+input,
+textarea,
+select {
+	font-family: inherit;
+}
+
+input,
+textarea {
+	box-sizing: border-box;
+}

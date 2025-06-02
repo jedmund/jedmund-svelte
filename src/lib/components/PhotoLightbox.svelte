@@ -1,18 +1,18 @@
 <script lang="ts">
 	import type { Photo } from '$lib/types/photos'
 
-	const { 
-		photo, 
-		albumPhotos = [], 
-		currentIndex = 0, 
-		onClose, 
-		onNavigate 
-	}: { 
+	const {
+		photo,
+		albumPhotos = [],
+		currentIndex = 0,
+		onClose,
+		onNavigate
+	}: {
 		photo: Photo
 		albumPhotos?: Photo[]
 		currentIndex?: number
 		onClose: () => void
-		onNavigate: (direction: 'prev' | 'next') => void 
+		onNavigate: (direction: 'prev' | 'next') => void
 	} = $props()
 
 	let imageLoaded = $state(false)
@@ -88,7 +88,12 @@
 		<!-- Close button -->
 		<button class="close-button" onclick={onClose} type="button">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-				<path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+				<path
+					d="M6 6l12 12M18 6l-12 12"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+				/>
 			</svg>
 		</button>
 
@@ -96,24 +101,31 @@
 		{#if hasNavigation}
 			<button class="nav-button nav-prev" onclick={() => onNavigate('prev')} type="button">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-					<path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path
+						d="M15 18l-6-6 6-6"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
 				</svg>
 			</button>
 			<button class="nav-button nav-next" onclick={() => onNavigate('next')} type="button">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-					<path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path
+						d="M9 18l6-6-6-6"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
 				</svg>
 			</button>
 		{/if}
 
 		<!-- Photo -->
 		<div class="photo-container">
-			<img 
-				src={photo.src} 
-				alt={photo.alt} 
-				onload={handleImageLoad}
-				class:loaded={imageLoaded}
-			/>
+			<img src={photo.src} alt={photo.alt} onload={handleImageLoad} class:loaded={imageLoaded} />
 			{#if !imageLoaded}
 				<div class="loading-indicator">
 					<div class="spinner"></div>
@@ -163,7 +175,7 @@
 		justify-content: center;
 		z-index: 1000;
 		padding: $unit-2x;
-		
+
 		@include breakpoint('phone') {
 			padding: $unit;
 		}
@@ -175,7 +187,7 @@
 		max-height: 90vh;
 		display: flex;
 		gap: $unit-3x;
-		
+
 		@include breakpoint('phone') {
 			flex-direction: column;
 			max-width: 95vw;
@@ -200,7 +212,7 @@
 		&:hover {
 			background: rgba(255, 255, 255, 0.1);
 		}
-		
+
 		@include breakpoint('phone') {
 			top: -$unit-4x;
 			right: -$unit;
@@ -231,7 +243,7 @@
 		&.nav-next {
 			right: -$unit-6x;
 		}
-		
+
 		@include breakpoint('phone') {
 			&.nav-prev {
 				left: $unit;
@@ -249,7 +261,7 @@
 		align-items: center;
 		justify-content: center;
 		position: relative;
-		
+
 		img {
 			max-width: 70vw;
 			max-height: 80vh;
@@ -257,11 +269,11 @@
 			border-radius: $corner-radius;
 			opacity: 0;
 			transition: opacity 0.3s ease;
-			
+
 			&.loaded {
 				opacity: 1;
 			}
-			
+
 			@include breakpoint('phone') {
 				max-width: 95vw;
 				max-height: 60vh;
@@ -274,7 +286,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		
+
 		.spinner {
 			width: 40px;
 			height: 40px;
@@ -301,11 +313,11 @@
 		backdrop-filter: blur(10px);
 		opacity: 0;
 		transition: opacity 0.3s ease 0.1s; // Slight delay to sync with image
-		
+
 		&.loaded {
 			opacity: 1;
 		}
-		
+
 		@include breakpoint('phone') {
 			width: 100%;
 			max-height: 30vh;
@@ -341,13 +353,13 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		
+
 		dt {
 			font-weight: 500;
 			opacity: 0.7;
 			margin-right: $unit-2x;
 		}
-		
+
 		dd {
 			margin: 0;
 			text-align: right;

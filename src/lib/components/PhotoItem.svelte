@@ -1,24 +1,32 @@
 <script lang="ts">
 	import type { PhotoItem, Photo, PhotoAlbum } from '$lib/types/photos'
 	import { isAlbum } from '$lib/types/photos'
+	import { goto } from '$app/navigation'
 
-	const { 
-		item, 
-		onPhotoClick 
-	}: { 
+	const {
+		item,
+		albumSlug // For when this is used within an album context
+	}: {
 		item: PhotoItem
-		onPhotoClick: (photo: Photo, albumPhotos?: Photo[]) => void 
+		albumSlug?: string
 	} = $props()
 
 	let imageLoaded = $state(false)
 
 	function handleClick() {
 		if (isAlbum(item)) {
-			// For albums, open the cover photo with album navigation
-			onPhotoClick(item.coverPhoto, item.photos)
+			// Navigate to album page using the slug
+			goto(`/photos/${item.slug}`)
 		} else {
-			// For individual photos, open just that photo
-			onPhotoClick(item)
+			// For individual photos, check if we have album context
+			if (albumSlug) {
+				// Navigate to photo within album
+				const photoId = item.id.replace('photo-', '') // Remove 'photo-' prefix
+				goto(`/photos/${albumSlug}/${photoId}`)
+			} else {
+				// For standalone photos, navigate to a generic photo page (to be implemented)
+				console.log('Individual photo navigation not yet implemented')
+			}
 		}
 	}
 
@@ -38,8 +46,8 @@
 				<div class="stack-photo stack-back"></div>
 				<div class="stack-photo stack-middle"></div>
 				<div class="stack-photo stack-front">
-					<img 
-						src={photo.src} 
+					<img
+						src={photo.src}
 						alt={photo.alt}
 						loading="lazy"
 						draggable="false"
@@ -60,8 +68,8 @@
 		{:else}
 			<!-- Single photo -->
 			<div class="single-photo">
-				<img 
-					src={photo.src} 
+				<img
+					src={photo.src}
 					alt={photo.alt}
 					loading="lazy"
 					draggable="false"
@@ -79,10 +87,10 @@
 <style lang="scss">
 	.photo-item {
 		break-inside: avoid;
-		margin-bottom: $unit-2x;
-		
+		margin-bottom: $unit-3x;
+
 		@include breakpoint('tablet') {
-			margin-bottom: $unit;
+			margin-bottom: $unit-2x;
 		}
 	}
 
@@ -96,7 +104,9 @@
 		border-radius: $corner-radius;
 		overflow: hidden;
 		position: relative;
-		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
 
 		&:hover {
 			transform: translateY(-2px);
@@ -133,7 +143,7 @@
 
 	.stack-photo {
 		border-radius: $corner-radius;
-		
+
 		&.stack-back {
 			position: absolute;
 			top: -6px;
@@ -144,7 +154,7 @@
 			z-index: 1;
 			transform: rotate(2deg);
 		}
-		
+
 		&.stack-middle {
 			position: absolute;
 			top: -3px;
@@ -155,11 +165,11 @@
 			z-index: 2;
 			transform: rotate(-1deg);
 		}
-		
+
 		&.stack-front {
 			position: relative;
 			z-index: 3;
-			
+
 			img {
 				width: 100%;
 				height: auto;
@@ -209,7 +219,7 @@
 			.stack-back {
 				transform: rotate(3deg) translateY(-1px);
 			}
-			
+
 			.stack-middle {
 				transform: rotate(-1.5deg) translateY(-0.5px);
 			}
@@ -226,7 +236,7 @@
 		background-size: 200% 200%;
 		animation: shimmer 1.5s ease-in-out infinite;
 		border-radius: $corner-radius;
-		
+
 		&::after {
 			content: '';
 			position: absolute;

@@ -57,7 +57,7 @@
 
 		&.note {
 			.post-excerpt {
-				font-size: 1rem;
+				font-size: 1.125rem;
 			}
 		}
 
@@ -107,8 +107,8 @@
 	.post-excerpt {
 		margin: 0;
 		color: $grey-00;
-		font-size: 1rem;
-		line-height: 1.3;
+		font-size: 1.125rem;
+		line-height: 1.5;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 3;

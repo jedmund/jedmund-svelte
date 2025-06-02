@@ -16,7 +16,7 @@
 		favicon?: string
 		siteName?: string
 	} | null>(null)
-	
+
 	let loading = $state(true)
 	let error = $state(false)
 
@@ -35,7 +35,7 @@
 			window.open(url, '_blank', 'noopener,noreferrer')
 		}
 	}
-	
+
 	onMount(async () => {
 		// If link is just a string URL, fetch metadata
 		if (typeof link === 'string') {
@@ -109,7 +109,6 @@
 		width: 100%;
 		text-align: left;
 		cursor: pointer;
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		transition: border-color 0.2s ease;
 
 		&:hover {
@@ -124,7 +123,7 @@
 		// Loading state
 		&.loading {
 			cursor: default;
-			
+
 			&:hover {
 				border-color: $grey-80;
 			}
@@ -163,7 +162,6 @@
 		gap: $unit;
 		font-size: 0.875rem;
 		color: $grey-40;
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	}
 
 	.favicon {
@@ -184,7 +182,6 @@
 		font-weight: 600;
 		color: $grey-00;
 		line-height: 1.3;
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
@@ -196,7 +193,6 @@
 		font-size: 0.875rem;
 		color: $grey-40;
 		line-height: 1.4;
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 3;
@@ -225,7 +221,8 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% {
+		0%,
+		100% {
 			opacity: 1;
 		}
 		50% {

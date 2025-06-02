@@ -3,9 +3,7 @@ import type { Album } from '$lib/types/lastfm'
 
 export const load: PageLoad = async ({ fetch }) => {
 	try {
-		const [albums] = await Promise.all([
-			fetchRecentAlbums(fetch)
-		])
+		const [albums] = await Promise.all([fetchRecentAlbums(fetch)])
 
 		return {
 			albums

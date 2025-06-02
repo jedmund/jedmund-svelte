@@ -20,6 +20,8 @@ $unit-8x: $unit * 8;
 $unit-10x: $unit * 10;
 $unit-12x: $unit * 12;
 $unit-14x: $unit * 14;
+$unit-16x: $unit * 16;
+$unit-18x: $unit * 18;
 $unit-20x: $unit * 20;
 
 /* Page properties
@@ -64,17 +66,45 @@ $letter-spacing: -0.02em;
 /* Colors
  * -------------------------------------------------------------------------- */
 $grey-100: #ffffff;
+$grey-97: #fafafa;
+$grey-95: #f5f5f5;
 $grey-90: #f7f7f7;
+$grey-85: #ebebeb;
 $grey-80: #e8e8e8;
+$grey-70: #dfdfdf;
+$grey-60: #cccccc;
+$grey-5: #f9f9f9;
 $grey-50: #b2b2b2;
 $grey-40: #999999;
+$grey-30: #808080;
 $grey-20: #666666;
+$grey-10: #4d4d4d;
 $grey-00: #333333;
 
+$red-90: #ff9d8f;
 $red-80: #ff6a54;
 $red-60: #e33d3d;
+$red-50: #d33;
 $red-40: #d31919;
 $red-00: #3d0c0c;
+
+$blue-60: #2e8bc0;
+$blue-50: #1482c1;
+$blue-40: #126fa8;
+$blue-20: #0f5d8f;
+$blue-10: #e6f3ff;
+
+$yellow-90: #fff9e6;
+$yellow-80: #ffeb99;
+$yellow-70: #ffdd4d;
+$yellow-60: #ffcc00;
+$yellow-50: #f5c500;
+$yellow-40: #e6b800;
+$yellow-30: #cc9900;
+$yellow-20: #996600;
+$yellow-10: #664400;
+
+$salmon-pink: #ffd5cf; // Desaturated salmon pink for hover states
 
 $bg-color: #e8e8e8;
 $page-color: #ffffff;
@@ -85,6 +115,7 @@ $text-color-body: #666666;
 
 $accent-color: #e33d3d;
 $grey-color: #f0f0f0;
+$primary-color: #1482c1; // Using labs color as primary
 
 $image-border-color: rgba(0, 0, 0, 0.03);
 
