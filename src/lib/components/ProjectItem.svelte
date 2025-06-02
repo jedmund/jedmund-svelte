@@ -44,15 +44,8 @@
 	let transform = $state('')
 	let svgContent = $state('')
 
-	// Logo bounce effect
+	// Logo gravity effect
 	let logoTransform = $state('')
-	let velocity = { x: 0, y: 0 }
-	let position = { x: 0, y: 0 }
-	let animationFrame: number
-
-	const maxMovement = 10
-	const bounceDamping = 0.2
-	const friction = 0.85
 
 	onMount(async () => {
 		// Load SVG content
@@ -76,29 +69,9 @@
 		}
 
 		return () => {
-			if (animationFrame) {
-				cancelAnimationFrame(animationFrame)
-			}
+			// Cleanup if needed
 		}
 	})
-
-	function updateLogoPosition() {
-		velocity.x *= friction
-		velocity.y *= friction
-
-		position.x += velocity.x
-		position.y += velocity.y
-
-		// Constrain position
-		position.x = Math.max(-maxMovement, Math.min(maxMovement, position.x))
-		position.y = Math.max(-maxMovement, Math.min(maxMovement, position.y))
-
-		logoTransform = `translate(${position.x}px, ${position.y}px)`
-
-		if (Math.abs(velocity.x) > 0.01 || Math.abs(velocity.y) > 0.01) {
-			animationFrame = requestAnimationFrame(updateLogoPosition)
-		}
-	}
 
 	function handleMouseMove(e: MouseEvent) {
 		if (!cardElement || !isHovering) return
@@ -115,26 +88,14 @@
 		const rotateY = ((x - centerX) / centerX) * 4
 		transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.014, 1.014, 1.014)`
 
-		// Logo movement
-		if (logoElement) {
-			const logoRect = logoElement.getBoundingClientRect()
-			const logoCenterX = logoRect.left + logoRect.width / 2 - rect.left
-			const logoCenterY = logoRect.top + logoRect.height / 2 - rect.top
+		// Gravity-based logo animation
+		// Logo slides in the same direction as the tilt
+		// When tilting down (mouse at bottom), logo slides down
+		// When tilting up (mouse at top), logo slides up
+		const logoX = -rotateY * 3 // Same direction as tilt
+		const logoY = rotateX * 3 // Same direction as tilt
 
-			const deltaX = x - logoCenterX
-			const deltaY = y - logoCenterY
-			const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
-
-			if (distance < 100) {
-				const force = (100 - distance) / 100
-				velocity.x -= (deltaX / distance) * force * bounceDamping
-				velocity.y -= (deltaY / distance) * force * bounceDamping
-
-				if (!animationFrame) {
-					animationFrame = requestAnimationFrame(updateLogoPosition)
-				}
-			}
-		}
+		logoTransform = `translate(${logoX}px, ${logoY}px)`
 	}
 
 	function handleMouseEnter() {
@@ -144,15 +105,7 @@
 	function handleMouseLeave() {
 		isHovering = false
 		transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
-
-		// Reset logo position
-		velocity = { x: 0, y: 0 }
-		position = { x: 0, y: 0 }
-		logoTransform = ''
-		if (animationFrame) {
-			cancelAnimationFrame(animationFrame)
-			animationFrame = 0
-		}
+		logoTransform = 'translate(0, 0)'
 	}
 
 	function handleClick() {
@@ -183,7 +136,13 @@
 				{@html svgContent}
 			</div>
 		{:else if logoUrl}
-			<img src={logoUrl} alt="{name} logo" class="logo-image" />
+			<img
+				src={logoUrl}
+				alt="{name} logo"
+				class="logo-image"
+				bind:this={logoElement}
+				style="transform: {logoTransform}"
+			/>
 		{/if}
 	</div>
 	<div class="project-content">
@@ -300,6 +259,8 @@
 			max-width: 100%;
 			max-height: 100%;
 			object-fit: contain;
+			transition: transform 0.4s cubic-bezier(0.2, 2.1, 0.3, 0.95);
+			will-change: transform;
 		}
 
 		.logo-svg {
@@ -308,7 +269,7 @@
 			justify-content: center;
 			width: 100%;
 			height: 100%;
-			transition: transform 0.15s ease-out;
+			transition: transform 0.4s cubic-bezier(0.2, 2.1, 0.3, 0.95);
 
 			:global(svg) {
 				width: 48px;
