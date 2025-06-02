@@ -6,13 +6,15 @@
 		triggerElement: HTMLElement
 		onUpdate: (key: string, value: any) => void
 		onDelete: () => void
+		onClose?: () => void
 	}
 
 	let {
 		album = $bindable(),
 		triggerElement,
 		onUpdate,
-		onDelete
+		onDelete,
+		onClose = () => {}
 	}: Props = $props()
 
 	// Convert album date to YYYY-MM-DD format for date input
@@ -98,4 +100,5 @@
 	bind:data={popoverData}
 	{triggerElement}
 	onUpdate={handleDateChange}
+	{onClose}
 />

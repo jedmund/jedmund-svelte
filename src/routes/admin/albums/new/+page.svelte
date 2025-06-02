@@ -258,6 +258,7 @@
 						triggerElement={metadataButtonElement}
 						onUpdate={handleMetadataUpdate}
 						onDelete={() => {}}
+						onClose={() => isMetadataOpen = false}
 					/>
 				{/if}
 			</div>
@@ -391,6 +392,23 @@
 		&:hover {
 			background: $grey-90;
 			color: $grey-10;
+		}
+	}
+
+	.btn {
+		padding: $unit-2x $unit-3x;
+		border: none;
+		border-radius: 50px;
+		font-size: 0.925rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		display: flex;
+		align-items: center;
+		gap: $unit;
+
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
 		}
 	}
 

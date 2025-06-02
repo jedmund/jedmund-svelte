@@ -12,6 +12,7 @@
 		onAddTag: () => void
 		onRemoveTag: (tag: string) => void
 		onDelete: () => void
+		onClose?: () => void
 	}
 
 	let {
@@ -24,7 +25,8 @@
 		triggerElement,
 		onAddTag,
 		onRemoveTag,
-		onDelete
+		onDelete,
+		onClose = () => {}
 	}: Props = $props()
 
 	function handleFieldUpdate(key: string, value: any) {
@@ -102,4 +104,5 @@
 	onUpdate={handleFieldUpdate}
 	{onAddTag}
 	{onRemoveTag}
+	{onClose}
 />

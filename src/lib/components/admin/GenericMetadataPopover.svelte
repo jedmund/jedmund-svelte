@@ -31,6 +31,7 @@
 		onUpdate?: (key: string, value: any) => void
 		onAddTag?: () => void
 		onRemoveTag?: (tag: string) => void
+		onClose?: () => void
 	}
 
 	let {
@@ -39,7 +40,8 @@
 		triggerElement,
 		onUpdate = () => {},
 		onAddTag = () => {},
-		onRemoveTag = () => {}
+		onRemoveTag = () => {},
+		onClose = () => {}
 	}: Props = $props()
 
 	let popoverElement: HTMLDivElement
@@ -129,9 +131,26 @@
 		window.addEventListener('scroll', handleUpdate, true)
 		window.addEventListener('resize', handleUpdate)
 
+		// Click outside handler
+		const handleClickOutside = (event: MouseEvent) => {
+			const target = event.target as Node
+			// Don't close if clicking inside the trigger button or the popover itself
+			if (
+				triggerElement?.contains(target) ||
+				popoverElement?.contains(target)
+			) {
+				return
+			}
+			onClose()
+		}
+
+		// Add click outside listener
+		document.addEventListener('click', handleClickOutside)
+
 		return () => {
 			window.removeEventListener('scroll', handleUpdate, true)
 			window.removeEventListener('resize', handleUpdate)
+			document.removeEventListener('click', handleClickOutside)
 			if (portalTarget) {
 				document.body.removeChild(portalTarget)
 			}

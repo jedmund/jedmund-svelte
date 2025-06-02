@@ -115,25 +115,6 @@
 	}
 
 
-	function handleMetadataPopover(event: MouseEvent) {
-		const target = event.target as Node
-		// Don't close if clicking inside the metadata button or anywhere in a metadata popover
-		if (
-			metadataButtonRef?.contains(target) ||
-			document.querySelector('.metadata-popover')?.contains(target)
-		) {
-			return
-		}
-		showMetadata = false
-	}
-
-
-	$effect(() => {
-		if (showMetadata) {
-			document.addEventListener('click', handleMetadataPopover)
-			return () => document.removeEventListener('click', handleMetadataPopover)
-		}
-	})
 
 	// Mock post object for metadata popover
 	const mockPost = $derived({
@@ -190,6 +171,7 @@
 						onAddTag={addTag}
 						onRemoveTag={removeTag}
 						onDelete={() => {}}
+						onClose={() => showMetadata = false}
 					/>
 				{/if}
 			</div>

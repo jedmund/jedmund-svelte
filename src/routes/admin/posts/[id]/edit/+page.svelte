@@ -240,6 +240,7 @@
 							onAddTag={addTag}
 							onRemoveTag={removeTag}
 							onDelete={openDeleteConfirmation}
+							onClose={() => showMetadata = false}
 						/>
 					{/if}
 				</div>
