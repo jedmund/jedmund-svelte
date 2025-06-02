@@ -73,8 +73,6 @@
 
 	.admin-content {
 		flex: 1;
-		padding-top: $unit-4x;
-		padding-bottom: $unit-6x;
 	}
 
 	.admin-card-layout {

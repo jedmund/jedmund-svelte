@@ -28,7 +28,7 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		margin: 0 auto $unit-6x;
+		margin: 0 auto $unit-2x;
 		width: calc(100% - #{$unit-6x});
 		max-width: 900px; // Much wider for admin
 		min-height: calc(100vh - #{$unit-16x}); // Full height minus margins

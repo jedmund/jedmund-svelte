@@ -1,11 +1,26 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { onMount } from 'svelte'
 	import AvatarSimple from '$lib/components/AvatarSimple.svelte'
 	import WorkIcon from '$icons/work.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
 	import PhotosIcon from '$icons/photos.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
+	let isScrolled = $state(false)
+
+	onMount(() => {
+		const handleScroll = () => {
+			isScrolled = window.scrollY > 0
+		}
+
+		window.addEventListener('scroll', handleScroll)
+		handleScroll() // Check initial scroll position
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll)
+		}
+	})
 
 	interface NavItem {
 		text: string
@@ -34,7 +49,7 @@
 	)
 </script>
 
-<nav class="admin-nav-bar">
+<nav class="admin-nav-bar" class:scrolled={isScrolled}>
 	<div class="nav-container">
 		<div class="nav-content">
 			<a href="/" class="nav-brand">
@@ -70,8 +85,13 @@
 		top: 0;
 		z-index: 100;
 		width: 100%;
-		background: $grey-90;
-		border-bottom: 1px solid $grey-70;
+		background: $bg-color;
+		border-bottom: 1px solid transparent;
+		transition: border-bottom 0.2s ease;
+
+		&.scrolled {
+			border-bottom: 1px solid $grey-60;
+		}
 	}
 
 	.nav-container {
