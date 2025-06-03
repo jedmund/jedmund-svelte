@@ -220,28 +220,26 @@
 		</div>
 		<div class="header-actions">
 			{#if !isLoading}
-				{#if formData.status === 'published'}
-					<Button variant="primary" buttonSize="large" onclick={handleSave} disabled={isSaving}>
-						{isSaving ? 'Saving...' : 'Save'}
-					</Button>
-				{:else}
-					<StatusDropdown
-						currentStatus={formData.status}
-						onStatusChange={handleStatusChange}
-						disabled={isSaving}
-						isLoading={isSaving}
-						primaryAction={{ label: 'Publish', status: 'published' }}
-						dropdownActions={[
-							{ label: 'Save as Draft', status: 'draft' },
-							{ label: 'List Only', status: 'list-only', show: formData.status !== 'list-only' },
-							{
-								label: 'Password Protected',
-								status: 'password-protected',
-								show: formData.status !== 'password-protected'
-							}
-						]}
-					/>
-				{/if}
+				<StatusDropdown
+					currentStatus={formData.status}
+					onStatusChange={handleStatusChange}
+					disabled={isSaving}
+					isLoading={isSaving}
+					primaryAction={
+						formData.status === 'published'
+							? { label: 'Save', status: 'published' }
+							: { label: 'Publish', status: 'published' }
+					}
+					dropdownActions={[
+						{ label: 'Save as Draft', status: 'draft', show: formData.status !== 'draft' },
+						{ label: 'List Only', status: 'list-only', show: formData.status !== 'list-only' },
+						{
+							label: 'Password Protected',
+							status: 'password-protected',
+							show: formData.status !== 'password-protected'
+						}
+					]}
+				/>
 			{/if}
 		</div>
 	</header>

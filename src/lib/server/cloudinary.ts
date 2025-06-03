@@ -77,8 +77,11 @@ export async function uploadFile(
 	customOptions?: any
 ): Promise<UploadResult> {
 	try {
+		// TEMPORARY: Force Cloudinary usage for testing
+		const FORCE_CLOUDINARY_IN_DEV = true; // Toggle this to test
+		
 		// Use local storage in development or when Cloudinary is not configured
-		if (dev || !isCloudinaryConfigured()) {
+		if ((dev && !FORCE_CLOUDINARY_IN_DEV) || !isCloudinaryConfigured()) {
 			logger.info('Using local storage for file upload')
 			const localResult = await uploadFileLocally(file, type)
 
@@ -123,14 +126,13 @@ export async function uploadFile(
 		}
 		
 		// Log upload attempt for debugging
-		if (isSvg) {
-			logger.info('Attempting SVG upload with options:', {
-				filename: file.name,
-				mimeType: file.type,
-				size: file.size,
-				uploadOptions
-			})
-		}
+		logger.info('Attempting file upload:', {
+			filename: file.name,
+			mimeType: file.type,
+			size: file.size,
+			isSvg,
+			uploadOptions
+		})
 
 		// Upload to Cloudinary
 		const result = await new Promise<UploadApiResponse>((resolve, reject) => {
@@ -168,6 +170,17 @@ export async function uploadFile(
 	} catch (error) {
 		logger.error('Cloudinary upload failed', error as Error)
 		logger.mediaUpload(file.name, file.size, file.type, false)
+		
+		// Enhanced error logging
+		if (error instanceof Error) {
+			logger.error('Upload error details:', {
+				filename: file.name,
+				mimeType: file.type,
+				size: file.size,
+				errorMessage: error.message,
+				errorStack: error.stack
+			})
+		}
 
 		return {
 			success: false,

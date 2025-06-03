@@ -10,7 +10,7 @@
 	import MediaLibraryModal from '$lib/components/admin/MediaLibraryModal.svelte'
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import GalleryUploader from '$lib/components/admin/GalleryUploader.svelte'
-	import SaveActionsGroup from '$lib/components/admin/SaveActionsGroup.svelte'
+	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import AlbumMetadataPopover from '$lib/components/admin/AlbumMetadataPopover.svelte'
 
 	// Form state
@@ -93,7 +93,7 @@
 		}
 	}
 
-	async function handleSave(publishStatus?: 'draft' | 'published') {
+	async function handleSave(newStatus?: string) {
 		if (!title.trim()) {
 			error = 'Title is required'
 			return
@@ -122,7 +122,7 @@
 				location: location.trim() || null,
 				isPhotography,
 				showInUniverse,
-				status: publishStatus || status
+				status: newStatus || status
 			}
 
 			const response = await fetch(`/api/albums/${album.id}`, {
@@ -142,8 +142,8 @@
 			const updatedAlbum = await response.json()
 			album = updatedAlbum
 
-			if (publishStatus) {
-				status = publishStatus
+			if (newStatus) {
+				status = newStatus
 			}
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to update album'
@@ -591,12 +591,19 @@
 						/>
 					{/if}
 				</div>
-				<SaveActionsGroup
-					{status}
-					onSave={handleSave}
+				<StatusDropdown
+					currentStatus={status}
+					onStatusChange={handleSave}
 					disabled={isSaving}
 					isLoading={isSaving}
-					{canSave}
+					primaryAction={
+						status === 'published'
+							? { label: 'Save', status: 'published' }
+							: { label: 'Publish', status: 'published' }
+					}
+					dropdownActions={[
+						{ label: 'Save as Draft', status: 'draft', show: status !== 'draft' }
+					]}
 				/>
 			</div>
 		{/if}

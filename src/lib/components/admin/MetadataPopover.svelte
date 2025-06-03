@@ -90,7 +90,7 @@
 		popoverElement.style.position = 'fixed'
 		popoverElement.style.top = `${top}px`
 		popoverElement.style.left = `${left}px`
-		popoverElement.style.zIndex = '1000'
+		popoverElement.style.zIndex = '1200'
 	}
 
 	onMount(() => {

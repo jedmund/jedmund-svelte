@@ -89,7 +89,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		z-index: 1000;
+		z-index: 1400;
 		padding: $unit-2x;
 	}
 

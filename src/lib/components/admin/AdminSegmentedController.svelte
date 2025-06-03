@@ -237,7 +237,7 @@
 		border-radius: 12px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		min-width: 150px;
-		z-index: 1000;
+		z-index: 1050;
 		overflow: hidden;
 		animation: slideDown 0.2s ease;
 	}
