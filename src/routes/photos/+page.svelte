@@ -20,7 +20,7 @@
 		<div class="empty-container">
 			<div class="empty-message">
 				<h2>No photos yet</h2>
-				<p>Photography albums will appear here once published.</p>
+				<p>Photos and albums will be added soon</p>
 			</div>
 		</div>
 	{:else}
