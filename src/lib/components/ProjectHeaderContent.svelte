@@ -52,7 +52,7 @@
 		font-size: 2.25rem;
 		letter-spacing: -0.025em;
 		font-weight: 500;
-		margin: 0 0 $unit;
+		margin: 0;
 		color: $grey-10;
 
 		@include breakpoint('phone') {
