@@ -92,8 +92,8 @@
 		// Logo slides in the same direction as the tilt
 		// When tilting down (mouse at bottom), logo slides down
 		// When tilting up (mouse at top), logo slides up
-		const logoX = -rotateY * 3 // Same direction as tilt
-		const logoY = rotateX * 3 // Same direction as tilt
+		const logoX = -rotateY * 1.25 // Same direction as tilt
+		const logoY = rotateX * 1.25 // Same direction as tilt
 
 		logoTransform = `translate(${logoX}px, ${logoY}px)`
 	}
