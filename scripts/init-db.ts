@@ -13,14 +13,18 @@ async function isDatabaseInitialized(): Promise<boolean> {
     `
     
     return migrationCount[0].count > 0n
-  } catch (error) {
+  } catch (error: any) {
     // If the table doesn't exist, database is not initialized
+    console.log('📊 Migration table check failed (expected on first deploy):', error.message)
     return false
   }
 }
 
 async function initializeDatabase() {
   console.log('🔍 Checking database initialization status...')
+  
+  // Give the database a moment to be ready
+  await new Promise(resolve => setTimeout(resolve, 2000))
   
   try {
     const isInitialized = await isDatabaseInitialized()
