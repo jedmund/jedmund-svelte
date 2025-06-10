@@ -39,7 +39,8 @@
 		padding: 0 $unit-2x;
 
 		@include breakpoint('phone') {
-			padding: $unit-3x $unit;
+			padding: 0 $unit-2x;
+			box-sizing: border-box;
 		}
 	}
 

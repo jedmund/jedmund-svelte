@@ -157,9 +157,10 @@
 		width: 100%;
 		max-width: 700px;
 		margin: 0 auto;
+		box-sizing: border-box;
 
 		@include breakpoint('phone') {
-			margin-top: $unit-3x;
+			padding: 0 $unit-2x;
 		}
 
 		:global(.page) {

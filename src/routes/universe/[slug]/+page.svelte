@@ -39,26 +39,33 @@
 	{/if}
 </svelte:head>
 
-{#if error || !post}
-	<Page>
-		<div class="error-container">
-			<div class="error-content">
-				<h1>Post Not Found</h1>
-				<p>{error || "The post you're looking for doesn't exist."}</p>
-				<button onclick={() => goto('/universe')} class="back-button">
-					<ArrowLeft class="back-arrow" />
-					Back to Universe
-				</button>
+<div class="universe-page-container">
+	{#if error || !post}
+		<Page>
+			<div class="error-container">
+				<div class="error-content">
+					<h1>Post Not Found</h1>
+					<p>{error || "The post you're looking for doesn't exist."}</p>
+					<button onclick={() => goto('/universe')} class="back-button">
+						<ArrowLeft class="back-arrow" />
+						Back to Universe
+					</button>
+				</div>
 			</div>
-		</div>
-	</Page>
-{:else}
-	<Page>
-		<DynamicPostContent {post} />
-	</Page>
-{/if}
+		</Page>
+	{:else}
+		<Page>
+			<DynamicPostContent {post} />
+		</Page>
+	{/if}
+</div>
 
 <style lang="scss">
+	.universe-page-container {
+		padding: 0 $unit-2x;
+		box-sizing: border-box;
+	}
+
 	.error-container {
 		display: flex;
 		justify-content: center;

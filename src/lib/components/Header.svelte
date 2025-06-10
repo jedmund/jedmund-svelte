@@ -89,16 +89,13 @@
 	.header-content {
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		gap: $unit-3x;
 		pointer-events: auto;
 		width: 100%;
-		max-width: 900px;
-		margin: 0 auto;
 
 		@include breakpoint('phone') {
 			gap: $unit-2x;
-			max-width: none;
-			justify-content: center;
 		}
 	}
 

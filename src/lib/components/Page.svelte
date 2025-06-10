@@ -1,8 +1,13 @@
 <script lang="ts">
-	export let noHorizontalPadding = false
+	interface Props {
+		noHorizontalPadding?: boolean
+		class?: string
+	}
+
+	let { noHorizontalPadding = false, class: className = '' }: Props = $props()
 </script>
 
-<section class="page" class:no-horizontal-padding={noHorizontalPadding}>
+<section class="page {className}" class:no-horizontal-padding={noHorizontalPadding}>
 	<header>
 		<slot name="header" />
 	</header>

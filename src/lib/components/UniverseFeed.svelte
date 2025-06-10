@@ -29,7 +29,8 @@
 	.universe-feed {
 		display: flex;
 		flex-direction: column;
-		gap: $unit-3x;
+		gap: $unit-2x;
+		padding: 0 $unit-2x;
 	}
 
 	.empty-container {

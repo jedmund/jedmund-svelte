@@ -56,6 +56,11 @@
 		justify-content: center;
 		width: 100%;
 
+		@include breakpoint('phone') {
+			box-sizing: border-box;
+			padding: 0 $unit-2x;
+		}
+
 		ul {
 			display: flex;
 			flex-direction: column;

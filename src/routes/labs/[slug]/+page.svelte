@@ -11,74 +11,84 @@
 	const error = $derived(data.error as string | undefined)
 </script>
 
-{#if error}
-	<Page>
-		<div slot="header" class="error-header">
-			<h1>Error</h1>
-		</div>
-		<div class="error-content">
-			<p>{error}</p>
-			<a href="/labs" class="back-link">← Back to labs</a>
-		</div>
-	</Page>
-{:else if !project}
-	<Page>
-		<div class="loading">Loading project...</div>
-	</Page>
-{:else if project.status === 'list-only'}
-	<Page>
-		<div slot="header" class="error-header">
-			<h1>Project Not Available</h1>
-		</div>
-		<div class="error-content">
-			<p>This project is not yet available for viewing. Please check back later.</p>
-			<a href="/labs" class="back-link">← Back to labs</a>
-		</div>
-	</Page>
-{:else if project.status === 'password-protected'}
-	<Page>
-		<ProjectPasswordProtection
-			projectSlug={project.slug}
-			correctPassword={project.password || ''}
-			projectType="labs"
-		>
-			{#snippet children()}
-				<div slot="header" class="project-header">
-					{#if project.logoUrl}
-						<div
-							class="project-logo"
-							style="background-color: {project.backgroundColor || '#f5f5f5'}"
-						>
-							<img src={project.logoUrl} alt="{project.title} logo" />
-						</div>
-					{/if}
-					<h1 class="project-title">{project.title}</h1>
-					{#if project.subtitle}
-						<p class="project-subtitle">{project.subtitle}</p>
-					{/if}
-				</div>
-				<ProjectContent {project} />
-			{/snippet}
-		</ProjectPasswordProtection>
-	</Page>
-{:else}
-	<Page>
-		<div slot="header" class="project-header">
-			{#if project.logoUrl}
-				<div class="project-logo" style="background-color: {project.backgroundColor || '#f5f5f5'}">
-					<img src={project.logoUrl} alt="{project.title} logo" />
-				</div>
-			{/if}
-			<h1 class="project-title">{project.title}</h1>
-			{#if project.subtitle}
-				<p class="project-subtitle">{project.subtitle}</p>
-			{/if}
-		</div>
-		<ProjectContent {project} />
-	</Page>
-{/if}
+<div class="project-page-container">
+	{#if error}
+		<Page>
+			<div slot="header" class="error-header">
+				<h1>Error</h1>
+			</div>
+			<div class="error-content">
+				<p>{error}</p>
+				<a href="/labs" class="back-link">← Back to labs</a>
+			</div>
+		</Page>
+	{:else if !project}
+		<Page>
+			<div class="loading">Loading project...</div>
+		</Page>
+	{:else if project.status === 'list-only'}
+		<Page>
+			<div slot="header" class="error-header">
+				<h1>Project Not Available</h1>
+			</div>
+			<div class="error-content">
+				<p>This project is not yet available for viewing. Please check back later.</p>
+				<a href="/labs" class="back-link">← Back to labs</a>
+			</div>
+		</Page>
+	{:else if project.status === 'password-protected'}
+		<Page>
+			<ProjectPasswordProtection
+				projectSlug={project.slug}
+				correctPassword={project.password || ''}
+				projectType="labs"
+			>
+				{#snippet children()}
+					<div slot="header" class="project-header">
+						{#if project.logoUrl}
+							<div
+								class="project-logo"
+								style="background-color: {project.backgroundColor || '#f5f5f5'}"
+							>
+								<img src={project.logoUrl} alt="{project.title} logo" />
+							</div>
+						{/if}
+						<h1 class="project-title">{project.title}</h1>
+						{#if project.subtitle}
+							<p class="project-subtitle">{project.subtitle}</p>
+						{/if}
+					</div>
+					<ProjectContent {project} />
+				{/snippet}
+			</ProjectPasswordProtection>
+		</Page>
+	{:else}
+		<Page class="project-page">
+			<div slot="header" class="project-header">
+				{#if project.logoUrl}
+					<div
+						class="project-logo"
+						style="background-color: {project.backgroundColor || '#f5f5f5'}"
+					>
+						<img src={project.logoUrl} alt="{project.title} logo" />
+					</div>
+				{/if}
+				<h1 class="project-title">{project.title}</h1>
+				{#if project.subtitle}
+					<p class="project-subtitle">{project.subtitle}</p>
+				{/if}
+			</div>
+			<ProjectContent {project} />
+		</Page>
+	{/if}
+</div>
 
 <style lang="scss">
+	.project-page-container {
+		padding: 0 $unit-2x;
+		box-sizing: border-box;
+	}
+
 	/* Error and Loading States */
 	.error-header h1 {
 		color: $red-60;
@@ -116,6 +126,7 @@
 	.project-header {
 		text-align: center;
 		width: 100%;
+		padding: $unit-2x 0;
 	}
 
 	.project-logo {

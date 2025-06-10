@@ -24,17 +24,7 @@
 	.universe-container {
 		max-width: 784px;
 		margin: 0 auto;
-		padding: 0 $unit-5x;
-
-		@include breakpoint('phone') {
-			margin-top: $unit-3x;
-			margin-bottom: $unit-3x;
-			padding: 0 $unit-3x;
-		}
-
-		@include breakpoint('small-phone') {
-			padding: 0 $unit-2x;
-		}
+		padding: 0;
 	}
 
 	.error-message {
