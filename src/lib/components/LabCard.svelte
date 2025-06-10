@@ -46,7 +46,7 @@
 		on:mousemove={handleMouseMove}
 		on:mouseenter={handleMouseEnter}
 		on:mouseleave={handleMouseLeave}
-		on:click={() => window.location.href = projectUrl}
+		on:click={() => (window.location.href = projectUrl)}
 		on:keydown={(e) => e.key === 'Enter' && (window.location.href = projectUrl)}
 		role="button"
 		tabindex="0"
@@ -204,12 +204,12 @@
 
 		&.clickable {
 			cursor: pointer;
-			
+
 			&:focus {
 				outline: 2px solid $red-60;
 				outline-offset: 2px;
 			}
-			
+
 			&:focus:not(:focus-visible) {
 				outline: none;
 			}
@@ -245,13 +245,13 @@
 
 	.project-title {
 		margin: 0;
-		font-size: 1.125rem;
+		font-size: 1rem;
 		font-weight: 400;
 		color: $grey-00;
 		line-height: 1.3;
 
 		@include breakpoint('phone') {
-			font-size: 1.125rem;
+			font-size: 1rem;
 		}
 	}
 
@@ -264,7 +264,7 @@
 
 	.project-description {
 		margin: 0 0 $unit-3x 0;
-		font-size: 1.125rem;
+		font-size: 1rem;
 		line-height: 1.5;
 		color: $grey-20;
 

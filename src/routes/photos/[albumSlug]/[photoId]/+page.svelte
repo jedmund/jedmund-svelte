@@ -445,7 +445,7 @@
 	}
 
 	.photo-caption {
-		font-size: 1.125rem;
+		font-size: 1rem;
 		color: $grey-20;
 		margin: 0 0 $unit-3x;
 		line-height: 1.5;

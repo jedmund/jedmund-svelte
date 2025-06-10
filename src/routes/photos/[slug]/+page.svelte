@@ -158,7 +158,7 @@
 	}
 
 	.album-description {
-		font-size: 1.125rem;
+		font-size: 1rem;
 		color: $grey-30;
 		margin: 0 0 $unit-4x;
 		line-height: 1.5;

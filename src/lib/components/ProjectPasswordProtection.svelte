@@ -163,7 +163,7 @@
 			color: $grey-40;
 			margin: 0;
 			line-height: 1.5;
-			font-size: 1.125rem;
+			font-size: 1rem;
 		}
 	}
 

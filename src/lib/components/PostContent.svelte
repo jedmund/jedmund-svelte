@@ -54,13 +54,13 @@
 		// Post type styles for simplified post types
 		&.post {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 			}
 		}
 
 		&.essay {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 				line-height: 1.5;
 			}
 		}
@@ -69,13 +69,13 @@
 		&.note,
 		&.microblog {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 			}
 		}
 
 		&.blog {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 				line-height: 1.5;
 			}
 		}

@@ -107,7 +107,7 @@
 	}
 
 	.bio {
-		font-size: 1.125rem;
+		font-size: 1rem;
 		line-height: 1.5;
 		color: #333;
 		background: $grey-100;

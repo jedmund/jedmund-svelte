@@ -66,7 +66,7 @@
 		margin: 0;
 
 		@include breakpoint('phone') {
-			font-size: 1.125rem;
+			font-size: 1rem;
 		}
 	}
 

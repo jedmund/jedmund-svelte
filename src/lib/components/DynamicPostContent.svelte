@@ -105,14 +105,14 @@
 		// Post type styles
 		&.post {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 			}
 		}
 
 		&.essay {
 			.post-body {
-				font-size: 1.125rem;
-				line-height: 1.7;
+				font-size: 1rem;
+				line-height: 1.4;
 			}
 		}
 	}
@@ -169,7 +169,7 @@
 		margin-bottom: $unit-4x;
 
 		h3 {
-			font-size: 1.125rem;
+			font-size: 1rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
 			color: $grey-20;
@@ -185,7 +185,7 @@
 
 		.album-description {
 			margin: 0;
-			font-size: 1.125rem;
+			font-size: 1rem;
 			color: $grey-10;
 			line-height: 1.5;
 		}
@@ -218,7 +218,7 @@
 
 		:global(h4) {
 			margin: $unit-3x 0 $unit-2x;
-			font-size: 1.125rem;
+			font-size: 1rem;
 			font-weight: 600;
 			color: $grey-10;
 		}
