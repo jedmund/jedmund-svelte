@@ -9,6 +9,30 @@
 
 	const project = $derived(data.project as Project | null)
 	const error = $derived(data.error as string | undefined)
+
+	let headerContainer = $state<HTMLElement | null>(null)
+	let logoTransform = $state('translate(0, 0)')
+
+	function handleMouseMove(e: MouseEvent) {
+		if (!headerContainer) return
+
+		const rect = headerContainer.getBoundingClientRect()
+		const x = e.clientX - rect.left
+		const y = e.clientY - rect.top
+
+		const centerX = rect.width / 2
+		const centerY = rect.height / 2
+
+		// Calculate movement based on mouse position relative to center
+		const moveX = ((x - centerX) / centerX) * 15 // 15px max movement
+		const moveY = ((y - centerY) / centerY) * 15
+
+		logoTransform = `translate(${moveX}px, ${moveY}px)`
+	}
+
+	function handleMouseLeave() {
+		logoTransform = 'translate(0, 0)'
+	}
 </script>
 
 {#if error}
@@ -36,46 +60,69 @@
 		</div>
 	</Page>
 {:else if project.status === 'password-protected'}
-	<Page>
-		<ProjectPasswordProtection
-			projectSlug={project.slug}
-			correctPassword={project.password || ''}
-			projectType="work"
+	<div class="project-wrapper">
+		<div
+			bind:this={headerContainer}
+			class="project-header-container"
+			style="background-color: {project.backgroundColor || '#f5f5f5'}"
+			onmousemove={handleMouseMove}
+			onmouseleave={handleMouseLeave}
 		>
-			{#snippet children()}
-				<div slot="header" class="project-header">
-					{#if project.logoUrl}
-						<div
-							class="project-logo"
-							style="background-color: {project.backgroundColor || '#f5f5f5'}"
-						>
-							<img src={project.logoUrl} alt="{project.title} logo" />
-						</div>
-					{/if}
-					<h1 class="project-title">{project.title}</h1>
-					{#if project.subtitle}
-						<p class="project-subtitle">{project.subtitle}</p>
-					{/if}
-				</div>
-				<ProjectContent {project} />
-			{/snippet}
-		</ProjectPasswordProtection>
-	</Page>
-{:else}
-	<Page>
-		<div slot="header" class="project-header">
 			{#if project.logoUrl}
-				<div class="project-logo" style="background-color: {project.backgroundColor || '#f5f5f5'}">
-					<img src={project.logoUrl} alt="{project.title} logo" />
-				</div>
-			{/if}
-			<h1 class="project-title">{project.title}</h1>
-			{#if project.subtitle}
-				<p class="project-subtitle">{project.subtitle}</p>
+				<img 
+					src={project.logoUrl} 
+					alt="{project.title} logo" 
+					class="project-logo" 
+					style="transform: {logoTransform}"
+				/>
 			{/if}
 		</div>
-		<ProjectContent {project} />
-	</Page>
+		<Page>
+			<ProjectPasswordProtection
+				projectSlug={project.slug}
+				correctPassword={project.password || ''}
+				projectType="work"
+			>
+				{#snippet children()}
+					<div slot="header" class="project-header">
+						<h1 class="project-title">{project.title}</h1>
+						{#if project.subtitle}
+							<p class="project-subtitle">{project.subtitle}</p>
+						{/if}
+					</div>
+					<ProjectContent {project} />
+				{/snippet}
+			</ProjectPasswordProtection>
+		</Page>
+	</div>
+{:else}
+	<div class="project-wrapper">
+		<div
+			bind:this={headerContainer}
+			class="project-header-container"
+			style="background-color: {project.backgroundColor || '#f5f5f5'}"
+			onmousemove={handleMouseMove}
+			onmouseleave={handleMouseLeave}
+		>
+			{#if project.logoUrl}
+				<img 
+					src={project.logoUrl} 
+					alt="{project.title} logo" 
+					class="project-logo" 
+					style="transform: {logoTransform}"
+				/>
+			{/if}
+		</div>
+		<Page>
+			<div slot="header" class="project-header">
+				<h1 class="project-title">{project.title}</h1>
+				{#if project.subtitle}
+					<p class="project-subtitle">{project.subtitle}</p>
+				{/if}
+			</div>
+			<ProjectContent {project} />
+		</Page>
+	</div>
 {/if}
 
 <style lang="scss">
@@ -112,28 +159,67 @@
 		}
 	}
 
+	/* Project Wrapper */
+	.project-wrapper {
+		width: 100%;
+		max-width: 700px;
+		margin: 0 auto;
+
+		@include breakpoint('phone') {
+			margin-top: $unit-3x;
+		}
+
+		:global(.page) {
+			margin-top: 0;
+			border-top-left-radius: 0;
+			border-top-right-radius: 0;
+		}
+	}
+
+	/* Project Header Container */
+	.project-header-container {
+		width: 100%;
+		height: 300px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-top-left-radius: $card-corner-radius;
+		border-top-right-radius: $card-corner-radius;
+		position: relative;
+		overflow: hidden;
+
+		@include breakpoint('phone') {
+			height: 250px;
+		}
+
+		@include breakpoint('small-phone') {
+			height: 200px;
+		}
+	}
+
+	/* Project Logo */
+	.project-logo {
+		width: 85px;
+		height: 85px;
+		object-fit: contain;
+		transition: transform 0.15s cubic-bezier(0.075, 0.82, 0.165, 1);
+		will-change: transform;
+
+		@include breakpoint('phone') {
+			width: 75px;
+			height: 75px;
+		}
+
+		@include breakpoint('small-phone') {
+			width: 65px;
+			height: 65px;
+		}
+	}
+
 	/* Project Header */
 	.project-header {
 		text-align: center;
 		width: 100%;
-	}
-
-	.project-logo {
-		width: 100px;
-		height: 100px;
-		margin: 0 auto $unit-2x;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: $unit-2x;
-		padding: $unit-2x;
-		box-sizing: border-box;
-
-		img {
-			max-width: 100%;
-			max-height: 100%;
-			object-fit: contain;
-		}
 	}
 
 	.project-title {
