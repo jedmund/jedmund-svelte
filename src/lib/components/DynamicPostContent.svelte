@@ -96,10 +96,10 @@
 		max-width: 784px;
 		gap: $unit-3x;
 		margin: 0 auto;
-		padding: 0 $unit-3x;
 
 		@include breakpoint('phone') {
-			padding: 0 $unit-2x;
+			gap: $unit-2x;
+			padding: $unit-half 0;
 		}
 
 		// Post type styles
@@ -317,10 +317,6 @@
 				border-radius: $unit;
 			}
 		}
-	}
-
-	.post-footer {
-		padding-bottom: $unit-2x;
 	}
 
 	.back-button {

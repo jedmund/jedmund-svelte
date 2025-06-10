@@ -95,9 +95,11 @@
 				{/if}
 			</div>
 			<Page>
-				<div slot="header" class="project-header">
-					<ProjectHeaderContent {project} />
-				</div>
+				{#snippet header()}
+					<div class="project-header">
+						<ProjectHeaderContent {project} />
+					</div>
+				{/snippet}
 				{#if project.status === 'password-protected'}
 					<ProjectPasswordProtection
 						projectSlug={project.slug}

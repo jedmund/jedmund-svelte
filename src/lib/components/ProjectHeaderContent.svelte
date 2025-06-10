@@ -107,7 +107,13 @@
 		}
 
 		@include breakpoint('phone') {
-			align-self: flex-start;
+			width: 100%;
+			justify-content: center;
+			box-sizing: border-box;
+
+			:global(svg) {
+				display: none;
+			}
 		}
 	}
 </style>

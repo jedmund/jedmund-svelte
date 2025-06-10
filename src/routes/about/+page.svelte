@@ -7,16 +7,18 @@
 
 	import type { PageData } from './$types'
 
-	export let data: PageData
+	let { data } = $props<{ data: PageData }>()
 
-	$: ({ albums, games, error } = data)
+	let albums = $derived(data.albums)
+	let games = $derived(data.games)
+	let error = $derived(data.error)
 </script>
 
 <section class="about-container">
 	<Page>
-		<svelte:fragment slot="header">
+		{#snippet header()}
 			<h2>A little about me</h2>
-		</svelte:fragment>
+		{/snippet}
 
 		<section class="bio">
 			<p>
@@ -40,16 +42,16 @@
 		</section>
 	</Page>
 	<Page>
-		<svelte:fragment slot="header">
+		{#snippet header()}
 			<h2>Notable mentions</h2>
-		</svelte:fragment>
+		{/snippet}
 
 		<MentionList />
 	</Page>
 	<Page noHorizontalPadding={true}>
-		<svelte:fragment slot="header">
+		{#snippet header()}
 			<h2>Now playing</h2>
-		</svelte:fragment>
+		{/snippet}
 
 		<RecentAlbums {albums} />
 
