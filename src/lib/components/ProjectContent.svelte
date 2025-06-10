@@ -95,7 +95,6 @@
 		gap: $unit-4x;
 	}
 
-
 	/* Case Study Section */
 	.case-study-content {
 		:global(h1),
@@ -124,8 +123,8 @@
 
 		:global(p) {
 			margin: $unit-2x 0;
-			font-size: 1.0625rem;
-			line-height: 1.65;
+			font-size: 1.125rem;
+			line-height: 1.5;
 			color: $grey-20;
 		}
 
