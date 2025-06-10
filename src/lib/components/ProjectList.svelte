@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ProjectItem from '$components/ProjectItem.svelte'
+	import TiltCard from '$components/TiltCard.svelte'
 	import type { Project } from '$lib/types/project'
 
 	interface Props {
@@ -12,16 +13,20 @@
 <section class="projects">
 	<ul>
 		<li>
-			<div class="intro-card">
-				<p class="intro-text">
-					<span class="highlighted">@jedmund</span> is a software designer and strategist based out of
-					San Francisco.
-				</p>
-				<p class="intro-text">
-					In his 15 year career, he's focused his design practice on building tools that help people
-					connect with technology—and their own creativity.
-				</p>
-			</div>
+			<a href="/about" class="intro-link">
+				<TiltCard>
+					<div class="intro-card">
+						<p class="intro-text">
+							<span class="highlighted">@jedmund</span> is a software designer and strategist based out of
+							San Francisco.
+						</p>
+						<p class="intro-text">
+							In his 15 year career, he's focused his design practice on building tools that help people
+							connect with technology—and their own creativity.
+						</p>
+					</div>
+				</TiltCard>
+			</a>
 		</li>
 		{#if projects.length === 0}
 			<li>
@@ -64,6 +69,15 @@
 			li {
 				width: 100%;
 			}
+		}
+	}
+
+	.intro-link {
+		text-decoration: none;
+		display: block;
+		
+		&:hover {
+			text-decoration: none;
 		}
 	}
 

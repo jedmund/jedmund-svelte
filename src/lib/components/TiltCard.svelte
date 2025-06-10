@@ -48,17 +48,10 @@
 		transform-style: preserve-3d;
 		will-change: transform;
 		cursor: pointer;
-		border-radius: $image-corner-radius;
-		overflow: hidden;
-
-		// Use mask as a fallback for better clipping
-		-webkit-mask-image: -webkit-radial-gradient(white, black);
-		mask-image: radial-gradient(white, black);
+		border-radius: $card-corner-radius;
 
 		&:hover {
-			box-shadow:
-				0 6px 20px rgba(0, 0, 0, 0.1),
-				0 1px 8px rgba(0, 0, 0, 0.06);
+			box-shadow: $card-shadow-hover;
 		}
 	}
 </style>
