@@ -1,0 +1,106 @@
+/* Navigation Icon Animations
+ * -------------------------------------------------------------------------- */
+
+// Work icon - cursor wiggle
+@keyframes cursorWiggle {
+	0%,
+	100% {
+		transform: rotate(0deg) scale(1);
+	}
+	25% {
+		transform: rotate(-8deg) scale(1.05);
+	}
+	75% {
+		transform: rotate(8deg) scale(1.05);
+	}
+}
+
+// Photos icon - masonry height changes
+@keyframes masonryRect1 {
+	0%,
+	100% {
+		height: 10px;
+		y: 2px;
+	}
+	50% {
+		height: 6px;
+		y: 2px;
+	}
+}
+
+@keyframes masonryRect2 {
+	0%,
+	100% {
+		height: 6px;
+		y: 2px;
+	}
+	50% {
+		height: 10px;
+		y: 2px;
+	}
+}
+
+@keyframes masonryRect3 {
+	0%,
+	100% {
+		height: 4px;
+		y: 14px;
+	}
+	50% {
+		height: 8px;
+		y: 10px;
+	}
+}
+
+@keyframes masonryRect4 {
+	0%,
+	100% {
+		height: 8px;
+		y: 10px;
+	}
+	50% {
+		height: 4px;
+		y: 14px;
+	}
+}
+
+// Labs icon - test tube rotation
+@keyframes tubeRotate {
+	0%,
+	100% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(-10deg);
+	}
+	75% {
+		transform: rotate(10deg);
+	}
+}
+
+// Universe icon - star spin
+@keyframes starSpin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(720deg);
+	}
+}
+
+// Placeholder animations (not currently used)
+@keyframes photoMasonry {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	25% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1);
+	}
+	75% {
+		transform: scale(1);
+	}
+}

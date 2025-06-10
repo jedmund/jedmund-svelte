@@ -1,4 +1,9 @@
 <script lang="ts">
+	import { page } from '$app/stores'
+	import Header from '$components/Header.svelte'
+	import Footer from '$components/Footer.svelte'
+
+	$: isAdminRoute = $page.url.pathname.startsWith('/admin')
 </script>
 
 <svelte:head>
@@ -6,14 +11,21 @@
 	<meta name="description" content="Justin Edmund is a software designer based in San Francisco." />
 	<meta
 		name="viewport"
-		content="width=device-width, initial-scale=1.0, 
-user-scalable=no"
+		content="width=device-width, initial-scale=1.0, user-scalable=no"
 	/>
 </svelte:head>
 
-<main>
+{#if !isAdminRoute}
+	<Header />
+{/if}
+
+<main class:admin-route={isAdminRoute}>
 	<slot />
 </main>
+
+{#if !isAdminRoute}
+	<Footer />
+{/if}
 
 <style lang="scss">
 	@import '../assets/styles/reset.css';
@@ -22,9 +34,21 @@ user-scalable=no"
 	:global(html) {
 		background: var(--bg-color);
 		color: var(--text-color);
-		font-family: 'cstd', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		font-size: 16px;
 		width: 100%;
+	}
+
+	:global(body) {
+		margin: 0;
+		padding: 0;
+	}
+
+	main {
+		min-height: 100vh;
+
+		&.admin-route {
+			min-height: auto;
+		}
 	}
 
 	@include breakpoint('phone') {

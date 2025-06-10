@@ -1,76 +1,110 @@
 <script lang="ts">
 	import ProjectItem from '$components/ProjectItem.svelte'
+	import TiltCard from '$components/TiltCard.svelte'
+	import type { Project } from '$lib/types/project'
 
-	import MaitsuLogo from '$illos/logo-maitsu.svg?component'
-	import SlackLogo from '$illos/logo-slack.svg?component'
-	import FigmaLogo from '$illos/logo-figma.svg?component'
-	import PinterestLogo from '$illos/logo-pinterest.svg?component'
-	import SVGHoverEffect from '$components/SVGHoverEffect.svelte'
-
-	interface Project {
-		SVGComponent: typeof SvelteComponent
-		backgroundColor: string
-		name: string
-		description: string
+	interface Props {
+		projects: Project[]
 	}
 
-	const projects: Project[] = [
-		{
-			SVGComponent: MaitsuLogo,
-			backgroundColor: '#FFF7EA',
-			name: 'Maitsu',
-			description: "I'm building a hobby journal that helps people make something new every week."
-		},
-		{
-			SVGComponent: SlackLogo,
-			backgroundColor: '#4a154b',
-			name: 'Slack',
-			description:
-				'I led design for Workflows and other consumer-facing automation features at Slack.'
-		},
-		{
-			SVGComponent: FigmaLogo,
-			backgroundColor: '#2c2c2c',
-			name: 'Figma',
-			description: 'I helped lead and set the direction for the early prototyping team at Figma.'
-		},
-		{
-			SVGComponent: PinterestLogo,
-			backgroundColor: '#f7f7f7',
-			name: 'Pinterest',
-			description:
-				'As the first design hire at Pinterest, I helped define product direction and grow the design team.'
-		}
-	]
+	let { projects = [] }: Props = $props()
 </script>
 
 <section class="projects">
 	<ul>
-		{#each projects as project}
+		<li>
+			<a href="/about" class="intro-link">
+				<TiltCard>
+					<div class="intro-card">
+						<p class="intro-text">
+							<span class="highlighted">@jedmund</span> is a software designer and strategist based out
+							of San Francisco.
+						</p>
+						<p class="intro-text">
+							In his 15 year career, he's focused his design practice on building tools that help
+							people connect with each other and themselves through their own creativity.
+						</p>
+					</div>
+				</TiltCard>
+			</a>
+		</li>
+		{#if projects.length === 0}
 			<li>
-				<ProjectItem {...project} />
+				<div class="no-projects">No projects found</div>
+			</li>
+		{/if}
+		{#each projects as project, index}
+			<li>
+				<ProjectItem
+					logoUrl={project.logoUrl}
+					backgroundColor={project.backgroundColor || '#f7f7f7'}
+					name={project.title}
+					slug={project.slug}
+					description={project.description || ''}
+					highlightColor={project.highlightColor || '#333'}
+					status={project.status}
+					{index}
+				/>
 			</li>
 		{/each}
 	</ul>
 </section>
 
 <style lang="scss">
-	.projects ul {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		list-style: none;
-		padding: 0;
+	.projects {
+		display: flex;
+		justify-content: center;
 		width: 100%;
-		gap: $unit-4x;
+
+		ul {
+			display: flex;
+			flex-direction: column;
+			list-style: none;
+			padding: 0;
+			width: 100%;
+			max-width: 700px;
+			gap: $unit-3x;
+			margin: 0;
+
+			li {
+				width: 100%;
+			}
+		}
+	}
+
+	.intro-link {
+		text-decoration: none;
+		display: block;
+
+		&:hover {
+			text-decoration: none;
+		}
+	}
+
+	.intro-card {
+		padding: $unit-3x;
+		background: $grey-100;
+		border-radius: $card-corner-radius;
+	}
+
+	.intro-text {
 		margin: 0;
+		font-size: 1.125rem; // 18px
+		line-height: 1.3;
+		color: $grey-00;
 
-		@include breakpoint('phone') {
-			grid-template-columns: 1fr;
+		&:not(:last-child) {
+			margin-bottom: $unit-2x;
 		}
 
-		li {
-			flex: 0 0 calc(50% - #{$unit-2x}); /* 50% width minus gap */
-			box-sizing: border-box;
+		.highlighted {
+			color: #d0290d;
 		}
+	}
+
+	.no-projects {
+		padding: $unit-3x;
+		text-align: center;
+		color: $grey-40;
 	}
 </style>

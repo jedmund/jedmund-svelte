@@ -13,14 +13,19 @@
 <style lang="scss">
 	.page {
 		background: var(--page-color);
-		border-radius: 16px;
+		border-radius: $card-corner-radius; // Match universe posts
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		gap: $unit-4x;
+		gap: $unit-3x;
 		margin: $unit-6x auto $unit-6x;
-		padding: $unit-5x;
-		max-width: 784px;
+		padding: $unit-3x;
+		width: 100%;
+		max-width: 700px;
+
+		&:first-child {
+			margin-top: 0;
+		}
 
 		&.no-horizontal-padding {
 			padding-left: 0;
