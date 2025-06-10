@@ -17,12 +17,12 @@
 				<TiltCard>
 					<div class="intro-card">
 						<p class="intro-text">
-							<span class="highlighted">@jedmund</span> is a software designer and strategist based out of
-							San Francisco.
+							<span class="highlighted">@jedmund</span> is a software designer and strategist based out
+							of San Francisco.
 						</p>
 						<p class="intro-text">
-							In his 15 year career, he's focused his design practice on building tools that help people
-							connect with technology—and their own creativity.
+							In his 15 year career, he's focused his design practice on building tools that help
+							people connect with each other and themselves through their own creativity.
 						</p>
 					</div>
 				</TiltCard>
@@ -75,7 +75,7 @@
 	.intro-link {
 		text-decoration: none;
 		display: block;
-		
+
 		&:hover {
 			text-decoration: none;
 		}
