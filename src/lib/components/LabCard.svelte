@@ -40,13 +40,16 @@
 </script>
 
 {#if isClickable}
-	<a
-		href={projectUrl}
+	<div
 		class="lab-card clickable"
 		bind:this={cardElement}
-		onmousemove={handleMouseMove}
-		onmouseenter={handleMouseEnter}
-		onmouseleave={handleMouseLeave}
+		on:mousemove={handleMouseMove}
+		on:mouseenter={handleMouseEnter}
+		on:mouseleave={handleMouseLeave}
+		on:click={() => window.location.href = projectUrl}
+		on:keydown={(e) => e.key === 'Enter' && (window.location.href = projectUrl)}
+		role="button"
+		tabindex="0"
 		style:transform
 	>
 		<div class="card-header">
@@ -62,7 +65,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 					iconPosition="right"
-					onclick={(e) => e.stopPropagation()}
+					on:click={(e) => e.stopPropagation()}
 				>
 					Visit site
 					<svg
@@ -105,14 +108,14 @@
 				<span>Password Protected</span>
 			</div>
 		{/if}
-	</a>
+	</div>
 {:else}
 	<article
 		class="lab-card"
 		bind:this={cardElement}
-		onmousemove={handleMouseMove}
-		onmouseenter={handleMouseEnter}
-		onmouseleave={handleMouseLeave}
+		on:mousemove={handleMouseMove}
+		on:mouseenter={handleMouseEnter}
+		on:mouseleave={handleMouseLeave}
 		style:transform
 	>
 		<div class="card-header">
@@ -187,14 +190,12 @@
 		transform-style: preserve-3d;
 		will-change: transform;
 
-		// Prevent overflow issues with 3D transforms
-		-webkit-mask-image: -webkit-radial-gradient(white, black);
-		mask-image: radial-gradient(white, black);
+		// Remove mask-image to allow shadows to render properly
 
 		&:hover {
 			box-shadow:
-				0 10px 30px rgba(0, 0, 0, 0.12),
-				0 2px 10px rgba(0, 0, 0, 0.08);
+				0 10px 30px rgba(0, 0, 0, 0.1),
+				0 1px 8px rgba(0, 0, 0, 0.06);
 
 			.project-title {
 				color: $red-60;
@@ -203,6 +204,15 @@
 
 		&.clickable {
 			cursor: pointer;
+			
+			&:focus {
+				outline: 2px solid $red-60;
+				outline-offset: 2px;
+			}
+			
+			&:focus:not(:focus-visible) {
+				outline: none;
+			}
 		}
 
 		@include breakpoint('phone') {
