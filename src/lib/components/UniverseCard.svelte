@@ -75,7 +75,7 @@
 	}
 
 	.card-content {
-		padding: $unit-4x;
+		padding: $unit-3x;
 		background: $grey-100;
 		border-radius: $card-corner-radius;
 		border: 1px solid $grey-95;
