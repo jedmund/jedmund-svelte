@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Project } from '$lib/types/project'
+	import ArrowLeft from '$icons/arrow-left.svg'
+	import { goto } from '$app/navigation'
 
 	interface Props {
 		project: Project
@@ -48,45 +50,6 @@
 </script>
 
 <article class="project-content">
-	<!-- Project Details -->
-	<div class="project-details">
-		<div class="meta-grid">
-			{#if project.client}
-				<div class="meta-item">
-					<span class="meta-label">Client</span>
-					<span class="meta-value">{project.client}</span>
-				</div>
-			{/if}
-
-			{#if project.year}
-				<div class="meta-item">
-					<span class="meta-label">Year</span>
-					<span class="meta-value">{project.year}</span>
-				</div>
-			{/if}
-
-			{#if project.role}
-				<div class="meta-item">
-					<span class="meta-label">Role</span>
-					<span class="meta-value">{project.role}</span>
-				</div>
-			{/if}
-		</div>
-
-		{#if project.externalUrl}
-			<div class="external-link-wrapper">
-				<a
-					href={project.externalUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="external-link"
-				>
-					Visit Project →
-				</a>
-			</div>
-		{/if}
-	</div>
-
 	<!-- Case Study Content -->
 	{#if project.caseStudyContent && project.caseStudyContent.content && project.caseStudyContent.content.length > 0}
 		<div class="case-study-section">
@@ -109,13 +72,19 @@
 	{/if}
 
 	<!-- Navigation -->
-	<nav class="project-nav">
+	<footer class="project-footer">
 		{#if project.projectType === 'labs'}
-			<a href="/labs" class="back-link">← Back to labs</a>
+			<button onclick={() => goto('/labs')} class="back-button">
+				<ArrowLeft class="back-arrow" />
+				Back to labs
+			</button>
 		{:else}
-			<a href="/" class="back-link">← Back to projects</a>
+			<button onclick={() => goto('/')} class="back-button">
+				<ArrowLeft class="back-arrow" />
+				Back to projects
+			</button>
 		{/if}
-	</nav>
+	</footer>
 </article>
 
 <style lang="scss">
@@ -126,58 +95,6 @@
 		gap: $unit-4x;
 	}
 
-	.project-details {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-3x;
-		padding-bottom: $unit-3x;
-		border-bottom: 1px solid $grey-90;
-	}
-
-	.meta-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		gap: $unit-2x;
-
-		.meta-item {
-			display: flex;
-			flex-direction: column;
-			gap: $unit-half;
-		}
-
-		.meta-label {
-			font-size: 0.875rem;
-			color: $grey-60;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-		}
-
-		.meta-value {
-			font-size: 1rem;
-			color: $grey-20;
-			font-weight: 500;
-		}
-	}
-
-	.external-link-wrapper {
-		text-align: center;
-	}
-
-	.external-link {
-		display: inline-block;
-		padding: $unit-2x $unit-3x;
-		background: $grey-10;
-		color: white;
-		text-decoration: none;
-		border-radius: 50px;
-		font-weight: 500;
-		font-size: 0.925rem;
-		transition: background-color 0.2s ease;
-
-		&:hover {
-			background: $grey-20;
-		}
-	}
 
 	/* Case Study Section */
 	.case-study-content {
@@ -238,9 +155,6 @@
 
 	/* Gallery Section */
 	.gallery-section {
-		padding-top: $unit-3x;
-		border-top: 1px solid $grey-90;
-
 		h2 {
 			font-size: 1.75rem;
 			margin: 0 0 $unit-3x;
@@ -262,20 +176,47 @@
 	}
 
 	/* Navigation */
-	.project-nav {
-		text-align: center;
-		padding-top: $unit-3x;
-		border-top: 1px solid $grey-90;
+	.project-footer {
+		padding-bottom: $unit-2x;
 	}
 
-	.back-link {
-		color: $grey-40;
-		text-decoration: none;
-		font-size: 0.925rem;
-		transition: color 0.2s ease;
+	.back-button {
+		color: $red-60;
+		background-color: transparent;
+		border: 1px solid transparent;
+		font: inherit;
+		font-size: 0.875rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.15s ease;
+		display: inline-flex;
+		align-items: center;
+		gap: $unit;
+		border-radius: 24px;
+		outline: none;
 
-		&:hover {
-			color: $grey-20;
+		&:hover:not(:disabled) :global(.back-arrow) {
+			transform: translateX(-3px);
+		}
+
+		&:focus-visible {
+			box-shadow: 0 0 0 3px rgba($red-60, 0.25);
+		}
+
+		:global(.back-arrow) {
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+			transition: transform 0.2s ease;
+			margin-left: -$unit-half;
+
+			:global(path) {
+				stroke: currentColor;
+				stroke-width: 2.25;
+				stroke-linecap: round;
+				stroke-linejoin: round;
+				fill: none;
+			}
 		}
 	}
 </style>

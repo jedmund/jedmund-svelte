@@ -4,6 +4,7 @@
 	import { formatDate } from '$lib/utils/date'
 	import { renderEdraContent } from '$lib/utils/content'
 	import { goto } from '$app/navigation'
+	import ArrowLeft from '$icons/arrow-left.svg'
 
 	let { post }: { post: any } = $props()
 
@@ -82,15 +83,7 @@
 
 	<footer class="post-footer">
 		<button onclick={() => goto('/universe')} class="back-button">
-			<svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="back-arrow">
-				<path
-					d="M15 8H3.5M3.5 8L8 3.5M3.5 8L8 12.5"
-					stroke="currentColor"
-					stroke-width="2.25"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				/>
-			</svg>
+			<ArrowLeft class="back-arrow" />
 			Back to Universe
 		</button>
 	</footer>
@@ -345,20 +338,28 @@
 		border-radius: 24px;
 		outline: none;
 
-		&:hover:not(:disabled) {
-			.back-arrow {
-				transform: translateX(-3px);
-			}
+		&:hover:not(:disabled) :global(.back-arrow) {
+			transform: translateX(-3px);
 		}
 
 		&:focus-visible {
 			box-shadow: 0 0 0 3px rgba($red-60, 0.25);
 		}
 
-		.back-arrow {
+		:global(.back-arrow) {
+			width: 16px;
+			height: 16px;
 			flex-shrink: 0;
 			transition: transform 0.2s ease;
 			margin-left: -$unit-half;
+
+			:global(path) {
+				stroke: currentColor;
+				stroke-width: 2.25;
+				stroke-linecap: round;
+				stroke-linejoin: round;
+				fill: none;
+			}
 		}
 	}
 </style>

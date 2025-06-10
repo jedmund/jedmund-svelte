@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
 	import ProjectPasswordProtection from '$lib/components/ProjectPasswordProtection.svelte'
+	import ProjectHeaderContent from '$lib/components/ProjectHeaderContent.svelte'
 	import ProjectContent from '$lib/components/ProjectContent.svelte'
 	import type { PageData } from './$types'
 	import type { Project } from '$lib/types/project'
@@ -12,14 +13,14 @@
 	const error = $derived(data.error as string | undefined)
 
 	let headerContainer = $state<HTMLElement | null>(null)
-	
+
 	// Spring with aggressive bounce settings
 	const logoPosition = spring(
 		{ x: 0, y: 0 },
 		{
-			stiffness: 0.03,   // Extremely low for maximum bounce
-			damping: 0.1,      // Very low for many oscillations
-			precision: 0.001   // Keep animating for longer
+			stiffness: 0.03, // Extremely low for maximum bounce
+			damping: 0.1, // Very low for many oscillations
+			precision: 0.001 // Keep animating for longer
 		}
 	)
 
@@ -72,70 +73,49 @@
 			<a href="/" class="back-link">← Back to projects</a>
 		</div>
 	</Page>
-{:else if project.status === 'password-protected'}
-	<div class="project-wrapper">
-		<div
-			bind:this={headerContainer}
-			class="project-header-container"
-			style="background-color: {project.backgroundColor || '#f5f5f5'}"
-			onmousemove={handleMouseMove}
-			onmouseleave={handleMouseLeave}
-		>
-			{#if project.logoUrl}
-				<img 
-					src={project.logoUrl} 
-					alt="{project.title} logo" 
-					class="project-logo" 
-					style="transform: {logoTransform}"
-				/>
-			{/if}
-		</div>
-		<Page>
-			<ProjectPasswordProtection
-				projectSlug={project.slug}
-				correctPassword={project.password || ''}
-				projectType="work"
+{:else if project.status === 'password-protected' || project.status === 'published'}
+	{#snippet projectLayout()}
+		<div class="project-wrapper">
+			<div
+				bind:this={headerContainer}
+				class="project-header-container"
+				style="background-color: {project.backgroundColor || '#f5f5f5'}"
+				onmousemove={handleMouseMove}
+				onmouseleave={handleMouseLeave}
+				role="presentation"
+				aria-hidden="true"
 			>
-				{#snippet children()}
-					<div slot="header" class="project-header">
-						<h1 class="project-title">{project.title}</h1>
-						{#if project.subtitle}
-							<p class="project-subtitle">{project.subtitle}</p>
-						{/if}
-					</div>
-					<ProjectContent {project} />
-				{/snippet}
-			</ProjectPasswordProtection>
-		</Page>
-	</div>
-{:else}
-	<div class="project-wrapper">
-		<div
-			bind:this={headerContainer}
-			class="project-header-container"
-			style="background-color: {project.backgroundColor || '#f5f5f5'}"
-			onmousemove={handleMouseMove}
-			onmouseleave={handleMouseLeave}
-		>
-			{#if project.logoUrl}
-				<img 
-					src={project.logoUrl} 
-					alt="{project.title} logo" 
-					class="project-logo" 
-					style="transform: {logoTransform}"
-				/>
-			{/if}
-		</div>
-		<Page>
-			<div slot="header" class="project-header">
-				<h1 class="project-title">{project.title}</h1>
-				{#if project.subtitle}
-					<p class="project-subtitle">{project.subtitle}</p>
+				{#if project.logoUrl}
+					<img
+						src={project.logoUrl}
+						alt="{project.title} logo"
+						class="project-logo"
+						style="transform: {logoTransform}"
+					/>
 				{/if}
 			</div>
-			<ProjectContent {project} />
-		</Page>
-	</div>
+			<Page>
+				<div slot="header" class="project-header">
+					<ProjectHeaderContent {project} />
+				</div>
+				{#if project.status === 'password-protected'}
+					<ProjectPasswordProtection
+						projectSlug={project.slug}
+						correctPassword={project.password || ''}
+						projectType="work"
+					>
+						{#snippet children()}
+							<ProjectContent {project} />
+						{/snippet}
+					</ProjectPasswordProtection>
+				{:else}
+					<ProjectContent {project} />
+				{/if}
+			</Page>
+		</div>
+	{/snippet}
+
+	{@render projectLayout()}
 {/if}
 
 <style lang="scss">
@@ -230,28 +210,6 @@
 
 	/* Project Header */
 	.project-header {
-		text-align: center;
 		width: 100%;
-	}
-
-	.project-title {
-		font-size: 2.5rem;
-		font-weight: 700;
-		margin: 0 0 $unit;
-		color: $grey-10;
-
-		@include breakpoint('phone') {
-			font-size: 2rem;
-		}
-	}
-
-	.project-subtitle {
-		font-size: 1.25rem;
-		color: $grey-40;
-		margin: 0;
-
-		@include breakpoint('phone') {
-			font-size: 1.125rem;
-		}
 	}
 </style>
