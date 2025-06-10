@@ -21,7 +21,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		// const albums = await getWeeklyAlbumChart(client, USERNAME)
 
 		const albums = await getRecentAlbums(client, USERNAME, ALBUM_LIMIT)
-		console.log(albums)
+		// console.log(albums)
 		const enrichedAlbums = await Promise.all(
 			albums.slice(0, ALBUM_LIMIT).map(async (album) => {
 				try {
