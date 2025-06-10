@@ -4,6 +4,7 @@
 	import ProjectContent from '$lib/components/ProjectContent.svelte'
 	import type { PageData } from './$types'
 	import type { Project } from '$lib/types/project'
+	import { spring } from 'svelte/motion'
 
 	let { data } = $props<{ data: PageData }>()
 
@@ -11,7 +12,19 @@
 	const error = $derived(data.error as string | undefined)
 
 	let headerContainer = $state<HTMLElement | null>(null)
-	let logoTransform = $state('translate(0, 0)')
+	
+	// Spring with aggressive bounce settings
+	const logoPosition = spring(
+		{ x: 0, y: 0 },
+		{
+			stiffness: 0.03,   // Extremely low for maximum bounce
+			damping: 0.1,      // Very low for many oscillations
+			precision: 0.001   // Keep animating for longer
+		}
+	)
+
+	// Derive transform from spring position
+	const logoTransform = $derived(`translate(${$logoPosition.x}px, ${$logoPosition.y}px)`)
 
 	function handleMouseMove(e: MouseEvent) {
 		if (!headerContainer) return
@@ -24,14 +37,14 @@
 		const centerY = rect.height / 2
 
 		// Calculate movement based on mouse position relative to center
-		const moveX = ((x - centerX) / centerX) * 15 // 15px max movement
-		const moveY = ((y - centerY) / centerY) * 15
+		const moveX = ((x - centerX) / centerX) * 30 // 30px max movement for more dramatic effect
+		const moveY = ((y - centerY) / centerY) * 30
 
-		logoTransform = `translate(${moveX}px, ${moveY}px)`
+		logoPosition.set({ x: moveX, y: moveY })
 	}
 
 	function handleMouseLeave() {
-		logoTransform = 'translate(0, 0)'
+		logoPosition.set({ x: 0, y: 0 })
 	}
 </script>
 
@@ -202,7 +215,6 @@
 		width: 85px;
 		height: 85px;
 		object-fit: contain;
-		transition: transform 0.15s cubic-bezier(0.075, 0.82, 0.165, 1);
 		will-change: transform;
 
 		@include breakpoint('phone') {
