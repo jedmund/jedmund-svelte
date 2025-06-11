@@ -1,4 +1,5 @@
 <script lang="ts">
+	import BackButton from '$components/BackButton.svelte'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -84,7 +85,7 @@
 		<div class="error-content">
 			<h1>Photo Not Found</h1>
 			<p>{error || "The photo you're looking for doesn't exist."}</p>
-			<a href="/photos" class="back-link">← Back to Photos</a>
+			<BackButton href="/photos" label="Back to Photos" />
 		</div>
 	</div>
 {:else}
@@ -262,17 +263,6 @@
 			margin: 0 0 $unit-3x;
 			color: $grey-40;
 			line-height: 1.5;
-		}
-	}
-
-	.back-link {
-		color: $grey-40;
-		text-decoration: none;
-		font-size: 0.925rem;
-		transition: color 0.2s ease;
-
-		&:hover {
-			color: $grey-20;
 		}
 	}
 

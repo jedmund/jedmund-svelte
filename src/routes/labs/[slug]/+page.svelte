@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
+	import BackButton from '$components/BackButton.svelte'
 	import ProjectPasswordProtection from '$lib/components/ProjectPasswordProtection.svelte'
 	import ProjectHeaderContent from '$lib/components/ProjectHeaderContent.svelte'
 	import ProjectContent from '$lib/components/ProjectContent.svelte'
@@ -13,17 +14,14 @@
 </script>
 
 {#if error}
-	<Page>
-		{#snippet header()}
-			<div class="error-header">
-				<h1>Error</h1>
+	<div class="error-wrapper">
+		<Page>
+			<div class="error-content">
+				<p>{error}</p>
+				<BackButton href="/labs" label="Back to Labs" />
 			</div>
-		{/snippet}
-		<div class="error-content">
-			<p>{error}</p>
-			<a href="/labs" class="back-link">← Back to labs</a>
-		</div>
-	</Page>
+		</Page>
+	</div>
 {:else if !project}
 	<Page>
 		<div class="loading">Loading project...</div>
@@ -37,7 +35,7 @@
 		{/snippet}
 		<div class="error-content">
 			<p>This project is not yet available for viewing. Please check back later.</p>
-			<a href="/labs" class="back-link">← Back to labs</a>
+			<BackButton href="/labs" label="Back to Labs" />
 		</div>
 	</Page>
 {:else if project.status === 'password-protected' || project.status === 'published'}
@@ -67,6 +65,14 @@
 
 <style lang="scss">
 	/* Error and Loading States */
+	.error-wrapper {
+		width: 100%;
+		max-width: 700px;
+		margin: 0 auto;
+		padding: 0 $unit-2x;
+		box-sizing: border-box;
+	}
+
 	.error-header h1 {
 		color: $red-60;
 		font-size: 2rem;
@@ -86,17 +92,6 @@
 		text-align: center;
 		color: $grey-40;
 		padding: $unit-4x;
-	}
-
-	.back-link {
-		color: $grey-40;
-		text-decoration: none;
-		font-size: 0.925rem;
-		transition: color 0.2s ease;
-
-		&:hover {
-			color: $grey-20;
-		}
 	}
 
 	/* Project Wrapper */

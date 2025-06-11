@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Project } from '$lib/types/project'
-	import ArrowLeft from '$icons/arrow-left.svg'
-	import { goto } from '$app/navigation'
+	import BackButton from './BackButton.svelte'
 
 	interface Props {
 		project: Project
@@ -74,15 +73,9 @@
 	<!-- Navigation -->
 	<footer class="project-footer">
 		{#if project.projectType === 'labs'}
-			<button onclick={() => goto('/labs')} class="back-button">
-				<ArrowLeft class="back-arrow" />
-				Back to labs
-			</button>
+			<BackButton href="/labs" label="Back to Labs" />
 		{:else}
-			<button onclick={() => goto('/')} class="back-button">
-				<ArrowLeft class="back-arrow" />
-				Back to projects
-			</button>
+			<BackButton href="/" label="Back to projects" />
 		{/if}
 	</footer>
 </article>
@@ -177,45 +170,5 @@
 	/* Navigation */
 	.project-footer {
 		padding-bottom: $unit-2x;
-	}
-
-	.back-button {
-		color: $red-60;
-		background-color: transparent;
-		border: 1px solid transparent;
-		font: inherit;
-		font-size: 0.875rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s ease;
-		display: inline-flex;
-		align-items: center;
-		gap: $unit;
-		border-radius: 24px;
-		outline: none;
-
-		&:hover:not(:disabled) :global(.back-arrow) {
-			transform: translateX(-3px);
-		}
-
-		&:focus-visible {
-			box-shadow: 0 0 0 3px rgba($red-60, 0.25);
-		}
-
-		:global(.back-arrow) {
-			width: 16px;
-			height: 16px;
-			flex-shrink: 0;
-			transition: transform 0.2s ease;
-			margin-left: -$unit-half;
-
-			:global(path) {
-				stroke: currentColor;
-				stroke-width: 2.25;
-				stroke-linecap: round;
-				stroke-linejoin: round;
-				fill: none;
-			}
-		}
 	}
 </style>

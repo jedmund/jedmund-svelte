@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/admin/Button.svelte'
+	import BackButton from './BackButton.svelte'
 	import { onMount } from 'svelte'
 
 	interface Props {
@@ -121,9 +122,9 @@
 
 			<div class="back-link-wrapper">
 				{#if projectType === 'labs'}
-					<a href="/labs" class="back-link">← Back to labs</a>
+					<BackButton href="/labs" label="Back to Labs" />
 				{:else}
-					<a href="/" class="back-link">← Back to projects</a>
+					<BackButton href="/" label="Back to projects" />
 				{/if}
 			</div>
 		</div>
@@ -235,17 +236,6 @@
 			padding-top: $unit-3x;
 			text-align: center;
 			width: 100%;
-		}
-
-		.back-link {
-			color: $grey-40;
-			text-decoration: none;
-			font-size: 0.925rem;
-			transition: color 0.2s ease;
-
-			&:hover {
-				color: $grey-20;
-			}
 		}
 	}
 </style>

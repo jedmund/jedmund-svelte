@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PhotoGrid from '$components/PhotoGrid.svelte'
+	import BackButton from '$components/BackButton.svelte'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -43,7 +44,7 @@
 		<div class="error-message">
 			<h1>Album Not Found</h1>
 			<p>{error}</p>
-			<a href="/photos" class="back-link">← Back to Photos</a>
+			<BackButton href="/photos" label="Back to Photos" />
 		</div>
 	</div>
 {:else if album}
@@ -104,17 +105,6 @@
 			margin: 0 0 $unit-3x;
 			color: $grey-40;
 			line-height: 1.5;
-		}
-	}
-
-	.back-link {
-		color: $grey-40;
-		text-decoration: none;
-		font-size: 0.925rem;
-		transition: color 0.2s ease;
-
-		&:hover {
-			color: $grey-20;
 		}
 	}
 
