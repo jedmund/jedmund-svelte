@@ -22,6 +22,9 @@ export const GET: RequestHandler = async (event) => {
 		const { page, limit } = getPaginationParams(event.url)
 		const skip = (page - 1) * limit
 
+		// Check if admin is authenticated
+		const isAdmin = checkAdminAuth(event)
+
 		// Get filter parameters
 		const status = event.url.searchParams.get('status')
 		const projectType = event.url.searchParams.get('projectType')
@@ -34,8 +37,8 @@ export const GET: RequestHandler = async (event) => {
 
 		if (status) {
 			where.status = status
-		} else {
-			// Default behavior: determine which statuses to include
+		} else if (!isAdmin) {
+			// For non-admin users: only show published projects by default
 			const allowedStatuses = ['published']
 
 			if (includeListOnly) {
@@ -48,6 +51,7 @@ export const GET: RequestHandler = async (event) => {
 
 			where.status = { in: allowedStatuses }
 		}
+		// For admin users: show all projects (no status filter applied)
 
 		if (projectType) {
 			where.projectType = projectType

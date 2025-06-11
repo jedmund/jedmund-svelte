@@ -10,14 +10,18 @@
 
 <div class="labs-container">
 	{#if error}
-		<div class="error-message">
-			<h2>Unable to load projects</h2>
-			<p>{error}</p>
+		<div class="error-container">
+			<div class="error-message">
+				<h2>Unable to load projects</h2>
+				<p>{error}</p>
+			</div>
 		</div>
 	{:else if projects.length === 0}
-		<div class="empty-message">
-			<h2>No projects yet</h2>
-			<p>Labs projects will appear here once published.</p>
+		<div class="empty-container">
+			<div class="empty-message">
+				<h2>No projects yet</h2>
+				<p>Projects will be added to Labs soon</p>
+			</div>
 		</div>
 	{:else}
 		<div class="projects-grid">
@@ -35,7 +39,8 @@
 		padding: 0 $unit-2x;
 
 		@include breakpoint('phone') {
-			padding: $unit-3x $unit;
+			padding: 0 $unit-2x;
+			box-sizing: border-box;
 		}
 	}
 
@@ -49,10 +54,18 @@
 		}
 	}
 
+	.error-container,
+	.empty-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 60vh;
+	}
+
 	.error-message,
 	.empty-message {
 		text-align: center;
-		padding: $unit-6x $unit-3x;
+		max-width: 500px;
 
 		h2 {
 			font-size: 1.5rem;
@@ -68,7 +81,9 @@
 		}
 	}
 
-	.error-message h2 {
-		color: $red-60;
+	.error-message {
+		h2 {
+			color: $red-60;
+		}
 	}
 </style>

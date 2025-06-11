@@ -285,7 +285,7 @@
 
 	.project-description {
 		margin: 0;
-		font-size: 1.125rem; // 18px
+		font-size: 1rem; // 18px
 		line-height: 1.3;
 		color: $grey-00;
 	}

@@ -1,8 +1,7 @@
 <script lang="ts">
-	import type { HTMLInputAttributes, HTMLTextareaAttributes } from 'svelte/elements'
+	import type { HTMLInputAttributes } from 'svelte/elements'
 
-	// Type helpers for different input elements
-	type InputProps = HTMLInputAttributes & {
+	type Props = HTMLInputAttributes & {
 		type?:
 			| 'text'
 			| 'email'
@@ -14,19 +13,10 @@
 			| 'date'
 			| 'time'
 			| 'color'
-	}
-
-	type TextareaProps = HTMLTextareaAttributes & {
-		type: 'textarea'
-		rows?: number
-		autoResize?: boolean
-	}
-
-	type Props = (InputProps | TextareaProps) & {
 		label?: string
 		error?: string
 		helpText?: string
-		size?: 'small' | 'medium' | 'large'
+		size?: 'small' | 'medium' | 'large' | 'jumbo'
 		pill?: boolean
 		fullWidth?: boolean
 		required?: boolean
@@ -64,8 +54,6 @@
 		...restProps
 	}: Props = $props()
 
-	// For textarea auto-resize
-	let textareaElement: HTMLTextAreaElement | undefined = $state()
 	let charCount = $derived(String(value).length)
 	let charsRemaining = $derived(maxLength ? maxLength - charCount : 0)
 
@@ -92,16 +80,6 @@
 		}
 	}
 
-	// Auto-resize textarea
-	$effect(() => {
-		if (type === 'textarea' && textareaElement && isTextarea(restProps) && restProps.autoResize) {
-			// Reset height to auto to get the correct scrollHeight
-			textareaElement.style.height = 'auto'
-			// Set the height to match content
-			textareaElement.style.height = textareaElement.scrollHeight + 'px'
-		}
-	})
-
 	// Compute classes
 	const wrapperClasses = $derived(() => {
 		const classes = ['input-wrapper']
@@ -112,8 +90,6 @@
 		if (prefixIcon) classes.push('has-prefix-icon')
 		if (suffixIcon) classes.push('has-suffix-icon')
 		if (colorSwatch) classes.push('has-color-swatch')
-		if (type === 'textarea' && isTextarea(restProps) && restProps.autoResize)
-			classes.push('has-auto-resize')
 		if (wrapperClass) classes.push(wrapperClass)
 		if (className) classes.push(className)
 		return classes.join(' ')
@@ -126,11 +102,6 @@
 		if (inputClass) classes.push(inputClass)
 		return classes.join(' ')
 	})
-
-	// Type guard for textarea props
-	function isTextarea(props: Props): props is TextareaProps {
-		return props.type === 'textarea'
-	}
 </script>
 
 <div class={wrapperClasses()}>
@@ -161,32 +132,17 @@
 			></span>
 		{/if}
 
-		{#if type === 'textarea' && isTextarea(restProps)}
-			<textarea
-				bind:this={textareaElement}
-				bind:value
-				{id}
-				{disabled}
-				{readonly}
-				{required}
-				{maxLength}
-				class={inputClasses()}
-				rows={restProps.rows || 3}
-				{...restProps}
-			/>
-		{:else}
-			<input
-				bind:value
-				{id}
-				{type}
-				{disabled}
-				{readonly}
-				{required}
-				{maxLength}
-				class={inputClasses()}
-				{...restProps}
-			/>
-		{/if}
+		<input
+			bind:value
+			{id}
+			{type}
+			{disabled}
+			{readonly}
+			{required}
+			{maxLength}
+			class={inputClasses()}
+			{...restProps}
+		/>
 
 		{#if suffixIcon}
 			<span class="input-icon suffix-icon">
@@ -303,14 +259,18 @@
 		}
 	}
 
-	// Input and textarea styles
+	// Input styles
 	.input {
 		width: 100%;
-		font-size: 14px;
-		border: 1px solid $grey-80;
-		border-radius: 6px;
-		background-color: white;
+		border: 1px solid transparent;
+		color: $input-text-color;
+		background-color: $input-background-color;
 		transition: all 0.15s ease;
+
+		&:hover {
+			background-color: $input-background-color-hover;
+			color: $input-text-color-hover;
+		}
 
 		&::placeholder {
 			color: $grey-50;
@@ -318,8 +278,8 @@
 
 		&:focus {
 			outline: none;
-			border-color: $primary-color;
-			background-color: white;
+			background-color: $input-background-color-hover;
+			color: $input-text-color-hover;
 		}
 
 		&:disabled {
@@ -337,17 +297,23 @@
 	// Size variations
 	.input-small {
 		padding: $unit calc($unit * 1.5);
-		font-size: 13px;
+		font-size: 0.75rem;
 	}
 
 	.input-medium {
 		padding: calc($unit * 1.5) $unit-2x;
-		font-size: 14px;
+		font-size: 1rem;
 	}
 
 	.input-large {
 		padding: $unit-2x $unit-3x;
-		font-size: 16px;
+		font-size: 1.25rem;
+		box-sizing: border-box;
+	}
+
+	.input-jumbo {
+		padding: $unit-2x $unit-2x;
+		font-size: 1.33rem;
 		box-sizing: border-box;
 	}
 
@@ -362,17 +328,23 @@
 		&.input-large {
 			border-radius: 28px;
 		}
+		&.input-jumbo {
+			border-radius: 32px;
+		}
 	}
 
 	.input:not(.input-pill) {
 		&.input-small {
-			border-radius: 6px;
+			border-radius: $corner-radius-lg;
 		}
 		&.input-medium {
-			border-radius: 8px;
+			border-radius: $corner-radius-2xl;
 		}
 		&.input-large {
-			border-radius: 10px;
+			border-radius: $corner-radius-2xl;
+		}
+		&.input-jumbo {
+			border-radius: $corner-radius-2xl;
 		}
 	}
 
@@ -407,31 +379,6 @@
 			width: 16px;
 			height: 16px;
 		}
-	}
-
-	// Textarea specific
-	textarea.input {
-		resize: vertical;
-		min-height: 80px;
-		padding-top: calc($unit * 1.5);
-		padding-bottom: calc($unit * 1.5);
-		line-height: 1.5;
-		overflow-y: hidden; // Important for auto-resize
-
-		&.input-small {
-			min-height: 60px;
-			padding-top: $unit;
-			padding-bottom: $unit;
-		}
-
-		&.input-large {
-			min-height: 100px;
-		}
-	}
-
-	// Auto-resizing textarea
-	.has-auto-resize textarea.input {
-		resize: none; // Disable manual resize when auto-resize is enabled
 	}
 
 	// Footer styles

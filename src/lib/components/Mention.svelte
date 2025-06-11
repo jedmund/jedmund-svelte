@@ -1,9 +1,19 @@
-<script>
-	export let href = ''
-	export let title = ''
-	export let sourceType = ''
-	export let date = ''
-	export let source = ''
+<script lang="ts">
+	interface Props {
+		href?: string
+		title?: string
+		sourceType?: string
+		date?: string
+		source?: string
+	}
+
+	let {
+		href = '',
+		title = '',
+		sourceType = '',
+		date = '',
+		source = ''
+	}: Props = $props()
 </script>
 
 <li class="mention">

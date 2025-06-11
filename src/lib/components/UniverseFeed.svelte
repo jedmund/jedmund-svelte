@@ -16,8 +16,11 @@
 			{/if}
 		{/each}
 	{:else}
-		<div class="empty-state">
-			<p>No content found in the universe yet.</p>
+		<div class="empty-container">
+			<div class="empty-message">
+				<h2>No posts yet</h2>
+				<p>Posts will be added to Universe soon</p>
+			</div>
 		</div>
 	{/if}
 </div>
@@ -26,17 +29,32 @@
 	.universe-feed {
 		display: flex;
 		flex-direction: column;
-		gap: $unit-3x;
+		gap: $unit-2x;
+		padding: 0 $unit-2x;
 	}
 
-	.empty-state {
+	.empty-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 60vh;
+	}
+
+	.empty-message {
 		text-align: center;
-		padding: $unit-6x $unit-3x;
-		color: $grey-40;
+		max-width: 500px;
+
+		h2 {
+			font-size: 1.5rem;
+			font-weight: 600;
+			margin: 0 0 $unit-2x;
+			color: $grey-10;
+		}
 
 		p {
 			margin: 0;
-			font-size: 1.125rem;
+			color: $grey-40;
+			line-height: 1.5;
 		}
 	}
 </style>

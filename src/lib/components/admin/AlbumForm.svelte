@@ -236,6 +236,7 @@
 			<div class="form-section">
 				<Input
 					label="Album Title"
+					size="jumbo"
 					bind:value={title}
 					placeholder="Enter album title"
 					required={true}

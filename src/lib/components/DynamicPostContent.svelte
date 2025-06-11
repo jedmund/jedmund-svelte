@@ -1,10 +1,9 @@
 <script lang="ts">
 	import LinkCard from './LinkCard.svelte'
 	import Slideshow from './Slideshow.svelte'
+	import BackButton from './BackButton.svelte'
 	import { formatDate } from '$lib/utils/date'
 	import { renderEdraContent } from '$lib/utils/content'
-	import { goto } from '$app/navigation'
-	import ArrowLeft from '$icons/arrow-left.svg'
 
 	let { post }: { post: any } = $props()
 
@@ -82,10 +81,7 @@
 	{/if}
 
 	<footer class="post-footer">
-		<button onclick={() => goto('/universe')} class="back-button">
-			<ArrowLeft class="back-arrow" />
-			Back to Universe
-		</button>
+		<BackButton href="/universe" label="Back to Universe" />
 	</footer>
 </article>
 
@@ -96,23 +92,23 @@
 		max-width: 784px;
 		gap: $unit-3x;
 		margin: 0 auto;
-		padding: 0 $unit-3x;
 
 		@include breakpoint('phone') {
-			padding: 0 $unit-2x;
+			gap: $unit-2x;
+			padding: $unit-half 0;
 		}
 
 		// Post type styles
 		&.post {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 			}
 		}
 
 		&.essay {
 			.post-body {
-				font-size: 1.125rem;
-				line-height: 1.7;
+				font-size: 1rem;
+				line-height: 1.4;
 			}
 		}
 	}
@@ -169,7 +165,7 @@
 		margin-bottom: $unit-4x;
 
 		h3 {
-			font-size: 1.125rem;
+			font-size: 1rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
 			color: $grey-20;
@@ -185,7 +181,7 @@
 
 		.album-description {
 			margin: 0;
-			font-size: 1.125rem;
+			font-size: 1rem;
 			color: $grey-10;
 			line-height: 1.5;
 		}
@@ -218,7 +214,7 @@
 
 		:global(h4) {
 			margin: $unit-3x 0 $unit-2x;
-			font-size: 1.125rem;
+			font-size: 1rem;
 			font-weight: 600;
 			color: $grey-10;
 		}
@@ -315,50 +311,6 @@
 				width: 100%;
 				height: auto;
 				border-radius: $unit;
-			}
-		}
-	}
-
-	.post-footer {
-		padding-bottom: $unit-2x;
-	}
-
-	.back-button {
-		color: $red-60;
-		background-color: transparent;
-		border: 1px solid transparent;
-		font: inherit;
-		font-size: 0.875rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s ease;
-		display: inline-flex;
-		align-items: center;
-		gap: $unit;
-		border-radius: 24px;
-		outline: none;
-
-		&:hover:not(:disabled) :global(.back-arrow) {
-			transform: translateX(-3px);
-		}
-
-		&:focus-visible {
-			box-shadow: 0 0 0 3px rgba($red-60, 0.25);
-		}
-
-		:global(.back-arrow) {
-			width: 16px;
-			height: 16px;
-			flex-shrink: 0;
-			transition: transform 0.2s ease;
-			margin-left: -$unit-half;
-
-			:global(path) {
-				stroke: currentColor;
-				stroke-width: 2.25;
-				stroke-linecap: round;
-				stroke-linejoin: round;
-				fill: none;
 			}
 		}
 	}

@@ -2,6 +2,7 @@
 	import type { Post } from '$lib/posts'
 	import ImagePost from './ImagePost.svelte'
 	import LinkCard from './LinkCard.svelte'
+	import BackButton from './BackButton.svelte'
 
 	let { post }: { post: Post } = $props()
 
@@ -42,7 +43,7 @@
 	</div>
 
 	<footer class="post-footer">
-		<a href="/universe" class="back-link">← Back to all posts</a>
+		<BackButton href="/universe" label="Back to all posts" />
 	</footer>
 </article>
 
@@ -54,13 +55,13 @@
 		// Post type styles for simplified post types
 		&.post {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 			}
 		}
 
 		&.essay {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 				line-height: 1.5;
 			}
 		}
@@ -69,13 +70,13 @@
 		&.note,
 		&.microblog {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 			}
 		}
 
 		&.blog {
 			.post-body {
-				font-size: 1.125rem;
+				font-size: 1rem;
 				line-height: 1.5;
 			}
 		}
@@ -200,18 +201,5 @@
 		margin-top: $unit-6x;
 		padding-top: $unit-4x;
 		border-top: 1px solid $grey-80;
-	}
-
-	.back-link {
-		color: $red-60;
-		text-decoration: none;
-		font-weight: 500;
-		transition: all 0.2s ease;
-
-		&:hover {
-			text-decoration: underline;
-			text-decoration-style: wavy;
-			text-underline-offset: 0.15em;
-		}
 	}
 </style>

@@ -84,7 +84,7 @@
 	.album-description {
 		margin: 0;
 		color: $grey-10;
-		font-size: 1.125rem;
+		font-size: 1rem;
 		line-height: 1.5;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;

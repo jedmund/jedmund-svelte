@@ -170,7 +170,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: $unit;
-		font-weight: 500;
+		font-weight: 400;
 		border: none;
 		cursor: pointer;
 		transition: all 0.15s ease;
@@ -211,7 +211,7 @@
 	}
 
 	.btn-medium {
-		padding: $unit $unit-2x;
+		padding: ($unit * 1.5) $unit-2x;
 		font-size: 14px;
 		border-radius: 24px;
 		min-height: 36px;

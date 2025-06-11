@@ -1,13 +1,26 @@
 <script lang="ts">
-	export let noHorizontalPadding = false
+	import type { Snippet } from 'svelte'
+
+	interface Props {
+		noHorizontalPadding?: boolean
+		class?: string
+		header?: Snippet
+		children?: Snippet
+	}
+
+	let { noHorizontalPadding = false, class: className = '', header, children }: Props = $props()
 </script>
 
-<section class="page" class:no-horizontal-padding={noHorizontalPadding}>
-	<header>
-		<slot name="header" />
-	</header>
+<section class="page {className}" class:no-horizontal-padding={noHorizontalPadding}>
+	{#if header}
+		<header>
+			{@render header()}
+		</header>
+	{/if}
 
-	<slot />
+	{#if children}
+		{@render children()}
+	{/if}
 </section>
 
 <style lang="scss">

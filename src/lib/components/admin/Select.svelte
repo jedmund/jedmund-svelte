@@ -49,6 +49,7 @@
 	.select-wrapper {
 		position: relative;
 		display: inline-block;
+		width: 100%;
 	}
 
 	.select {
@@ -59,6 +60,7 @@
 		transition: all 0.2s ease;
 		appearance: none;
 		padding-right: 36px;
+		width: 100%;
 
 		&:focus {
 			outline: none;

@@ -1,51 +1,58 @@
 <script lang="ts">
 	import Input from './Input.svelte'
-	import Select from './Select.svelte'
-	import ImageUploader from './ImageUploader.svelte'
+	import Textarea from './Textarea.svelte'
+	import SelectField from './SelectField.svelte'
+	import SegmentedControlField from './SegmentedControlField.svelte'
 	import type { ProjectFormData } from '$lib/types/project'
 
 	interface Props {
 		formData: ProjectFormData
 		validationErrors: Record<string, string>
+		onSave?: () => Promise<void>
 	}
 
-	let { formData = $bindable(), validationErrors }: Props = $props()
+	let { formData = $bindable(), validationErrors, onSave }: Props = $props()
 
-	function handleFeaturedImageUpload(media: Media) {
-		formData.featuredImage = media.url
-	}
 </script>
 
 <div class="form-section">
 	<Input
 		label="Title"
 		required
+		size="jumbo"
 		error={validationErrors.title}
 		bind:value={formData.title}
 		placeholder="Project title"
 	/>
 
-	<Input
-		type="textarea"
+	<Textarea
 		label="Description"
+		size="jumbo"
 		error={validationErrors.description}
 		bind:value={formData.description}
 		rows={3}
 		placeholder="Short description for project cards"
 	/>
 
-	<Select
-		label="Project Type"
-		bind:value={formData.projectType}
-		error={validationErrors.projectType}
-		options={[
-			{ value: 'work', label: 'Work' },
-			{ value: 'labs', label: 'Labs' }
-		]}
-		helpText="Choose whether this project appears in the Work tab or Labs tab"
+	<Input
+		type="url"
+		label="External URL"
+		error={validationErrors.externalUrl}
+		bind:value={formData.externalUrl}
+		placeholder="https://example.com"
 	/>
 
-	<div class="form-row">
+	<div class="form-row three-column">
+		<SegmentedControlField
+			label="Project Type"
+			bind:value={formData.projectType}
+			error={validationErrors.projectType}
+			options={[
+				{ value: 'work', label: 'Work' },
+				{ value: 'labs', label: 'Labs' }
+			]}
+		/>
+
 		<Input
 			type="number"
 			label="Year"
@@ -64,35 +71,6 @@
 		/>
 	</div>
 
-	<Input
-		type="url"
-		label="External URL"
-		error={validationErrors.externalUrl}
-		bind:value={formData.externalUrl}
-		placeholder="https://example.com"
-	/>
-
-	<ImageUploader
-		label="Featured Image"
-		value={null}
-		onUpload={handleFeaturedImageUpload}
-		placeholder="Upload a featured image for this project"
-		showBrowseLibrary={true}
-	/>
-
-	<Select
-		label="Project Status"
-		bind:value={formData.status}
-		error={validationErrors.status}
-		options={[
-			{ value: 'draft', label: 'Draft (Hidden)' },
-			{ value: 'published', label: 'Published' },
-			{ value: 'list-only', label: 'List Only (No Access)' },
-			{ value: 'password-protected', label: 'Password Protected' }
-		]}
-		helpText="Control how this project appears on the public site"
-	/>
-
 	{#if formData.status === 'password-protected'}
 		<Input
 			type="password"
@@ -110,18 +88,29 @@
 	.form-section {
 		display: flex;
 		flex-direction: column;
-		gap: $unit-2x;
+		gap: $unit-4x;
 
 		&:last-child {
 			margin-bottom: 0;
+		}
+
+		h2 {
+			font-size: 1.25rem;
+			font-weight: 600;
+			margin: 0;
+			color: $grey-10;
 		}
 	}
 
 	.form-row {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: $unit-2x;
+		gap: $unit-4x;
 		padding-bottom: $unit-3x;
+
+		&.three-column {
+			grid-template-columns: 1fr 1fr 1fr;
+		}
 
 		@include breakpoint('phone') {
 			grid-template-columns: 1fr;

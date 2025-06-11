@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
+	import BackButton from '$components/BackButton.svelte'
 	import ProjectPasswordProtection from '$lib/components/ProjectPasswordProtection.svelte'
 	import ProjectHeaderContent from '$lib/components/ProjectHeaderContent.svelte'
 	import ProjectContent from '$lib/components/ProjectContent.svelte'
@@ -50,15 +51,17 @@
 </script>
 
 {#if error}
-	<Page>
-		<div slot="header" class="error-header">
-			<h1>Error</h1>
-		</div>
-		<div class="error-content">
-			<p>{error}</p>
-			<a href="/" class="back-link">← Back to home</a>
-		</div>
-	</Page>
+	<div class="error-container">
+		<Page>
+			<div slot="header" class="error-header">
+				<h1>Error</h1>
+			</div>
+			<div class="error-content">
+				<p>{error}</p>
+				<BackButton href="/" label="Back to projects" />
+			</div>
+		</Page>
+	</div>
 {:else if !project}
 	<Page>
 		<div class="loading">Loading project...</div>
@@ -70,7 +73,7 @@
 		</div>
 		<div class="error-content">
 			<p>This project is not yet available for viewing. Please check back later.</p>
-			<a href="/" class="back-link">← Back to projects</a>
+			<BackButton href="/" label="Back to projects" />
 		</div>
 	</Page>
 {:else if project.status === 'password-protected' || project.status === 'published'}
@@ -95,9 +98,11 @@
 				{/if}
 			</div>
 			<Page>
-				<div slot="header" class="project-header">
-					<ProjectHeaderContent {project} />
-				</div>
+				{#snippet header()}
+					<div class="project-header">
+						<ProjectHeaderContent {project} />
+					</div>
+				{/snippet}
 				{#if project.status === 'password-protected'}
 					<ProjectPasswordProtection
 						projectSlug={project.slug}
@@ -120,6 +125,14 @@
 
 <style lang="scss">
 	/* Error and Loading States */
+	.error-container {
+		width: 100%;
+		max-width: 700px;
+		margin: 0 auto;
+		box-sizing: border-box;
+		padding: 0 $unit-2x;
+	}
+
 	.error-header h1 {
 		color: $red-60;
 		font-size: 2rem;
@@ -141,25 +154,15 @@
 		padding: $unit-4x;
 	}
 
-	.back-link {
-		color: $grey-40;
-		text-decoration: none;
-		font-size: 0.925rem;
-		transition: color 0.2s ease;
-
-		&:hover {
-			color: $grey-20;
-		}
-	}
-
 	/* Project Wrapper */
 	.project-wrapper {
 		width: 100%;
 		max-width: 700px;
 		margin: 0 auto;
+		box-sizing: border-box;
 
 		@include breakpoint('phone') {
-			margin-top: $unit-3x;
+			padding: 0 $unit-2x;
 		}
 
 		:global(.page) {

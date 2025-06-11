@@ -24,11 +24,22 @@ $unit-16x: $unit * 16;
 $unit-18x: $unit * 18;
 $unit-20x: $unit * 20;
 
+/* Corner Radius
+ * -------------------------------------------------------------------------- */
+$corner-radius-xs: 4px; // $unit-half
+$corner-radius-sm: 6px; // $unit-three-fourth
+$corner-radius-md: 8px; // $unit
+$corner-radius-lg: 10px; // $unit + 2px
+$corner-radius-xl: 12px; // $unit * 1.5
+$corner-radius-2xl: 16px; // $unit-2x
+$corner-radius-3xl: 24px; // $unit-3x
+$corner-radius-full: 999px; // Full rounded
+
 /* Page properties
  * -------------------------------------------------------------------------- */
-$page-corner-radius: $unit;
-$image-corner-radius: $unit-2x;
-$card-corner-radius: $unit-3x;
+$page-corner-radius: $corner-radius-md;
+$image-corner-radius: $corner-radius-2xl;
+$card-corner-radius: $corner-radius-3xl;
 
 $page-top-margin: $unit-6x;
 
@@ -109,6 +120,7 @@ $salmon-pink: #ffd5cf; // Desaturated salmon pink for hover states
 $bg-color: #e8e8e8;
 $page-color: #ffffff;
 $card-color: #f7f7f7;
+$card-color-hover: #f0f0f0;
 
 $text-color-light: #b2b2b2;
 $text-color-body: #666666;
@@ -148,6 +160,14 @@ $twitter-text-color: #0f5f9b;
  * -------------------------------------------------------------------------- */
 $corner-radius: $unit-2x;
 $mobile-corner-radius: $unit-2x;
+
+/* Inputs
+ * -------------------------------------------------------------------------- */
+
+$input-background-color: #f7f7f7;
+$input-background-color-hover: #f0f0f0;
+$input-text-color: #666666;
+$input-text-color-hover: #4d4d4d;
 
 /* Avatar header
  * -------------------------------------------------------------------------- */

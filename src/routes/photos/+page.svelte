@@ -8,7 +8,7 @@
 	const error = $derived(data.error)
 </script>
 
-<div class="photos-page">
+<div class="photos-container">
 	{#if error}
 		<div class="error-container">
 			<div class="error-message">
@@ -20,7 +20,7 @@
 		<div class="empty-container">
 			<div class="empty-message">
 				<h2>No photos yet</h2>
-				<p>Photography albums will appear here once published.</p>
+				<p>Photos and albums will be added soon</p>
 			</div>
 		</div>
 	{:else}
@@ -29,14 +29,15 @@
 </div>
 
 <style lang="scss">
-	.photos-page {
+	.photos-container {
 		width: 100%;
-		max-width: 900px;
+		max-width: 700px;
 		margin: 0 auto;
 		padding: 0 $unit-3x;
 
 		@include breakpoint('phone') {
-			padding: $unit-3x $unit-2x;
+			padding: 0 $unit-2x;
+			box-sizing: border-box;
 		}
 	}
 

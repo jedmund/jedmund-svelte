@@ -19,7 +19,7 @@
 			target="_blank"
 			rel="noopener noreferrer"
 			class="visit-button"
-			style="--button-bg: {project.highlightColor || '#4d4d4d'}; --button-color: white"
+			style="--button-bg: {project.highlightColor || '#e33d3d'}; --button-color: white"
 		>
 			Visit <ArrowRight />
 		</a>
@@ -66,7 +66,7 @@
 		margin: 0;
 
 		@include breakpoint('phone') {
-			font-size: 1.125rem;
+			font-size: 1rem;
 		}
 	}
 
@@ -75,7 +75,7 @@
 		align-items: center;
 		gap: $unit;
 		padding: ($unit * 1.5) $unit-2x;
-		background: var(--button-bg, $grey-10);
+		background: var(--button-bg, $red-60);
 		color: var(--button-color, white);
 		text-decoration: none;
 		border-radius: 50px;
@@ -107,7 +107,13 @@
 		}
 
 		@include breakpoint('phone') {
-			align-self: flex-start;
+			width: 100%;
+			justify-content: center;
+			box-sizing: border-box;
+
+			:global(svg) {
+				display: none;
+			}
 		}
 	}
 </style>

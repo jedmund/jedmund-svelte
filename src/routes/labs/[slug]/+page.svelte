@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
+	import BackButton from '$components/BackButton.svelte'
 	import ProjectPasswordProtection from '$lib/components/ProjectPasswordProtection.svelte'
+	import ProjectHeaderContent from '$lib/components/ProjectHeaderContent.svelte'
 	import ProjectContent from '$lib/components/ProjectContent.svelte'
 	import type { PageData } from './$types'
 	import type { Project } from '$lib/types/project'
@@ -12,74 +14,65 @@
 </script>
 
 {#if error}
-	<Page>
-		<div slot="header" class="error-header">
-			<h1>Error</h1>
-		</div>
-		<div class="error-content">
-			<p>{error}</p>
-			<a href="/labs" class="back-link">← Back to labs</a>
-		</div>
-	</Page>
+	<div class="error-wrapper">
+		<Page>
+			<div class="error-content">
+				<p>{error}</p>
+				<BackButton href="/labs" label="Back to Labs" />
+			</div>
+		</Page>
+	</div>
 {:else if !project}
 	<Page>
 		<div class="loading">Loading project...</div>
 	</Page>
 {:else if project.status === 'list-only'}
 	<Page>
-		<div slot="header" class="error-header">
-			<h1>Project Not Available</h1>
-		</div>
+		{#snippet header()}
+			<div class="error-header">
+				<h1>Project Not Available</h1>
+			</div>
+		{/snippet}
 		<div class="error-content">
 			<p>This project is not yet available for viewing. Please check back later.</p>
-			<a href="/labs" class="back-link">← Back to labs</a>
+			<BackButton href="/labs" label="Back to Labs" />
 		</div>
 	</Page>
-{:else if project.status === 'password-protected'}
-	<Page>
-		<ProjectPasswordProtection
-			projectSlug={project.slug}
-			correctPassword={project.password || ''}
-			projectType="labs"
-		>
-			{#snippet children()}
-				<div slot="header" class="project-header">
-					{#if project.logoUrl}
-						<div
-							class="project-logo"
-							style="background-color: {project.backgroundColor || '#f5f5f5'}"
-						>
-							<img src={project.logoUrl} alt="{project.title} logo" />
-						</div>
-					{/if}
-					<h1 class="project-title">{project.title}</h1>
-					{#if project.subtitle}
-						<p class="project-subtitle">{project.subtitle}</p>
-					{/if}
+{:else if project.status === 'password-protected' || project.status === 'published'}
+	<div class="project-wrapper">
+		<Page>
+			{#snippet header()}
+				<div class="project-header">
+					<ProjectHeaderContent {project} />
 				</div>
-				<ProjectContent {project} />
 			{/snippet}
-		</ProjectPasswordProtection>
-	</Page>
-{:else}
-	<Page>
-		<div slot="header" class="project-header">
-			{#if project.logoUrl}
-				<div class="project-logo" style="background-color: {project.backgroundColor || '#f5f5f5'}">
-					<img src={project.logoUrl} alt="{project.title} logo" />
-				</div>
+			{#if project.status === 'password-protected'}
+				<ProjectPasswordProtection
+					projectSlug={project.slug}
+					correctPassword={project.password || ''}
+					projectType="labs"
+				>
+					{#snippet children()}
+						<ProjectContent {project} />
+					{/snippet}
+				</ProjectPasswordProtection>
+			{:else}
+				<ProjectContent {project} />
 			{/if}
-			<h1 class="project-title">{project.title}</h1>
-			{#if project.subtitle}
-				<p class="project-subtitle">{project.subtitle}</p>
-			{/if}
-		</div>
-		<ProjectContent {project} />
-	</Page>
+		</Page>
+	</div>
 {/if}
 
 <style lang="scss">
 	/* Error and Loading States */
+	.error-wrapper {
+		width: 100%;
+		max-width: 700px;
+		margin: 0 auto;
+		padding: 0 $unit-2x;
+		box-sizing: border-box;
+	}
+
 	.error-header h1 {
 		color: $red-60;
 		font-size: 2rem;
@@ -101,59 +94,20 @@
 		padding: $unit-4x;
 	}
 
-	.back-link {
-		color: $grey-40;
-		text-decoration: none;
-		font-size: 0.925rem;
-		transition: color 0.2s ease;
+	/* Project Wrapper */
+	.project-wrapper {
+		width: 100%;
+		max-width: 700px;
+		margin: 0 auto;
+		box-sizing: border-box;
 
-		&:hover {
-			color: $grey-20;
+		@include breakpoint('phone') {
+			padding: 0 $unit-2x;
 		}
 	}
 
 	/* Project Header */
 	.project-header {
-		text-align: center;
 		width: 100%;
-	}
-
-	.project-logo {
-		width: 100px;
-		height: 100px;
-		margin: 0 auto $unit-2x;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: $unit-2x;
-		padding: $unit-2x;
-		box-sizing: border-box;
-
-		img {
-			max-width: 100%;
-			max-height: 100%;
-			object-fit: contain;
-		}
-	}
-
-	.project-title {
-		font-size: 2.5rem;
-		font-weight: 700;
-		margin: 0 0 $unit;
-		color: $grey-10;
-
-		@include breakpoint('phone') {
-			font-size: 2rem;
-		}
-	}
-
-	.project-subtitle {
-		font-size: 1.25rem;
-		color: $grey-40;
-		margin: 0;
-
-		@include breakpoint('phone') {
-			font-size: 1.125rem;
-		}
 	}
 </style>

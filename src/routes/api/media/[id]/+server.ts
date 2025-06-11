@@ -68,9 +68,9 @@ export const PUT: RequestHandler = async (event) => {
 		const media = await prisma.media.update({
 			where: { id },
 			data: {
-				altText: body.altText ?? existing.altText,
-				description: body.description ?? existing.description,
-				isPhotography: body.isPhotography ?? existing.isPhotography
+				altText: body.altText !== undefined ? body.altText : existing.altText,
+				description: body.description !== undefined ? body.description : existing.description,
+				isPhotography: body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography
 			}
 		})
 
