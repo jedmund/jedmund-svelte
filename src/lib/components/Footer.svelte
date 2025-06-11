@@ -11,7 +11,11 @@
 
 <footer class="site-footer">
 	<div class="footer-content">
-		<p class="copyright">&copy; {currentYear} Justin Edmund</p>
+		<p class="copyright">
+			&copy; {currentYear} Justin Edmund
+			<span class="separator">&middot;</span>
+			<a href="/rss" class="rss-link">RSS</a>
+		</p>
 		<nav class="social-links">
 			{#each socialLinks as link, index}
 				<a href={link.url} target="_blank" rel="noopener noreferrer">{link.name}</a>
@@ -49,6 +53,20 @@
 		margin: 0;
 		font-size: 0.875rem; // 14px
 		color: $grey-40; // #999
+
+		.separator {
+			margin: 0 $unit-half;
+		}
+
+		.rss-link {
+			color: $grey-40;
+			text-decoration: none;
+			transition: color 0.2s ease;
+
+			&:hover {
+				color: $red-60;
+			}
+		}
 	}
 
 	.social-links {
