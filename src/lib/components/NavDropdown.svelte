@@ -3,6 +3,7 @@
 	import LabsIcon from '$icons/labs.svg'
 	import UniverseIcon from '$icons/universe.svg'
 	import PhotosIcon from '$icons/photos.svg'
+	import AboutIcon from '$icons/about.svg'
 	import ChevronDownIcon from '$icons/chevron-down.svg'
 	import { page } from '$app/stores'
 
@@ -14,20 +15,23 @@
 		icon: typeof WorkIcon
 		text: string
 		href: string
-		variant: 'work' | 'universe' | 'labs' | 'photos'
+		variant: 'work' | 'universe' | 'labs' | 'photos' | 'about'
 	}
 
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
-		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' }
+		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
+		{ icon: AboutIcon, text: 'About', href: '/about', variant: 'about' }
 	]
 
 	// Get current active item
 	const activeItem = $derived(
 		currentPath === '/'
 			? navItems[0]
+			: currentPath === '/about'
+			? navItems[4]
 			: navItems.find((item) => currentPath.startsWith(item.href === '/' ? '/work' : item.href)) ||
 					navItems[0]
 	)
@@ -43,6 +47,8 @@
 				return '#ffebc5'
 			case 'labs':
 				return '#c5eaff'
+			case 'about':
+				return '#ffcdc5'
 			default:
 				return '#c5eaff'
 		}
@@ -59,6 +65,8 @@
 				return '#b97d14'
 			case 'labs':
 				return '#1482c1'
+			case 'about':
+				return '#d0290d'
 			default:
 				return '#1482c1'
 		}
