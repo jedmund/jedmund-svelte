@@ -18,11 +18,11 @@
 		{/if}
 	</label>
 
+	{@render children?.()}
+
 	{#if helpText}
 		<p class="help-text">{helpText}</p>
 	{/if}
-
-	{@render children?.()}
 
 	{#if error}
 		<p class="error-text">{error}</p>
@@ -39,7 +39,8 @@
 
 		&.has-error {
 			:global(input),
-			:global(textarea) {
+			:global(textarea),
+			:global(select) {
 				border-color: #c33;
 			}
 		}

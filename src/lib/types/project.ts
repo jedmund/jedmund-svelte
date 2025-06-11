@@ -12,7 +12,6 @@ export interface Project {
 	role: string | null
 	featuredImage: string | null
 	logoUrl: string | null
-	gallery: any[] | null
 	externalUrl: string | null
 	caseStudyContent: any | null
 	backgroundColor: string | null
@@ -39,7 +38,6 @@ export interface ProjectFormData {
 	backgroundColor: string
 	highlightColor: string
 	logoUrl: string
-	gallery: any[] | null
 	status: ProjectStatus
 	password: string
 	caseStudyContent: any
@@ -58,7 +56,6 @@ export const defaultProjectFormData: ProjectFormData = {
 	backgroundColor: '',
 	highlightColor: '',
 	logoUrl: '',
-	gallery: null,
 	status: 'draft',
 	password: '',
 	caseStudyContent: {

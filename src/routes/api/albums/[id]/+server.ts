@@ -134,15 +134,15 @@ export const PUT: RequestHandler = async (event) => {
 		const album = await prisma.album.update({
 			where: { id },
 			data: {
-				slug: body.slug ?? existing.slug,
-				title: body.title ?? existing.title,
+				slug: body.slug !== undefined ? body.slug : existing.slug,
+				title: body.title !== undefined ? body.title : existing.title,
 				description: body.description !== undefined ? body.description : existing.description,
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				location: body.location !== undefined ? body.location : existing.location,
 				coverPhotoId: body.coverPhotoId !== undefined ? body.coverPhotoId : existing.coverPhotoId,
-				isPhotography: body.isPhotography ?? existing.isPhotography,
-				status: body.status ?? existing.status,
-				showInUniverse: body.showInUniverse ?? existing.showInUniverse
+				isPhotography: body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography,
+				status: body.status !== undefined ? body.status : existing.status,
+				showInUniverse: body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse
 			}
 		})
 

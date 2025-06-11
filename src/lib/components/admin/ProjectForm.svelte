@@ -7,7 +7,6 @@
 	import Editor from './Editor.svelte'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
-	import ProjectGalleryForm from './ProjectGalleryForm.svelte'
 	import ProjectStylingForm from './ProjectStylingForm.svelte'
 	import Button from './Button.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
@@ -60,11 +59,10 @@
 			role: data.role || '',
 			projectType: data.projectType || 'work',
 			externalUrl: data.externalUrl || '',
-			featuredImage: data.featuredImage || null,
+			featuredImage: data.featuredImage && data.featuredImage.trim() !== '' ? data.featuredImage : null,
 			backgroundColor: data.backgroundColor || '',
 			highlightColor: data.highlightColor || '',
-			logoUrl: data.logoUrl || '',
-			gallery: data.gallery || null,
+			logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '',
 			status: data.status || 'draft',
 			password: data.password || '',
 			caseStudyContent: data.caseStudyContent || {
@@ -142,9 +140,8 @@
 				role: formData.role,
 				projectType: formData.projectType,
 				externalUrl: formData.externalUrl,
-				featuredImage: formData.featuredImage,
-				logoUrl: formData.logoUrl,
-				gallery: formData.gallery && formData.gallery.length > 0 ? formData.gallery : null,
+				featuredImage: formData.featuredImage && formData.featuredImage !== '' ? formData.featuredImage : null,
+				logoUrl: formData.logoUrl && formData.logoUrl !== '' ? formData.logoUrl : null,
 				backgroundColor: formData.backgroundColor,
 				highlightColor: formData.highlightColor,
 				status: formData.status,
@@ -266,9 +263,8 @@
 								handleSave()
 							}}
 						>
-							<ProjectMetadataForm bind:formData {validationErrors} />
-							<ProjectBrandingForm bind:formData />
-							<ProjectGalleryForm bind:formData />
+							<ProjectMetadataForm bind:formData {validationErrors} onSave={handleSave} />
+							<ProjectBrandingForm bind:formData onSave={handleSave} />
 							<ProjectStylingForm bind:formData {validationErrors} />
 						</form>
 					</div>

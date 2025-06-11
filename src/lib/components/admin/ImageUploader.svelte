@@ -11,6 +11,7 @@
 		label: string
 		value?: Media | null
 		onUpload: (media: Media) => void
+		onRemove?: () => void
 		aspectRatio?: string // e.g., "16:9", "1:1"
 		required?: boolean
 		error?: string
@@ -26,6 +27,7 @@
 		label,
 		value = $bindable(),
 		onUpload,
+		onRemove,
 		aspectRatio,
 		required = false,
 		error,
@@ -182,6 +184,7 @@
 		altTextValue = ''
 		descriptionValue = ''
 		uploadError = null
+		onRemove?.()
 	}
 
 	// Update alt text on server
