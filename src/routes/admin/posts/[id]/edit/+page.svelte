@@ -15,6 +15,7 @@
 	let loading = $state(true)
 	let saving = $state(false)
 	let loadError = $state('')
+	let contentReady = $state(false)
 
 	let title = $state('')
 	let postType = $state<'post' | 'essay'>('post')
@@ -254,7 +255,7 @@
 
 				// Populate form fields
 				title = post.title || ''
-				postType = post.postType || 'post'
+				postType = post.postType // No mapping needed anymore
 				status = post.status || 'draft'
 				slug = post.slug || ''
 				excerpt = post.excerpt || ''
@@ -269,6 +270,9 @@
 				}
 
 				tags = post.tags || []
+
+				// Set content ready after all data is loaded
+				contentReady = true
 			} else {
 				if (response.status === 404) {
 					loadError = 'Post not found'
@@ -315,12 +319,10 @@
 		const postData = {
 			title: config?.showTitle ? title : null,
 			slug,
-			type: postType,
+			type: postType, // No mapping needed anymore
 			status: newStatus || status,
 			content: config?.showContent ? saveContent : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
-			link_url: undefined,
-			linkDescription: undefined,
 			tags
 		}
 
@@ -476,7 +478,7 @@
 					<input type="text" bind:value={title} placeholder="Title" class="title-input" />
 				{/if}
 
-				{#if config?.showContent}
+				{#if config?.showContent && contentReady}
 					<div class="editor-wrapper">
 						<Editor bind:data={content} placeholder="Continue writing..." />
 					</div>

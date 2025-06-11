@@ -13,38 +13,7 @@ export const GET: RequestHandler = async (event) => {
 
 	try {
 		const post = await prisma.post.findUnique({
-			where: { slug },
-			include: {
-				album: {
-					select: {
-						id: true,
-						slug: true,
-						title: true,
-						description: true,
-						photos: {
-							orderBy: { displayOrder: 'asc' },
-							select: {
-								id: true,
-								url: true,
-								thumbnailUrl: true,
-								caption: true,
-								width: true,
-								height: true
-							}
-						}
-					}
-				},
-				photo: {
-					select: {
-						id: true,
-						url: true,
-						thumbnailUrl: true,
-						caption: true,
-						width: true,
-						height: true
-					}
-				}
-			}
+			where: { slug }
 		})
 
 		if (!post) {

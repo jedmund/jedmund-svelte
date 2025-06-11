@@ -25,7 +25,6 @@
 		{/if}
 	</header>
 
-
 	{#if post.album && post.album.photos && post.album.photos.length > 0}
 		<!-- Album slideshow -->
 		<div class="post-album">
@@ -78,7 +77,7 @@
 	.post-content {
 		display: flex;
 		flex-direction: column;
-		max-width: 784px;
+		width: 100%;
 		gap: $unit-3x;
 		margin: 0 auto;
 
@@ -95,6 +94,8 @@
 		}
 
 		&.essay {
+			max-width: 100%; // Full width for essays
+
 			.post-body {
 				font-size: 1rem;
 				line-height: 1.4;

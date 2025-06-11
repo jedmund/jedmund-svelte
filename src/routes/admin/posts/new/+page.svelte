@@ -16,12 +16,24 @@
 	let postType = $state<'post' | 'essay'>('post')
 	let status = $state<'draft' | 'published'>('draft')
 	let slug = $state('')
+	let slugManuallySet = $state(false)
 	let excerpt = $state('')
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let tags = $state<string[]>([])
 	let tagInput = $state('')
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement
+
+	// Auto-generate slug from title when title changes and slug hasn't been manually set
+	$effect(() => {
+		if (title && !slugManuallySet) {
+			slug = title
+				.toLowerCase()
+				.replace(/[^a-z0-9\s]+/g, '') // Remove special characters but keep spaces
+				.replace(/\s+/g, '-') // Replace spaces with dashes
+				.replace(/^-+|-+$/g, '') // Remove leading/trailing dashes
+		}
+	})
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -37,23 +49,15 @@
 			postType = type as typeof postType
 		}
 
-		// Generate initial slug based on title
-		generateSlug()
-	})
-
-	function generateSlug() {
-		if (title) {
-			slug = title
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, '-')
-				.replace(/^-+|-+$/g, '')
-		}
-	}
-
-	// Auto-generate slug when title changes (only if slug is empty)
-	$effect(() => {
-		if (title && (!slug || slug === '')) {
-			generateSlug()
+		// Check for draft content in sessionStorage
+		const draftContent = sessionStorage.getItem('draft_content')
+		if (draftContent) {
+			try {
+				content = JSON.parse(draftContent)
+				sessionStorage.removeItem('draft_content') // Clean up after use
+			} catch (e) {
+				console.error('Failed to parse draft content:', e)
+			}
 		}
 	})
 
@@ -75,15 +79,11 @@
 			return
 		}
 
-		if (!slug) {
-			generateSlug()
-		}
-
 		saving = true
 		const postData = {
 			title: config?.showTitle ? title : null,
 			slug: slug || `post-${Date.now()}`,
-			postType,
+			type: postType, // No mapping needed anymore
 			status: publishStatus || status,
 			content: config?.showContent ? content : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
@@ -170,6 +170,11 @@
 						onRemoveTag={removeTag}
 						onDelete={() => {}}
 						onClose={() => (showMetadata = false)}
+						onFieldUpdate={(key, value) => {
+							if (key === 'slug') {
+								slugManuallySet = true
+							}
+						}}
 					/>
 				{/if}
 			</div>

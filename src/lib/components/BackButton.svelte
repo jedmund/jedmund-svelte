@@ -35,7 +35,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: $unit-half;
-		padding: $unit $unit-2x;
+		padding: $unit 0;
 		font-size: 0.875rem;
 		font-weight: 500;
 		color: $red-60;
@@ -46,8 +46,6 @@
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: rgba($red-60, 0.08);
-
 			:global(.arrow-icon) {
 				transform: translateX(-3px);
 			}

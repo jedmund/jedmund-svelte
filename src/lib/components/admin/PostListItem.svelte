@@ -25,10 +25,7 @@
 
 	const postTypeLabels: Record<string, string> = {
 		post: 'Post',
-		essay: 'Essay',
-		// Map database types to display names
-		blog: 'Essay',
-		microblog: 'Post'
+		essay: 'Essay'
 	}
 
 	function handlePostClick() {

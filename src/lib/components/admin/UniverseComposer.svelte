@@ -77,8 +77,11 @@
 	}
 
 	function switchToEssay() {
-		const contentParam = content ? encodeURIComponent(JSON.stringify(content)) : ''
-		goto(`/admin/posts/new?type=essay${contentParam ? `&content=${contentParam}` : ''}`)
+		// Store content in sessionStorage to avoid messy URLs
+		if (content && content.content && content.content.length > 0) {
+			sessionStorage.setItem('draft_content', JSON.stringify(content))
+		}
+		goto('/admin/posts/new?type=essay')
 	}
 
 	function generateSlug(title: string): string {
@@ -91,7 +94,6 @@
 	$: if (essayTitle && !essaySlug) {
 		essaySlug = generateSlug(essayTitle)
 	}
-
 
 	function handlePhotoUpload() {
 		fileInput.click()
@@ -201,7 +203,7 @@
 		if (postType === 'essay') {
 			postData = {
 				...postData,
-				type: 'blog', // 'blog' is the database value for essays
+				type: 'essay', // No mapping needed anymore
 				title: essayTitle,
 				slug: essaySlug,
 				excerpt: essayExcerpt,
@@ -211,7 +213,7 @@
 			// All other content is just a "post" with attachments
 			postData = {
 				...postData,
-				type: 'microblog' // 'microblog' is for shorter posts
+				type: 'post' // No mapping needed anymore
 			}
 		}
 
@@ -301,7 +303,6 @@
 					class="composer-editor"
 				/>
 
-
 				{#if attachedPhotos.length > 0}
 					<div class="attached-photos">
 						{#each attachedPhotos as photo}
@@ -335,7 +336,6 @@
 
 				<div class="composer-footer">
 					<div class="footer-left">
-
 						<Button
 							variant="ghost"
 							iconOnly
@@ -499,7 +499,6 @@
 					class="inline-composer-editor"
 				/>
 
-
 				{#if attachedPhotos.length > 0}
 					<div class="attached-photos">
 						{#each attachedPhotos as photo}
@@ -533,7 +532,6 @@
 
 				<div class="composer-footer">
 					<div class="footer-left">
-
 						<Button
 							variant="ghost"
 							iconOnly

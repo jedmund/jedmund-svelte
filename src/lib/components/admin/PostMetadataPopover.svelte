@@ -12,6 +12,7 @@
 		onRemoveTag: (tag: string) => void
 		onDelete: () => void
 		onClose?: () => void
+		onFieldUpdate?: (key: string, value: any) => void
 	}
 
 	let {
@@ -24,12 +25,14 @@
 		onAddTag,
 		onRemoveTag,
 		onDelete,
-		onClose = () => {}
+		onClose = () => {},
+		onFieldUpdate
 	}: Props = $props()
 
 	function handleFieldUpdate(key: string, value: any) {
 		if (key === 'slug') {
 			slug = value
+			onFieldUpdate?.(key, value)
 		} else if (key === 'tagInput') {
 			tagInput = value
 		}

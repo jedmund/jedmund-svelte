@@ -43,9 +43,9 @@ model Project {
 model Post {
   id                 Int       @id @default(autoincrement())
   slug               String    @unique @db.VarChar(255)
-  postType           String    @db.VarChar(50) // blog, microblog
-  title              String?   @db.VarChar(255) // Optional for microblog posts
-  content            Json?     // BlockNote JSON for blog/microblog
+  postType           String    @db.VarChar(50) // post, essay
+  title              String?   @db.VarChar(255) // Optional for post type
+  content            Json?     // JSON content for posts and essays
   
   featuredImage      String?   @db.VarChar(500)
   attachments        Json?     // Array of media IDs for photo attachments

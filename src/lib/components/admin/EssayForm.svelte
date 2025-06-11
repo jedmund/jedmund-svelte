@@ -98,7 +98,7 @@
 			const payload = {
 				title,
 				slug,
-				type: 'blog', // 'blog' is the database value for essays
+				type: 'essay', // No mapping needed anymore
 				status,
 				content,
 				tags
@@ -261,7 +261,13 @@
 						}}
 					>
 						<div class="form-section">
-							<Input label="Title" size="jumbo" bind:value={title} required placeholder="Essay title" />
+							<Input
+								label="Title"
+								size="jumbo"
+								bind:value={title}
+								required
+								placeholder="Essay title"
+							/>
 
 							<Input label="Slug" bind:value={slug} placeholder="essay-url-slug" />
 

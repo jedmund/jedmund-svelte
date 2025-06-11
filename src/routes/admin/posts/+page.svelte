@@ -127,9 +127,7 @@
 		if (selectedFilter === 'all') {
 			filteredPosts = posts
 		} else if (selectedFilter === 'post') {
-			filteredPosts = posts.filter((post) =>
-				['post', 'microblog'].includes(post.postType)
-			)
+			filteredPosts = posts.filter((post) => ['post', 'microblog'].includes(post.postType))
 		} else if (selectedFilter === 'essay') {
 			filteredPosts = posts.filter((post) => ['essay', 'blog'].includes(post.postType))
 		} else {
