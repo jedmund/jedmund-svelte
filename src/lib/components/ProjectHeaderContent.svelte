@@ -19,7 +19,7 @@
 			target="_blank"
 			rel="noopener noreferrer"
 			class="visit-button"
-			style="--button-bg: {project.highlightColor || '#4d4d4d'}; --button-color: white"
+			style="--button-bg: {project.highlightColor || '#e33d3d'}; --button-color: white"
 		>
 			Visit <ArrowRight />
 		</a>
@@ -75,7 +75,7 @@
 		align-items: center;
 		gap: $unit;
 		padding: ($unit * 1.5) $unit-2x;
-		background: var(--button-bg, $grey-10);
+		background: var(--button-bg, $red-60);
 		color: var(--button-color, white);
 		text-decoration: none;
 		border-radius: 50px;

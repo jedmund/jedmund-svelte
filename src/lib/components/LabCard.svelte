@@ -67,7 +67,7 @@
 					iconPosition="right"
 					on:click={(e) => e.stopPropagation()}
 				>
-					Visit site
+					Visit
 					<svg
 						slot="icon"
 						width="16"
@@ -234,6 +234,8 @@
 		:global(.btn) {
 			flex-shrink: 0;
 			margin-top: 2px; // Align with title baseline
+			font-size: 1rem !important; // Match detail page Visit button
+			min-height: auto !important; // Remove min-height to match detail page
 		}
 	}
 
