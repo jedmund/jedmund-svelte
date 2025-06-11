@@ -104,18 +104,13 @@
 	.editor-wrapper {
 		width: 100%;
 		min-height: var(--min-height);
-		height: 100%;
 		background: white;
-		overflow: hidden;
-		position: relative;
 		display: flex;
 		flex-direction: column;
 	}
 
 	.editor-container {
 		flex: 1;
-		overflow-y: auto;
-		position: relative;
 		display: flex;
 		flex-direction: column;
 		padding: 0;
@@ -141,7 +136,6 @@
 		background: $grey-95;
 		padding: $unit-2x;
 		position: sticky;
-		top: 0;
 		z-index: 10;
 		overflow-x: auto;
 		overflow-y: hidden;

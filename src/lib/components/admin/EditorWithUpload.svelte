@@ -737,7 +737,7 @@
 		box-sizing: border-box;
 		padding: 0.5rem;
 		position: sticky;
-		top: 0;
+		top: 68px;
 		z-index: 10;
 		overflow-x: auto;
 		overflow-y: hidden;
@@ -745,14 +745,15 @@
 		-webkit-overflow-scrolling: touch;
 		width: 100%;
 		flex-shrink: 0;
+		backdrop-filter: blur(10px);
+		background: rgba(255, 255, 255, 0.9);
 	}
 
 	.edra-editor {
 		width: 100%;
 		flex: 1;
 		min-width: 0;
-		overflow-x: hidden;
-		overflow-y: hidden;
+		overflow: visible;
 		box-sizing: border-box;
 	}
 

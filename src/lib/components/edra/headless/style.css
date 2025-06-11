@@ -41,14 +41,14 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--edra-gap);
-	overflow: auto;
+	overflow: visible;
 }
 
 .edra-editor {
 	padding: 0 var(--edra-padding);
 	flex-grow: 1;
 	padding-left: 2rem;
-	overflow-y: hidden;
+	overflow: visible;
 	box-sizing: border-box;
 }
 

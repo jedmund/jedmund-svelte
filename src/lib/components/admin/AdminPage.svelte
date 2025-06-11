@@ -32,7 +32,7 @@
 		width: calc(100% - #{$unit-6x});
 		max-width: 900px; // Much wider for admin
 		min-height: calc(100vh - #{$unit-16x}); // Full height minus margins
-		overflow: hidden; // Ensure border-radius clips content
+		overflow: visible;
 
 		&:first-child {
 			margin-top: 0;
