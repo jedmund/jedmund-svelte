@@ -18,8 +18,6 @@
 		excerpt: string | null
 		status: string
 		tags: string[] | null
-		linkUrl: string | null
-		linkDescription: string | null
 		featuredImage: string | null
 		publishedAt: string | null
 		createdAt: string
@@ -130,7 +128,7 @@
 			filteredPosts = posts
 		} else if (selectedFilter === 'post') {
 			filteredPosts = posts.filter((post) =>
-				['post', 'microblog', 'link', 'photo'].includes(post.postType)
+				['post', 'microblog'].includes(post.postType)
 			)
 		} else if (selectedFilter === 'essay') {
 			filteredPosts = posts.filter((post) => ['essay', 'blog'].includes(post.postType))

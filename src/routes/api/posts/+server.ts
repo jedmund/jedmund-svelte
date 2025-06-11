@@ -97,27 +97,8 @@ export const POST: RequestHandler = async (event) => {
 			featuredImageId = data.attachedPhotos[0]
 		}
 
-		// Handle album gallery - use first image as featured image
-		if (data.gallery && data.gallery.length > 0 && !featuredImageId) {
-			// Get the media URL for the first gallery item
-			const firstMedia = await prisma.media.findUnique({
-				where: { id: data.gallery[0] },
-				select: { url: true }
-			})
-			if (firstMedia) {
-				featuredImageId = firstMedia.url
-			}
-		}
-
-		// For albums, store gallery IDs in content field as a special structure
+		// Use content as-is (no special handling needed)
 		let postContent = data.content
-		if (data.type === 'album' && data.gallery) {
-			postContent = {
-				type: 'album',
-				gallery: data.gallery,
-				description: data.content
-			}
-		}
 
 		const post = await prisma.post.create({
 			data: {
@@ -126,8 +107,6 @@ export const POST: RequestHandler = async (event) => {
 				postType: data.type,
 				status: data.status,
 				content: postContent,
-				linkUrl: data.link_url,
-				linkDescription: data.linkDescription,
 				featuredImage: featuredImageId,
 				attachments:
 					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,

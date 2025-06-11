@@ -95,7 +95,7 @@ export const GET: RequestHandler = async (event) => {
 				pubDate: post.publishedAt || post.createdAt,
 				updatedDate: post.updatedAt,
 				postType: post.postType,
-				linkUrl: post.linkUrl || null
+				featuredImage: post.featuredImage || null
 			})),
 			...albums.map((album) => ({
 				type: 'album',
@@ -143,7 +143,6 @@ ${item.content ? `<content:encoded><![CDATA[${item.content}]]></content:encoded>
 <pubDate>${formatRFC822Date(new Date(item.pubDate))}</pubDate>
 ${item.updatedDate ? `<atom:updated>${new Date(item.updatedDate).toISOString()}</atom:updated>` : ''}
 <category>${item.type === 'post' ? item.postType : 'album'}</category>
-${item.type === 'post' && item.linkUrl ? `<comments>${item.linkUrl}</comments>` : ''}
 <author>noreply@jedmund.com (Justin Edmund)</author>
 </item>`
 	)

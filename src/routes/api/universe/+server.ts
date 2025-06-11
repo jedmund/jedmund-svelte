@@ -14,9 +14,8 @@ export interface UniverseItem {
 
 	// Post-specific fields
 	postType?: string
-	linkUrl?: string
-	linkDescription?: string
 	attachments?: any
+	featuredImage?: string
 
 	// Album-specific fields
 	description?: string
@@ -46,9 +45,8 @@ export const GET: RequestHandler = async (event) => {
 				postType: true,
 				title: true,
 				content: true,
-				linkUrl: true,
-				linkDescription: true,
 				attachments: true,
+				featuredImage: true,
 				publishedAt: true,
 				createdAt: true
 			},
@@ -96,9 +94,8 @@ export const GET: RequestHandler = async (event) => {
 			title: post.title || undefined,
 			content: post.content,
 			postType: post.postType,
-			linkUrl: post.linkUrl || undefined,
-			linkDescription: post.linkDescription || undefined,
 			attachments: post.attachments,
+			featuredImage: post.featuredImage || undefined,
 			publishedAt: post.publishedAt!.toISOString(),
 			createdAt: post.createdAt.toISOString()
 		}))

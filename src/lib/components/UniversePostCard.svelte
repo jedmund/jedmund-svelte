@@ -23,17 +23,6 @@
 		</h2>
 	{/if}
 
-	{#if post.linkUrl}
-		<!-- Link post type -->
-		<div class="link-preview">
-			<a href={post.linkUrl} target="_blank" rel="noopener noreferrer" class="link-url">
-				{post.linkUrl}
-			</a>
-			{#if post.linkDescription}
-				<p class="link-description">{post.linkDescription}</p>
-			{/if}
-		</div>
-	{/if}
 
 	{#if post.content}
 		<div class="post-excerpt">

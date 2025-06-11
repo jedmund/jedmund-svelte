@@ -28,10 +28,6 @@
 		type: 'doc',
 		content: [{ type: 'paragraph' }]
 	}
-	let linkUrl = ''
-	let linkTitle = ''
-	let linkDescription = ''
-	let showLinkFields = false
 	let characterCount = 0
 	let editorInstance: Editor
 
@@ -64,7 +60,7 @@
 	}
 
 	function hasContent(): boolean {
-		return characterCount > 0 || linkUrl.length > 0 || attachedPhotos.length > 0
+		return characterCount > 0 || attachedPhotos.length > 0
 	}
 
 	function resetComposer() {
@@ -73,10 +69,6 @@
 			type: 'doc',
 			content: [{ type: 'paragraph' }]
 		}
-		linkUrl = ''
-		linkTitle = ''
-		linkDescription = ''
-		showLinkFields = false
 		characterCount = 0
 		attachedPhotos = []
 		if (editorInstance) {
@@ -100,9 +92,6 @@
 		essaySlug = generateSlug(essayTitle)
 	}
 
-	function toggleLinkFields() {
-		showLinkFields = !showLinkFields
-	}
 
 	function handlePhotoUpload() {
 		fileInput.click()
@@ -219,17 +208,10 @@
 				tags: essayTags ? essayTags.split(',').map((tag) => tag.trim()) : []
 			}
 		} else {
-			// All other content is just a "post" with optional link data and attachments
+			// All other content is just a "post" with attachments
 			postData = {
 				...postData,
 				type: 'microblog' // 'microblog' is for shorter posts
-			}
-
-			// Add link fields if present
-			if (showLinkFields) {
-				postData.link_url = linkUrl
-				postData.linkTitle = linkTitle
-				postData.linkDescription = linkDescription
 			}
 		}
 
@@ -266,7 +248,6 @@
 	$: isOverLimit = characterCount > CHARACTER_LIMIT
 	$: canSave =
 		(postType === 'post' && (characterCount > 0 || attachedPhotos.length > 0) && !isOverLimit) ||
-		(showLinkFields && linkUrl.length > 0) ||
 		(postType === 'essay' && essayTitle.length > 0 && content)
 </script>
 
@@ -320,23 +301,6 @@
 					class="composer-editor"
 				/>
 
-				{#if showLinkFields}
-					<div class="link-fields">
-						<Input
-							type="url"
-							bind:value={linkUrl}
-							placeholder="https://example.com"
-							autocomplete="off"
-						/>
-						<Input bind:value={linkTitle} placeholder="Link title (optional)" autocomplete="off" />
-						<Input
-							type="textarea"
-							bind:value={linkDescription}
-							placeholder="Add context..."
-							rows={2}
-						/>
-					</div>
-				{/if}
 
 				{#if attachedPhotos.length > 0}
 					<div class="attached-photos">
@@ -371,36 +335,6 @@
 
 				<div class="composer-footer">
 					<div class="footer-left">
-						<Button
-							variant="ghost"
-							iconOnly
-							buttonSize="icon"
-							onclick={toggleLinkFields}
-							active={showLinkFields}
-							title="Add link"
-							class="tool-button"
-						>
-							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-								<path
-									d="M8 10a3 3 0 0 1 0-5l2.5-2.5a3 3 0 0 1 4.243 4.243l-1.25 1.25"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-								<path
-									d="M10 8a3 3 0 0 1 0 5l-2.5 2.5a3 3 0 0 1-4.243-4.243l1.25-1.25"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-								<path
-									d="M11 7l-4 4"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-							</svg>
-						</Button>
 
 						<Button
 							variant="ghost"
@@ -452,7 +386,7 @@
 					</div>
 
 					<div class="footer-right">
-						{#if postType === 'post' && !showLinkFields}
+						{#if postType === 'post'}
 							<span
 								class="character-count"
 								class:warning={characterCount > CHARACTER_LIMIT * 0.9}
@@ -565,23 +499,6 @@
 					class="inline-composer-editor"
 				/>
 
-				{#if showLinkFields}
-					<div class="link-fields">
-						<Input
-							type="url"
-							bind:value={linkUrl}
-							placeholder="https://example.com"
-							autocomplete="off"
-						/>
-						<Input bind:value={linkTitle} placeholder="Link title (optional)" autocomplete="off" />
-						<Input
-							type="textarea"
-							bind:value={linkDescription}
-							placeholder="Add context..."
-							rows={2}
-						/>
-					</div>
-				{/if}
 
 				{#if attachedPhotos.length > 0}
 					<div class="attached-photos">
@@ -616,36 +533,6 @@
 
 				<div class="composer-footer">
 					<div class="footer-left">
-						<Button
-							variant="ghost"
-							iconOnly
-							buttonSize="icon"
-							onclick={toggleLinkFields}
-							active={showLinkFields}
-							title="Add link"
-							class="tool-button"
-						>
-							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-								<path
-									d="M8 10a3 3 0 0 1 0-5l2.5-2.5a3 3 0 0 1 4.243 4.243l-1.25 1.25"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-								<path
-									d="M10 8a3 3 0 0 1 0 5l-2.5 2.5a3 3 0 0 1-4.243-4.243l1.25-1.25"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-								<path
-									d="M11 7l-4 4"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-							</svg>
-						</Button>
 
 						<Button
 							variant="ghost"
@@ -697,15 +584,13 @@
 					</div>
 
 					<div class="footer-right">
-						{#if !showLinkFields}
-							<span
-								class="character-count"
-								class:warning={characterCount > CHARACTER_LIMIT * 0.9}
-								class:error={isOverLimit}
-							>
-								{CHARACTER_LIMIT - characterCount}
-							</span>
-						{/if}
+						<span
+							class="character-count"
+							class:warning={characterCount > CHARACTER_LIMIT * 0.9}
+							class:error={isOverLimit}
+						>
+							{CHARACTER_LIMIT - characterCount}
+						</span>
 						<Button variant="primary" onclick={handleSave} disabled={!canSave}>Post</Button>
 					</div>
 				</div>

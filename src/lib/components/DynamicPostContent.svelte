@@ -25,17 +25,6 @@
 		{/if}
 	</header>
 
-	{#if post.linkUrl}
-		<div class="post-link-preview">
-			<LinkCard
-				link={{
-					url: post.linkUrl,
-					title: post.title,
-					description: post.linkDescription
-				}}
-			/>
-		</div>
-	{/if}
 
 	{#if post.album && post.album.photos && post.album.photos.length > 0}
 		<!-- Album slideshow -->

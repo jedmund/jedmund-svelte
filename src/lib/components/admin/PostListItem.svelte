@@ -11,8 +11,6 @@
 		excerpt: string | null
 		status: string
 		tags: string[] | null
-		linkUrl: string | null
-		linkDescription: string | null
 		featuredImage: string | null
 		publishedAt: string | null
 		createdAt: string
@@ -28,12 +26,9 @@
 	const postTypeLabels: Record<string, string> = {
 		post: 'Post',
 		essay: 'Essay',
-		// Legacy types for backward compatibility
+		// Map database types to display names
 		blog: 'Essay',
-		microblog: 'Post',
-		link: 'Post',
-		photo: 'Post',
-		album: 'Album'
+		microblog: 'Post'
 	}
 
 	function handlePostClick() {
@@ -108,9 +103,6 @@
 	{/if}
 
 	<div class="post-content">
-		{#if post.linkUrl}
-			<p class="post-link-url">{post.linkUrl}</p>
-		{/if}
 		<p class="post-preview">{getPostSnippet(post)}</p>
 	</div>
 

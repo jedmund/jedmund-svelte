@@ -134,7 +134,7 @@ export const GET: RequestHandler = async (event) => {
 				pubDate: post.publishedAt || post.createdAt,
 				updatedDate: post.updatedAt,
 				postType: post.postType,
-				linkUrl: post.linkUrl || null
+				featuredImage: post.featuredImage || null
 			})),
 			...universeAlbums.map((album) => ({
 				type: 'album',
@@ -206,7 +206,6 @@ ${item.content ? `<content:encoded><![CDATA[${item.content}]]></content:encoded>
 ${item.updatedDate ? `<atom:updated>${new Date(item.updatedDate).toISOString()}</atom:updated>` : ''}
 <category>${item.section}</category>
 <category>${item.type === 'post' ? item.postType : 'album'}</category>
-${item.type === 'post' && item.linkUrl ? `<comments>${item.linkUrl}</comments>` : ''}
 ${
 	item.type === 'album' && item.coverPhoto
 		? `

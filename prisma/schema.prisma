@@ -43,15 +43,9 @@ model Project {
 model Post {
   id                 Int       @id @default(autoincrement())
   slug               String    @unique @db.VarChar(255)
-  postType           String    @db.VarChar(50) // blog, microblog, link, photo, album
+  postType           String    @db.VarChar(50) // blog, microblog
   title              String?   @db.VarChar(255) // Optional for microblog posts
   content            Json?     // BlockNote JSON for blog/microblog
-  
-  // Type-specific fields
-  linkUrl            String?   @db.VarChar(500)
-  linkDescription    String?   @db.Text
-  photoId            Int?
-  albumId            Int?
   
   featuredImage      String?   @db.VarChar(500)
   attachments        Json?     // Array of media IDs for photo attachments
@@ -60,10 +54,6 @@ model Post {
   publishedAt        DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  photo              Photo?    @relation(fields: [photoId], references: [id])
-  album              Album?    @relation(fields: [albumId], references: [id])
   
   @@index([slug])
   @@index([status])
@@ -87,7 +77,6 @@ model Album {
   
   // Relations
   photos             Photo[]
-  posts              Post[]
   
   @@index([slug])
   @@index([status])
@@ -118,7 +107,6 @@ model Photo {
   
   // Relations
   album              Album?    @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  posts              Post[]
   
   @@index([slug])
   @@index([status])
