@@ -7,10 +7,11 @@
 
 	interface Props {
 		formData: ProjectFormData
+		validationErrors: Record<string, string>
 		onSave?: () => Promise<void>
 	}
 
-	let { formData = $bindable(), onSave }: Props = $props()
+	let { formData = $bindable(), validationErrors, onSave }: Props = $props()
 
 	// State for collapsible logo section
 	let showLogoSection = $state(!!formData.logoUrl && formData.logoUrl.trim() !== '')
@@ -57,7 +58,7 @@
 		formData.logoUrl = ''
 		logoMedia = null
 		showLogoSection = false
-		
+
 		// Auto-save the removal
 		if (onSave) {
 			await onSave()
@@ -72,7 +73,7 @@
 		<Button
 			variant="secondary"
 			buttonSize="medium"
-			onclick={() => showLogoSection = true}
+			onclick={() => (showLogoSection = true)}
 			iconPosition="left"
 		>
 			<svg
@@ -110,6 +111,30 @@
 			/>
 		</div>
 	{/if}
+
+	<div class="form-row">
+		<Input
+			type="text"
+			bind:value={formData.backgroundColor}
+			label="Background Color"
+			helpText="Hex color for project card"
+			error={validationErrors.backgroundColor}
+			placeholder="#FFFFFF"
+			pattern="^#[0-9A-Fa-f]{6}$"
+			colorSwatch={true}
+		/>
+
+		<Input
+			type="text"
+			bind:value={formData.highlightColor}
+			label="Highlight Color"
+			helpText="Accent color for the project"
+			error={validationErrors.highlightColor}
+			placeholder="#000000"
+			pattern="^#[0-9A-Fa-f]{6}$"
+			colorSwatch={true}
+		/>
+	</div>
 </div>
 
 <style lang="scss">
@@ -136,7 +161,6 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: $unit-2x;
 
 		h3 {
 			font-size: 0.875rem;
@@ -146,4 +170,18 @@
 		}
 	}
 
+	.form-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: $unit-2x;
+		margin-top: $unit-3x;
+
+		@include breakpoint('phone') {
+			grid-template-columns: 1fr;
+		}
+
+		:global(.input-wrapper) {
+			margin-bottom: 0;
+		}
+	}
 </style>

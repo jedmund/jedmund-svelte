@@ -261,7 +261,7 @@
 						}}
 					>
 						<div class="form-section">
-							<Input label="Title" bind:value={title} required placeholder="Essay title" />
+							<Input label="Title" size="jumbo" bind:value={title} required placeholder="Essay title" />
 
 							<Input label="Slug" bind:value={slug} placeholder="essay-url-slug" />
 

@@ -7,7 +7,7 @@
 	import Editor from './Editor.svelte'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
-	import ProjectStylingForm from './ProjectStylingForm.svelte'
+	import ProjectImagesForm from './ProjectImagesForm.svelte'
 	import Button from './Button.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
 	import { projectSchema } from '$lib/schemas/project'
@@ -264,8 +264,8 @@
 							}}
 						>
 							<ProjectMetadataForm bind:formData {validationErrors} onSave={handleSave} />
-							<ProjectBrandingForm bind:formData onSave={handleSave} />
-							<ProjectStylingForm bind:formData {validationErrors} />
+							<ProjectBrandingForm bind:formData {validationErrors} onSave={handleSave} />
+							<ProjectImagesForm bind:formData {validationErrors} onSave={handleSave} />
 						</form>
 					</div>
 				</div>
