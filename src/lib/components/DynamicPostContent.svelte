@@ -138,7 +138,7 @@
 
 	.post-date {
 		font-size: 0.9rem;
-		color: $grey-40;
+		color: $text-color-subdued;
 		font-weight: 400;
 		transition: color 0.2s ease;
 	}
@@ -147,7 +147,7 @@
 		margin: 0;
 		font-size: 2.5rem;
 		font-weight: 700;
-		color: $grey-10;
+		color: $text-color;
 		line-height: 1.2;
 
 		@include breakpoint('phone') {
@@ -168,7 +168,7 @@
 			font-size: 1rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
-			color: $grey-20;
+			color: $text-color;
 		}
 	}
 
@@ -182,41 +182,41 @@
 		.album-description {
 			margin: 0;
 			font-size: 1rem;
-			color: $grey-10;
+			color: $text-color;
 			line-height: 1.5;
 		}
 	}
 
 	.post-body {
-		color: $grey-10;
+		color: $text-color;
 		line-height: 1.5;
 
 		:global(h1) {
 			margin: $unit-5x 0 $unit-3x;
 			font-size: 2rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $text-color;
 		}
 
 		:global(h2) {
 			margin: $unit-4x 0 $unit-2x;
 			font-size: 1.5rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $text-color;
 		}
 
 		:global(h3) {
 			margin: $unit-3x 0 $unit-2x;
 			font-size: 1.25rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $text-color;
 		}
 
 		:global(h4) {
 			margin: $unit-3x 0 $unit-2x;
 			font-size: 1rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $text-color;
 		}
 
 		:global(p) {
@@ -248,7 +248,7 @@
 			background: $grey-97;
 			border-left: 4px solid $grey-80;
 			border-radius: $unit;
-			color: $grey-30;
+			color: $text-color;
 			font-style: italic;
 
 			:global(p:last-child) {
@@ -263,7 +263,7 @@
 			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
 				monospace;
 			font-size: 0.9em;
-			color: $grey-10;
+			color: $text-color;
 		}
 
 		:global(pre) {
@@ -288,8 +288,6 @@
 
 			&:hover {
 				text-decoration: underline;
-				text-decoration-style: wavy;
-				text-underline-offset: 0.15em;
 			}
 		}
 
@@ -305,7 +303,7 @@
 
 		:global(strong) {
 			font-weight: 600;
-			color: $grey-10;
+			color: $text-color;
 		}
 
 		:global(figure) {

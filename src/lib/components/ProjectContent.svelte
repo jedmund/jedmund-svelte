@@ -56,7 +56,7 @@
 		:global(h2),
 		:global(h3) {
 			margin: $unit-3x 0 $unit-2x;
-			color: $grey-10;
+			color: $text-color;
 			font-weight: 600;
 
 			&:first-child {
@@ -80,7 +80,7 @@
 			margin: $unit-2x 0;
 			font-size: 1rem;
 			line-height: 1.5;
-			color: $grey-20;
+			color: $text-color;
 		}
 
 		:global(figure) {
@@ -102,11 +102,21 @@
 				margin: $unit 0;
 				font-size: 1.0625rem;
 				line-height: 1.65;
-				color: $grey-20;
+				color: $text-color;
 
 				:global(p) {
 					margin: 0;
 				}
+			}
+		}
+
+		:global(a) {
+			color: $red-60;
+			text-decoration: none;
+			transition: all 0.2s ease;
+
+			&:hover {
+				text-decoration: underline;
 			}
 		}
 	}
@@ -116,7 +126,7 @@
 		h2 {
 			font-size: 1.75rem;
 			margin: 0 0 $unit-3x;
-			color: $grey-10;
+			color: $text-color;
 			font-weight: 600;
 		}
 	}

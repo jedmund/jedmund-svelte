@@ -107,26 +107,26 @@
 	.post-date {
 		display: block;
 		font-size: 0.9rem;
-		color: $grey-40;
+		color: $text-color-subdued;
 		font-weight: 400;
 	}
 
 	.post-body {
-		color: $grey-10;
+		color: $text-color;
 		line-height: 1.5;
 
 		:global(h2) {
 			margin: $unit-4x 0 $unit-2x;
 			font-size: 1.5rem;
 			font-weight: 600;
-			color: $grey-20;
+			color: $text-color;
 		}
 
 		:global(h3) {
 			margin: $unit-3x 0 $unit-2x;
 			font-size: 1.2rem;
 			font-weight: 600;
-			color: $grey-20;
+			color: $text-color;
 		}
 
 		:global(p) {
@@ -152,7 +152,7 @@
 			margin: $unit-3x 0;
 			padding-left: $unit-3x;
 			border-left: 3px solid $grey-80;
-			color: $grey-40;
+			color: $text-color;
 			font-style: italic;
 		}
 
@@ -185,8 +185,6 @@
 
 		:global(a:hover) {
 			text-decoration: underline;
-			text-decoration-style: wavy;
-			text-underline-offset: 0.15em;
 		}
 
 		:global(hr) {
@@ -197,7 +195,7 @@
 
 		:global(em) {
 			font-style: italic;
-			color: $grey-40;
+			color: $text-color;
 		}
 	}
 
