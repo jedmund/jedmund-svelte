@@ -8,7 +8,7 @@
 	--edra-separator-color: currentColor; /* Default, can be customized */
 
 	/* Size and Spacing Variables */
-	--edra-gap: 0.25rem;
+	--edra-gap: 0.5rem;
 	--edra-border-radius: 0.5rem;
 	--edra-button-border-radius: 0.5rem;
 	--edra-padding: 0.5rem;
@@ -48,7 +48,7 @@
 	padding: 0 var(--edra-padding);
 	flex-grow: 1;
 	padding-left: 2rem;
-	overflow: auto;
+	overflow-y: hidden;
 	box-sizing: border-box;
 }
 

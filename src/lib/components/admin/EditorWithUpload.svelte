@@ -60,7 +60,11 @@
 		showToolbar = true,
 		placeholder = 'Type "/" for commands...',
 		onEditorReady
-	}: EdraProps & { showToolbar?: boolean; placeholder?: string; onEditorReady?: (editor: Editor) => void } = $props()
+	}: EdraProps & {
+		showToolbar?: boolean
+		placeholder?: string
+		onEditorReady?: (editor: Editor) => void
+	} = $props()
 
 	let element = $state<HTMLElement>()
 	let isLoading = $state(true)
@@ -355,7 +359,7 @@
 			placeholder
 		)
 		editor = newEditor
-		
+
 		// Notify parent component that editor is ready
 		if (onEditorReady) {
 			onEditorReady(newEditor)
@@ -748,6 +752,7 @@
 		flex: 1;
 		min-width: 0;
 		overflow-x: hidden;
+		overflow-y: hidden;
 		box-sizing: border-box;
 	}
 
