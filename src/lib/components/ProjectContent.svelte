@@ -1,51 +1,13 @@
 <script lang="ts">
 	import type { Project } from '$lib/types/project'
 	import BackButton from './BackButton.svelte'
+	import { renderEdraContent } from '$lib/utils/content'
 
 	interface Props {
 		project: Project
 	}
 
 	let { project }: Props = $props()
-
-	// Function to render BlockNote content as HTML
-	function renderBlockNoteContent(content: any): string {
-		if (!content || !content.content) return ''
-
-		return content.content
-			.map((block: any) => {
-				switch (block.type) {
-					case 'heading':
-						const level = block.attrs?.level || 1
-						const text = block.content?.[0]?.text || ''
-						return `<h${level}>${text}</h${level}>`
-
-					case 'paragraph':
-						if (!block.content || block.content.length === 0) return '<p><br></p>'
-						const paragraphText = block.content.map((c: any) => c.text || '').join('')
-						return `<p>${paragraphText}</p>`
-
-					case 'image':
-						return `<figure><img src="${block.attrs?.src}" alt="${block.attrs?.alt || ''}" style="width: ${block.attrs?.width || '100%'}; height: ${block.attrs?.height || 'auto'};" /></figure>`
-
-					case 'bulletedList':
-					case 'numberedList':
-						const tag = block.type === 'bulletedList' ? 'ul' : 'ol'
-						const items =
-							block.content
-								?.map((item: any) => {
-									const itemText = item.content?.[0]?.content?.[0]?.text || ''
-									return `<li>${itemText}</li>`
-								})
-								.join('') || ''
-						return `<${tag}>${items}</${tag}>`
-
-					default:
-						return ''
-				}
-			})
-			.join('')
-	}
 </script>
 
 <article class="project-content">
@@ -53,7 +15,7 @@
 	{#if project.caseStudyContent && project.caseStudyContent.content && project.caseStudyContent.content.length > 0}
 		<div class="case-study-section">
 			<div class="case-study-content">
-				{@html renderBlockNoteContent(project.caseStudyContent)}
+				{@html renderEdraContent(project.caseStudyContent)}
 			</div>
 		</div>
 	{/if}
@@ -141,6 +103,10 @@
 				font-size: 1.0625rem;
 				line-height: 1.65;
 				color: $grey-20;
+
+				:global(p) {
+					margin: 0;
+				}
 			}
 		}
 	}

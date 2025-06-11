@@ -236,6 +236,10 @@
 		:global(ul li),
 		:global(ol li) {
 			margin-bottom: $unit;
+
+			:global(p) {
+				margin: 0;
+			}
 		}
 
 		:global(blockquote) {
