@@ -58,8 +58,9 @@
 		showTableBubbleMenu = true,
 		onUpdate,
 		showToolbar = true,
-		placeholder = 'Type "/" for commands...'
-	}: EdraProps & { showToolbar?: boolean; placeholder?: string } = $props()
+		placeholder = 'Type "/" for commands...',
+		onEditorReady
+	}: EdraProps & { showToolbar?: boolean; placeholder?: string; onEditorReady?: (editor: Editor) => void } = $props()
 
 	let element = $state<HTMLElement>()
 	let isLoading = $state(true)
@@ -147,6 +148,9 @@
 		if (editor.isActive('blockquote')) return 'Blockquote'
 		return 'Paragraph'
 	}
+
+	// Derived state for current text style to avoid reactive mutations
+	let currentTextStyle = $derived(editor ? getCurrentTextStyle(editor) : 'Paragraph')
 
 	// Calculate dropdown position
 	const updateDropdownPosition = () => {
@@ -314,7 +318,7 @@
 	}
 
 	onMount(() => {
-		editor = initiateEditor(
+		const newEditor = initiateEditor(
 			element,
 			content,
 			limit,
@@ -341,10 +345,6 @@
 			{
 				editable,
 				onUpdate,
-				onTransaction: (props) => {
-					editor = undefined
-					editor = props.editor
-				},
 				editorProps: {
 					attributes: {
 						class: 'prose prose-sm max-w-none focus:outline-none'
@@ -354,6 +354,12 @@
 			},
 			placeholder
 		)
+		editor = newEditor
+		
+		// Notify parent component that editor is ready
+		if (onEditorReady) {
+			onEditorReady(newEditor)
+		}
 
 		// Add placeholder
 		if (placeholder && editor) {
@@ -377,7 +383,7 @@
 				<!-- Text Style Dropdown -->
 				<div class="text-style-dropdown">
 					<button bind:this={dropdownTriggerRef} class="dropdown-trigger" onclick={toggleDropdown}>
-						<span>{getCurrentTextStyle(editor)}</span>
+						<span>{currentTextStyle}</span>
 						<svg
 							width="12"
 							height="12"

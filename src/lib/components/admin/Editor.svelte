@@ -90,6 +90,9 @@
 			showLinkBubbleMenu={!simpleMode}
 			showTableBubbleMenu={false}
 			class="editor-content"
+			onEditorReady={(e) => {
+				editor = e
+			}}
 		/>
 	</div>
 </div>
