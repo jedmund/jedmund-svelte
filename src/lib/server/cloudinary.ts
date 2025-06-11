@@ -78,8 +78,8 @@ export async function uploadFile(
 ): Promise<UploadResult> {
 	try {
 		// TEMPORARY: Force Cloudinary usage for testing
-		const FORCE_CLOUDINARY_IN_DEV = true; // Toggle this to test
-		
+		const FORCE_CLOUDINARY_IN_DEV = true // Toggle this to test
+
 		// Use local storage in development or when Cloudinary is not configured
 		if ((dev && !FORCE_CLOUDINARY_IN_DEV) || !isCloudinaryConfigured()) {
 			logger.info('Using local storage for file upload')
@@ -111,11 +111,11 @@ export async function uploadFile(
 
 		// Check if file is SVG for logging purposes
 		const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
-		
+
 		// Extract filename without extension
 		const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
 		const fileExtension = file.name.split('.').pop()?.toLowerCase()
-		
+
 		// Prepare upload options
 		const uploadOptions = {
 			...uploadPresets[type],
@@ -124,7 +124,7 @@ export async function uploadFile(
 			// For SVG files, explicitly set format to preserve extension
 			...(isSvg && { format: 'svg' })
 		}
-		
+
 		// Log upload attempt for debugging
 		logger.info('Attempting file upload:', {
 			filename: file.name,
@@ -136,14 +136,11 @@ export async function uploadFile(
 
 		// Upload to Cloudinary
 		const result = await new Promise<UploadApiResponse>((resolve, reject) => {
-			const uploadStream = cloudinary.uploader.upload_stream(
-				uploadOptions,
-				(error, result) => {
-					if (error) reject(error)
-					else if (result) resolve(result)
-					else reject(new Error('Upload failed'))
-				}
-			)
+			const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
+				if (error) reject(error)
+				else if (result) resolve(result)
+				else reject(new Error('Upload failed'))
+			})
 
 			uploadStream.end(buffer)
 		})
@@ -170,7 +167,7 @@ export async function uploadFile(
 	} catch (error) {
 		logger.error('Cloudinary upload failed', error as Error)
 		logger.mediaUpload(file.name, file.size, file.type, false)
-		
+
 		// Enhanced error logging
 		if (error instanceof Error) {
 			logger.error('Upload error details:', {
@@ -209,7 +206,7 @@ export async function deleteFile(publicId: string): Promise<boolean> {
 		const result = await cloudinary.uploader.destroy(publicId, {
 			resource_type: 'auto'
 		})
-		
+
 		return result.result === 'ok'
 	} catch (error) {
 		logger.error('Cloudinary delete failed', error as Error)

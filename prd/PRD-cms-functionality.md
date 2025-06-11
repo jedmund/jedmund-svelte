@@ -180,6 +180,7 @@ The system now uses a dedicated `media_usage` table for robust tracking:
 ```
 
 **Benefits:**
+
 - Accurate usage tracking across all content types
 - Efficient queries for usage information
 - Safe bulk deletion with automatic reference cleanup
@@ -287,39 +288,46 @@ const ImageBlock = {
 
 ```typescript
 // Projects
-GET /api/projects
-POST /api/projects
-GET /api/projects/[slug]
-PUT /api/projects/[id]
-DELETE /api/projects/[id]
+GET / api / projects
+POST / api / projects
+GET / api / projects / [slug]
+PUT / api / projects / [id]
+DELETE / api / projects / [id]
 
 // Posts
-GET /api/posts
-POST /api/posts
-GET /api/posts/[slug]
-PUT /api/posts/[id]
-DELETE /api/posts/[id]
+GET / api / posts
+POST / api / posts
+GET / api / posts / [slug]
+PUT / api / posts / [id]
+DELETE / api / posts / [id]
 
 // Albums & Photos
-GET /api/albums
-POST /api/albums
-GET /api/albums/[slug]
-PUT /api/albums/[id]
-DELETE /api/albums/[id]
-POST /api/albums/[id]/photos
-DELETE /api/photos/[id]
-PUT /api/photos/[id]/order
+GET / api / albums
+POST / api / albums
+GET / api / albums / [slug]
+PUT / api / albums / [id]
+DELETE / api / albums / [id]
+POST / api / albums / [id] / photos
+DELETE / api / photos / [id]
+PUT / api / photos / [id] / order
 
 // Media Management
-POST /api/media/upload           // Single file upload
-POST /api/media/bulk-upload      // Multiple file upload
-GET /api/media                   // Browse with filters, pagination
-GET /api/media/[id]              // Get single media item
-PUT /api/media/[id]              // Update media (alt text, description)
-DELETE /api/media/[id]           // Delete single media item
-DELETE /api/media/bulk-delete    // Delete multiple media items
-GET /api/media/[id]/usage        // Check where media is used
-POST /api/media/backfill-usage   // Backfill usage tracking for existing content
+POST / api / media / upload // Single file upload
+POST / api / media / bulk - upload // Multiple file upload
+GET / api / media // Browse with filters, pagination
+GET / api / media / [id] // Get single media item
+PUT / api / media / [id] // Update media (alt text, description)
+DELETE / api / media / [id] // Delete single media item
+DELETE / api / media / bulk -
+	delete (
+		// Delete multiple media items
+		GET
+	) /
+		api /
+		media /
+		[id] /
+		usage // Check where media is used
+POST / api / media / backfill - usage // Backfill usage tracking for existing content
 ```
 
 ### 8. Media Management & Cleanup
@@ -580,7 +588,7 @@ Based on requirements discussion:
    - Add photography toggle to media details modal
    - Add photography indicator pills in admin interface
 
-2. **Albums & Photos Management Interface** 
+2. **Albums & Photos Management Interface**
 
    - Album creation and management UI with photography toggle
    - Bulk photo upload interface with progress
@@ -682,7 +690,7 @@ Based on requirements discussion:
 ### Phase 6: Content Simplification & Photo Curation
 
 - [x] Add `isPhotography` field to Media table (migration)
-- [x] Add `isPhotography` field to Album table (migration) 
+- [x] Add `isPhotography` field to Album table (migration)
 - [x] Simplify post types to "post" and "essay" only
 - [x] Update UniverseComposer to use simplified post types
 - [x] Add photography toggle to MediaDetailsModal
@@ -712,7 +720,7 @@ Based on requirements discussion:
 
 - [x] Replace static Work page with dynamic data
 - [x] Update project detail pages
-- [x] Build Universe mixed feed component  
+- [x] Build Universe mixed feed component
 - [x] Create different card types for each post type
 - [x] Update Photos page with dynamic albums/photos
 - [x] Implement individual photo pages
@@ -755,10 +763,12 @@ Based on requirements discussion:
 ### Design Decisions Made (May 2024)
 
 1. **Simplified Post Types**: Reduced from 5 types (blog, microblog, link, photo, album) to 2 types:
+
    - **Post**: Simple content with optional attachments (handles previous microblog, link, photo use cases)
    - **Essay**: Full editor with title/metadata + attachments (handles previous blog use cases)
 
 2. **Photo Curation Strategy**: Dual-level curation system:
+
    - **Media Level**: `isPhotography` boolean - stars individual media for photo experience
    - **Album Level**: `isPhotography` boolean - marks entire albums for photo experience
    - **Mixed Content**: Photography albums can contain non-photography media (Option A)
@@ -774,18 +784,21 @@ Based on requirements discussion:
 ### Implementation Task List
 
 #### Phase 1: Database Updates
+
 - [x] Create migration to add `isPhotography` field to Media table
 - [x] Create migration to add `isPhotography` field to Album table
 - [x] Update Prisma schema with new fields
 - [x] Test migrations on local database
 
 #### Phase 2: API Updates
+
 - [x] Update Media API endpoints to handle `isPhotography` flag
 - [x] Update Album API endpoints to handle `isPhotography` flag
 - [x] Update media usage tracking to work with new flags
 - [x] Add filtering capabilities for photography content
 
 #### Phase 3: Admin Interface Updates
+
 - [x] Add photography toggle to MediaDetailsModal
 - [x] Add photography indicator pills for media items (grid and list views)
 - [x] Add photography indicator pills for albums
@@ -793,6 +806,7 @@ Based on requirements discussion:
 - [x] Add bulk photography operations (mark/unmark multiple items)
 
 #### Phase 4: Post Type Simplification
+
 - [x] Update UniverseComposer to use only "post" and "essay" types
 - [x] Remove complex post type selector UI
 - [x] Update post creation flows
@@ -800,6 +814,7 @@ Based on requirements discussion:
 - [x] Update post display logic to handle simplified types
 
 #### Phase 5: Album Management System
+
 - [x] Create album creation/editing interface with photography toggle
 - [x] Build album list view with photography indicators
 - [ ] **Critical Missing Feature: Album Photo Management**
@@ -814,6 +829,7 @@ Based on requirements discussion:
 - [ ] Add bulk photo upload to albums with automatic photography detection
 
 #### Phase 6: Photography Experience
+
 - [ ] Build photography album filtering in admin
 - [ ] Create photography-focused views and workflows
 - [ ] Add batch operations for photo curation

@@ -31,9 +31,10 @@
 		currentPath === '/'
 			? navItems[0]
 			: currentPath === '/about'
-			? navItems[4]
-			: navItems.find((item) => currentPath.startsWith(item.href === '/' ? '/work' : item.href)) ||
-					navItems[0]
+				? navItems[4]
+				: navItems.find((item) =>
+						currentPath.startsWith(item.href === '/' ? '/work' : item.href)
+					) || navItems[0]
 	)
 
 	// Get background color based on variant

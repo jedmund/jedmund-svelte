@@ -70,7 +70,8 @@ export const PUT: RequestHandler = async (event) => {
 			data: {
 				altText: body.altText !== undefined ? body.altText : existing.altText,
 				description: body.description !== undefined ? body.description : existing.description,
-				isPhotography: body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography
+				isPhotography:
+					body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography
 			}
 		})
 

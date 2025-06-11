@@ -34,21 +34,21 @@
 	let statusCounts = $state<Record<string, number>>({})
 
 	// Filter state
-	let selectedStatusFilter = $state<string>('all')
 	let selectedTypeFilter = $state<string>('all')
+	let selectedStatusFilter = $state<string>('all')
 
 	// Create filter options
-	const statusFilterOptions = $derived([
+	const typeFilterOptions = $derived([
 		{ value: 'all', label: 'All projects' },
+		{ value: 'work', label: 'Work' },
+		{ value: 'labs', label: 'Labs' }
+	])
+
+	const statusFilterOptions = $derived([
+		{ value: 'all', label: 'All statuses' },
 		{ value: 'published', label: 'Published' },
 		{ value: 'draft', label: 'Draft' }
 	])
-
-	const typeFilterOptions = [
-		{ value: 'all', label: 'All types' },
-		{ value: 'work', label: 'Work' },
-		{ value: 'labs', label: 'Labs' }
-	]
 
 	onMount(async () => {
 		await loadProjects()
@@ -205,18 +205,18 @@
 		<AdminFilters>
 			{#snippet left()}
 				<Select
-					bind:value={selectedStatusFilter}
-					options={statusFilterOptions}
-					size="small"
-					variant="minimal"
-					onchange={handleStatusFilterChange}
-				/>
-				<Select
 					bind:value={selectedTypeFilter}
 					options={typeFilterOptions}
 					size="small"
 					variant="minimal"
 					onchange={handleTypeFilterChange}
+				/>
+				<Select
+					bind:value={selectedStatusFilter}
+					options={statusFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleStatusFilterChange}
 				/>
 			{/snippet}
 		</AdminFilters>

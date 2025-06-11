@@ -124,7 +124,7 @@
 							.split(',')
 							.map((tag) => tag.trim())
 							.filter(Boolean)
-					: [],
+					: []
 			}
 
 			const url = mode === 'edit' ? `/api/posts/${postId}` : '/api/posts'
@@ -158,7 +158,6 @@
 			isSaving = false
 		}
 	}
-
 
 	async function handlePublish() {
 		status = 'published'

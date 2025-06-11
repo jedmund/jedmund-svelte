@@ -30,40 +30,37 @@
 	let error = $state('')
 	let total = $state(0)
 	let postTypeCounts = $state<Record<string, number>>({})
+	let statusCounts = $state<Record<string, number>>({})
 
 	// Filter state
-	let selectedFilter = $state<string>('all')
+	let selectedTypeFilter = $state<string>('all')
+	let selectedStatusFilter = $state<string>('all')
 
 	// Composer state
 	let showInlineComposer = $state(true)
+	let isInteractingWithFilters = $state(false)
 
 	// Create filter options
-	const filterOptions = $derived([
+	const typeFilterOptions = $derived([
 		{ value: 'all', label: 'All posts' },
 		{ value: 'post', label: 'Posts' },
 		{ value: 'essay', label: 'Essays' }
 	])
 
+	const statusFilterOptions = $derived([
+		{ value: 'all', label: 'All statuses' },
+		{ value: 'published', label: 'Published' },
+		{ value: 'draft', label: 'Draft' }
+	])
+
 	const postTypeIcons: Record<string, string> = {
 		post: '💭',
-		essay: '📝',
-		// Legacy types for backward compatibility
-		blog: '📝',
-		microblog: '💭',
-		link: '🔗',
-		photo: '📷',
-		album: '🖼️'
+		essay: '📝'
 	}
 
 	const postTypeLabels: Record<string, string> = {
 		post: 'Post',
-		essay: 'Essay',
-		// Legacy types for backward compatibility
-		blog: 'Essay',
-		microblog: 'Post',
-		link: 'Post',
-		photo: 'Post',
-		album: 'Album'
+		essay: 'Essay'
 	}
 
 	onMount(async () => {
@@ -94,24 +91,29 @@
 			posts = data.posts || []
 			total = data.pagination?.total || posts.length
 
-			// Calculate post type counts and normalize types
-			const counts: Record<string, number> = {
+			// Calculate post type counts
+			const typeCounts: Record<string, number> = {
 				all: posts.length,
 				post: 0,
 				essay: 0
 			}
 
 			posts.forEach((post) => {
-				// Normalize legacy types to simplified types
-				if (post.postType === 'blog') {
-					counts.essay = (counts.essay || 0) + 1
-				} else if (['microblog', 'link', 'photo'].includes(post.postType)) {
-					counts.post = (counts.post || 0) + 1
-				} else {
-					counts[post.postType] = (counts[post.postType] || 0) + 1
+				if (post.postType === 'post') {
+					typeCounts.post++
+				} else if (post.postType === 'essay') {
+					typeCounts.essay++
 				}
 			})
-			postTypeCounts = counts
+			postTypeCounts = typeCounts
+
+			// Calculate status counts
+			const statusCountsTemp: Record<string, number> = {
+				all: posts.length,
+				published: posts.filter((p) => p.status === 'published').length,
+				draft: posts.filter((p) => p.status === 'draft').length
+			}
+			statusCounts = statusCountsTemp
 
 			// Apply initial filter
 			applyFilter()
@@ -124,18 +126,26 @@
 	}
 
 	function applyFilter() {
-		if (selectedFilter === 'all') {
-			filteredPosts = posts
-		} else if (selectedFilter === 'post') {
-			filteredPosts = posts.filter((post) => ['post', 'microblog'].includes(post.postType))
-		} else if (selectedFilter === 'essay') {
-			filteredPosts = posts.filter((post) => ['essay', 'blog'].includes(post.postType))
-		} else {
-			filteredPosts = posts.filter((post) => post.postType === selectedFilter)
+		let filtered = posts
+
+		// Apply type filter
+		if (selectedTypeFilter !== 'all') {
+			filtered = filtered.filter((post) => post.postType === selectedTypeFilter)
 		}
+
+		// Apply status filter
+		if (selectedStatusFilter !== 'all') {
+			filtered = filtered.filter((post) => post.status === selectedStatusFilter)
+		}
+
+		filteredPosts = filtered
 	}
 
-	function handleFilterChange() {
+	function handleTypeFilterChange() {
+		applyFilter()
+	}
+
+	function handleStatusFilterChange() {
 		applyFilter()
 	}
 
@@ -168,11 +178,18 @@
 		<AdminFilters>
 			{#snippet left()}
 				<Select
-					bind:value={selectedFilter}
-					options={filterOptions}
+					bind:value={selectedTypeFilter}
+					options={typeFilterOptions}
 					size="small"
 					variant="minimal"
-					onchange={handleFilterChange}
+					onchange={handleTypeFilterChange}
+				/>
+				<Select
+					bind:value={selectedStatusFilter}
+					options={statusFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleStatusFilterChange}
 				/>
 			{/snippet}
 		</AdminFilters>
@@ -187,10 +204,11 @@
 				<div class="empty-icon">📝</div>
 				<h3>No posts found</h3>
 				<p>
-					{#if selectedFilter === 'all'}
+					{#if selectedTypeFilter === 'all' && selectedStatusFilter === 'all'}
 						Create your first post to get started!
 					{:else}
-						No {selectedFilter}s found. Try a different filter or create a new {selectedFilter}.
+						No posts found matching the current filters. Try adjusting your filters or create a new
+						post.
 					{/if}
 				</p>
 			</div>

@@ -23,7 +23,6 @@
 		</h2>
 	{/if}
 
-
 	{#if post.content}
 		<div class="post-excerpt">
 			<p>{getContentExcerpt(post.content, 150)}</p>

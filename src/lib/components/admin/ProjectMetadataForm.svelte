@@ -12,7 +12,6 @@
 	}
 
 	let { formData = $bindable(), validationErrors, onSave }: Props = $props()
-
 </script>
 
 <div class="form-section">

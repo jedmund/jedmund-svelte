@@ -102,13 +102,13 @@
 			// Add selected photos to the newly created album
 			if (albumPhotos.length > 0) {
 				console.log(`Adding ${albumPhotos.length} photos to newly created album ${album.id}`)
-				
+
 				try {
 					const addedPhotos = []
 					for (let i = 0; i < albumPhotos.length; i++) {
 						const media = albumPhotos[i]
 						console.log(`Adding photo ${media.id} to album ${album.id}`)
-						
+
 						const photoResponse = await fetch(`/api/albums/${album.id}/photos`, {
 							method: 'POST',
 							headers: {
@@ -123,7 +123,11 @@
 
 						if (!photoResponse.ok) {
 							const errorData = await photoResponse.text()
-							console.error(`Failed to add photo ${media.filename}:`, photoResponse.status, errorData)
+							console.error(
+								`Failed to add photo ${media.filename}:`,
+								photoResponse.status,
+								errorData
+							)
 							// Continue with other photos even if one fails
 						} else {
 							const photo = await photoResponse.json()
@@ -131,8 +135,10 @@
 							console.log(`Successfully added photo ${photo.id} to album`)
 						}
 					}
-					
-					console.log(`Successfully added ${addedPhotos.length} out of ${albumPhotos.length} photos to album`)
+
+					console.log(
+						`Successfully added ${addedPhotos.length} out of ${albumPhotos.length} photos to album`
+					)
 				} catch (photoError) {
 					console.error('Error adding photos to album:', photoError)
 					// Don't fail the whole creation - just log the error

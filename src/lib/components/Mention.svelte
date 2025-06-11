@@ -7,13 +7,7 @@
 		source?: string
 	}
 
-	let {
-		href = '',
-		title = '',
-		sourceType = '',
-		date = '',
-		source = ''
-	}: Props = $props()
+	let { href = '', title = '', sourceType = '', date = '', source = '' }: Props = $props()
 </script>
 
 <li class="mention">

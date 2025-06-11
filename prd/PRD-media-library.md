@@ -1,10 +1,11 @@
 # Product Requirements Document: Media Library Modal System
 
-## 🎉 **PROJECT STATUS: CORE IMPLEMENTATION COMPLETE!** 
+## 🎉 **PROJECT STATUS: CORE IMPLEMENTATION COMPLETE!**
 
 We have successfully implemented a comprehensive Media Library system with both direct upload workflows and library browsing capabilities. **All major components are functional and integrated throughout the admin interface.**
 
 ### 🏆 Major Achievements
+
 - **✅ Complete MediaLibraryModal system** with single/multiple selection
 - **✅ Enhanced upload components** (ImageUploader, GalleryUploader) with MediaLibraryModal integration
 - **✅ Full form integration** across projects, posts, albums, and editor
@@ -27,18 +28,21 @@ Implement a comprehensive Media Library modal system that provides a unified int
 ## Goals
 
 ### Primary Goals (Direct Upload Workflow)
+
 - **Enable direct file upload within forms** where content will be used (projects, posts, albums)
 - **Provide immediate upload and preview** without requiring navigation to separate media management
 - **Store comprehensive metadata** including alt text for accessibility and SEO
 - **Support drag-and-drop and click-to-browse** for intuitive file selection
 
 ### Secondary Goals (Media Library Browser)
+
 - Create a reusable media browser for **selecting previously uploaded content**
 - Provide **media management interface** showing where files are referenced
 - Enable **bulk operations** and **metadata editing** (especially alt text)
 - Support **file organization** and **usage tracking**
 
 ### Technical Goals
+
 - Maintain consistent UX across all media interactions
 - Support different file type filtering based on context
 - Integrate seamlessly with existing admin components
@@ -46,6 +50,7 @@ Implement a comprehensive Media Library modal system that provides a unified int
 ## Current State Analysis
 
 ### ✅ What We Have
+
 - Complete media API (`/api/media`, `/api/media/upload`, `/api/media/bulk-upload`)
 - Media management page with grid/list views and search/filtering
 - Modal base component (`Modal.svelte`)
@@ -62,17 +67,20 @@ Implement a comprehensive Media Library modal system that provides a unified int
 ### 🎯 What We Need
 
 #### High Priority (Remaining Tasks)
+
 - **Enhanced upload features** with drag & drop zones in all upload components
 - **Bulk alt text editing** in Media Library for existing content
 - **Usage tracking display** showing where media is referenced
 - **Performance optimizations** for large media libraries
 
 #### Medium Priority (Polish & Advanced Features)
+
 - **Image optimization options** during upload
 - **Advanced search capabilities** (by alt text, usage, etc.)
 - **Bulk operations** (delete multiple, bulk metadata editing)
 
 #### Low Priority (Future Enhancements)
+
 - **AI-powered alt text suggestions**
 - **Duplicate detection** and management
 - **Advanced analytics** and usage reporting
@@ -80,6 +88,7 @@ Implement a comprehensive Media Library modal system that provides a unified int
 ## Workflow Priorities
 
 ### 🥇 Primary Workflow: Direct Upload in Forms
+
 This is the **main workflow** that users will use 90% of the time:
 
 1. **User creates content** (project, post, album)
@@ -89,11 +98,13 @@ This is the **main workflow** that users will use 90% of the time:
 5. **Content is saved** with proper media references
 
 **Key Components**:
+
 - `ImageUploader` - Direct drag-and-drop/click upload with preview
 - `GalleryUploader` - Multiple file upload with immediate gallery preview
 - `MediaMetadataForm` - Alt text and description capture during upload
 
 ### 🥈 Secondary Workflow: Browse Existing Media
+
 This workflow is for **reusing previously uploaded content**:
 
 1. **User needs to select existing media** (rare case)
@@ -103,6 +114,7 @@ This workflow is for **reusing previously uploaded content**:
 5. **Media references are updated**
 
 **Key Components**:
+
 - `MediaLibraryModal` - Browse and select existing media
 - `MediaSelector` - Grid interface for selection
 - `MediaManager` - Edit alt text and view usage
@@ -112,22 +124,24 @@ This workflow is for **reusing previously uploaded content**:
 ### 1. Enhanced Upload Components (Primary)
 
 #### ImageUploader Component
+
 **Purpose**: Direct image upload with immediate preview and metadata capture
 
 ```typescript
 interface ImageUploaderProps {
-  label: string
-  value?: Media | null
-  onUpload: (media: Media) => void
-  aspectRatio?: string
-  required?: boolean
-  error?: string
-  allowAltText?: boolean  // Enable alt text input
-  maxFileSize?: number    // MB limit
+	label: string
+	value?: Media | null
+	onUpload: (media: Media) => void
+	aspectRatio?: string
+	required?: boolean
+	error?: string
+	allowAltText?: boolean // Enable alt text input
+	maxFileSize?: number // MB limit
 }
 ```
 
 **Features**:
+
 - Drag-and-drop upload zone with visual feedback
 - Click to browse files from computer
 - Immediate image preview with proper aspect ratio
@@ -137,22 +151,24 @@ interface ImageUploaderProps {
 - Replace/remove functionality
 
 #### GalleryUploader Component
+
 **Purpose**: Multiple file upload with gallery preview and reordering
 
 ```typescript
 interface GalleryUploaderProps {
-  label: string
-  value?: Media[]
-  onUpload: (media: Media[]) => void
-  onReorder?: (media: Media[]) => void
-  maxItems?: number
-  allowAltText?: boolean
-  required?: boolean
-  error?: string
+	label: string
+	value?: Media[]
+	onUpload: (media: Media[]) => void
+	onReorder?: (media: Media[]) => void
+	maxItems?: number
+	allowAltText?: boolean
+	required?: boolean
+	error?: string
 }
 ```
 
 **Features**:
+
 - Multiple file drag-and-drop
 - Immediate gallery preview grid
 - Individual alt text inputs for each image
@@ -165,20 +181,22 @@ interface GalleryUploaderProps {
 **Purpose**: Main modal component that wraps the media browser functionality
 
 **Props Interface**:
+
 ```typescript
 interface MediaLibraryModalProps {
-  isOpen: boolean
-  mode: 'single' | 'multiple'
-  fileType?: 'image' | 'video' | 'all'
-  onSelect: (media: Media | Media[]) => void
-  onClose: () => void
-  selectedIds?: number[]  // Pre-selected items
-  title?: string          // Modal title
-  confirmText?: string    // Confirm button text
+	isOpen: boolean
+	mode: 'single' | 'multiple'
+	fileType?: 'image' | 'video' | 'all'
+	onSelect: (media: Media | Media[]) => void
+	onClose: () => void
+	selectedIds?: number[] // Pre-selected items
+	title?: string // Modal title
+	confirmText?: string // Confirm button text
 }
 ```
 
 **Features**:
+
 - Modal overlay with proper focus management
 - Header with title and close button
 - Media browser grid with selection indicators
@@ -192,6 +210,7 @@ interface MediaLibraryModalProps {
 **Purpose**: The actual media browsing interface within the modal
 
 **Features**:
+
 - Grid layout with thumbnail previews
 - Individual item selection with visual feedback
 - Keyboard navigation support
@@ -199,6 +218,7 @@ interface MediaLibraryModalProps {
 - "Select All" / "Clear Selection" bulk actions (for multiple mode)
 
 **Item Display**:
+
 - Thumbnail image
 - Filename (truncated)
 - File size and dimensions
@@ -210,6 +230,7 @@ interface MediaLibraryModalProps {
 **Purpose**: Handle file uploads within the modal
 
 **Features**:
+
 - Drag-and-drop upload zone
 - Click to browse files
 - Upload progress indicators
@@ -218,6 +239,7 @@ interface MediaLibraryModalProps {
 - Automatic refresh of media grid after upload
 
 **Validation**:
+
 - File type restrictions based on context
 - File size limits (10MB per file)
 - Maximum number of files for bulk upload
@@ -225,22 +247,24 @@ interface MediaLibraryModalProps {
 ### 4. Form Integration Components
 
 #### MediaInput Component
+
 **Purpose**: Generic input field that opens media library modal
 
 ```typescript
 interface MediaInputProps {
-  label: string
-  value?: Media | Media[] | null
-  mode: 'single' | 'multiple'
-  fileType?: 'image' | 'video' | 'all'
-  onSelect: (media: Media | Media[] | null) => void
-  placeholder?: string
-  required?: boolean
-  error?: string
+	label: string
+	value?: Media | Media[] | null
+	mode: 'single' | 'multiple'
+	fileType?: 'image' | 'video' | 'all'
+	onSelect: (media: Media | Media[] | null) => void
+	placeholder?: string
+	required?: boolean
+	error?: string
 }
 ```
 
 **Display**:
+
 - Label and optional required indicator
 - Preview of selected media (thumbnail + filename)
 - "Browse" button to open modal
@@ -248,42 +272,46 @@ interface MediaInputProps {
 - Error state display
 
 #### ImagePicker Component
+
 **Purpose**: Specialized single image selector with enhanced preview
 
 ```typescript
 interface ImagePickerProps {
-  label: string
-  value?: Media | null
-  onSelect: (media: Media | null) => void
-  aspectRatio?: string    // e.g., "16:9", "1:1"
-  placeholder?: string
-  required?: boolean
-  error?: string
+	label: string
+	value?: Media | null
+	onSelect: (media: Media | null) => void
+	aspectRatio?: string // e.g., "16:9", "1:1"
+	placeholder?: string
+	required?: boolean
+	error?: string
 }
 ```
 
 **Display**:
+
 - Large preview area with placeholder
 - Image preview with proper aspect ratio
 - Overlay with "Change" and "Remove" buttons on hover
 - Upload progress indicator
 
 #### GalleryManager Component
+
 **Purpose**: Multiple image selection with drag-and-drop reordering
 
 ```typescript
 interface GalleryManagerProps {
-  label: string
-  value?: Media[]
-  onSelect: (media: Media[]) => void
-  onReorder?: (media: Media[]) => void
-  maxItems?: number
-  required?: boolean
-  error?: string
+	label: string
+	value?: Media[]
+	onSelect: (media: Media[]) => void
+	onReorder?: (media: Media[]) => void
+	maxItems?: number
+	required?: boolean
+	error?: string
 }
 ```
 
 **Display**:
+
 - Grid of selected images with reorder handles
 - "Add Images" button to open modal
 - Individual remove buttons on each image
@@ -294,6 +322,7 @@ interface GalleryManagerProps {
 ### 🥇 Primary Flow: Direct Upload in Forms
 
 #### 1. Single Image Upload (Project Featured Image)
+
 1. **User creates/edits project** and reaches featured image field
 2. **User drags image file** directly onto ImageUploader component OR clicks to browse
 3. **File is immediately uploaded** with progress indicator
@@ -303,6 +332,7 @@ interface GalleryManagerProps {
 7. **Form can be saved** with media reference and metadata
 
 #### 2. Multiple Image Upload (Project Gallery)
+
 1. **User reaches gallery section** of project form
 2. **User drags multiple files** onto GalleryUploader OR clicks to browse multiple
 3. **Upload progress shown** for each file individually
@@ -313,6 +343,7 @@ interface GalleryManagerProps {
 8. **Form saves** with complete gallery and metadata
 
 #### 3. Media Management and Alt Text Editing
+
 1. **User visits Media Library page** to manage uploaded content
 2. **User clicks on any media item** to open details modal
 3. **User can edit alt text** and other metadata
@@ -322,6 +353,7 @@ interface GalleryManagerProps {
 ### 🥈 Secondary Flow: Browse Existing Media
 
 #### 1. Selecting Previously Uploaded Image
+
 1. **User clicks "Browse Library"** button (secondary option in forms)
 2. **MediaLibraryModal opens** showing all previously uploaded media
 3. **User browses or searches** existing content
@@ -329,6 +361,7 @@ interface GalleryManagerProps {
 5. **Modal closes** and form shows selected media with existing alt text
 
 #### 2. Managing Media Library
+
 1. **User visits dedicated Media Library page**
 2. **User can view all uploaded media** in grid/list format
 3. **User can edit metadata** including alt text for any media
@@ -338,12 +371,14 @@ interface GalleryManagerProps {
 ## Design Specifications
 
 ### Modal Layout
+
 - **Width**: 1200px max, responsive on smaller screens
 - **Height**: 80vh max with scroll
 - **Grid**: 4-6 columns depending on screen size
 - **Item Size**: 180px × 140px thumbnails
 
 ### Visual States
+
 - **Default**: Border with subtle background
 - **Selected**: Blue border and checkmark overlay
 - **Hover**: Slight scale and shadow effect
@@ -351,6 +386,7 @@ interface GalleryManagerProps {
 - **Upload**: Progress overlay with percentage
 
 ### Colors (Using Existing Variables)
+
 - **Selection**: `$blue-60` for selected state
 - **Hover**: `$grey-10` background
 - **Upload Progress**: `$green-60` for success, `$red-60` for error
@@ -358,17 +394,20 @@ interface GalleryManagerProps {
 ## API Integration
 
 ### Endpoints Used
+
 - `GET /api/media` - Browse media with search/filter/pagination
 - `POST /api/media/upload` - Single file upload
 - `POST /api/media/bulk-upload` - Multiple file upload
 
 ### Search and Filtering
+
 - **Search**: By filename (case-insensitive)
-- **Filter by Type**: image/*, video/*, all
+- **Filter by Type**: image/_, video/_, all
 - **Filter by Usage**: unused only, all
 - **Sort**: Most recent first
 
 ### Pagination
+
 - 24 items per page
 - Infinite scroll or traditional pagination
 - Loading states during page changes
@@ -376,7 +415,9 @@ interface GalleryManagerProps {
 ## Implementation Plan
 
 ### ✅ Phase 1: Database Schema Updates (COMPLETED)
+
 1. **✅ Alt Text Support**
+
    - Database schema includes `altText` and `description` fields
    - API endpoints support alt text in upload and update operations
 
@@ -385,13 +426,16 @@ interface GalleryManagerProps {
    - Need dedicated tracking table for comprehensive usage analytics
 
 ### ✅ Phase 2: Direct Upload Components (COMPLETED)
+
 1. **✅ ImageUploader Component**
+
    - Drag-and-drop upload zone with visual feedback
    - Immediate upload and preview functionality
    - Alt text input integration
    - MediaLibraryModal integration as secondary option
 
 2. **✅ GalleryUploader Component**
+
    - Multiple file drag-and-drop support
    - Individual alt text inputs per image
    - Drag-and-drop reordering functionality
@@ -404,7 +448,9 @@ interface GalleryManagerProps {
    - Batch uploads with individual alt text support
 
 ### ✅ Phase 3: Form Integration (COMPLETED)
+
 1. **✅ Project Forms Enhancement**
+
    - Logo field enhanced with ImageUploader + Browse Library
    - Featured image support with ImageUploader
    - Gallery section implemented with GalleryUploader
@@ -417,7 +463,9 @@ interface GalleryManagerProps {
    - Enhanced Edra editor with inline image/gallery support
 
 ### ✅ Phase 4: Media Library Management (MOSTLY COMPLETED)
+
 1. **✅ Enhanced Media Library Page**
+
    - Alt text editing for existing media via MediaDetailsModal
    - Clickable media items with edit functionality
    - Grid and list view toggles
@@ -431,7 +479,9 @@ interface GalleryManagerProps {
 ### 🎯 Phase 5: Remaining Enhancements (CURRENT PRIORITIES)
 
 #### 🔥 High Priority (Next Sprint)
+
 1. **Enhanced Media Library Features**
+
    - **Bulk alt text editing** - Select multiple media items and edit alt text in batch
    - **Usage tracking display** - Show where each media item is referenced
    - **Advanced drag & drop zones** - More intuitive upload areas in all components
@@ -442,7 +492,9 @@ interface GalleryManagerProps {
    - **Thumbnail optimization** for faster loading
 
 #### 🔥 Medium Priority (Future Sprints)
+
 1. **Advanced Upload Features**
+
    - **Image resizing/optimization** options during upload
    - **Duplicate detection** to prevent redundant uploads
    - **Bulk upload improvements** with better progress tracking
@@ -453,6 +505,7 @@ interface GalleryManagerProps {
    - **Advanced search** by alt text, usage status, date ranges
 
 #### 🔥 Low Priority (Nice-to-Have)
+
 1. **AI Integration**
    - **Automatic alt text suggestions** using image recognition
    - **Smart tagging** for better organization
@@ -463,8 +516,9 @@ interface GalleryManagerProps {
 ### Functional Requirements
 
 #### Primary Workflow (Direct Upload)
+
 - [x] **Drag-and-drop upload works** in all form components
-- [x] **Click-to-browse file selection** works reliably  
+- [x] **Click-to-browse file selection** works reliably
 - [x] **Immediate upload and preview** happens without page navigation
 - [x] **Alt text input appears** and saves with uploaded media
 - [x] **Upload progress** is clearly indicated with percentage
@@ -473,20 +527,23 @@ interface GalleryManagerProps {
 - [x] **Gallery reordering** works with drag-and-drop after upload
 
 #### Secondary Workflow (Media Library)
+
 - [x] **Media Library Modal** opens and closes properly with smooth animations
 - [x] **Single and multiple selection** modes work correctly
-- [x] **Search and filtering** return accurate results  
+- [x] **Search and filtering** return accurate results
 - [ ] **Usage tracking** shows where media is referenced (IN PROGRESS)
 - [x] **Alt text editing** works in Media Library management
 - [x] **All components are keyboard accessible**
 
 #### Edra Editor Integration
+
 - [x] **Slash commands** work for image and gallery insertion
 - [x] **MediaLibraryModal integration** in editor placeholders
 - [x] **Gallery management** within rich text editor
 - [x] **Image replacement** functionality in editor
 
 ### Performance Requirements
+
 - [x] Modal opens in under 200ms
 - [x] Media grid loads in under 1 second
 - [x] Search results appear in under 500ms
@@ -494,6 +551,7 @@ interface GalleryManagerProps {
 - [x] No memory leaks when opening/closing modal multiple times
 
 ### UX Requirements
+
 - [x] Interface is intuitive without instruction
 - [x] Visual feedback is clear for all interactions
 - [x] Error messages are helpful and actionable
@@ -503,23 +561,27 @@ interface GalleryManagerProps {
 ## Technical Considerations
 
 ### State Management
+
 - Use Svelte runes for reactive state
 - Maintain selection state during modal lifecycle
 - Handle API loading and error states properly
 
 ### Accessibility
+
 - Proper ARIA labels and roles
 - Keyboard navigation support
 - Focus management when modal opens/closes
 - Screen reader announcements for state changes
 
 ### Performance
+
 - Lazy load thumbnails as they come into view
 - Debounce search input to prevent excessive API calls
 - Efficient reordering without full re-renders
 - Memory cleanup when modal is closed
 
 ### Error Handling
+
 - Network failure recovery
 - Upload failure feedback
 - File validation error messages
@@ -528,6 +590,7 @@ interface GalleryManagerProps {
 ## Future Enhancements
 
 ### Nice-to-Have Features
+
 - **Bulk Operations**: Delete multiple files, bulk tag editing
 - **Advanced Search**: Search by tags, date range, file size
 - **Preview Mode**: Full-size preview with navigation
@@ -537,6 +600,7 @@ interface GalleryManagerProps {
 - **Alt Text Editor**: Quick alt text editing for accessibility
 
 ### Integration Opportunities
+
 - **CDN Optimization**: Automatic image optimization settings
 - **AI Tagging**: Automatic tag generation for uploaded images
 - **Duplicate Detection**: Warn about similar/duplicate uploads
@@ -545,6 +609,7 @@ interface GalleryManagerProps {
 ## Development Checklist
 
 ### Core Components
+
 - [x] MediaLibraryModal base structure
 - [x] MediaSelector with grid layout
 - [x] MediaUploader with drag-and-drop
@@ -552,6 +617,7 @@ interface GalleryManagerProps {
 - [x] Pagination implementation
 
 ### Form Integration
+
 - [x] MediaInput generic component (ImageUploader/GalleryUploader)
 - [x] ImagePicker specialized component (ImageUploader)
 - [x] GalleryManager with reordering (GalleryUploader)
@@ -560,6 +626,7 @@ interface GalleryManagerProps {
 - [x] Integration with Edra editor
 
 ### Polish and Testing
+
 - [x] Responsive design implementation
 - [x] Accessibility testing and fixes
 - [x] Performance optimization
@@ -568,6 +635,7 @@ interface GalleryManagerProps {
 - [x] Mobile device testing
 
 ### 🎯 Next Priority Items
+
 - [ ] **Bulk alt text editing** in Media Library
 - [ ] **Usage tracking display** for media references
 - [ ] **Advanced drag & drop zones** with better visual feedback

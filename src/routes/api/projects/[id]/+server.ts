@@ -82,13 +82,17 @@ export const PUT: RequestHandler = async (event) => {
 				year: body.year !== undefined ? body.year : existing.year,
 				client: body.client !== undefined ? body.client : existing.client,
 				role: body.role !== undefined ? body.role : existing.role,
-				featuredImage: body.featuredImage !== undefined ? body.featuredImage : existing.featuredImage,
+				featuredImage:
+					body.featuredImage !== undefined ? body.featuredImage : existing.featuredImage,
 				logoUrl: body.logoUrl !== undefined ? body.logoUrl : existing.logoUrl,
 				gallery: body.gallery !== undefined ? body.gallery : existing.gallery,
 				externalUrl: body.externalUrl !== undefined ? body.externalUrl : existing.externalUrl,
-				caseStudyContent: body.caseStudyContent !== undefined ? body.caseStudyContent : existing.caseStudyContent,
-				backgroundColor: body.backgroundColor !== undefined ? body.backgroundColor : existing.backgroundColor,
-				highlightColor: body.highlightColor !== undefined ? body.highlightColor : existing.highlightColor,
+				caseStudyContent:
+					body.caseStudyContent !== undefined ? body.caseStudyContent : existing.caseStudyContent,
+				backgroundColor:
+					body.backgroundColor !== undefined ? body.backgroundColor : existing.backgroundColor,
+				highlightColor:
+					body.highlightColor !== undefined ? body.highlightColor : existing.highlightColor,
 				projectType: body.projectType !== undefined ? body.projectType : existing.projectType,
 				displayOrder: body.displayOrder !== undefined ? body.displayOrder : existing.displayOrder,
 				status: body.status !== undefined ? body.status : existing.status,
@@ -195,7 +199,7 @@ export const PATCH: RequestHandler = async (event) => {
 
 		// Build update data object with only provided fields
 		const updateData: any = {}
-		
+
 		// Handle status update specially
 		if (body.status !== undefined) {
 			updateData.status = body.status

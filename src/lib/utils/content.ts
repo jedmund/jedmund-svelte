@@ -169,47 +169,49 @@ function renderTiptapContent(doc: any): string {
 
 	// Render inline content (text nodes with marks)
 	const renderInlineContent = (content: any[]): string => {
-		return content.map((node: any) => {
-			if (node.type === 'text') {
-				let text = escapeHtml(node.text || '')
-				
-				// Apply marks (bold, italic, etc.)
-				if (node.marks) {
-					node.marks.forEach((mark: any) => {
-						switch (mark.type) {
-							case 'bold':
-								text = `<strong>${text}</strong>`
-								break
-							case 'italic':
-								text = `<em>${text}</em>`
-								break
-							case 'underline':
-								text = `<u>${text}</u>`
-								break
-							case 'strike':
-								text = `<s>${text}</s>`
-								break
-							case 'code':
-								text = `<code>${text}</code>`
-								break
-							case 'link':
-								const href = mark.attrs?.href || '#'
-								const target = mark.attrs?.target || '_blank'
-								text = `<a href="${href}" target="${target}" rel="noopener noreferrer">${text}</a>`
-								break
-							case 'highlight':
-								text = `<mark>${text}</mark>`
-								break
-						}
-					})
+		return content
+			.map((node: any) => {
+				if (node.type === 'text') {
+					let text = escapeHtml(node.text || '')
+
+					// Apply marks (bold, italic, etc.)
+					if (node.marks) {
+						node.marks.forEach((mark: any) => {
+							switch (mark.type) {
+								case 'bold':
+									text = `<strong>${text}</strong>`
+									break
+								case 'italic':
+									text = `<em>${text}</em>`
+									break
+								case 'underline':
+									text = `<u>${text}</u>`
+									break
+								case 'strike':
+									text = `<s>${text}</s>`
+									break
+								case 'code':
+									text = `<code>${text}</code>`
+									break
+								case 'link':
+									const href = mark.attrs?.href || '#'
+									const target = mark.attrs?.target || '_blank'
+									text = `<a href="${href}" target="${target}" rel="noopener noreferrer">${text}</a>`
+									break
+								case 'highlight':
+									text = `<mark>${text}</mark>`
+									break
+							}
+						})
+					}
+
+					return text
 				}
-				
-				return text
-			}
-			
-			// Handle other inline nodes
-			return renderNode(node)
-		}).join('')
+
+				// Handle other inline nodes
+				return renderNode(node)
+			})
+			.join('')
 	}
 
 	// Helper to escape HTML
@@ -228,7 +230,7 @@ function renderTiptapContent(doc: any): string {
 // Extract text content from Edra JSON for excerpt
 export const getContentExcerpt = (content: any, maxLength = 200): string => {
 	if (!content) return ''
-	
+
 	// Handle Tiptap format first (has type: 'doc')
 	if (content.type === 'doc' && content.content) {
 		return extractTiptapText(content, maxLength)
@@ -263,14 +265,14 @@ function extractTiptapText(doc: any, maxLength: number): string {
 		if (node.type === 'text') {
 			return node.text || ''
 		}
-		
+
 		if (node.content && Array.isArray(node.content)) {
 			return node.content.map(extractFromNode).join(' ')
 		}
-		
+
 		return ''
 	}
-	
+
 	const text = doc.content.map(extractFromNode).join(' ').trim()
 	if (text.length <= maxLength) return text
 	return text.substring(0, maxLength).trim() + '...'

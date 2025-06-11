@@ -140,9 +140,11 @@ export const PUT: RequestHandler = async (event) => {
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				location: body.location !== undefined ? body.location : existing.location,
 				coverPhotoId: body.coverPhotoId !== undefined ? body.coverPhotoId : existing.coverPhotoId,
-				isPhotography: body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography,
+				isPhotography:
+					body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography,
 				status: body.status !== undefined ? body.status : existing.status,
-				showInUniverse: body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse
+				showInUniverse:
+					body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse
 			}
 		})
 

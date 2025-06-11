@@ -59,7 +59,8 @@
 			role: data.role || '',
 			projectType: data.projectType || 'work',
 			externalUrl: data.externalUrl || '',
-			featuredImage: data.featuredImage && data.featuredImage.trim() !== '' ? data.featuredImage : null,
+			featuredImage:
+				data.featuredImage && data.featuredImage.trim() !== '' ? data.featuredImage : null,
 			backgroundColor: data.backgroundColor || '',
 			highlightColor: data.highlightColor || '',
 			logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '',
@@ -140,7 +141,8 @@
 				role: formData.role,
 				projectType: formData.projectType,
 				externalUrl: formData.externalUrl,
-				featuredImage: formData.featuredImage && formData.featuredImage !== '' ? formData.featuredImage : null,
+				featuredImage:
+					formData.featuredImage && formData.featuredImage !== '' ? formData.featuredImage : null,
 				logoUrl: formData.logoUrl && formData.logoUrl !== '' ? formData.logoUrl : null,
 				backgroundColor: formData.backgroundColor,
 				highlightColor: formData.highlightColor,
@@ -222,11 +224,9 @@
 					onStatusChange={handleStatusChange}
 					disabled={isSaving}
 					isLoading={isSaving}
-					primaryAction={
-						formData.status === 'published'
-							? { label: 'Save', status: 'published' }
-							: { label: 'Publish', status: 'published' }
-					}
+					primaryAction={formData.status === 'published'
+						? { label: 'Save', status: 'published' }
+						: { label: 'Publish', status: 'published' }}
 					dropdownActions={[
 						{ label: 'Save as Draft', status: 'draft', show: formData.status !== 'draft' },
 						{ label: 'List Only', status: 'list-only', show: formData.status !== 'list-only' },

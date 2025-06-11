@@ -213,11 +213,14 @@
 
 			// Add photos to album via API
 			const addedPhotos = []
-			console.log('Adding photos to album:', newMedia.map(m => ({ id: m.id, filename: m.filename })))
-			
+			console.log(
+				'Adding photos to album:',
+				newMedia.map((m) => ({ id: m.id, filename: m.filename }))
+			)
+
 			for (const media of newMedia) {
 				console.log(`Adding photo ${media.id} (${media.filename}) to album ${album.id}`)
-				
+
 				const response = await fetch(`/api/albums/${album.id}/photos`, {
 					method: 'POST',
 					headers: {
@@ -596,14 +599,10 @@
 					onStatusChange={handleSave}
 					disabled={isSaving}
 					isLoading={isSaving}
-					primaryAction={
-						status === 'published'
-							? { label: 'Save', status: 'published' }
-							: { label: 'Publish', status: 'published' }
-					}
-					dropdownActions={[
-						{ label: 'Save as Draft', status: 'draft', show: status !== 'draft' }
-					]}
+					primaryAction={status === 'published'
+						? { label: 'Save', status: 'published' }
+						: { label: 'Publish', status: 'published' }}
+					dropdownActions={[{ label: 'Save as Draft', status: 'draft', show: status !== 'draft' }]}
 				/>
 			</div>
 		{/if}

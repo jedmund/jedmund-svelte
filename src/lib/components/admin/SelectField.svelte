@@ -38,15 +38,7 @@
 
 <FormFieldWrapper {label} {required} {helpText} {error}>
 	{#snippet children()}
-		<Select
-			bind:value
-			{options}
-			{size}
-			{variant}
-			{fullWidth}
-			{pill}
-			{...restProps}
-		/>
+		<Select bind:value {options} {size} {variant} {fullWidth} {pill} {...restProps} />
 	{/snippet}
 </FormFieldWrapper>
 

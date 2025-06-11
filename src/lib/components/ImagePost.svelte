@@ -10,8 +10,7 @@
 	} = $props()
 
 	// Convert string array to slideshow items
-	const slideshowItems = $derived(images.map(url => ({ url, alt })))
+	const slideshowItems = $derived(images.map((url) => ({ url, alt })))
 </script>
 
 <Slideshow items={slideshowItems} {alt} aspectRatio="4/3" />
-

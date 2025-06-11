@@ -57,10 +57,10 @@
 				</time>
 			</a>
 			{#if type === 'album'}
-			<PhotosIcon class="card-icon" />
-		{:else}
-			<UniverseIcon class="card-icon" />
-		{/if}
+				<PhotosIcon class="card-icon" />
+			{:else}
+				<UniverseIcon class="card-icon" />
+			{/if}
 		</div>
 	</div>
 </article>

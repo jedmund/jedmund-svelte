@@ -60,6 +60,8 @@
 		}
 
 		&.essay {
+			max-width: 100%; // Full width for essays
+
 			.post-body {
 				font-size: 1rem;
 				line-height: 1.5;
@@ -75,6 +77,8 @@
 		}
 
 		&.blog {
+			max-width: 100%; // Full width for blog posts (legacy essays)
+
 			.post-body {
 				font-size: 1rem;
 				line-height: 1.5;

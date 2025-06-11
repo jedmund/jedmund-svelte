@@ -50,7 +50,7 @@ export const DELETE: RequestHandler = async (event) => {
 		for (const media of mediaRecords) {
 			try {
 				let deleted = false
-				
+
 				// Check if it's a Cloudinary URL
 				if (media.url.includes('cloudinary.com')) {
 					const publicId = extractPublicId(media.url)
@@ -64,7 +64,10 @@ export const DELETE: RequestHandler = async (event) => {
 					// Local storage deletion
 					deleted = await deleteFileLocally(media.url)
 					if (!deleted) {
-						logger.warn('Failed to delete from local storage', { url: media.url, mediaId: media.id })
+						logger.warn('Failed to delete from local storage', {
+							url: media.url,
+							mediaId: media.id
+						})
 					}
 				}
 
@@ -114,8 +117,8 @@ export const DELETE: RequestHandler = async (event) => {
 		})
 
 		// Count successful storage deletions
-		const successfulStorageDeletions = storageDeleteResults.filter(r => r.deleted).length
-		const failedStorageDeletions = storageDeleteResults.filter(r => !r.deleted)
+		const successfulStorageDeletions = storageDeleteResults.filter((r) => r.deleted).length
+		const failedStorageDeletions = storageDeleteResults.filter((r) => !r.deleted)
 
 		logger.info('Bulk media deletion completed', {
 			deletedCount: deleteResult.count,
