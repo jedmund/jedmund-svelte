@@ -8,6 +8,8 @@ import {
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { removeMediaUsage, extractMediaIds } from '$lib/server/media-usage.js'
+import { deleteFile, extractPublicId, isCloudinaryConfigured } from '$lib/server/cloudinary'
+import { deleteFileLocally } from '$lib/server/local-storage'
 
 // DELETE /api/media/bulk-delete - Delete multiple media files and clean up references
 export const DELETE: RequestHandler = async (event) => {
@@ -37,6 +39,65 @@ export const DELETE: RequestHandler = async (event) => {
 			return errorResponse('No media files found with the provided IDs', 404)
 		}
 
+		// Delete files from storage (Cloudinary or local)
+		const storageDeleteResults: Array<{
+			id: number
+			filename: string
+			deleted: boolean
+			error?: string
+		}> = []
+
+		for (const media of mediaRecords) {
+			try {
+				let deleted = false
+				
+				// Check if it's a Cloudinary URL
+				if (media.url.includes('cloudinary.com')) {
+					const publicId = extractPublicId(media.url)
+					if (publicId) {
+						deleted = await deleteFile(publicId)
+						if (!deleted) {
+							logger.warn('Failed to delete from Cloudinary', { publicId, mediaId: media.id })
+						}
+					}
+				} else if (media.url.includes('/local-uploads/')) {
+					// Local storage deletion
+					deleted = await deleteFileLocally(media.url)
+					if (!deleted) {
+						logger.warn('Failed to delete from local storage', { url: media.url, mediaId: media.id })
+					}
+				}
+
+				// Also try to delete thumbnail if it exists
+				if (media.thumbnailUrl) {
+					if (media.thumbnailUrl.includes('cloudinary.com')) {
+						const thumbPublicId = extractPublicId(media.thumbnailUrl)
+						if (thumbPublicId && thumbPublicId !== extractPublicId(media.url)) {
+							await deleteFile(thumbPublicId)
+						}
+					}
+				}
+
+				storageDeleteResults.push({
+					id: media.id,
+					filename: media.filename,
+					deleted
+				})
+			} catch (error) {
+				logger.error('Error deleting file from storage', {
+					mediaId: media.id,
+					url: media.url,
+					error: error instanceof Error ? error.message : 'Unknown error'
+				})
+				storageDeleteResults.push({
+					id: media.id,
+					filename: media.filename,
+					deleted: false,
+					error: error instanceof Error ? error.message : 'Unknown error'
+				})
+			}
+		}
+
 		// Remove media usage tracking for all affected media
 		for (const mediaId of mediaIds) {
 			await prisma.mediaUsage.deleteMany({
@@ -52,16 +113,24 @@ export const DELETE: RequestHandler = async (event) => {
 			where: { id: { in: mediaIds } }
 		})
 
+		// Count successful storage deletions
+		const successfulStorageDeletions = storageDeleteResults.filter(r => r.deleted).length
+		const failedStorageDeletions = storageDeleteResults.filter(r => !r.deleted)
+
 		logger.info('Bulk media deletion completed', {
 			deletedCount: deleteResult.count,
+			storageDeletedCount: successfulStorageDeletions,
+			storageFailedCount: failedStorageDeletions.length,
 			mediaIds,
 			filenames: mediaRecords.map((m) => m.filename)
 		})
 
 		return jsonResponse({
 			success: true,
-			message: `Successfully deleted ${deleteResult.count} media file${deleteResult.count > 1 ? 's' : ''}`,
+			message: `Successfully deleted ${deleteResult.count} media file${deleteResult.count > 1 ? 's' : ''} from database`,
 			deletedCount: deleteResult.count,
+			storageDeletedCount: successfulStorageDeletions,
+			storageFailures: failedStorageDeletions.length > 0 ? failedStorageDeletions : undefined,
 			deletedFiles: mediaRecords.map((m) => ({ id: m.id, filename: m.filename }))
 		})
 	} catch (error) {
