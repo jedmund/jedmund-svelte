@@ -30,8 +30,8 @@
 <style lang="scss">
 	.site-footer {
 		width: 100%;
-		padding: $unit-5x 0;
-		margin-top: $unit-6x;
+		padding: $unit-2x 0;
+		margin-top: $unit-3x;
 	}
 
 	.footer-content {

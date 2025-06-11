@@ -12,17 +12,19 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 </svelte:head>
 
-{#if !isAdminRoute}
-	<Header />
-{/if}
+<div class="layout-wrapper" class:admin-route={isAdminRoute}>
+	{#if !isAdminRoute}
+		<Header />
+	{/if}
 
-<main class:admin-route={isAdminRoute}>
-	<slot />
-</main>
+	<main class:admin-route={isAdminRoute}>
+		<slot />
+	</main>
 
-{#if !isAdminRoute}
-	<Footer />
-{/if}
+	{#if !isAdminRoute}
+		<Footer />
+	{/if}
+</div>
 
 <style lang="scss">
 	@import '../assets/styles/reset.css';
@@ -38,10 +40,24 @@
 	:global(body) {
 		margin: 0;
 		padding: 0;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.layout-wrapper {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		width: 100%;
+
+		&.admin-route {
+			min-height: auto;
+		}
 	}
 
 	main {
-		min-height: 100vh;
+		flex: 1 0 auto;
 
 		&.admin-route {
 			min-height: auto;
