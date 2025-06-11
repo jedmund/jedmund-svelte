@@ -98,7 +98,7 @@
 			const payload = {
 				title,
 				slug,
-				postType: 'blog', // 'blog' is the database value for essays
+				type: 'blog', // 'blog' is the database value for essays
 				status,
 				content,
 				tags

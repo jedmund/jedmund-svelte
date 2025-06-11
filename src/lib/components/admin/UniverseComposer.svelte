@@ -212,7 +212,7 @@
 		if (postType === 'essay') {
 			postData = {
 				...postData,
-				type: 'essay',
+				type: 'blog', // 'blog' is the database value for essays
 				title: essayTitle,
 				slug: essaySlug,
 				excerpt: essayExcerpt,
@@ -222,7 +222,7 @@
 			// All other content is just a "post" with optional link data and attachments
 			postData = {
 				...postData,
-				type: 'post'
+				type: 'microblog' // 'microblog' is for shorter posts
 			}
 
 			// Add link fields if present
