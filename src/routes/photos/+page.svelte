@@ -1,12 +1,43 @@
 <script lang="ts">
 	import PhotoGrid from '$components/PhotoGrid.svelte'
+	import { generateMetaTags } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 
 	const { data }: { data: PageData } = $props()
 
 	const photoItems = $derived(data.photoItems || [])
 	const error = $derived(data.error)
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata for photos page
+	const metaTags = $derived(
+		generateMetaTags({
+			title: 'Photography',
+			description:
+				'A collection of photography from travels, daily life, and creative projects. Captured moments from around the world.',
+			url: pageUrl
+		})
+	)
 </script>
+
+<svelte:head>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
+
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href={metaTags.other.canonical} />
+</svelte:head>
 
 <div class="photos-container">
 	{#if error}

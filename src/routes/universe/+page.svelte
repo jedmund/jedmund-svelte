@@ -1,13 +1,40 @@
 <script lang="ts">
 	import UniverseFeed from '$components/UniverseFeed.svelte'
+	import { generateMetaTags } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
+
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata for universe page
+	const metaTags = $derived(
+		generateMetaTags({
+			title: 'Universe',
+			description:
+				'A mixed feed of posts, thoughts, and photo albums. Essays, experiments, and everything in between.',
+			url: pageUrl
+		})
+	)
 </script>
 
 <svelte:head>
-	<title>Universe - jedmund</title>
-	<meta name="description" content="A mixed feed of posts, thoughts, and photo albums." />
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
+
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href={metaTags.other.canonical} />
 </svelte:head>
 
 <div class="universe-container">

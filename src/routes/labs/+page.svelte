@@ -1,12 +1,43 @@
 <script lang="ts">
 	import LabCard from '$components/LabCard.svelte'
+	import { generateMetaTags } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 
 	const { data }: { data: PageData } = $props()
 
 	const projects = $derived(data.projects || [])
 	const error = $derived(data.error)
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata for labs page
+	const metaTags = $derived(
+		generateMetaTags({
+			title: 'Labs',
+			description:
+				'Experimental projects and prototypes. A space for exploring new ideas, technologies, and creative coding.',
+			url: pageUrl
+		})
+	)
 </script>
+
+<svelte:head>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
+
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href={metaTags.other.canonical} />
+</svelte:head>
 
 <div class="labs-container">
 	{#if error}
