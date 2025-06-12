@@ -239,20 +239,21 @@
 			return true // Prevent default paste behavior
 		}
 
-		// Handle text paste - strip HTML formatting
+		// Handle text paste - preserve links while stripping other formatting
 		const htmlData = clipboardData.getData('text/html')
 		const plainText = clipboardData.getData('text/plain')
 
 		if (htmlData && plainText) {
-			// If we have both HTML and plain text, use plain text to strip formatting
 			event.preventDefault()
 
-			// Use editor commands to insert text so all callbacks are triggered
+			// Use editor commands to insert HTML content, but let Tiptap handle the parsing
+			// This will preserve links while stripping unwanted formatting based on editor config
 			const editorInstance = (view as any).editor
 			if (editorInstance) {
-				editorInstance.chain().focus().insertContent(plainText).run()
+				// Use pasteHTML to let Tiptap process the HTML and apply configured extensions
+				editorInstance.chain().focus().insertContent(htmlData, { parseOptions: { preserveWhitespace: false } }).run()
 			} else {
-				// Fallback to manual transaction
+				// Fallback to plain text if editor instance not available
 				const { state, dispatch } = view
 				const { selection } = state
 				const transaction = state.tr.insertText(plainText, selection.from, selection.to)
