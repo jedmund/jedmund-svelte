@@ -319,8 +319,10 @@
 		}
 
 		.project-logo {
-			width: 60px;
-			height: 60px;
+			width: 100%;
+			height: auto;
+			aspect-ratio: 16 / 9;
+			box-sizing: border-box;
 		}
 	}
 </style>
