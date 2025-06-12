@@ -366,6 +366,7 @@
 						? { label: 'Save', status: 'published' }
 						: { label: 'Publish', status: 'published' }}
 					dropdownActions={[{ label: 'Save as Draft', status: 'draft', show: status !== 'draft' }]}
+					viewUrl={slug ? `/universe/${slug}` : undefined}
 				/>
 			</div>
 		{/if}
@@ -489,27 +490,6 @@
 		}
 	}
 
-	.btn {
-		padding: $unit-2x $unit-3x;
-		border: none;
-		border-radius: 50px;
-		font-size: 0.925rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		display: flex;
-		align-items: center;
-		gap: $unit;
-
-		&:disabled {
-			opacity: 0.6;
-			cursor: not-allowed;
-		}
-
-		&.btn-small {
-			padding: $unit $unit-2x;
-			font-size: 0.875rem;
-		}
-	}
 
 	.dropdown-menu {
 		position: absolute;

@@ -236,6 +236,7 @@
 							show: formData.status !== 'password-protected'
 						}
 					]}
+					viewUrl={project?.slug ? `/work/${project.slug}` : undefined}
 				/>
 			{/if}
 		</div>
@@ -314,6 +315,7 @@
 			width: 250px;
 			display: flex;
 			justify-content: flex-end;
+			gap: $unit-2x;
 		}
 	}
 
@@ -335,6 +337,7 @@
 			color: $grey-10;
 		}
 	}
+
 
 	.admin-container {
 		width: 100%;
