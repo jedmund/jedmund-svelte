@@ -1,0 +1,20 @@
+# Allow Google
+User-agent: Googlebot
+Allow: /
+
+# Block AI crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+# Allow all other bots
+User-agent: *
+Allow: /

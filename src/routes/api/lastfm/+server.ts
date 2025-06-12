@@ -28,7 +28,7 @@ export const GET: RequestHandler = async ({ url }) => {
 					return await enrichAlbumWithInfo(client, album)
 				} catch (error) {
 					if (error instanceof Error && error.message.includes('Album not found')) {
-						console.warn(`Skipping album: ${album.name} (Album not found)`)
+						console.debug(`Skipping album: ${album.name} (Album not found)`)
 						return null // Skip the album
 					}
 					throw error // Re-throw if it's a different error
