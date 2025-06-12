@@ -135,93 +135,6 @@
 		}
 	}
 
-	// Convert Tiptap format back to blocks format for saving
-	function convertTiptapToBlocks(tiptapContent: JSONContent): any {
-		if (!tiptapContent || !tiptapContent.content) {
-			return { blocks: [] }
-		}
-
-		const blocks = tiptapContent.content
-			.map((node: any) => {
-				switch (node.type) {
-					case 'paragraph':
-						const text = extractTextFromNode(node)
-						return text ? { type: 'paragraph', content: text } : null
-
-					case 'heading':
-						return {
-							type: 'heading',
-							level: node.attrs?.level || 1,
-							content: extractTextFromNode(node)
-						}
-
-					case 'bulletList':
-						return {
-							type: 'bulletList',
-							content:
-								node.content
-									?.map((item: any) => {
-										const itemText = extractTextFromNode(item.content?.[0])
-										return itemText
-									})
-									.filter(Boolean) || []
-						}
-
-					case 'orderedList':
-						return {
-							type: 'orderedList',
-							content:
-								node.content
-									?.map((item: any) => {
-										const itemText = extractTextFromNode(item.content?.[0])
-										return itemText
-									})
-									.filter(Boolean) || []
-						}
-
-					case 'blockquote':
-						return {
-							type: 'blockquote',
-							content: extractTextFromNode(node.content?.[0])
-						}
-
-					case 'codeBlock':
-						return {
-							type: 'codeBlock',
-							language: node.attrs?.language || '',
-							content: node.content?.[0]?.text || ''
-						}
-
-					case 'image':
-						return {
-							type: 'image',
-							src: node.attrs?.src || '',
-							alt: node.attrs?.alt || '',
-							caption: node.attrs?.title || ''
-						}
-
-					case 'horizontalRule':
-						return { type: 'hr' }
-
-					default:
-						// Skip unknown types
-						return null
-				}
-			})
-			.filter(Boolean)
-
-		return { blocks }
-	}
-
-	// Helper function to extract text from a node
-	function extractTextFromNode(node: any): string {
-		if (!node) return ''
-		if (node.text) return node.text
-		if (node.content && Array.isArray(node.content)) {
-			return node.content.map((n: any) => extractTextFromNode(n)).join('')
-		}
-		return ''
-	}
 
 	onMount(async () => {
 		// Wait a tick to ensure page params are loaded
@@ -310,11 +223,8 @@
 
 		saving = true
 
-		// Convert content to blocks format if it's in Tiptap format
-		let saveContent = content
-		if (config?.showContent && content && content.type === 'doc') {
-			saveContent = convertTiptapToBlocks(content)
-		}
+		// Save content in native Tiptap format to preserve all formatting
+		const saveContent = content
 
 		const postData = {
 			title: config?.showTitle ? title : null,
