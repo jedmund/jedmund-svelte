@@ -1,5 +1,7 @@
 <script lang="ts">
 	import BackButton from '$components/BackButton.svelte'
+	import { generateMetaTags, generateCreativeWorkJsonLd } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -44,39 +46,74 @@
 	}
 
 	const exif = $derived(photo ? formatExif(photo.exifData) : null)
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata
+	const photoTitle = $derived(photo?.title || photo?.caption || `Photo ${navigation?.currentIndex}`)
+	const photoDescription = $derived(
+		photo?.description || photo?.caption || `Photo from ${album?.title || 'album'}`
+	)
+	const metaTags = $derived(
+		photo && album
+			? generateMetaTags({
+					title: photoTitle,
+					description: photoDescription,
+					url: pageUrl,
+					type: 'article',
+					image: photo.url,
+					publishedTime: exif?.dateTaken,
+					author: 'Justin Edmund',
+					titleFormat: { type: 'snippet', snippet: photoDescription }
+				})
+			: generateMetaTags({
+					title: 'Photo Not Found',
+					description: 'The photo you are looking for could not be found.',
+					url: pageUrl,
+					noindex: true
+				})
+	)
+
+	// Generate creative work JSON-LD
+	const photoJsonLd = $derived(
+		photo && album
+			? generateCreativeWorkJsonLd({
+					name: photoTitle,
+					description: photoDescription,
+					url: pageUrl,
+					image: photo.url,
+					creator: 'Justin Edmund',
+					dateCreated: exif?.dateTaken,
+					keywords: ['photography', album.title, ...(exif?.location ? [exif.location] : [])]
+				})
+			: null
+	)
 </script>
 
 <svelte:head>
-	{#if photo && album}
-		<title
-			>{photo.title || photo.caption || `Photo ${navigation?.currentIndex}`} - {album.title}</title
-		>
-		<meta
-			name="description"
-			content={photo.description || photo.caption || `Photo from ${album.title}`}
-		/>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
 
-		<!-- Open Graph meta tags -->
-		<meta
-			property="og:title"
-			content="{photo.title ||
-				photo.caption ||
-				`Photo ${navigation?.currentIndex}`} - {album.title}"
-		/>
-		<meta
-			property="og:description"
-			content={photo.description || photo.caption || `Photo from ${album.title}`}
-		/>
-		<meta property="og:type" content="article" />
-		<meta property="og:image" content={photo.url} />
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
 
-		<!-- Article meta -->
-		<meta property="article:author" content="jedmund" />
-		{#if exif?.dateTaken}
-			<meta property="article:published_time" content={exif.dateTaken} />
-		{/if}
-	{:else}
-		<title>Photo Not Found</title>
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Other meta tags -->
+	{#if metaTags.other.canonical}
+		<link rel="canonical" href={metaTags.other.canonical} />
+	{/if}
+	{#if metaTags.other.robots}
+		<meta name="robots" content={metaTags.other.robots} />
+	{/if}
+
+	<!-- JSON-LD -->
+	{#if photoJsonLd}
+		{@html `<script type="application/ld+json">${JSON.stringify(photoJsonLd)}</script>`}
 	{/if}
 </svelte:head>
 

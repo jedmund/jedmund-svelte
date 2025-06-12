@@ -3,6 +3,8 @@
 	import BackButton from '$components/BackButton.svelte'
 	import DynamicPostContent from '$components/DynamicPostContent.svelte'
 	import { getContentExcerpt } from '$lib/utils/content'
+	import { generateMetaTags, generateArticleJsonLd } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -13,28 +15,74 @@
 	const description = $derived(
 		post?.content
 			? getContentExcerpt(post.content, 160)
-			: `${post?.postType === 'essay' ? 'Essay' : 'Post'} by jedmund`
+			: `${post?.postType === 'essay' ? 'Essay' : 'Post'} by @jedmund`
+	)
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata
+	const metaTags = $derived(
+		post
+			? generateMetaTags({
+					title: pageTitle,
+					description,
+					url: pageUrl,
+					type: 'article',
+					image: post.attachments?.[0]?.url,
+					publishedTime: post.publishedAt,
+					author: 'Justin Edmund',
+					section: post.postType === 'essay' ? 'Essays' : 'Posts',
+					titleFormat:
+						post.postType === 'essay' ? { type: 'by' } : { type: 'snippet', snippet: description }
+				})
+			: generateMetaTags({
+					title: 'Post Not Found',
+					description: 'The post you are looking for could not be found.',
+					url: pageUrl,
+					noindex: true
+				})
+	)
+
+	// Generate article JSON-LD
+	const articleJsonLd = $derived(
+		post
+			? generateArticleJsonLd({
+					title: pageTitle,
+					description,
+					url: pageUrl,
+					image: post.attachments?.[0]?.url,
+					datePublished: post.publishedAt,
+					dateModified: post.updatedAt || post.publishedAt,
+					author: 'Justin Edmund'
+				})
+			: null
 	)
 </script>
 
 <svelte:head>
-	{#if post}
-		<title>{pageTitle} - jedmund</title>
-		<meta name="description" content={description} />
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
 
-		<!-- Open Graph meta tags -->
-		<meta property="og:title" content={pageTitle} />
-		<meta property="og:description" content={description} />
-		<meta property="og:type" content="article" />
-		{#if post.attachments && post.attachments.length > 0}
-			<meta property="og:image" content={post.attachments[0].url} />
-		{/if}
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
 
-		<!-- Article meta -->
-		<meta property="article:published_time" content={post.publishedAt} />
-		<meta property="article:author" content="jedmund" />
-	{:else}
-		<title>Post Not Found - jedmund</title>
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Other meta tags -->
+	{#if metaTags.other.canonical}
+		<link rel="canonical" href={metaTags.other.canonical} />
+	{/if}
+	{#if metaTags.other.robots}
+		<meta name="robots" content={metaTags.other.robots} />
+	{/if}
+
+	<!-- JSON-LD -->
+	{#if articleJsonLd}
+		{@html `<script type="application/ld+json">${JSON.stringify(articleJsonLd)}</script>`}
 	{/if}
 </svelte:head>
 

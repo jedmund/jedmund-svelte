@@ -2,14 +2,27 @@
 	import { page } from '$app/stores'
 	import Header from '$components/Header.svelte'
 	import Footer from '$components/Footer.svelte'
+	import { generatePersonJsonLd } from '$lib/utils/metadata'
 
-	$: isAdminRoute = $page.url.pathname.startsWith('/admin')
+	const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'))
+
+	// Generate person structured data for the site
+	const personJsonLd = $derived(generatePersonJsonLd({
+		name: 'Justin Edmund',
+		jobTitle: 'Software Designer',
+		description: 'Software designer based in San Francisco',
+		url: 'https://jedmund.com',
+		sameAs: [
+			'https://twitter.com/jedmund',
+			'https://github.com/jedmund',
+			'https://www.linkedin.com/in/jedmund'
+		]
+	}))
 </script>
 
 <svelte:head>
-	<title>@jedmund is a software designer</title>
-	<meta name="description" content="Justin Edmund is a software designer based in San Francisco." />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<!-- Site-wide JSON-LD -->
+	{@html `<script type="application/ld+json">${JSON.stringify(personJsonLd)}</script>`}
 </svelte:head>
 
 <div class="layout-wrapper" class:admin-route={isAdminRoute}>

@@ -4,6 +4,8 @@
 	import MentionList from '$components/MentionList.svelte'
 	import Page from '$components/Page.svelte'
 	import RecentAlbums from '$components/RecentAlbums.svelte'
+	import { generateMetaTags } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 
 	import type { PageData } from './$types'
 
@@ -12,7 +14,39 @@
 	let albums = $derived(data.albums)
 	let games = $derived(data.games)
 	let error = $derived(data.error)
+
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata for about page
+	const metaTags = $derived(
+		generateMetaTags({
+			title: 'About',
+			description:
+				'Software designer and developer living in San Francisco. Building thoughtful digital experiences and currently working on Maitsu, a hobby journaling app.',
+			url: pageUrl,
+			type: 'profile',
+			titleFormat: { type: 'about' }
+		})
+	)
 </script>
+
+<svelte:head>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
+
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href={metaTags.other.canonical} />
+</svelte:head>
 
 <section class="about-container">
 	<Page>

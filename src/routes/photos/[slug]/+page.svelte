@@ -1,6 +1,8 @@
 <script lang="ts">
 	import PhotoGrid from '$components/PhotoGrid.svelte'
 	import BackButton from '$components/BackButton.svelte'
+	import { generateMetaTags, generateImageGalleryJsonLd } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -28,14 +30,66 @@
 			year: 'numeric'
 		})
 	}
+
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata
+	const metaTags = $derived(
+		album
+			? generateMetaTags({
+					title: album.title,
+					description:
+						album.description ||
+						`Photo album: ${album.title}${album.location ? ` taken in ${album.location}` : ''}`,
+					url: pageUrl,
+					image: album.photos?.[0]?.url,
+					titleFormat: { type: 'by' }
+				})
+			: generateMetaTags({
+					title: 'Album Not Found',
+					description: 'The album you are looking for could not be found.',
+					url: pageUrl,
+					noindex: true
+				})
+	)
+
+	// Generate image gallery JSON-LD
+	const galleryJsonLd = $derived(
+		album
+			? generateImageGalleryJsonLd({
+					name: album.title,
+					description: album.description,
+					url: pageUrl,
+					images:
+						album.photos?.map((photo: any) => ({
+							url: photo.url,
+							caption: photo.caption
+						})) || []
+				})
+			: null
+	)
 </script>
 
 <svelte:head>
-	{#if album}
-		<title>{album.title} - Photos</title>
-		<meta name="description" content={album.description || `Photo album: ${album.title}`} />
-	{:else}
-		<title>Album Not Found - Photos</title>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
+
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href={metaTags.other.canonical} />
+
+	<!-- JSON-LD -->
+	{#if galleryJsonLd}
+		{@html `<script type="application/ld+json">${JSON.stringify(galleryJsonLd)}</script>`}
 	{/if}
 </svelte:head>
 

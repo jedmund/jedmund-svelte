@@ -7,6 +7,7 @@ This PRD outlines the implementation of a comprehensive SEO and metadata system 
 ## Problem Statement
 
 ### Current Issues
+
 1. **Inconsistent Implementation**: Only 2 out of 10+ page types have proper metadata
 2. **Missing Social Media Support**: No Twitter cards on any pages
 3. **Poor Search Visibility**: Missing canonical URLs, structured data, and sitemaps
@@ -14,6 +15,7 @@ This PRD outlines the implementation of a comprehensive SEO and metadata system 
 5. **No Image Strategy**: Most pages lack OpenGraph images, reducing social media engagement
 
 ### Impact
+
 - Reduced search engine visibility
 - Poor social media sharing experience
 - Missed opportunities for rich snippets in search results
@@ -40,22 +42,24 @@ This PRD outlines the implementation of a comprehensive SEO and metadata system 
 ### 1. Core Components
 
 #### SeoMetadata Component
+
 A centralized Svelte component that handles all metadata needs:
 
 ```svelte
 <SeoMetadata
-  title="Project Title"
-  description="Project description"
-  type="article"
-  image="/path/to/image.jpg"
-  author="@jedmund"
-  publishedTime={date}
-  modifiedTime={date}
-  tags={['tag1', 'tag2']}
+	title="Project Title"
+	description="Project description"
+	type="article"
+	image="/path/to/image.jpg"
+	author="@jedmund"
+	publishedTime={date}
+	modifiedTime={date}
+	tags={['tag1', 'tag2']}
 />
 ```
 
 Features:
+
 - Automatic title formatting (e.g., "Title | @jedmund")
 - Fallback chains for missing data
 - Support for all OpenGraph types
@@ -68,12 +72,14 @@ Features:
 #### High Priority Pages
 
 **Home Page (/)**
+
 - Title: "@jedmund — Software designer and strategist"
 - Description: Professional summary
 - Type: website
 - Image: Professional headshot or branded image
 
 **Work Project Pages (/work/[slug])**
+
 - Title: "[Project Name] by @jedmund"
 - Description: Project description
 - Type: article
@@ -81,6 +87,7 @@ Features:
 - Structured data: CreativeWork schema
 
 **Photo Pages (/photos/[slug]/[id])**
+
 - Title: "[Photo Title] | Photography by @jedmund"
 - Description: Photo caption or album context
 - Type: article
@@ -88,6 +95,7 @@ Features:
 - Structured data: ImageObject schema
 
 **Universe Posts (/universe/[slug])**
+
 - Essays (long-form): "[Essay Name] — @jedmund"
 - Posts (short-form): "@jedmund: [Post snippet]"
 - Description: Post excerpt (first 160 chars)
@@ -98,16 +106,19 @@ Features:
 #### Medium Priority Pages
 
 **Labs Projects (/labs/[slug])**
+
 - Similar to Work projects but with "Lab" designation
 - Experimental project metadata
 
 **About Page (/about)**
+
 - Title: "About | @jedmund"
 - Description: Professional bio excerpt
 - Type: profile
 - Structured data: Person schema
 
 **Photo Albums (/photos/[slug])**
+
 - Title: "[Album Name] | Photography by @jedmund"
 - Description: Album description
 - Type: website
@@ -116,6 +127,7 @@ Features:
 ### 3. Dynamic OG Image Generation
 
 Create an API endpoint (`/api/og-image`) that generates images:
+
 - For projects: Logo on brand color background
 - For photos: The photo itself with optional watermark
 - For text posts: Branded template with title
@@ -124,16 +136,19 @@ Create an API endpoint (`/api/og-image`) that generates images:
 ### 4. Technical SEO Improvements
 
 **Sitemap Generation**
+
 - Dynamic sitemap.xml generation
 - Include all public pages
 - Update frequency and priority hints
 
 **Robots.txt**
+
 - Allow all crawlers by default
 - Block admin routes
 - Reference sitemap location
 
 **Canonical URLs**
+
 - Automatic canonical URL generation
 - Handle www/non-www consistency
 - Support pagination parameters
@@ -141,15 +156,18 @@ Create an API endpoint (`/api/og-image`) that generates images:
 ### 5. Utilities & Helpers
 
 **formatSeoTitle(title, suffix = "@jedmund")**
+
 - Consistent title formatting
 - Character limit enforcement (60 chars)
 
 **generateDescription(content, limit = 160)**
+
 - Extract description from content
 - HTML stripping
 - Smart truncation
 
 **getCanonicalUrl(path)**
+
 - Generate absolute URLs
 - Handle query parameters
 - Ensure consistency
@@ -157,30 +175,35 @@ Create an API endpoint (`/api/og-image`) that generates images:
 ## Implementation Plan
 
 ### Phase 1: Foundation (Week 1)
+
 - [ ] Create SeoMetadata component
 - [ ] Implement basic meta tag support
 - [ ] Add title/description utilities
 - [ ] Update app.html to remove hardcoded values
 
 ### Phase 2: Critical Pages (Week 2)
+
 - [ ] Home page metadata
 - [ ] Work project pages
 - [ ] Universe post pages
 - [ ] Photo detail pages
 
 ### Phase 3: Secondary Pages (Week 3)
+
 - [ ] About page
 - [ ] Labs page and projects
 - [ ] Photo albums and index
 - [ ] Universe feed
 
 ### Phase 4: Advanced Features (Week 4)
+
 - [ ] Dynamic OG image generation
 - [ ] Structured data implementation
 - [ ] Sitemap generation
 - [ ] Technical SEO improvements
 
 ### Phase 5: Testing & Refinement (Week 5)
+
 - [ ] Test all pages with social media debuggers
 - [ ] Validate structured data
 - [ ] Performance optimization
@@ -189,16 +212,19 @@ Create an API endpoint (`/api/og-image`) that generates images:
 ## Technical Considerations
 
 ### Performance
+
 - Metadata generation should not impact page load time
 - Cache generated OG images
 - Minimize JavaScript overhead
 
 ### Maintenance
+
 - Centralized component reduces update complexity
 - Clear documentation for adding new pages
 - Automated testing for metadata presence
 
 ### Compatibility
+
 - Support major social platforms (Twitter, Facebook, LinkedIn)
 - Ensure search engine compatibility
 - Fallback for missing data
@@ -227,14 +253,17 @@ Create an API endpoint (`/api/og-image`) that generates images:
 ### Current Implementation Status
 
 ✅ **Good Implementation**
+
 - /universe/[slug]
 - /photos/[albumSlug]/[photoId]
 
 ⚠️ **Partial Implementation**
+
 - /photos/[slug]
 - /universe
 
 ❌ **No Implementation**
+
 - / (home)
 - /about
 - /labs
@@ -243,6 +272,7 @@ Create an API endpoint (`/api/og-image`) that generates images:
 - /work/[slug]
 
 ### Resources
+
 - [OpenGraph Protocol](https://ogp.me/)
 - [Twitter Cards](https://developer.twitter.com/en/docs/twitter-for-websites/cards)
 - [Schema.org](https://schema.org/)

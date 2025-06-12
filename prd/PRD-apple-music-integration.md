@@ -14,18 +14,21 @@ Integrate Apple Music API to enhance the music features on jedmund.com by replac
 ## Goals
 
 ### Primary Goals
+
 - **Replace iTunes Search API** with Apple Music API for better data quality
 - **Add 30-second preview playback** for discovered music
 - **Fetch and store enhanced metadata** (genres, release dates, track listings) for future use
 - **Improve artwork quality** from 600x600 to 3000x3000 resolution
 
 ### Secondary Goals
+
 - **Implement proper caching** using Redis (matching other API patterns)
 - **Create reusable audio components** for future music features
 - **Maintain current UI** while preparing data structure for future enhancements
 - **Prepare foundation** for future user library integration
 
 ### Technical Goals
+
 - Secure JWT token generation and management
 - Efficient API response caching
 - Clean component architecture for audio playback
@@ -191,11 +194,13 @@ Integrate Apple Music API to enhance the music features on jedmund.com by replac
 ## Technical Architecture
 
 ### API Flow
+
 ```
 Last.fm API → Recent Albums → Apple Music Search → Enhanced Data → Redis Cache → Frontend
 ```
 
 ### Component Hierarchy
+
 ```
 HomePage
   └── AlbumGrid
@@ -206,17 +211,18 @@ HomePage
 ```
 
 ### Data Structure
+
 ```typescript
 interface EnhancedAlbum extends Album {
-  appleMusicId?: string;
-  highResArtwork?: string;      // Used immediately
-  previewUrl?: string;           // Used immediately
-  
-  // Stored for future use (not displayed yet):
-  genres?: string[];
-  releaseDate?: string;
-  trackCount?: number;
-  tracks?: AppleMusicTrack[];
+	appleMusicId?: string
+	highResArtwork?: string // Used immediately
+	previewUrl?: string // Used immediately
+
+	// Stored for future use (not displayed yet):
+	genres?: string[]
+	releaseDate?: string
+	trackCount?: number
+	tracks?: AppleMusicTrack[]
 }
 ```
 
@@ -231,14 +237,17 @@ interface EnhancedAlbum extends Album {
 ## Dependencies
 
 ### New Dependencies
+
 - `jsonwebtoken`: JWT generation
 - `@types/jsonwebtoken`: TypeScript types
 
 ### Existing Dependencies to Leverage
+
 - `redis`: Caching layer
 - `$lib/server/redis-client`: Existing Redis connection
 
 ### Dependencies to Remove
+
 - `node-itunes-search`: Replaced by Apple Music API
 
 ## Rollback Plan

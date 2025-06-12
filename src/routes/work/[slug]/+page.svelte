@@ -4,6 +4,8 @@
 	import ProjectPasswordProtection from '$lib/components/ProjectPasswordProtection.svelte'
 	import ProjectHeaderContent from '$lib/components/ProjectHeaderContent.svelte'
 	import ProjectContent from '$lib/components/ProjectContent.svelte'
+	import { generateMetaTags, generateCreativeWorkJsonLd } from '$lib/utils/metadata'
+	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 	import type { Project } from '$lib/types/project'
 	import { spring } from 'svelte/motion'
@@ -12,6 +14,42 @@
 
 	const project = $derived(data.project as Project | null)
 	const error = $derived(data.error as string | undefined)
+	const pageUrl = $derived($page.url.href)
+
+	// Generate metadata
+	const metaTags = $derived(
+		project
+			? generateMetaTags({
+					title: project.title,
+					description:
+						project.description || `${project.title} — A professional project by Justin Edmund`,
+					url: pageUrl,
+					image: project.thumbnailUrl || project.logoUrl,
+					type: 'article',
+					titleFormat: { type: 'by' }
+				})
+			: generateMetaTags({
+					title: 'Project Not Found',
+					description: 'The project you are looking for could not be found.',
+					url: pageUrl,
+					noindex: true
+				})
+	)
+
+	// Generate creative work JSON-LD
+	const projectJsonLd = $derived(
+		project
+			? generateCreativeWorkJsonLd({
+					name: project.title,
+					description: project.description,
+					url: pageUrl,
+					image: project.thumbnailUrl || project.logoUrl,
+					creator: 'Justin Edmund',
+					dateCreated: project.year ? `${project.year}-01-01` : undefined,
+					keywords: project.tags || []
+				})
+			: null
+	)
 
 	let headerContainer = $state<HTMLElement | null>(null)
 
@@ -49,6 +87,34 @@
 		logoPosition.set({ x: 0, y: 0 })
 	}
 </script>
+
+<svelte:head>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+
+	<!-- OpenGraph -->
+	{#each Object.entries(metaTags.openGraph) as [property, content]}
+		<meta property="og:{property}" {content} />
+	{/each}
+
+	<!-- Twitter Card -->
+	{#each Object.entries(metaTags.twitter) as [property, content]}
+		<meta name="twitter:{property}" {content} />
+	{/each}
+
+	<!-- Other meta tags -->
+	{#if metaTags.other.canonical}
+		<link rel="canonical" href={metaTags.other.canonical} />
+	{/if}
+	{#if metaTags.other.robots}
+		<meta name="robots" content={metaTags.other.robots} />
+	{/if}
+
+	<!-- JSON-LD -->
+	{#if projectJsonLd}
+		{@html `<script type="application/ld+json">${JSON.stringify(projectJsonLd)}</script>`}
+	{/if}
+</svelte:head>
 
 {#if error}
 	<div class="error-container">
