@@ -11,6 +11,8 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	try {
+		logger.info('Fetching photo', { mediaId: id })
+		
 		const media = await prisma.media.findUnique({
 			where: { id },
 			include: {
@@ -25,13 +27,23 @@ export const GET: RequestHandler = async (event) => {
 		})
 
 		if (!media) {
+			logger.warn('Media not found', { mediaId: id })
 			return errorResponse('Photo not found', 404)
 		}
+		
+		logger.info('Media found', { 
+			mediaId: id, 
+			isPhotography: media.isPhotography,
+			albumCount: media.albums.length
+		})
 
 		// For public access, only return media marked as photography
 		const isAdminRequest = checkAdminAuth(event)
+		logger.info('Authorization check', { isAdmin: isAdminRequest })
+		
 		if (!isAdminRequest) {
 			if (!media.isPhotography) {
+				logger.warn('Media not marked as photography', { mediaId: id })
 				return errorResponse('Photo not found', 404)
 			}
 			// If media is in an album, check album is published and isPhotography
@@ -40,7 +52,13 @@ export const GET: RequestHandler = async (event) => {
 				const fullAlbum = await prisma.album.findUnique({
 					where: { id: album.id }
 				})
+				logger.info('Album check', { 
+					albumId: album.id,
+					status: fullAlbum?.status,
+					isPhotography: fullAlbum?.isPhotography
+				})
 				if (!fullAlbum || fullAlbum.status !== 'published' || !fullAlbum.isPhotography) {
+					logger.warn('Album not valid for public access', { albumId: album.id })
 					return errorResponse('Photo not found', 404)
 				}
 			}

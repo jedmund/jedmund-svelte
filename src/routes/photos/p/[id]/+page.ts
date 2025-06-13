@@ -2,13 +2,13 @@ import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	try {
-		const photoId = parseInt(params.id)
-		if (isNaN(photoId)) {
-			throw new Error('Invalid photo ID')
+		const mediaId = parseInt(params.id)
+		if (isNaN(mediaId)) {
+			throw new Error('Invalid media ID')
 		}
 
-		// Fetch the photo by ID
-		const photoResponse = await fetch(`/api/photos/${photoId}`)
+		// Fetch the photo by media ID
+		const photoResponse = await fetch(`/api/photos/${mediaId}`)
 		if (!photoResponse.ok) {
 			if (photoResponse.status === 404) {
 				throw new Error('Photo not found')
@@ -29,7 +29,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		return {
 			photo,
 			photoItems,
-			currentPhotoId: `media-${photoId}` // Updated to use media prefix
+			currentPhotoId: `media-${mediaId}` // Updated to use media prefix
 		}
 	} catch (error) {
 		console.error('Error loading photo:', error)
