@@ -138,10 +138,10 @@
 				// Check if mouse is in hover zones
 				if (x < imageRect.left) {
 					isHoveringLeft = true
-					leftButtonCoords.set({ x: mouseX, y: mouseY })
+					leftButtonCoords.set({ x: mouseX, y: mouseY }, { hard: true })
 				} else if (x > imageRect.right) {
 					isHoveringRight = true
-					rightButtonCoords.set({ x: mouseX, y: mouseY })
+					rightButtonCoords.set({ x: mouseX, y: mouseY }, { hard: true })
 				}
 				
 				// Remove the listener
@@ -157,16 +157,47 @@
 		const mouseX = currentPos.x - pageRect.left
 		const mouseY = currentPos.y - pageRect.top
 		
+		// Store client coordinates for scroll updates
+		lastClientX = currentPos.x
+		lastClientY = currentPos.y
+		
 		// Check if mouse is in hover zones
 		if (x < imageRect.left) {
 			isHoveringLeft = true
-			leftButtonCoords.set({ x: mouseX, y: mouseY })
+			leftButtonCoords.set({ x: mouseX, y: mouseY }, { hard: true })
 		} else if (x > imageRect.right) {
 			isHoveringRight = true
-			rightButtonCoords.set({ x: mouseX, y: mouseY })
+			rightButtonCoords.set({ x: mouseX, y: mouseY }, { hard: true })
 		}
 	}
 
+	// Store last mouse client position for scroll updates
+	let lastClientX = 0
+	let lastClientY = 0
+	
+	// Update button positions during scroll
+	function handleScroll() {
+		if (!isHoveringLeft && !isHoveringRight) return
+		
+		const pageContainer = document.querySelector('.photo-page') as HTMLElement
+		if (!pageContainer) return
+		
+		// Use last known mouse position (which is viewport-relative)
+		// and recalculate relative to the page container's new position
+		const pageRect = pageContainer.getBoundingClientRect()
+		const mouseX = lastClientX - pageRect.left
+		const mouseY = lastClientY - pageRect.top
+		
+		// Update button positions
+		if (isHoveringLeft) {
+			leftButtonCoords.set({ x: mouseX, y: mouseY })
+		}
+		
+		if (isHoveringRight) {
+			rightButtonCoords.set({ x: mouseX, y: mouseY })
+		}
+	}
+	
 	// Mouse tracking for hover areas
 	function handleMouseMove(event: MouseEvent) {
 		const pageContainer = event.currentTarget as HTMLElement
@@ -184,6 +215,10 @@
 		const x = event.clientX
 		const mouseX = event.clientX - pageRect.left
 		const mouseY = event.clientY - pageRect.top
+		
+		// Store last mouse position for scroll updates
+		lastClientX = event.clientX
+		lastClientY = event.clientY
 		
 		// Check if mouse is in the left or right margin (outside the photo)
 		const wasHoveringLeft = isHoveringLeft
@@ -238,10 +273,15 @@
 		}
 	}
 
-	// Set up keyboard listener
+	// Set up keyboard and scroll listeners
 	$effect(() => {
 		window.addEventListener('keydown', handleKeydown)
-		return () => window.removeEventListener('keydown', handleKeydown)
+		window.addEventListener('scroll', handleScroll)
+		
+		return () => {
+			window.removeEventListener('keydown', handleKeydown)
+			window.removeEventListener('scroll', handleScroll)
+		}
 	})
 </script>
 

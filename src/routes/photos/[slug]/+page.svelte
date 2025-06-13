@@ -48,19 +48,19 @@
 					titleFormat: { type: 'by' }
 				})
 			: type === 'photo' && photo
-			? generateMetaTags({
-					title: photo.title || 'Photo',
-					description: photo.description || photo.caption || 'A photograph',
-					url: pageUrl,
-					image: photo.url,
-					titleFormat: { type: 'by' }
-				})
-			: generateMetaTags({
-					title: 'Not Found',
-					description: 'The content you are looking for could not be found.',
-					url: pageUrl,
-					noindex: true
-				})
+				? generateMetaTags({
+						title: photo.title || 'Photo',
+						description: photo.description || photo.caption || 'A photograph',
+						url: pageUrl,
+						image: photo.url,
+						titleFormat: { type: 'by' }
+					})
+				: generateMetaTags({
+						title: 'Not Found',
+						description: 'The content you are looking for could not be found.',
+						url: pageUrl,
+						noindex: true
+					})
 	)
 
 	// Generate image gallery JSON-LD
@@ -77,15 +77,15 @@
 						})) || []
 				})
 			: type === 'photo' && photo
-			? {
-					'@context': 'https://schema.org',
-					'@type': 'ImageObject',
-					name: photo.title || 'Photo',
-					description: photo.description || photo.caption,
-					contentUrl: photo.url,
-					url: pageUrl
-				}
-			: null
+				? {
+						'@context': 'https://schema.org',
+						'@type': 'ImageObject',
+						name: photo.title || 'Photo',
+						description: photo.description || photo.caption,
+						contentUrl: photo.url,
+						url: pageUrl
+					}
+				: null
 	)
 </script>
 
@@ -157,20 +157,16 @@
 		<div class="photo-header">
 			<BackButton href="/photos" label="Back to Photos" />
 		</div>
-		
+
 		<div class="photo-container">
-			<img 
-				src={photo.url} 
-				alt={photo.title || photo.caption || 'Photo'} 
-				class="photo-image"
-			/>
+			<img src={photo.url} alt={photo.title || photo.caption || 'Photo'} class="photo-image" />
 		</div>
 
 		<div class="photo-info">
 			{#if photo.title}
 				<h1 class="photo-title">{photo.title}</h1>
 			{/if}
-			
+
 			{#if photo.caption || photo.description}
 				<p class="photo-description">{photo.caption || photo.description}</p>
 			{/if}
@@ -215,7 +211,7 @@
 		width: 100%;
 		max-width: 900px;
 		margin: 0 auto;
-		padding: $unit-4x $unit-3x;
+		padding: 0 $unit-3x;
 
 		@include breakpoint('phone') {
 			padding: $unit-3x $unit-2x;
