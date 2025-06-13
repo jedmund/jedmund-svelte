@@ -339,14 +339,14 @@
 				<Select
 					bind:value={filterType}
 					options={typeFilterOptions}
-					buttonSize="small"
+					size="small"
 					variant="minimal"
 					onchange={handleFilterChange}
 				/>
 				<Select
 					bind:value={photographyFilter}
 					options={photographyFilterOptions}
-					buttonSize="small"
+					size="small"
 					variant="minimal"
 					onchange={handleFilterChange}
 				/>

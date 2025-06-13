@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
+	import { createEventDispatcher, onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
 
 	interface Post {
@@ -23,14 +24,58 @@
 
 	let { post }: Props = $props()
 
+	const dispatch = createEventDispatcher<{
+		edit: { post: Post }
+		togglePublish: { post: Post }
+		delete: { post: Post }
+	}>()
+
+	let isDropdownOpen = $state(false)
+
 	const postTypeLabels: Record<string, string> = {
 		post: 'Post',
 		essay: 'Essay'
 	}
 
-	function handlePostClick() {
+	function handlePostClick(event: MouseEvent) {
+		// Don't navigate if clicking on the dropdown button
+		if ((event.target as HTMLElement).closest('.dropdown-container')) {
+			return
+		}
 		goto(`/admin/posts/${post.id}/edit`)
 	}
+
+	function handleToggleDropdown(event: MouseEvent) {
+		event.stopPropagation()
+		isDropdownOpen = !isDropdownOpen
+	}
+
+	function handleEdit(event: MouseEvent) {
+		event.stopPropagation()
+		dispatch('edit', { post })
+		goto(`/admin/posts/${post.id}/edit`)
+	}
+
+	function handleTogglePublish(event: MouseEvent) {
+		event.stopPropagation()
+		dispatch('togglePublish', { post })
+		isDropdownOpen = false
+	}
+
+	function handleDelete(event: MouseEvent) {
+		event.stopPropagation()
+		dispatch('delete', { post })
+		isDropdownOpen = false
+	}
+
+	onMount(() => {
+		function handleCloseDropdowns() {
+			isDropdownOpen = false
+		}
+
+		document.addEventListener('closeDropdowns', handleCloseDropdowns)
+		return () => document.removeEventListener('closeDropdowns', handleCloseDropdowns)
+	})
 
 	function getPostSnippet(post: Post): string {
 		// Try excerpt first
@@ -95,23 +140,52 @@
 </script>
 
 <article class="post-item" onclick={handlePostClick}>
-	{#if post.title}
-		<h3 class="post-title">{post.title}</h3>
-	{/if}
+	<div class="post-main">
+		{#if post.title}
+			<h3 class="post-title">{post.title}</h3>
+		{/if}
 
-	<div class="post-content">
-		<p class="post-preview">{getPostSnippet(post)}</p>
+		<div class="post-content">
+			<p class="post-preview">{getPostSnippet(post)}</p>
+		</div>
+
+		<AdminByline
+			sections={[
+				postTypeLabels[post.postType] || post.postType,
+				post.status === 'published' ? 'Published' : 'Draft',
+				post.status === 'published' && post.publishedAt
+					? `published ${formatDate(post.publishedAt)}`
+					: `created ${formatDate(post.createdAt)}`
+			]}
+		/>
 	</div>
 
-	<AdminByline
-		sections={[
-			postTypeLabels[post.postType] || post.postType,
-			post.status === 'published' ? 'Published' : 'Draft',
-			post.status === 'published' && post.publishedAt
-				? `published ${formatDate(post.publishedAt)}`
-				: `created ${formatDate(post.createdAt)}`
-		]}
-	/>
+	<div class="dropdown-container">
+		<button class="action-button" onclick={handleToggleDropdown} aria-label="Post actions">
+			<svg
+				width="20"
+				height="20"
+				viewBox="0 0 20 20"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<circle cx="10" cy="4" r="1.5" fill="currentColor" />
+				<circle cx="10" cy="10" r="1.5" fill="currentColor" />
+				<circle cx="10" cy="16" r="1.5" fill="currentColor" />
+			</svg>
+		</button>
+
+		{#if isDropdownOpen}
+			<div class="dropdown-menu">
+				<button class="dropdown-item" onclick={handleEdit}>Edit post</button>
+				<button class="dropdown-item" onclick={handleTogglePublish}>
+					{post.status === 'published' ? 'Unpublish' : 'Publish'} post
+				</button>
+				<div class="dropdown-divider"></div>
+				<button class="dropdown-item danger" onclick={handleDelete}>Delete post</button>
+			</div>
+		{/if}
+	</div>
 </article>
 
 <style lang="scss">
@@ -123,12 +197,21 @@
 		cursor: pointer;
 		transition: all 0.2s ease;
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
+		align-items: flex-start;
 		gap: $unit-2x;
 
 		&:hover {
 			background: $grey-95;
 		}
+	}
+
+	.post-main {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-2x;
+		min-width: 0;
 	}
 
 	.post-title {
@@ -161,6 +244,70 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.dropdown-container {
+		position: relative;
+		flex-shrink: 0;
+	}
+
+	.action-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		background: transparent;
+		border: none;
+		border-radius: $unit;
+		cursor: pointer;
+		color: $grey-30;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.05);
+		}
+	}
+
+	.dropdown-menu {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		margin-top: $unit-half;
+		background: white;
+		border: 1px solid $grey-85;
+		border-radius: $unit;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+		overflow: hidden;
+		min-width: 180px;
+		z-index: 10;
+	}
+
+	.dropdown-item {
+		width: 100%;
+		padding: $unit-2x $unit-3x;
+		background: none;
+		border: none;
+		text-align: left;
+		font-size: 0.875rem;
+		color: $grey-20;
+		cursor: pointer;
+		transition: background-color 0.2s ease;
+
+		&:hover {
+			background-color: $grey-95;
+		}
+
+		&.danger {
+			color: $red-60;
+		}
+	}
+
+	.dropdown-divider {
+		height: 1px;
+		background-color: $grey-90;
+		margin: $unit-half 0;
 	}
 
 	// Responsive adjustments

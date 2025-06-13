@@ -36,6 +36,7 @@
 	// Filter state
 	let selectedTypeFilter = $state<string>('all')
 	let selectedStatusFilter = $state<string>('all')
+	let sortBy = $state<string>('newest')
 
 	// Create filter options
 	const typeFilterOptions = $derived([
@@ -49,6 +50,17 @@
 		{ value: 'published', label: 'Published' },
 		{ value: 'draft', label: 'Draft' }
 	])
+
+	const sortOptions = [
+		{ value: 'newest', label: 'Newest first' },
+		{ value: 'oldest', label: 'Oldest first' },
+		{ value: 'title-asc', label: 'Title (A-Z)' },
+		{ value: 'title-desc', label: 'Title (Z-A)' },
+		{ value: 'year-desc', label: 'Year (newest)' },
+		{ value: 'year-asc', label: 'Year (oldest)' },
+		{ value: 'status-published', label: 'Published first' },
+		{ value: 'status-draft', label: 'Draft first' }
+	]
 
 	onMount(async () => {
 		await loadProjects()
@@ -96,8 +108,8 @@
 			}
 			statusCounts = counts
 
-			// Apply initial filter
-			applyFilter()
+			// Apply initial filter and sort
+			applyFilterAndSort()
 		} catch (err) {
 			error = 'Failed to load projects'
 			console.error(err)
@@ -166,8 +178,8 @@
 		projectToDelete = null
 	}
 
-	function applyFilter() {
-		let filtered = projects
+	function applyFilterAndSort() {
+		let filtered = [...projects]
 
 		// Apply status filter
 		if (selectedStatusFilter !== 'all') {
@@ -179,15 +191,54 @@
 			filtered = filtered.filter((project) => project.projectType === selectedTypeFilter)
 		}
 
+		// Apply sorting
+		switch (sortBy) {
+			case 'oldest':
+				filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+				break
+			case 'title-asc':
+				filtered.sort((a, b) => a.title.localeCompare(b.title))
+				break
+			case 'title-desc':
+				filtered.sort((a, b) => b.title.localeCompare(a.title))
+				break
+			case 'year-desc':
+				filtered.sort((a, b) => b.year - a.year)
+				break
+			case 'year-asc':
+				filtered.sort((a, b) => a.year - b.year)
+				break
+			case 'status-published':
+				filtered.sort((a, b) => {
+					if (a.status === b.status) return 0
+					return a.status === 'published' ? -1 : 1
+				})
+				break
+			case 'status-draft':
+				filtered.sort((a, b) => {
+					if (a.status === b.status) return 0
+					return a.status === 'draft' ? -1 : 1
+				})
+				break
+			case 'newest':
+			default:
+				filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+				break
+		}
+
 		filteredProjects = filtered
 	}
 
 	function handleStatusFilterChange() {
-		applyFilter()
+		applyFilterAndSort()
 	}
 
 	function handleTypeFilterChange() {
-		applyFilter()
+		applyFilterAndSort()
+	}
+
+	function handleSortChange() {
+		applyFilterAndSort()
 	}
 </script>
 
@@ -217,6 +268,15 @@
 					size="small"
 					variant="minimal"
 					onchange={handleStatusFilterChange}
+				/>
+			{/snippet}
+			{#snippet right()}
+				<Select
+					bind:value={sortBy}
+					options={sortOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleSortChange}
 				/>
 			{/snippet}
 		</AdminFilters>
