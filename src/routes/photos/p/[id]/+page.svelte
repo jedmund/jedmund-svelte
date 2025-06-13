@@ -7,6 +7,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import { spring } from 'svelte/motion'
+	import { getCurrentMousePosition } from '$lib/stores/mouse'
 	import type { PageData } from './$types'
 	import { isAlbum } from '$lib/types/photos'
 	import ArrowLeft from '$icons/arrow-left.svg'
@@ -139,7 +140,10 @@
 				rightButtonCoords.set({ x: defaultRightX, y: centerY }, { hard: true })
 				
 				// Check if mouse is already in a hover zone
-				checkInitialMousePosition(pageContainer, imageRect, pageRect)
+				// Small delay to ensure mouse store is initialized
+				setTimeout(() => {
+					checkInitialMousePosition(pageContainer, imageRect, pageRect)
+				}, 10)
 			} else {
 				// If image not loaded yet, try again
 				setTimeout(checkAndSetPositions, 50)
@@ -149,9 +153,49 @@
 		checkAndSetPositions()
 	})
 	
-	// We'll just remove the initial check for now
+	// Check mouse position on load
 	function checkInitialMousePosition(pageContainer: HTMLElement, imageRect: DOMRect, pageRect: DOMRect) {
-		// This will be handled by the first mouse move
+		// Get current mouse position from store
+		const currentPos = getCurrentMousePosition()
+		
+		// If no mouse position tracked yet, try to trigger one
+		if (currentPos.x === 0 && currentPos.y === 0) {
+			// Set up a one-time listener for the first mouse move
+			const handleFirstMove = (e: MouseEvent) => {
+				const x = e.clientX
+				const mouseX = e.clientX - pageRect.left
+				const mouseY = e.clientY - pageRect.top
+				
+				// Check if mouse is in hover zones
+				if (x < imageRect.left) {
+					isHoveringLeft = true
+					leftButtonCoords.set({ x: mouseX, y: mouseY })
+				} else if (x > imageRect.right) {
+					isHoveringRight = true
+					rightButtonCoords.set({ x: mouseX, y: mouseY })
+				}
+				
+				// Remove the listener
+				window.removeEventListener('mousemove', handleFirstMove)
+			}
+			
+			window.addEventListener('mousemove', handleFirstMove)
+			return
+		}
+		
+		// We have a mouse position, check if it's in a hover zone
+		const x = currentPos.x
+		const mouseX = currentPos.x - pageRect.left
+		const mouseY = currentPos.y - pageRect.top
+		
+		// Check if mouse is in hover zones
+		if (x < imageRect.left) {
+			isHoveringLeft = true
+			leftButtonCoords.set({ x: mouseX, y: mouseY })
+		} else if (x > imageRect.right) {
+			isHoveringRight = true
+			rightButtonCoords.set({ x: mouseX, y: mouseY })
+		}
 	}
 
 	// Mouse tracking for hover areas
