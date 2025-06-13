@@ -308,14 +308,18 @@
 
 		// URL Embed styles
 		:global(.url-embed-rendered) {
-			margin: $unit-4x 0;
-			max-width: 600px;
+			margin: $unit-2x 0;
+			width: 100%;
+
+			&:first-child {
+				margin-top: 0;
+			}
 		}
 
 		:global(.url-embed-link) {
 			display: flex;
 			background: $grey-95;
-			border-radius: 8px;
+			border-radius: $card-corner-radius;
 			overflow: hidden;
 			border: 1px solid $grey-85;
 			text-decoration: none;
@@ -324,6 +328,7 @@
 			&:hover {
 				border-color: $grey-60;
 				transform: translateY(-1px);
+				text-decoration: none;
 				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 			}
 		}
@@ -331,15 +336,14 @@
 		:global(.url-embed-image) {
 			flex-shrink: 0;
 			width: 200px;
-			height: 150px;
 			overflow: hidden;
 			background: $grey-90;
+		}
 
-			img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-			}
+		:global(.url-embed-image img) {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
 		}
 
 		:global(.url-embed-text) {

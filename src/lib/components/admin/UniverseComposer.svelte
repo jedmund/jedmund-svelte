@@ -29,7 +29,7 @@
 		content: [{ type: 'paragraph' }]
 	}
 	let characterCount = 0
-	let editorInstance: Editor
+	let editorInstance: CaseStudyEditor
 
 	// Essay metadata
 	let essayTitle = ''
