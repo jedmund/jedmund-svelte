@@ -100,8 +100,8 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 				},
 			convertLinkToEmbed:
 				(pos) =>
-				({ state, dispatch }) => {
-					const { doc, schema, tr } = state
+				({ state, commands, chain }) => {
+					const { doc } = state
 					
 					// Find the link mark at the given position
 					const $pos = doc.resolve(pos)
@@ -131,15 +131,20 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 						}
 					})
 					
-					// Create the embed node
-					const node = schema.nodes.urlEmbedPlaceholder.create({ url })
-					
-					// Replace the range with the embed
-					if (dispatch) {
-						dispatch(tr.replaceRangeWith(from, to, node))
-					}
-					
-					return true
+					// Use Tiptap's chain commands to replace content
+					return chain()
+						.focus()
+						.deleteRange({ from, to })
+						.insertContent([
+							{
+								type: 'urlEmbedPlaceholder',
+								attrs: { url }
+							},
+							{
+								type: 'paragraph'
+							}
+						])
+						.run()
 				}
 		}
 	},

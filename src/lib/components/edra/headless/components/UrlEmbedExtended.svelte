@@ -5,12 +5,31 @@
 	import EmbedContextMenu from './EmbedContextMenu.svelte'
 
 	const { editor, node, deleteNode, getPos, selected }: NodeViewProps = $props()
-	
+
 	let loading = $state(false)
 	let showActions = $state(false)
 	let showContextMenu = $state(false)
 	let contextMenuPosition = $state({ x: 0, y: 0 })
-	
+
+	// Check if this is a YouTube URL
+	const isYouTube = $derived(/(?:youtube\.com|youtu\.be)/.test(node.attrs.url || ''))
+
+	// Extract video ID from YouTube URL
+	const getYouTubeVideoId = (url: string): string | null => {
+		const patterns = [
+			/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+			/youtube\.com\/watch\?.*v=([^&\n?#]+)/
+		]
+
+		for (const pattern of patterns) {
+			const match = url.match(pattern)
+			if (match && match[1]) {
+				return match[1]
+			}
+		}
+		return null
+	}
+
 	const getDomain = (url: string) => {
 		try {
 			const urlObj = new URL(url)
@@ -19,7 +38,7 @@
 			return ''
 		}
 	}
-	
+
 	const decodeHtmlEntities = (text: string) => {
 		if (!text) return ''
 		const textarea = document.createElement('textarea')
@@ -32,13 +51,15 @@
 		loading = true
 
 		try {
-			const response = await fetch(`/api/og-metadata?url=${encodeURIComponent(node.attrs.url)}&refresh=true`)
+			const response = await fetch(
+				`/api/og-metadata?url=${encodeURIComponent(node.attrs.url)}&refresh=true`
+			)
 			if (!response.ok) {
 				throw new Error('Failed to fetch metadata')
 			}
 
 			const metadata = await response.json()
-			
+
 			// Update the node attributes
 			const pos = getPos()
 			if (typeof pos === 'number') {
@@ -72,20 +93,20 @@
 			deleteNode()
 		}
 	}
-	
+
 	function convertToLink() {
 		const pos = getPos()
 		if (typeof pos !== 'number') return
-		
+
 		// Get the URL and title
 		const url = node.attrs.url
 		if (!url) {
 			console.error('No URL found in embed node')
 			return
 		}
-		
+
 		const text = node.attrs.title || url
-		
+
 		// Delete the embed node and insert a link
 		editor
 			.chain()
@@ -107,10 +128,10 @@
 			})
 			.run()
 	}
-	
+
 	function handleContextMenu(event: MouseEvent) {
 		if (!editor.isEditable) return
-		
+
 		event.preventDefault()
 		contextMenuPosition = {
 			x: event.clientX,
@@ -118,75 +139,128 @@
 		}
 		showContextMenu = true
 	}
-	
+
 	function copyLink() {
 		if (node.attrs.url) {
 			navigator.clipboard.writeText(node.attrs.url)
 		}
 		showContextMenu = false
 	}
-	
+
 	function dismissContextMenu() {
 		showContextMenu = false
 	}
 </script>
 
-<NodeViewWrapper 
-	class="edra-url-embed-wrapper {selected ? 'selected' : ''}" 
+<NodeViewWrapper
+	class="edra-url-embed-wrapper {selected ? 'selected' : ''}"
 	contenteditable={false}
 	data-drag-handle
 >
-	<div 
-		class="edra-url-embed-card"
-		onmouseenter={() => showActions = true}
-		onmouseleave={() => showActions = false}
-		onkeydown={handleKeydown}
-		oncontextmenu={handleContextMenu}
-		tabindex="0"
-		role="article"
-	>
-		{#if showActions && editor.isEditable}
-			<div class="edra-url-embed-actions">
-				<button
-					onclick={(e) => {
-						e.stopPropagation()
-						const rect = e.currentTarget.getBoundingClientRect()
-						contextMenuPosition = {
-							x: rect.left,
-							y: rect.bottom + 4
-						}
-						showContextMenu = true
-					}}
-					class="edra-url-embed-action-button edra-url-embed-menu-button"
-					title="More options"
-				>
-					<MoreHorizontal />
-				</button>
-			</div>
-		{/if}
-
-		<button class="edra-url-embed-content" onclick={openLink}>
-			{#if node.attrs.image}
-				<div class="edra-url-embed-image">
-					<img src={node.attrs.image} alt={node.attrs.title || 'Link preview'} />
+	{#if isYouTube}
+		{@const videoId = getYouTubeVideoId(node.attrs.url || '')}
+		<div
+			class="edra-youtube-embed-card"
+			onmouseenter={() => (showActions = true)}
+			onmouseleave={() => (showActions = false)}
+			onkeydown={handleKeydown}
+			oncontextmenu={handleContextMenu}
+			tabindex="0"
+			role="article"
+		>
+			{#if showActions && editor.isEditable}
+				<div class="edra-youtube-embed-actions">
+					<button
+						onclick={(e) => {
+							e.stopPropagation()
+							const rect = e.currentTarget.getBoundingClientRect()
+							contextMenuPosition = {
+								x: rect.left,
+								y: rect.bottom + 4
+							}
+							showContextMenu = true
+						}}
+						class="edra-youtube-embed-action-button"
+						title="More options"
+					>
+						<MoreHorizontal />
+					</button>
 				</div>
 			{/if}
-			<div class="edra-url-embed-text">
-				<div class="edra-url-embed-meta">
-					{#if node.attrs.favicon}
-						<img src={node.attrs.favicon} alt="" class="edra-url-embed-favicon" />
-					{/if}
-					<span class="edra-url-embed-domain">{node.attrs.siteName ? decodeHtmlEntities(node.attrs.siteName) : getDomain(node.attrs.url)}</span>
+
+			{#if videoId}
+				<div class="edra-youtube-embed-player">
+					<iframe
+						src="https://www.youtube.com/embed/{videoId}"
+						frameborder="0"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+						allowfullscreen
+						title="YouTube video player"
+					></iframe>
 				</div>
-				{#if node.attrs.title}
-					<h3 class="edra-url-embed-title">{decodeHtmlEntities(node.attrs.title)}</h3>
+			{:else}
+				<div class="edra-youtube-embed-error">
+					<p>Invalid YouTube URL</p>
+				</div>
+			{/if}
+		</div>
+	{:else}
+		<div
+			class="edra-url-embed-card"
+			onmouseenter={() => (showActions = true)}
+			onmouseleave={() => (showActions = false)}
+			onkeydown={handleKeydown}
+			oncontextmenu={handleContextMenu}
+			tabindex="0"
+			role="article"
+		>
+			{#if showActions && editor.isEditable}
+				<div class="edra-url-embed-actions">
+					<button
+						onclick={(e) => {
+							e.stopPropagation()
+							const rect = e.currentTarget.getBoundingClientRect()
+							contextMenuPosition = {
+								x: rect.left,
+								y: rect.bottom + 4
+							}
+							showContextMenu = true
+						}}
+						class="edra-url-embed-action-button edra-url-embed-menu-button"
+						title="More options"
+					>
+						<MoreHorizontal />
+					</button>
+				</div>
+			{/if}
+
+			<button class="edra-url-embed-content" onclick={openLink}>
+				{#if node.attrs.image}
+					<div class="edra-url-embed-image">
+						<img src={node.attrs.image} alt={node.attrs.title || 'Link preview'} />
+					</div>
 				{/if}
-				{#if node.attrs.description}
-					<p class="edra-url-embed-description">{decodeHtmlEntities(node.attrs.description)}</p>
-				{/if}
-			</div>
-		</button>
-	</div>
+				<div class="edra-url-embed-text">
+					<div class="edra-url-embed-meta">
+						{#if node.attrs.favicon}
+							<img src={node.attrs.favicon} alt="" class="edra-url-embed-favicon" />
+						{/if}
+						<span class="edra-url-embed-domain"
+							>{node.attrs.siteName
+								? decodeHtmlEntities(node.attrs.siteName)
+								: getDomain(node.attrs.url)}</span
+						>
+					</div>
+					{#if node.attrs.title}
+						<h3 class="edra-url-embed-title">{decodeHtmlEntities(node.attrs.title)}</h3>
+					{/if}
+					{#if node.attrs.description}
+						<p class="edra-url-embed-description">{decodeHtmlEntities(node.attrs.description)}</p>
+					{/if}
+				</div>
+			</button>
+		</div>
+	{/if}
 </NodeViewWrapper>
 
 {#if showContextMenu}
@@ -385,6 +459,88 @@
 
 	.animate-spin {
 		animation: spin 1s linear infinite;
+	}
+
+	/* YouTube embed styles */
+	.edra-youtube-embed-card {
+		position: relative;
+		width: 100%;
+		margin: 0 auto;
+	}
+
+	.edra-youtube-embed-actions {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		display: flex;
+		gap: 0.25rem;
+		background: white;
+		padding: 0.25rem;
+		border-radius: 6px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		z-index: 10;
+	}
+
+	.edra-youtube-embed-action-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		background: transparent;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: all 0.2s;
+		color: $grey-40;
+
+		&:hover {
+			background: $grey-95;
+			color: $grey-20;
+		}
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.edra-youtube-embed-player {
+		position: relative;
+		padding-bottom: 56.25%; // 16:9 aspect ratio
+		height: 0;
+		overflow: hidden;
+		background: $grey-95;
+		border-radius: $corner-radius;
+		border: 1px solid $grey-85;
+
+		iframe {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			border: none;
+			border-radius: $corner-radius;
+		}
+	}
+
+	.edra-youtube-embed-error {
+		padding: 3rem;
+		text-align: center;
+		background: $grey-95;
+		border: 1px solid $grey-85;
+		border-radius: $corner-radius;
+		color: $grey-40;
+	}
+
+	.edra-url-embed-wrapper.selected {
+		.edra-youtube-embed-player,
+		.edra-youtube-embed-error {
+			border-color: $primary-color;
+			box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+		}
 	}
 
 	/* Mobile styles */

@@ -25,6 +25,43 @@ export const GET: RequestHandler = async ({ url }) => {
 			console.log(`Force refresh requested for ${targetUrl}`)
 		}
 
+		// For YouTube URLs, we can construct metadata without fetching
+		const isYouTube = /(?:youtube\.com|youtu\.be)/.test(targetUrl)
+		if (isYouTube) {
+			// Extract video ID
+			const patterns = [
+				/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+				/youtube\.com\/watch\?.*v=([^&\n?#]+)/
+			]
+			
+			let videoId = null
+			for (const pattern of patterns) {
+				const match = targetUrl.match(pattern)
+				if (match && match[1]) {
+					videoId = match[1]
+					break
+				}
+			}
+
+			if (videoId) {
+				// Return YouTube-specific metadata
+				const ogData = {
+					url: targetUrl,
+					title: 'YouTube Video',
+					description: 'Watch this video on YouTube',
+					image: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+					favicon: 'https://www.youtube.com/favicon.ico',
+					siteName: 'YouTube'
+				}
+
+				// Cache for 24 hours (86400 seconds)
+				await redis.set(cacheKey, JSON.stringify(ogData), 'EX', 86400)
+				console.log(`Cached YouTube metadata for ${targetUrl}`)
+
+				return json(ogData)
+			}
+		}
+
 		// Fetch the HTML content
 		const response = await fetch(targetUrl, {
 			headers: {
@@ -161,6 +198,53 @@ export const POST: RequestHandler = async ({ request }) => {
 					}
 				}
 			})
+		}
+
+		// For YouTube URLs, we can construct metadata without fetching
+		const isYouTube = /(?:youtube\.com|youtu\.be)/.test(targetUrl)
+		if (isYouTube) {
+			// Extract video ID
+			const patterns = [
+				/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+				/youtube\.com\/watch\?.*v=([^&\n?#]+)/
+			]
+			
+			let videoId = null
+			for (const pattern of patterns) {
+				const match = targetUrl.match(pattern)
+				if (match && match[1]) {
+					videoId = match[1]
+					break
+				}
+			}
+
+			if (videoId) {
+				// Return YouTube-specific metadata
+				const ogData = {
+					url: targetUrl,
+					title: 'YouTube Video',
+					description: 'Watch this video on YouTube',
+					image: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+					siteName: 'YouTube',
+					favicon: 'https://www.youtube.com/favicon.ico'
+				}
+
+				// Cache for 24 hours (86400 seconds)
+				await redis.set(cacheKey, JSON.stringify(ogData), 'EX', 86400)
+				console.log(`Cached YouTube metadata for ${targetUrl} (POST)`)
+
+				return json({
+					success: 1,
+					link: targetUrl,
+					meta: {
+						title: ogData.title || '',
+						description: ogData.description || '',
+						image: {
+							url: ogData.image || ''
+						}
+					}
+				})
+			}
 		}
 
 		// Fetch the HTML content

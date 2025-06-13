@@ -35,17 +35,22 @@
 					.focus()
 					.insertContentAt(
 						{ from: pos, to: pos + node.nodeSize },
-						{
-							type: 'urlEmbed',
-							attrs: {
-								url: url,
-								title: metadata.title,
-								description: metadata.description,
-								image: metadata.image,
-								favicon: metadata.favicon,
-								siteName: metadata.siteName
+						[
+							{
+								type: 'urlEmbed',
+								attrs: {
+									url: url,
+									title: metadata.title,
+									description: metadata.description,
+									image: metadata.image,
+									favicon: metadata.favicon,
+									siteName: metadata.siteName
+								}
+							},
+							{
+								type: 'paragraph'
 							}
-						}
+						]
 					)
 					.run()
 			}

@@ -398,6 +398,30 @@
 			overflow: hidden;
 		}
 
+		// YouTube embed styles
+		:global(.url-embed-youtube) {
+			margin: $unit-3x 0;
+			border-radius: $card-corner-radius;
+			overflow: hidden;
+			background: $grey-95;
+		}
+
+		:global(.youtube-embed-wrapper) {
+			position: relative;
+			padding-bottom: 56.25%; // 16:9 aspect ratio
+			height: 0;
+			overflow: hidden;
+		}
+
+		:global(.youtube-embed-wrapper iframe) {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			border: none;
+		}
+
 		// Mobile styles for URL embeds
 		@media (max-width: 640px) {
 			:global(.url-embed-link) {

@@ -175,6 +175,41 @@ function renderTiptapContent(doc: any): string {
 					}
 				}
 				
+				// Helper to extract YouTube video ID
+				const getYouTubeVideoId = (url: string): string | null => {
+					const patterns = [
+						/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+						/youtube\.com\/watch\?.*v=([^&\n?#]+)/
+					]
+					
+					for (const pattern of patterns) {
+						const match = url.match(pattern)
+						if (match && match[1]) {
+							return match[1]
+						}
+					}
+					return null
+				}
+				
+				// Check if it's a YouTube URL
+				const isYouTube = /(?:youtube\.com|youtu\.be)/.test(url)
+				const videoId = isYouTube ? getYouTubeVideoId(url) : null
+				
+				if (isYouTube && videoId) {
+					// Render YouTube embed
+					let embedHtml = '<div class="url-embed-rendered url-embed-youtube">'
+					embedHtml += '<div class="youtube-embed-wrapper">'
+					embedHtml += `<iframe src="https://www.youtube.com/embed/${videoId}" `
+					embedHtml += 'frameborder="0" '
+					embedHtml += 'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
+					embedHtml += 'allowfullscreen>'
+					embedHtml += '</iframe>'
+					embedHtml += '</div>'
+					embedHtml += '</div>'
+					return embedHtml
+				}
+				
+				// Regular URL embed for non-YouTube links
 				let embedHtml = '<div class="url-embed-rendered">'
 				embedHtml += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="url-embed-link">`
 				
