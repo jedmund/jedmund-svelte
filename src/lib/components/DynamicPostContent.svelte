@@ -318,24 +318,26 @@
 
 		:global(.url-embed-link) {
 			display: flex;
-			background: $grey-95;
+			flex-direction: column;
+			background: $grey-97;
 			border-radius: $card-corner-radius;
 			overflow: hidden;
-			border: 1px solid $grey-85;
+			border: 1px solid $grey-80;
 			text-decoration: none;
 			transition: all 0.2s ease;
+			width: 100%;
 
 			&:hover {
-				border-color: $grey-60;
+				border-color: $grey-80;
 				transform: translateY(-1px);
 				text-decoration: none;
-				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+				box-shadow: 0 0px 8px rgba(0, 0, 0, 0.08);
 			}
 		}
 
 		:global(.url-embed-image) {
-			flex-shrink: 0;
-			width: 200px;
+			width: 100%;
+			aspect-ratio: 2 / 1;
 			overflow: hidden;
 			background: $grey-90;
 		}
@@ -348,7 +350,7 @@
 
 		:global(.url-embed-text) {
 			flex: 1;
-			padding: $unit-3x;
+			padding: $unit-2x $unit-3x $unit-3x;
 			display: flex;
 			flex-direction: column;
 			gap: $unit;
@@ -358,8 +360,8 @@
 		:global(.url-embed-meta) {
 			display: flex;
 			align-items: center;
-			gap: $unit;
-			font-size: 0.75rem;
+			gap: $unit-half;
+			font-size: 0.8125rem;
 			color: $grey-40;
 		}
 
@@ -373,11 +375,12 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+			text-transform: lowercase;
 		}
 
 		:global(.url-embed-title) {
 			margin: 0;
-			font-size: 1rem;
+			font-size: 1.125rem;
 			font-weight: 600;
 			color: $grey-10;
 			line-height: 1.3;
@@ -389,12 +392,12 @@
 
 		:global(.url-embed-description) {
 			margin: 0;
-			font-size: 0.875rem;
+			font-size: 0.9375rem;
 			color: $grey-30;
-			line-height: 1.4;
+			line-height: 1.5;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
-			-webkit-line-clamp: 2;
+			-webkit-line-clamp: 3;
 			overflow: hidden;
 		}
 
@@ -420,18 +423,6 @@
 			width: 100%;
 			height: 100%;
 			border: none;
-		}
-
-		// Mobile styles for URL embeds
-		@media (max-width: 640px) {
-			:global(.url-embed-link) {
-				flex-direction: column;
-			}
-
-			:global(.url-embed-image) {
-				width: 100%;
-				height: 200px;
-			}
 		}
 	}
 </style>
