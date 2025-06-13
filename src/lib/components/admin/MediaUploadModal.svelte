@@ -174,26 +174,6 @@
 							<div class="file-info">
 								<div class="file-name">{file.name}</div>
 								<div class="file-size">{formatFileSize(file.size)}</div>
-
-								{#if isUploading}
-									<div class="progress-bar">
-										<div
-											class="progress-fill"
-											style="width: {uploadProgress[file.name] || 0}%"
-										></div>
-									</div>
-									<div class="upload-status">
-										{#if uploadProgress[file.name] === 100}
-											<span class="status-complete">✓ Complete</span>
-										{:else if uploadProgress[file.name] > 0}
-											<span class="status-uploading"
-												>{Math.round(uploadProgress[file.name] || 0)}%</span
-											>
-										{:else}
-											<span class="status-waiting">Waiting...</span>
-										{/if}
-									</div>
-								{/if}
 							</div>
 
 							{#if !isUploading}
@@ -202,6 +182,7 @@
 									class="remove-button"
 									onclick={() => removeFile(index)}
 									title="Remove file"
+									aria-label="Remove file"
 								>
 									<svg
 										width="16"
@@ -215,6 +196,26 @@
 										<line x1="6" y1="6" x2="18" y2="18"></line>
 									</svg>
 								</button>
+							{/if}
+
+							{#if isUploading}
+								<div class="progress-bar-container">
+									<div class="progress-bar">
+										<div
+											class="progress-fill"
+											style="width: {uploadProgress[file.name] || 0}%"
+										></div>
+									</div>
+									<div class="upload-status">
+										{#if uploadProgress[file.name] > 0}
+											<span class="status-uploading"
+												>{Math.round(uploadProgress[file.name] || 0)}%</span
+											>
+										{:else}
+											<span class="status-waiting">Waiting...</span>
+										{/if}
+									</div>
+								</div>
 							{/if}
 						</div>
 					{/each}
@@ -584,17 +585,26 @@
 		}
 	}
 
+	.progress-bar-container {
+		display: flex;
+		min-width: 120px;
+		align-items: center;
+		gap: $unit;
+	}
+
 	.progress-bar {
-		width: 100%;
-		height: 6px;
-		background: $grey-90;
-		border-radius: 3px;
+		flex-grow: 1;
+		height: $unit-2x;
+		background: $grey-100;
+		padding: $unit-half;
+		border-radius: $corner-radius-full;
+		border: 1px solid $grey-85;
 		overflow: hidden;
-		margin-bottom: $unit-half;
 
 		.progress-fill {
+			border-radius: $corner-radius-full;
 			height: 100%;
-			background: #3b82f6;
+			background: $red-60;
 			transition: width 0.3s ease;
 			position: relative;
 
@@ -634,7 +644,7 @@
 		}
 
 		.status-uploading {
-			color: #3b82f6;
+			color: $red-60;
 		}
 
 		.status-waiting {
