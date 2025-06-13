@@ -1,14 +1,30 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
+import redis from '../redis-client'
 
 export const GET: RequestHandler = async ({ url }) => {
 	const targetUrl = url.searchParams.get('url')
+	const forceRefresh = url.searchParams.get('refresh') === 'true'
 
 	if (!targetUrl) {
 		return json({ error: 'URL parameter is required' }, { status: 400 })
 	}
 
 	try {
+		// Check cache first (unless force refresh is requested)
+		const cacheKey = `og-metadata:${targetUrl}`
+		
+		if (!forceRefresh) {
+			const cached = await redis.get(cacheKey)
+			
+			if (cached) {
+				console.log(`Cache hit for ${targetUrl}`)
+				return json(JSON.parse(cached))
+			}
+		} else {
+			console.log(`Force refresh requested for ${targetUrl}`)
+		}
+
 		// Fetch the HTML content
 		const response = await fetch(targetUrl, {
 			headers: {
@@ -32,6 +48,10 @@ export const GET: RequestHandler = async ({ url }) => {
 			siteName: extractMetaContent(html, 'og:site_name'),
 			favicon: extractFavicon(targetUrl, html)
 		}
+
+		// Cache for 24 hours (86400 seconds)
+		await redis.set(cacheKey, JSON.stringify(ogData), 'EX', 86400)
+		console.log(`Cached metadata for ${targetUrl}`)
 
 		return json(ogData)
 	} catch (error) {
@@ -123,6 +143,26 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
+		// Check cache first - using same cache key format
+		const cacheKey = `og-metadata:${targetUrl}`
+		const cached = await redis.get(cacheKey)
+		
+		if (cached) {
+			console.log(`Cache hit for ${targetUrl} (POST)`)
+			const ogData = JSON.parse(cached)
+			return json({
+				success: 1,
+				link: targetUrl,
+				meta: {
+					title: ogData.title || '',
+					description: ogData.description || '',
+					image: {
+						url: ogData.image || ''
+					}
+				}
+			})
+		}
+
 		// Fetch the HTML content
 		const response = await fetch(targetUrl, {
 			headers: {
@@ -136,11 +176,25 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		const html = await response.text()
 
-		// Parse OpenGraph tags and return in Editor.js format
+		// Parse OpenGraph tags
 		const title = extractMetaContent(html, 'og:title') || extractTitle(html)
 		const description =
 			extractMetaContent(html, 'og:description') || extractMetaContent(html, 'description')
 		const image = extractMetaContent(html, 'og:image')
+		const siteName = extractMetaContent(html, 'og:site_name')
+		const favicon = extractFavicon(targetUrl, html)
+
+		// Cache the data in the same format as GET
+		const ogData = {
+			url: targetUrl,
+			title,
+			description,
+			image,
+			siteName,
+			favicon
+		}
+		await redis.set(cacheKey, JSON.stringify(ogData), 'EX', 86400)
+		console.log(`Cached metadata for ${targetUrl} (POST)`)
 
 		return json({
 			success: 1,
