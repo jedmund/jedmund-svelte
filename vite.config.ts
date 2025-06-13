@@ -60,10 +60,7 @@ export default defineConfig({
 		preprocessorOptions: {
 			scss: {
 				additionalData: `
-          @import './src/assets/styles/variables.scss';
-          @import './src/assets/styles/fonts.scss';
-          @import './src/assets/styles/themes.scss';
-          @import './src/assets/styles/globals.scss';
+          @import './src/assets/styles/imports.scss';
         `,
 				api: 'modern-compiler'
 			}

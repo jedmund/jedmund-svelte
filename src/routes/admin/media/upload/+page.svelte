@@ -481,13 +481,6 @@
 			font-size: 0.875rem;
 			color: $grey-50;
 		}
-
-		.file-count {
-			strong {
-				color: $grey-20;
-				font-size: 1.1rem;
-			}
-		}
 	}
 
 	.hidden-input {

@@ -1,0 +1,3 @@
+/* Global styles for the entire application */
+@import './assets/styles/reset.css';
+@import './assets/styles/globals.scss';

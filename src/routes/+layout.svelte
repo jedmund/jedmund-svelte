@@ -1,8 +1,11 @@
 <script lang="ts">
+	import '../app.css'
 	import { page } from '$app/stores'
 	import Header from '$components/Header.svelte'
 	import Footer from '$components/Footer.svelte'
 	import { generatePersonJsonLd } from '$lib/utils/metadata'
+
+	let { children } = $props()
 
 	const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'))
 
@@ -33,7 +36,7 @@
 	{/if}
 
 	<main class:admin-route={isAdminRoute}>
-		<slot />
+		{@render children()}
 	</main>
 
 	{#if !isAdminRoute}
@@ -42,9 +45,6 @@
 </div>
 
 <style lang="scss">
-	@import '../assets/styles/reset.css';
-	@import '../assets/styles/globals.scss';
-
 	:global(html) {
 		background: var(--bg-color);
 		color: var(--text-color);
