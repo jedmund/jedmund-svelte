@@ -38,6 +38,15 @@
 	import GalleryPlaceholderComponent from '$lib/components/edra/headless/components/GalleryPlaceholder.svelte'
 	import { GalleryExtended } from '$lib/components/edra/extensions/gallery/GalleryExtended.js'
 	import GalleryExtendedComponent from '$lib/components/edra/headless/components/GalleryExtended.svelte'
+	import { UrlEmbed } from '$lib/components/edra/extensions/url-embed/UrlEmbed.js'
+	import { UrlEmbedPlaceholder } from '$lib/components/edra/extensions/url-embed/UrlEmbedPlaceholder.js'
+	import UrlEmbedPlaceholderComponent from '$lib/components/edra/headless/components/UrlEmbedPlaceholder.svelte'
+	import { UrlEmbedExtended } from '$lib/components/edra/extensions/url-embed/UrlEmbedExtended.js'
+	import UrlEmbedExtendedComponent from '$lib/components/edra/headless/components/UrlEmbedExtended.svelte'
+	import { LinkContextMenu } from '$lib/components/edra/extensions/link-context-menu/LinkContextMenu.js'
+	import UrlConvertDropdown from '$lib/components/edra/headless/components/UrlConvertDropdown.svelte'
+	import LinkContextMenuComponent from '$lib/components/edra/headless/components/LinkContextMenu.svelte'
+	import LinkEditDialog from '$lib/components/edra/headless/components/LinkEditDialog.svelte'
 
 	// Import Edra styles
 	import '$lib/components/edra/headless/style.css'
@@ -74,6 +83,23 @@
 	let mediaDropdownTriggerRef = $state<HTMLElement>()
 	let dropdownPosition = $state({ top: 0, left: 0 })
 	let mediaDropdownPosition = $state({ top: 0, left: 0 })
+	
+	// URL convert dropdown state
+	let showUrlConvertDropdown = $state(false)
+	let urlConvertDropdownPosition = $state({ x: 0, y: 0 })
+	let urlConvertPos = $state<number | null>(null)
+	
+	// Link context menu state
+	let showLinkContextMenu = $state(false)
+	let linkContextMenuPosition = $state({ x: 0, y: 0 })
+	let linkContextUrl = $state<string | null>(null)
+	let linkContextPos = $state<number | null>(null)
+	
+	// Link edit dialog state
+	let showLinkEditDialog = $state(false)
+	let linkEditDialogPosition = $state({ x: 0, y: 0 })
+	let linkEditUrl = $state<string>('')
+	let linkEditPos = $state<number | null>(null)
 
 	// Filter out unwanted commands
 	const getFilteredCommands = () => {
@@ -203,10 +229,103 @@
 		if (!mediaDropdownTriggerRef?.contains(target) && !target.closest('.media-dropdown-portal')) {
 			showMediaDropdown = false
 		}
+		if (!target.closest('.url-convert-dropdown')) {
+			showUrlConvertDropdown = false
+		}
+		if (!target.closest('.link-context-menu')) {
+			showLinkContextMenu = false
+		}
+		if (!target.closest('.link-edit-dialog')) {
+			showLinkEditDialog = false
+		}
+	}
+	
+	// Handle URL convert dropdown
+	const handleShowUrlConvertDropdown = (pos: number, url: string) => {
+		if (!editor) return
+		
+		// Get the cursor coordinates
+		const coords = editor.view.coordsAtPos(pos)
+		urlConvertDropdownPosition = { x: coords.left, y: coords.bottom + 5 }
+		urlConvertPos = pos
+		showUrlConvertDropdown = true
+	}
+	
+	// Handle link context menu
+	const handleShowLinkContextMenu = (pos: number, url: string, coords: { x: number, y: number }) => {
+		if (!editor) return
+		
+		linkContextMenuPosition = { x: coords.x, y: coords.y + 5 }
+		linkContextUrl = url
+		linkContextPos = pos
+		showLinkContextMenu = true
+	}
+	
+	const handleConvertToEmbed = () => {
+		if (!editor || urlConvertPos === null) return
+		
+		editor.commands.convertLinkToEmbed(urlConvertPos)
+		showUrlConvertDropdown = false
+		urlConvertPos = null
+	}
+	
+	const handleConvertLinkToEmbed = () => {
+		if (!editor || linkContextPos === null) return
+		
+		editor.commands.convertLinkToEmbed(linkContextPos)
+		showLinkContextMenu = false
+		linkContextPos = null
+		linkContextUrl = null
+	}
+	
+	const handleEditLink = () => {
+		if (!editor || !linkContextUrl) return
+		
+		linkEditUrl = linkContextUrl
+		linkEditPos = linkContextPos
+		linkEditDialogPosition = { ...linkContextMenuPosition }
+		showLinkEditDialog = true
+		showLinkContextMenu = false
+	}
+	
+	const handleSaveLink = (newUrl: string) => {
+		if (!editor) return
+		
+		editor.chain().focus().extendMarkRange('link').setLink({ href: newUrl }).run()
+		showLinkEditDialog = false
+		linkEditPos = null
+		linkEditUrl = ''
+	}
+	
+	const handleCopyLink = () => {
+		if (!linkContextUrl) return
+		
+		navigator.clipboard.writeText(linkContextUrl)
+		showLinkContextMenu = false
+		linkContextPos = null
+		linkContextUrl = null
+	}
+	
+	const handleRemoveLink = () => {
+		if (!editor) return
+		
+		editor.chain().focus().extendMarkRange('link').unsetLink().run()
+		showLinkContextMenu = false
+		linkContextPos = null
+		linkContextUrl = null
+	}
+	
+	const handleOpenLink = () => {
+		if (!linkContextUrl) return
+		
+		window.open(linkContextUrl, '_blank', 'noopener,noreferrer')
+		showLinkContextMenu = false
+		linkContextPos = null
+		linkContextUrl = null
 	}
 
 	$effect(() => {
-		if (showTextStyleDropdown || showMediaDropdown) {
+		if (showTextStyleDropdown || showMediaDropdown || showUrlConvertDropdown || showLinkContextMenu || showLinkEditDialog) {
 			document.addEventListener('click', handleClickOutside)
 			return () => {
 				document.removeEventListener('click', handleClickOutside)
@@ -349,11 +468,37 @@
 				ImageExtended(ImageExtendedComponent),
 				GalleryExtended(GalleryExtendedComponent),
 				VideoExtended(VideoExtendedComponent),
+				UrlEmbed.configure({
+					onShowDropdown: handleShowUrlConvertDropdown
+				}),
+				UrlEmbedPlaceholder(UrlEmbedPlaceholderComponent),
+				UrlEmbedExtended(UrlEmbedExtendedComponent),
+				LinkContextMenu.configure({
+					onShowContextMenu: handleShowLinkContextMenu
+				}),
 				...(showSlashCommands ? [slashcommand(SlashCommandList)] : [])
 			],
 			{
 				editable,
-				onUpdate,
+				onUpdate: ({ editor: updatedEditor, transaction }) => {
+					// Dismiss URL convert dropdown if user types
+					if (showUrlConvertDropdown && transaction.docChanged) {
+						// Check if the change is actual typing (not just cursor movement)
+						const hasTextChange = transaction.steps.some(step => 
+							step.toJSON().stepType === 'replace' || 
+							step.toJSON().stepType === 'replaceAround'
+						)
+						if (hasTextChange) {
+							showUrlConvertDropdown = false
+							urlConvertPos = null
+						}
+					}
+					
+					// Call the original onUpdate if provided
+					if (onUpdate) {
+						onUpdate({ editor: updatedEditor, transaction })
+					}
+				},
 				editorProps: {
 					attributes: {
 						class: 'prose prose-sm max-w-none focus:outline-none'
@@ -486,7 +631,7 @@
 		</div>
 	{/if}
 	{#if editor}
-		{#if showLinkBubbleMenu}
+		{#if false && showLinkBubbleMenu}
 			<LinkMenu {editor} />
 		{/if}
 		{#if showTableBubbleMenu}
@@ -528,28 +673,7 @@
 					showMediaDropdown = false
 				}}
 			>
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
-					<rect
-						x="3"
-						y="5"
-						width="14"
-						height="10"
-						stroke="currentColor"
-						stroke-width="2"
-						fill="none"
-						rx="1"
-					/>
-					<circle cx="7" cy="9" r="1.5" stroke="currentColor" stroke-width="2" fill="none" />
-					<path
-						d="M3 12L7 8L10 11L13 8L17 12"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						fill="none"
-					/>
-				</svg>
-				<span>Image</span>
+				Image
 			</button>
 			<button
 				class="dropdown-item"
@@ -558,38 +682,7 @@
 					showMediaDropdown = false
 				}}
 			>
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
-					<rect
-						x="2"
-						y="4"
-						width="12"
-						height="9"
-						stroke="currentColor"
-						stroke-width="2"
-						fill="none"
-						rx="1"
-					/>
-					<rect
-						x="6"
-						y="7"
-						width="12"
-						height="9"
-						stroke="currentColor"
-						stroke-width="2"
-						fill="none"
-						rx="1"
-					/>
-					<circle cx="6.5" cy="9.5" r="1" stroke="currentColor" stroke-width="1.5" fill="none" />
-					<path
-						d="M6 12L8 10L10 12L12 10L15 13"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						fill="none"
-					/>
-				</svg>
-				<span>Gallery</span>
+				Gallery
 			</button>
 			<button
 				class="dropdown-item"
@@ -598,20 +691,7 @@
 					showMediaDropdown = false
 				}}
 			>
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
-					<rect
-						x="3"
-						y="4"
-						width="14"
-						height="12"
-						stroke="currentColor"
-						stroke-width="2"
-						fill="none"
-						rx="2"
-					/>
-					<path d="M8 8.5L12 10L8 11.5V8.5Z" fill="currentColor" />
-				</svg>
-				<span>Video</span>
+				Video
 			</button>
 			<button
 				class="dropdown-item"
@@ -620,15 +700,17 @@
 					showMediaDropdown = false
 				}}
 			>
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="dropdown-icon">
-					<path
-						d="M10 4L10 16M6 8L6 12M14 8L14 12M2 6L2 14M18 6L18 14"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-					/>
-				</svg>
-				<span>Audio</span>
+				Audio
+			</button>
+			<div class="dropdown-separator"></div>
+			<button
+				class="dropdown-item"
+				onclick={() => {
+					editor?.chain().focus().insertUrlEmbedPlaceholder().run()
+					showMediaDropdown = false
+				}}
+			>
+				Link
 			</button>
 		</div>
 	</div>
@@ -729,6 +811,53 @@
 	</div>
 {/if}
 
+<!-- URL Convert Dropdown -->
+{#if showUrlConvertDropdown}
+	<UrlConvertDropdown
+		x={urlConvertDropdownPosition.x}
+		y={urlConvertDropdownPosition.y}
+		onConvert={handleConvertToEmbed}
+		onDismiss={() => {
+			showUrlConvertDropdown = false
+			urlConvertPos = null
+		}}
+	/>
+{/if}
+
+<!-- Link Context Menu -->
+{#if showLinkContextMenu && linkContextUrl}
+	<LinkContextMenuComponent
+		x={linkContextMenuPosition.x}
+		y={linkContextMenuPosition.y}
+		url={linkContextUrl}
+		onConvertToCard={handleConvertLinkToEmbed}
+		onEditLink={handleEditLink}
+		onCopyLink={handleCopyLink}
+		onRemoveLink={handleRemoveLink}
+		onOpenLink={handleOpenLink}
+		onDismiss={() => {
+			showLinkContextMenu = false
+			linkContextPos = null
+			linkContextUrl = null
+		}}
+	/>
+{/if}
+
+<!-- Link Edit Dialog -->
+{#if showLinkEditDialog}
+	<LinkEditDialog
+		x={linkEditDialogPosition.x}
+		y={linkEditDialogPosition.y}
+		currentUrl={linkEditUrl}
+		onSave={handleSaveLink}
+		onCancel={() => {
+			showLinkEditDialog = false
+			linkEditPos = null
+			linkEditUrl = ''
+		}}
+	/>
+{/if}
+
 <style lang="scss">
 	.edra {
 		width: 100%;
@@ -821,9 +950,7 @@
 	}
 
 	.dropdown-item {
-		display: flex;
-		align-items: center;
-		gap: 8px;
+		display: block;
 		width: 100%;
 		padding: 8px 16px;
 		text-align: left;
@@ -838,12 +965,6 @@
 
 	.dropdown-item:hover {
 		background-color: #f5f5f5;
-	}
-
-	.dropdown-icon {
-		flex-shrink: 0;
-		width: 20px;
-		height: 20px;
 	}
 
 	.dropdown-separator {

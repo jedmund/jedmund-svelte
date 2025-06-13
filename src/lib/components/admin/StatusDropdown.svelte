@@ -134,7 +134,7 @@
 
 	.dropdown-divider {
 		height: 1px;
-		background-color: $grey-90;
+		background-color: $grey-80;
 		margin: $unit-half 0;
 	}
 

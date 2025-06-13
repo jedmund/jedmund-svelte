@@ -157,6 +157,89 @@ function renderTiptapContent(doc: any): string {
 				return '<br>'
 			}
 
+			case 'urlEmbed': {
+				const url = node.attrs?.url || ''
+				const title = node.attrs?.title || ''
+				const description = node.attrs?.description || ''
+				const image = node.attrs?.image || ''
+				const favicon = node.attrs?.favicon || ''
+				const siteName = node.attrs?.siteName || ''
+				
+				// Helper to get domain from URL
+				const getDomain = (url: string) => {
+					try {
+						const urlObj = new URL(url)
+						return urlObj.hostname.replace('www.', '')
+					} catch {
+						return ''
+					}
+				}
+				
+				// Helper to extract YouTube video ID
+				const getYouTubeVideoId = (url: string): string | null => {
+					const patterns = [
+						/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+						/youtube\.com\/watch\?.*v=([^&\n?#]+)/
+					]
+					
+					for (const pattern of patterns) {
+						const match = url.match(pattern)
+						if (match && match[1]) {
+							return match[1]
+						}
+					}
+					return null
+				}
+				
+				// Check if it's a YouTube URL
+				const isYouTube = /(?:youtube\.com|youtu\.be)/.test(url)
+				const videoId = isYouTube ? getYouTubeVideoId(url) : null
+				
+				if (isYouTube && videoId) {
+					// Render YouTube embed
+					let embedHtml = '<div class="url-embed-rendered url-embed-youtube">'
+					embedHtml += '<div class="youtube-embed-wrapper">'
+					embedHtml += `<iframe src="https://www.youtube.com/embed/${videoId}" `
+					embedHtml += 'frameborder="0" '
+					embedHtml += 'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
+					embedHtml += 'allowfullscreen>'
+					embedHtml += '</iframe>'
+					embedHtml += '</div>'
+					embedHtml += '</div>'
+					return embedHtml
+				}
+				
+				// Regular URL embed for non-YouTube links
+				let embedHtml = '<div class="url-embed-rendered">'
+				embedHtml += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="url-embed-link">`
+				
+				if (image) {
+					embedHtml += `<div class="url-embed-image"><img src="${image}" alt="${title || 'Link preview'}" /></div>`
+				}
+				
+				embedHtml += '<div class="url-embed-text">'
+				embedHtml += '<div class="url-embed-meta">'
+				if (favicon) {
+					embedHtml += `<img src="${favicon}" alt="" class="url-embed-favicon" />`
+				}
+				embedHtml += `<span class="url-embed-domain">${siteName || getDomain(url)}</span>`
+				embedHtml += '</div>'
+				
+				if (title) {
+					embedHtml += `<h3 class="url-embed-title">${title}</h3>`
+				}
+				
+				if (description) {
+					embedHtml += `<p class="url-embed-description">${description}</p>`
+				}
+				
+				embedHtml += '</div>'
+				embedHtml += '</a>'
+				embedHtml += '</div>'
+				
+				return embedHtml
+			}
+
 			default: {
 				// For any unknown block types, try to render their content
 				if (node.content) {

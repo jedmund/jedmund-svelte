@@ -305,6 +305,16 @@
 		object-fit: contain;
 	}
 
+	:global(.edra .ProseMirror .edra-url-embed-image img) {
+		width: 100%;
+		height: 100%;
+		max-width: auto;
+		max-height: auto;
+		margin: 0;
+		object-fit: cover;
+		border-radius: 0;
+	}
+
 	:global(.edra-media-placeholder-wrapper) {
 		margin: $unit-2x 0;
 	}
@@ -357,6 +367,58 @@
 			margin-left: auto;
 			margin-right: auto;
 		}
+	}
+
+	// URL Embed styles - ensure proper isolation
+	:global(.edra .edra-url-embed-wrapper) {
+		margin: $unit-3x 0;
+		width: 100%;
+		max-width: none;
+	}
+
+	:global(.edra .edra-url-embed-card) {
+		max-width: 100%;
+		margin: 0 auto;
+	}
+
+	:global(.edra .edra-url-embed-content) {
+		background: $grey-95;
+		border: 1px solid $grey-85;
+
+		&:hover {
+			border-color: $grey-60;
+		}
+	}
+
+	:global(.edra .edra-url-embed-title) {
+		color: $grey-10;
+		font-family: inherit;
+		margin: 0 !important; // Override ProseMirror h3 margins
+		font-size: 1rem !important;
+		font-weight: 600 !important;
+		line-height: 1.3 !important;
+	}
+
+	:global(.edra .edra-url-embed-description) {
+		color: $grey-30;
+		font-family: inherit;
+		margin: 0 !important; // Override any inherited margins
+	}
+
+	:global(.edra .edra-url-embed-meta) {
+		color: $grey-40;
+		font-family: inherit;
+	}
+
+	// Override ProseMirror img styles for favicons only
+	:global(.edra .ProseMirror .edra-url-embed-favicon) {
+		width: 16px !important;
+		height: 16px !important;
+		margin: 0 !important; // Remove auto margins
+		display: inline-block !important;
+		max-width: 16px !important;
+		max-height: 16px !important;
+		border-radius: 0 !important;
 	}
 
 	:global(.edra-media-content) {

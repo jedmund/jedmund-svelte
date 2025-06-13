@@ -305,5 +305,124 @@
 				border-radius: $unit;
 			}
 		}
+
+		// URL Embed styles
+		:global(.url-embed-rendered) {
+			margin: $unit-2x 0;
+			width: 100%;
+
+			&:first-child {
+				margin-top: 0;
+			}
+		}
+
+		:global(.url-embed-link) {
+			display: flex;
+			flex-direction: column;
+			background: $grey-97;
+			border-radius: $card-corner-radius;
+			overflow: hidden;
+			border: 1px solid $grey-80;
+			text-decoration: none;
+			transition: all 0.2s ease;
+			width: 100%;
+
+			&:hover {
+				border-color: $grey-80;
+				transform: translateY(-1px);
+				text-decoration: none;
+				box-shadow: 0 0px 8px rgba(0, 0, 0, 0.08);
+			}
+		}
+
+		:global(.url-embed-image) {
+			width: 100%;
+			aspect-ratio: 2 / 1;
+			overflow: hidden;
+			background: $grey-90;
+		}
+
+		:global(.url-embed-image img) {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		:global(.url-embed-text) {
+			flex: 1;
+			padding: $unit-2x $unit-3x $unit-3x;
+			display: flex;
+			flex-direction: column;
+			gap: $unit;
+			min-width: 0;
+		}
+
+		:global(.url-embed-meta) {
+			display: flex;
+			align-items: center;
+			gap: $unit-half;
+			font-size: 0.8125rem;
+			color: $grey-40;
+		}
+
+		:global(.url-embed-favicon) {
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+		}
+
+		:global(.url-embed-domain) {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			text-transform: lowercase;
+		}
+
+		:global(.url-embed-title) {
+			margin: 0;
+			font-size: 1.125rem;
+			font-weight: 600;
+			color: $grey-10;
+			line-height: 1.3;
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 2;
+			overflow: hidden;
+		}
+
+		:global(.url-embed-description) {
+			margin: 0;
+			font-size: 0.9375rem;
+			color: $grey-30;
+			line-height: 1.5;
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 3;
+			overflow: hidden;
+		}
+
+		// YouTube embed styles
+		:global(.url-embed-youtube) {
+			margin: $unit-3x 0;
+			border-radius: $card-corner-radius;
+			overflow: hidden;
+			background: $grey-95;
+		}
+
+		:global(.youtube-embed-wrapper) {
+			position: relative;
+			padding-bottom: 56.25%; // 16:9 aspect ratio
+			height: 0;
+			overflow: hidden;
+		}
+
+		:global(.youtube-embed-wrapper iframe) {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			border: none;
+		}
 	}
 </style>

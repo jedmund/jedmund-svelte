@@ -349,5 +349,95 @@ export const commands: Record<string, EdraCommandGroup> = {
 				}
 			}
 		]
+	},
+	lists: {
+		name: 'Lists',
+		label: 'Lists',
+		commands: [
+			{
+				iconName: 'List',
+				name: 'bulletList',
+				label: 'Bullet List',
+				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+8`],
+				action: (editor) => {
+					editor.chain().focus().toggleBulletList().run()
+				},
+				isActive: (editor) => editor.isActive('bulletList')
+			},
+			{
+				iconName: 'ListOrdered',
+				name: 'orderedList',
+				label: 'Ordered List',
+				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+7`],
+				action: (editor) => {
+					editor.chain().focus().toggleOrderedList().run()
+				},
+				isActive: (editor) => editor.isActive('orderedList')
+			},
+			{
+				iconName: 'ListTodo',
+				name: 'taskList',
+				label: 'Task List',
+				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+9`],
+				action: (editor) => {
+					editor.chain().focus().toggleTaskList().run()
+				},
+				isActive: (editor) => editor.isActive('taskList')
+			}
+		]
+	},
+	media: {
+		name: 'Media',
+		label: 'Media',
+		commands: [
+			{
+				iconName: 'Image',
+				name: 'image-placeholder',
+				label: 'Image',
+				action: (editor) => {
+					editor.chain().focus().insertImagePlaceholder().run()
+				}
+			},
+			{
+				iconName: 'Images',
+				name: 'gallery-placeholder',
+				label: 'Gallery',
+				action: (editor) => {
+					editor.chain().focus().insertGalleryPlaceholder().run()
+				}
+			},
+			{
+				iconName: 'Video',
+				name: 'video-placeholder',
+				label: 'Video',
+				action: (editor) => {
+					editor.chain().focus().insertVideoPlaceholder().run()
+				}
+			},
+			{
+				iconName: 'Mic',
+				name: 'audio-placeholder',
+				label: 'Audio',
+				action: (editor) => {
+					editor.chain().focus().insertAudioPlaceholder().run()
+				}
+			},
+			{
+				iconName: 'Code',
+				name: 'iframe-placeholder',
+				label: 'Iframe',
+				action: (editor) => {
+					editor.chain().focus().insertIframePlaceholder().run()
+				}
+			},
+			{
+				iconName: 'Link',
+				name: 'url-embed-placeholder',
+				label: 'URL Embed',
+				action: (editor) => {
+					editor.chain().focus().insertUrlEmbedPlaceholder().run()
+				}
+			}
+		]
 	}
 }

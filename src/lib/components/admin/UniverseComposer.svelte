@@ -29,7 +29,7 @@
 		content: [{ type: 'paragraph' }]
 	}
 	let characterCount = 0
-	let editorInstance: Editor
+	let editorInstance: CaseStudyEditor
 
 	// Essay metadata
 	let essayTitle = ''
@@ -457,31 +457,33 @@
 		</div>
 	{:else}
 		<div class="inline-composer">
-			<Button
-				variant="ghost"
-				iconOnly
-				buttonSize="icon"
-				onclick={switchToEssay}
-				title="Switch to essay mode"
-				class="floating-expand-button"
-			>
-				<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-					<path
-						d="M10 6L14 2M14 2H10M14 2V6"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-					<path
-						d="M6 10L2 14M2 14H6M2 14V10"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-			</Button>
+			{#if hasContent()}
+				<Button
+					variant="ghost"
+					iconOnly
+					buttonSize="icon"
+					onclick={switchToEssay}
+					title="Switch to essay mode"
+					class="floating-expand-button"
+				>
+					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+						<path
+							d="M10 6L14 2M14 2H10M14 2V6"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<path
+							d="M6 10L2 14M2 14H6M2 14V10"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				</Button>
+			{/if}
 			<div class="composer-body">
 				<CaseStudyEditor
 					bind:this={editorInstance}

@@ -38,6 +38,10 @@
 	export function getContent() {
 		return editorRef?.getContent()
 	}
+
+	export function clear() {
+		editorRef?.clear()
+	}
 </script>
 
 <div class={`case-study-editor-wrapper ${mode} ${className}`}>
