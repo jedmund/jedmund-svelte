@@ -111,7 +111,6 @@ export const POST: RequestHandler = async (event) => {
 		const formData = await event.request.formData()
 		const file = formData.get('file') as File
 		const context = (formData.get('context') as string) || 'media'
-		const altText = (formData.get('altText') as string) || null
 		const description = (formData.get('description') as string) || null
 		const isPhotography = formData.get('isPhotography') === 'true'
 
@@ -163,10 +162,8 @@ export const POST: RequestHandler = async (event) => {
 				width: uploadResult.width,
 				height: uploadResult.height,
 				exifData: exifData,
-				altText: altText?.trim() || null,
 				description: description?.trim() || null,
-				isPhotography: isPhotography,
-				usedIn: []
+				isPhotography: isPhotography
 			}
 		})
 
@@ -187,7 +184,6 @@ export const POST: RequestHandler = async (event) => {
 				originalName: media.originalName,
 				mimeType: media.mimeType,
 				size: media.size,
-				altText: media.altText,
 				description: media.description,
 				createdAt: media.createdAt,
 				updatedAt: media.updatedAt

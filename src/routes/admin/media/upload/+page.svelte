@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
-	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import { onMount } from 'svelte'
 
 	let files = $state<File[]>([])
@@ -147,11 +146,102 @@
 	</header>
 
 	<div class="upload-container">
+
+		<!-- File List -->
+		{#if files.length > 0}
+			<div class="file-list">
+				<div class="file-list-header">
+					<h3>Files to Upload</h3>
+					<div class="file-actions">
+						<Button
+							variant="primary"
+							buttonSize="small"
+							onclick={uploadFiles}
+							disabled={isUploading || files.length === 0}
+							loading={isUploading}
+						>
+							{isUploading ? 'Uploading...' : `Upload ${files.length} File${files.length !== 1 ? 's' : ''}`}
+						</Button>
+						<Button
+							variant="ghost"
+							buttonSize="icon"
+							onclick={clearAll}
+							disabled={isUploading}
+							title="Clear all files"
+						>
+							<svg slot="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<circle cx="12" cy="12" r="10"></circle>
+								<line x1="8" y1="8" x2="16" y2="16"></line>
+								<line x1="16" y1="8" x2="8" y2="16"></line>
+							</svg>
+						</Button>
+					</div>
+				</div>
+
+				<div class="files">
+					{#each files as file, index}
+						<div class="file-item">
+							<div class="file-preview">
+								{#if file.type.startsWith('image/')}
+									<img src={URL.createObjectURL(file)} alt={file.name} />
+								{:else}
+									<div class="file-icon">📄</div>
+								{/if}
+							</div>
+
+							<div class="file-info">
+								<div class="file-name">{file.name}</div>
+								<div class="file-size">{formatFileSize(file.size)}</div>
+
+								{#if isUploading}
+									<div class="progress-bar">
+										<div class="progress-fill" style="width: {uploadProgress[file.name] || 0}%"></div>
+									</div>
+									<div class="upload-status">
+										{#if uploadProgress[file.name] === 100}
+											<span class="status-complete">✓ Complete</span>
+										{:else if uploadProgress[file.name] > 0}
+											<span class="status-uploading">{Math.round(uploadProgress[file.name] || 0)}%</span>
+										{:else}
+											<span class="status-waiting">Waiting...</span>
+										{/if}
+									</div>
+								{/if}
+							</div>
+
+							{#if !isUploading}
+								<button
+									type="button"
+									class="remove-button"
+									onclick={() => removeFile(index)}
+									title="Remove file"
+								>
+									<svg
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+									>
+										<line x1="18" y1="6" x2="6" y2="18"></line>
+										<line x1="6" y1="6" x2="18" y2="18"></line>
+									</svg>
+								</button>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		<!-- Drop Zone -->
 		<div
 			class="drop-zone"
 			class:active={dragActive}
 			class:has-files={files.length > 0}
+			class:compact={files.length > 0}
+			class:uploading={isUploading}
 			ondragover={handleDragOver}
 			ondragleave={handleDragLeave}
 			ondrop={handleDrop}
@@ -213,9 +303,19 @@
 					<p>or click to browse and select files</p>
 					<p class="upload-hint">Supports JPG, PNG, GIF, WebP, and SVG files</p>
 				{:else}
-					<div class="file-count">
-						<strong>{files.length} file{files.length !== 1 ? 's' : ''} selected</strong>
-						<p>Drop more files to add them, or click to browse</p>
+					<div class="compact-content">
+						<svg
+							class="add-icon"
+							width="20"
+							height="20"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+							<line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+						</svg>
+						<span>Add more files or drop them here</span>
 					</div>
 				{/if}
 			</div>
@@ -238,84 +338,6 @@
 				{dragActive ? 'Drop files' : 'Click to browse'}
 			</button>
 		</div>
-
-		<!-- File List -->
-		{#if files.length > 0}
-			<div class="file-list">
-				<div class="file-list-header">
-					<h3>Files to Upload</h3>
-					<div class="file-actions">
-						<Button
-							variant="secondary"
-							buttonSize="small"
-							onclick={clearAll}
-							disabled={isUploading}
-						>
-							Clear All
-						</Button>
-						<Button
-							variant="primary"
-							buttonSize="small"
-							onclick={uploadFiles}
-							disabled={isUploading || files.length === 0}
-						>
-							{#if isUploading}
-								<LoadingSpinner buttonSize="small" />
-								Uploading...
-							{:else}
-								Upload {files.length} File{files.length !== 1 ? 's' : ''}
-							{/if}
-						</Button>
-					</div>
-				</div>
-
-				<div class="files">
-					{#each files as file, index}
-						<div class="file-item">
-							<div class="file-preview">
-								{#if file.type.startsWith('image/')}
-									<img src={URL.createObjectURL(file)} alt={file.name} />
-								{:else}
-									<div class="file-icon">📄</div>
-								{/if}
-							</div>
-
-							<div class="file-info">
-								<div class="file-name">{file.name}</div>
-								<div class="file-size">{formatFileSize(file.size)}</div>
-
-								{#if uploadProgress[file.name]}
-									<div class="progress-bar">
-										<div class="progress-fill" style="width: {uploadProgress[file.name]}%"></div>
-									</div>
-								{/if}
-							</div>
-
-							{#if !isUploading}
-								<button
-									type="button"
-									class="remove-button"
-									onclick={() => removeFile(index)}
-									title="Remove file"
-								>
-									<svg
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-									>
-										<line x1="18" y1="6" x2="6" y2="18"></line>
-										<line x1="6" y1="6" x2="18" y2="18"></line>
-									</svg>
-								</button>
-							{/if}
-						</div>
-					{/each}
-				</div>
-			</div>
-		{/if}
 
 		<!-- Upload Results -->
 		{#if successCount > 0 || uploadErrors.length > 0}
@@ -372,10 +394,37 @@
 		&.has-files {
 			padding: $unit-4x;
 		}
+		
+		&.compact {
+			padding: $unit-3x;
+			min-height: auto;
+			
+			.drop-zone-content {
+				.compact-content {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					gap: $unit-2x;
+					color: $grey-40;
+					font-size: 0.875rem;
+					
+					.add-icon {
+						color: $grey-50;
+					}
+				}
+			}
+		}
 
 		&:hover {
 			border-color: $grey-60;
 			background: $grey-90;
+		}
+		
+		&.uploading {
+			border-color: #3b82f6;
+			border-style: solid;
+			background: rgba(59, 130, 246, 0.02);
+			pointer-events: none;
 		}
 	}
 
@@ -435,7 +484,7 @@
 		border: 1px solid $grey-85;
 		border-radius: $unit-2x;
 		padding: $unit-3x;
-		margin-bottom: $unit-4x;
+		margin-bottom: $unit-3x;
 	}
 
 	.file-list-header {
@@ -454,6 +503,7 @@
 		.file-actions {
 			display: flex;
 			gap: $unit-2x;
+			align-items: center;
 		}
 	}
 
@@ -513,15 +563,59 @@
 
 	.progress-bar {
 		width: 100%;
-		height: 4px;
-		background: $grey-85;
-		border-radius: 2px;
+		height: 6px;
+		background: $grey-90;
+		border-radius: 3px;
 		overflow: hidden;
+		margin-bottom: $unit-half;
 
 		.progress-fill {
 			height: 100%;
 			background: #3b82f6;
 			transition: width 0.3s ease;
+			position: relative;
+			
+			&::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				background: linear-gradient(
+					90deg,
+					transparent 30%,
+					rgba(255, 255, 255, 0.2) 50%,
+					transparent 70%
+				);
+				animation: shimmer 1.5s infinite;
+			}
+		}
+	}
+	
+	@keyframes shimmer {
+		0% {
+			transform: translateX(-100%);
+		}
+		100% {
+			transform: translateX(100%);
+		}
+	}
+	
+	.upload-status {
+		font-size: 0.75rem;
+		font-weight: 500;
+		
+		.status-complete {
+			color: #16a34a;
+		}
+		
+		.status-uploading {
+			color: #3b82f6;
+		}
+		
+		.status-waiting {
+			color: $grey-50;
 		}
 	}
 

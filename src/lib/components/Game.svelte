@@ -104,7 +104,7 @@
 				}
 
 				.game-playtime {
-					font-size: $font-size-small;
+					font-size: $font-size-extra-small;
 					font-weight: $font-weight-med;
 					color: $grey-40;
 				}
