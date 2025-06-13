@@ -65,7 +65,9 @@ export const GET: RequestHandler = async (event) => {
 				height: true,
 				usedIn: true,
 				isPhotography: true,
-				createdAt: true
+				createdAt: true,
+				description: true,
+				exifData: true
 			}
 		})
 

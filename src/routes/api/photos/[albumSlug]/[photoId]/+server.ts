@@ -6,14 +6,14 @@ import { logger } from '$lib/server/logger'
 // GET /api/photos/[albumSlug]/[photoId] - Get individual photo with album context
 export const GET: RequestHandler = async (event) => {
 	const albumSlug = event.params.albumSlug
-	const photoId = parseInt(event.params.photoId)
+	const mediaId = parseInt(event.params.photoId) // Still called photoId in URL for compatibility
 
-	if (!albumSlug || isNaN(photoId)) {
-		return errorResponse('Invalid album slug or photo ID', 400)
+	if (!albumSlug || isNaN(mediaId)) {
+		return errorResponse('Invalid album slug or media ID', 400)
 	}
 
 	try {
-		// First find the album
+		// First find the album with its media
 		const album = await prisma.album.findUnique({
 			where: {
 				slug: albumSlug,
@@ -21,20 +21,25 @@ export const GET: RequestHandler = async (event) => {
 				isPhotography: true
 			},
 			include: {
-				photos: {
+				media: {
 					orderBy: { displayOrder: 'asc' },
-					select: {
-						id: true,
-						filename: true,
-						url: true,
-						thumbnailUrl: true,
-						width: true,
-						height: true,
-						caption: true,
-						title: true,
-						description: true,
-						displayOrder: true,
-						exifData: true
+					include: {
+						media: {
+							select: {
+								id: true,
+								filename: true,
+								url: true,
+								thumbnailUrl: true,
+								width: true,
+								height: true,
+								photoCaption: true,
+								photoTitle: true,
+								photoDescription: true,
+								exifData: true,
+								createdAt: true,
+								photoPublishedAt: true
+							}
+						}
 					}
 				}
 			}
@@ -44,16 +49,35 @@ export const GET: RequestHandler = async (event) => {
 			return errorResponse('Album not found', 404)
 		}
 
-		// Find the specific photo
-		const photo = album.photos.find((p) => p.id === photoId)
-		if (!photo) {
+		// Find the specific media
+		const albumMediaIndex = album.media.findIndex((am) => am.media.id === mediaId)
+		if (albumMediaIndex === -1) {
 			return errorResponse('Photo not found in album', 404)
 		}
 
-		// Get photo index for navigation
-		const photoIndex = album.photos.findIndex((p) => p.id === photoId)
-		const prevPhoto = photoIndex > 0 ? album.photos[photoIndex - 1] : null
-		const nextPhoto = photoIndex < album.photos.length - 1 ? album.photos[photoIndex + 1] : null
+		const albumMedia = album.media[albumMediaIndex]
+		const media = albumMedia.media
+
+		// Get navigation info
+		const prevMedia = albumMediaIndex > 0 ? album.media[albumMediaIndex - 1].media : null
+		const nextMedia = albumMediaIndex < album.media.length - 1 ? album.media[albumMediaIndex + 1].media : null
+
+		// Transform to photo format for compatibility
+		const photo = {
+			id: media.id,
+			filename: media.filename,
+			url: media.url,
+			thumbnailUrl: media.thumbnailUrl,
+			width: media.width,
+			height: media.height,
+			caption: media.photoCaption,
+			title: media.photoTitle,
+			description: media.photoDescription,
+			displayOrder: albumMedia.displayOrder,
+			exifData: media.exifData,
+			createdAt: media.createdAt,
+			publishedAt: media.photoPublishedAt
+		}
 
 		return jsonResponse({
 			photo,
@@ -64,13 +88,13 @@ export const GET: RequestHandler = async (event) => {
 				description: album.description,
 				location: album.location,
 				date: album.date,
-				totalPhotos: album.photos.length
+				totalPhotos: album.media.length
 			},
 			navigation: {
-				currentIndex: photoIndex + 1, // 1-based for display
-				totalCount: album.photos.length,
-				prevPhoto: prevPhoto ? { id: prevPhoto.id, url: prevPhoto.thumbnailUrl } : null,
-				nextPhoto: nextPhoto ? { id: nextPhoto.id, url: nextPhoto.thumbnailUrl } : null
+				currentIndex: albumMediaIndex + 1, // 1-based for display
+				totalCount: album.media.length,
+				prevPhoto: prevMedia ? { id: prevMedia.id, url: prevMedia.thumbnailUrl } : null,
+				nextPhoto: nextMedia ? { id: nextMedia.id, url: nextMedia.thumbnailUrl } : null
 			}
 		})
 	} catch (error) {

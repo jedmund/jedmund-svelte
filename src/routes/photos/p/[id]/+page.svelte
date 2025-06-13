@@ -81,8 +81,9 @@
 	// Handle photo navigation
 	function navigateToPhoto(item: any) {
 		if (!item) return
-		const photoId = item.id.replace('photo-', '')
-		goto(`/photos/p/${photoId}`)
+		// Extract media ID from item.id (could be 'media-123' or 'photo-123')
+		const mediaId = item.id.replace(/^(media|photo)-/, '')
+		goto(`/photos/p/${mediaId}`)
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -182,6 +183,8 @@
 {/if}
 
 <style lang="scss">
+	@import '$styles/variables.scss';
+	@import '$styles/mixins.scss';
 	.error-container {
 		display: flex;
 		justify-content: center;

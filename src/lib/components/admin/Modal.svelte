@@ -1,19 +1,29 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import { fade } from 'svelte/transition'
 	import Button from './Button.svelte'
 
-	export let isOpen = false
-	export let size: 'small' | 'medium' | 'large' | 'jumbo' | 'full' = 'medium'
-	export let closeOnBackdrop = true
-	export let closeOnEscape = true
-	export let showCloseButton = true
+	interface Props {
+		isOpen: boolean
+		size?: 'small' | 'medium' | 'large' | 'jumbo' | 'full'
+		closeOnBackdrop?: boolean
+		closeOnEscape?: boolean
+		showCloseButton?: boolean
+		onClose?: () => void
+	}
 
-	const dispatch = createEventDispatcher()
+	let {
+		isOpen = $bindable(),
+		size = 'medium',
+		closeOnBackdrop = true,
+		closeOnEscape = true,
+		showCloseButton = true,
+		onClose
+	}: Props = $props()
 
 	function handleClose() {
 		isOpen = false
-		dispatch('close')
+		onClose?.()
 	}
 
 	function handleBackdropClick() {
@@ -28,6 +38,34 @@
 		}
 	}
 
+	// Effect to handle body scroll locking
+	$effect(() => {
+		if (isOpen) {
+			// Save current scroll position
+			const scrollY = window.scrollY
+			
+			// Lock body scroll
+			document.body.style.position = 'fixed'
+			document.body.style.top = `-${scrollY}px`
+			document.body.style.width = '100%'
+			document.body.style.overflow = 'hidden'
+			
+			return () => {
+				// Restore body scroll
+				const scrollY = document.body.style.top
+				document.body.style.position = ''
+				document.body.style.top = ''
+				document.body.style.width = ''
+				document.body.style.overflow = ''
+				
+				// Restore scroll position
+				if (scrollY) {
+					window.scrollTo(0, parseInt(scrollY || '0') * -1)
+				}
+			}
+		}
+	})
+
 	onMount(() => {
 		document.addEventListener('keydown', handleKeydown)
 		return () => {
@@ -35,7 +73,7 @@
 		}
 	})
 
-	$: modalClass = `modal-${size}`
+	let modalClass = $derived(`modal-${size}`)
 </script>
 
 {#if isOpen}

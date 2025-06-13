@@ -17,51 +17,12 @@
 	const error = $derived(data.error)
 
 
-	const formatExif = (exifData: any) => {
-		if (!exifData) return null
-
-		const formatSpeed = (speed: string) => {
-			if (speed?.includes('/')) return speed
-			if (speed?.includes('s')) return speed
-			return speed ? `1/${speed}s` : null
-		}
-
-		return {
-			camera: exifData.camera,
-			lens: exifData.lens,
-			settings: [
-				exifData.focalLength,
-				exifData.aperture,
-				formatSpeed(exifData.shutterSpeed),
-				exifData.iso ? `ISO ${exifData.iso}` : null
-			]
-				.filter(Boolean)
-				.join(' • '),
-			location: exifData.location,
-			dateTaken: exifData.dateTaken
-		}
-	}
-
-	const exif = $derived(photo ? formatExif(photo.exifData) : null)
 	const pageUrl = $derived($page.url.href)
 	
-	// Parse EXIF data if available (same as photo detail page)
+	// Parse EXIF data if available
 	const exifData = $derived(
 		photo?.exifData && typeof photo.exifData === 'object' ? photo.exifData : null
 	)
-	
-	// Debug: Log what data we have
-	$effect(() => {
-		if (photo) {
-			console.log('Photo data:', {
-				id: photo.id,
-				title: photo.title,
-				caption: photo.caption,
-				exifData: photo.exifData,
-				createdAt: photo.createdAt
-			})
-		}
-	})
 
 	// Generate metadata
 	const photoTitle = $derived(photo?.title || photo?.caption || `Photo ${navigation?.currentIndex}`)
@@ -76,7 +37,7 @@
 					url: pageUrl,
 					type: 'article',
 					image: photo.url,
-					publishedTime: exif?.dateTaken,
+					publishedTime: exifData?.dateTaken,
 					author: 'Justin Edmund',
 					titleFormat: { type: 'snippet', snippet: photoDescription }
 				})
@@ -97,8 +58,8 @@
 					url: pageUrl,
 					image: photo.url,
 					creator: 'Justin Edmund',
-					dateCreated: exif?.dateTaken,
-					keywords: ['photography', album.title, ...(exif?.location ? [exif.location] : [])]
+					dateCreated: exifData?.dateTaken,
+					keywords: ['photography', album.title, ...(exifData?.location ? [exifData.location] : [])]
 				})
 			: null
 	)
@@ -134,7 +95,7 @@
 
 {#if error || !photo || !album}
 	<div class="error-container">
-		<div class="error-content">
+		<div class="error-message">
 			<h1>Photo Not Found</h1>
 			<p>{error || "The photo you're looking for doesn't exist."}</p>
 			<BackButton href="/photos" label="Back to Photos" />
@@ -201,7 +162,7 @@
 		padding: $unit-6x $unit-3x;
 	}
 
-	.error-content {
+	.error-message {
 		text-align: center;
 		max-width: 500px;
 
@@ -248,6 +209,7 @@
 		margin: 0 auto;
 		display: flex;
 		align-items: center;
+		box-sizing: border-box;
 	}
 
 	// Adjacent Navigation

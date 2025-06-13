@@ -17,7 +17,6 @@
 	let { isOpen = $bindable(), media, onClose, onUpdate }: Props = $props()
 
 	// Form state
-	let altText = $state('')
 	let description = $state('')
 	let isPhotography = $state(false)
 	let isSaving = $state(false)
@@ -43,8 +42,8 @@
 	// Initialize form when media changes
 	$effect(() => {
 		if (media) {
-			altText = media.altText || ''
-			description = media.description || ''
+			// Use description if available, otherwise fall back to altText for backwards compatibility
+			description = media.description || media.altText || ''
 			isPhotography = media.isPhotography || false
 			error = ''
 			successMessage = ''
@@ -77,7 +76,6 @@
 	}
 
 	function handleClose() {
-		altText = ''
 		description = ''
 		isPhotography = false
 		error = ''
@@ -99,7 +97,8 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					altText: altText.trim() || null,
+					// Use description for both altText and description fields
+					altText: description.trim() || null,
 					description: description.trim() || null,
 					isPhotography: isPhotography
 				})
@@ -198,7 +197,7 @@
 		size="jumbo"
 		closeOnBackdrop={!isSaving}
 		closeOnEscape={!isSaving}
-		on:close={handleClose}
+		onClose={handleClose}
 		showCloseButton={false}
 	>
 		<div class="media-details-modal">
@@ -206,7 +205,7 @@
 			<div class="image-pane">
 				{#if media.mimeType.startsWith('image/')}
 					<div class="image-container">
-						<SmartImage {media} alt={media.altText || media.filename} class="preview-image" />
+						<SmartImage {media} alt={media.description || media.altText || media.filename} class="preview-image" />
 					</div>
 				{:else}
 					<div class="file-placeholder">
@@ -289,10 +288,7 @@
 						{/if}
 					</div>
 				</div>
-
-				<!-- Content -->
 				<div class="pane-body">
-					<!-- File Info -->
 					<div class="file-info">
 						<div class="info-grid">
 							<div class="info-item">
@@ -387,84 +383,77 @@
 						{/if}
 					</div>
 
-					<!-- Photography Toggle -->
-					<div class="photography-toggle">
-						<label class="toggle-label">
-							<input
-								type="checkbox"
-								bind:checked={isPhotography}
-								disabled={isSaving}
-								class="toggle-input"
-							/>
-							<div class="toggle-content">
-								<span class="toggle-title">Show in Photos</span>
-								<span class="toggle-description">This photo will be displayed in Photos</span>
-							</div>
-							<span class="toggle-slider"></span>
-						</label>
-					</div>
-
-					<!-- Edit Form -->
-					<div class="edit-form">
-						<Textarea
-							label="Alt Text"
-							bind:value={altText}
-							placeholder="Describe this image for screen readers"
-							rows={3}
-							disabled={isSaving}
-							fullWidth
-						/>
-
-						<Textarea
-							label="Description"
-							bind:value={description}
-							placeholder="Additional description or caption"
-							rows={3}
-							disabled={isSaving}
-							fullWidth
-						/>
-
-						<!-- Usage Tracking -->
-						<div class="usage-section">
-							<h4>Used In</h4>
-							{#if loadingUsage}
-								<div class="usage-loading">
-									<div class="spinner"></div>
-									<span>Loading usage information...</span>
+					<div class="pane-body-content">
+						<!-- Photography Toggle -->
+						<div class="photography-toggle">
+							<label class="toggle-label">
+								<input
+									type="checkbox"
+									bind:checked={isPhotography}
+									disabled={isSaving}
+									class="toggle-input"
+								/>
+								<div class="toggle-content">
+									<span class="toggle-title">Show in Photos</span>
+									<span class="toggle-description">This photo will be displayed in Photos</span>
 								</div>
-							{:else if usage.length > 0}
-								<ul class="usage-list">
-									{#each usage as usageItem}
-										<li class="usage-item">
-											<div class="usage-content">
-												<div class="usage-header">
-													{#if usageItem.contentUrl}
-														<a
-															href={usageItem.contentUrl}
-															class="usage-title"
-															target="_blank"
-															rel="noopener"
+								<span class="toggle-slider"></span>
+							</label>
+						</div>
+
+						<!-- Edit Form -->
+						<div class="edit-form">
+							<Textarea
+								label="Description"
+								bind:value={description}
+								placeholder="Describe this image (used for alt text and captions)"
+								rows={4}
+								disabled={isSaving}
+								fullWidth
+							/>
+
+							<!-- Usage Tracking -->
+							<div class="usage-section">
+								<h4>Used In</h4>
+								{#if loadingUsage}
+									<div class="usage-loading">
+										<div class="spinner"></div>
+										<span>Loading usage information...</span>
+									</div>
+								{:else if usage.length > 0}
+									<ul class="usage-list">
+										{#each usage as usageItem}
+											<li class="usage-item">
+												<div class="usage-content">
+													<div class="usage-header">
+														{#if usageItem.contentUrl}
+															<a
+																href={usageItem.contentUrl}
+																class="usage-title"
+																target="_blank"
+																rel="noopener"
+															>
+																{usageItem.contentTitle}
+															</a>
+														{:else}
+															<span class="usage-title">{usageItem.contentTitle}</span>
+														{/if}
+														<span class="usage-type">{usageItem.contentType}</span>
+													</div>
+													<div class="usage-details">
+														<span class="usage-field">{usageItem.fieldDisplayName}</span>
+														<span class="usage-date"
+															>Added {new Date(usageItem.createdAt).toLocaleDateString()}</span
 														>
-															{usageItem.contentTitle}
-														</a>
-													{:else}
-														<span class="usage-title">{usageItem.contentTitle}</span>
-													{/if}
-													<span class="usage-type">{usageItem.contentType}</span>
+													</div>
 												</div>
-												<div class="usage-details">
-													<span class="usage-field">{usageItem.fieldDisplayName}</span>
-													<span class="usage-date"
-														>Added {new Date(usageItem.createdAt).toLocaleDateString()}</span
-													>
-												</div>
-											</div>
-										</li>
-									{/each}
-								</ul>
-							{:else}
-								<p class="no-usage">This media file is not currently used in any content.</p>
-							{/if}
+											</li>
+										{/each}
+									</ul>
+								{:else}
+									<p class="no-usage">This media file is not currently used in any content.</p>
+								{/if}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -587,7 +576,10 @@
 	.pane-body {
 		flex: 1;
 		overflow-y: auto;
-		padding: $unit-4x;
+	}
+
+	.pane-body-content {
+		padding: $unit-3x;
 		display: flex;
 		flex-direction: column;
 		gap: $unit-6x;
@@ -598,8 +590,8 @@
 		flex-direction: column;
 		gap: $unit-3x;
 		padding: $unit-3x;
-		background-color: $grey-97;
-		border-radius: $corner-radius;
+		background-color: $grey-90;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 	}
 
 	.info-grid {
@@ -895,7 +887,7 @@
 		}
 
 		.pane-body {
-			padding: $unit-3x;
+			// padding: $unit-3x;
 		}
 
 		.pane-footer {

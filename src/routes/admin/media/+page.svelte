@@ -16,7 +16,7 @@
 	let currentPage = $state(1)
 	let totalPages = $state(1)
 	let total = $state(0)
-	let viewMode = $state<'grid' | 'list'>('grid')
+	// Only using grid view
 
 	// Filter states
 	let filterType = $state<string>('all')
@@ -324,18 +324,9 @@
 				onclick={toggleMultiSelectMode}
 				class={isMultiSelectMode ? 'active' : ''}
 			>
-				{isMultiSelectMode ? '✓' : '☐'}
 				{isMultiSelectMode ? 'Exit Select' : 'Select'}
 			</Button>
-			<Button
-				variant="secondary"
-				buttonSize="large"
-				onclick={() => (viewMode = viewMode === 'grid' ? 'list' : 'grid')}
-			>
-				{viewMode === 'grid' ? '📋' : '🖼️'}
-				{viewMode === 'grid' ? 'List' : 'Grid'}
-			</Button>
-			<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload...</Button>
+			<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload</Button>
 		{/snippet}
 	</AdminHeader>
 
@@ -414,14 +405,14 @@
 							class="btn btn-secondary btn-small"
 							title="Mark selected items as photography"
 						>
-							📸 Mark Photography
+							Mark Photography
 						</button>
 						<button
 							onclick={handleBulkUnmarkPhotography}
 							class="btn btn-secondary btn-small"
 							title="Remove photography status from selected items"
 						>
-							🚫 Remove Photography
+							Remove Photography
 						</button>
 						<button
 							onclick={handleBulkDelete}
@@ -444,7 +435,7 @@
 				<p>No media files found.</p>
 				<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
 			</div>
-		{:else if viewMode === 'grid'}
+		{:else}
 			<div class="media-grid">
 				{#each media as item}
 					<div class="media-item-wrapper" class:multiselect={isMultiSelectMode}>
@@ -470,7 +461,7 @@
 							{#if item.mimeType.startsWith('image/')}
 								<img
 									src={item.mimeType === 'image/svg+xml' ? item.url : item.thumbnailUrl || item.url}
-									alt={item.altText || item.filename}
+									alt={item.description || item.filename}
 								/>
 							{:else}
 								<div class="file-placeholder">
@@ -479,135 +470,21 @@
 							{/if}
 							<div class="media-info">
 								<span class="filename">{item.filename}</span>
-								<div class="media-indicators">
-									{#if item.isPhotography}
-										<span class="indicator-pill photography" title="Photography">
-											<svg
-												width="12"
-												height="12"
-												viewBox="0 0 24 24"
-												fill="none"
-												xmlns="http://www.w3.org/2000/svg"
-											>
-												<polygon
-													points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26"
-													fill="currentColor"
-												/>
-											</svg>
-											Photo
-										</span>
-									{/if}
-									{#if item.altText}
-										<span class="indicator-pill alt-text" title="Alt text: {item.altText}">
-											Alt
-										</span>
-									{:else}
-										<span class="indicator-pill no-alt-text" title="No alt text"> No Alt </span>
-									{/if}
-								</div>
-								<span class="filesize">{formatFileSize(item.size)}</span>
-							</div>
-						</button>
-					</div>
-				{/each}
-			</div>
-		{:else}
-			<div class="media-list">
-				{#each media as item}
-					<div class="media-row-wrapper" class:multiselect={isMultiSelectMode}>
-						{#if isMultiSelectMode}
-							<div class="selection-checkbox">
-								<input
-									type="checkbox"
-									checked={selectedMediaIds.has(item.id)}
-									onchange={() => toggleMediaSelection(item.id)}
-									id="media-row-{item.id}"
-								/>
-								<label for="media-row-{item.id}" class="checkbox-label"></label>
-							</div>
-						{/if}
-						<button
-							class="media-row"
-							type="button"
-							onclick={() =>
-								isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
-							title="{isMultiSelectMode ? 'Click to select' : 'Click to edit'} {item.filename}"
-							class:selected={isMultiSelectMode && selectedMediaIds.has(item.id)}
-						>
-							<div class="media-preview">
-								{#if item.mimeType.startsWith('image/')}
-									<img
-										src={item.mimeType === 'image/svg+xml'
-											? item.url
-											: item.thumbnailUrl || item.url}
-										alt={item.altText || item.filename}
-									/>
-								{:else}
-									<div class="file-icon">{getFileType(item.mimeType)}</div>
-								{/if}
-							</div>
-							<div class="media-details">
-								<div class="filename-row">
-									<span class="filename">{item.filename}</span>
+								<div class="media-info-bottom">
 									<div class="media-indicators">
 										{#if item.isPhotography}
-											<span class="indicator-pill photography" title="Photography">
-												<svg
-													width="12"
-													height="12"
-													viewBox="0 0 24 24"
-													fill="none"
-													xmlns="http://www.w3.org/2000/svg"
-												>
-													<polygon
-														points="12,2 15.09,8.26 22,9 17,14.74 18.18,21.02 12,17.77 5.82,21.02 7,14.74 2,9 8.91,8.26"
-														fill="currentColor"
-													/>
-												</svg>
-												Photo
-											</span>
+											<span class="indicator-pill photography" title="Photography"> Photo </span>
 										{/if}
-										{#if item.altText}
-											<span class="indicator-pill alt-text" title="Alt text: {item.altText}">
+										{#if item.description}
+											<span class="indicator-pill alt-text" title="Description: {item.description}">
 												Alt
 											</span>
 										{:else}
-											<span class="indicator-pill no-alt-text" title="No alt text"> No Alt </span>
+											<span class="indicator-pill no-alt-text" title="No description"> No Alt </span>
 										{/if}
 									</div>
+									<span class="filesize">{formatFileSize(item.size)}</span>
 								</div>
-								<span class="file-meta">
-									{getFileType(item.mimeType)} • {formatFileSize(item.size)}
-									{#if item.width && item.height}
-										• {item.width}×{item.height}px
-									{/if}
-								</span>
-								{#if item.altText}
-									<span class="alt-text-preview">
-										Alt: {item.altText}
-									</span>
-								{:else}
-									<span class="no-alt-text-preview">No alt text</span>
-								{/if}
-							</div>
-							<div class="media-indicator">
-								{#if !isMultiSelectMode}
-									<svg
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										xmlns="http://www.w3.org/2000/svg"
-									>
-										<path
-											d="M9 18L15 12L9 6"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										/>
-									</svg>
-								{/if}
 							</div>
 						</button>
 					</div>
@@ -708,14 +585,15 @@
 
 	.media-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 		gap: $unit-3x;
 		margin-bottom: $unit-4x;
+		padding: 0 $unit;
 	}
 
 	.media-item {
 		background: $grey-95;
-		border: none;
+		border: 1px solid transparent;
 		border-radius: $unit-2x;
 		overflow: hidden;
 		cursor: pointer;
@@ -728,6 +606,7 @@
 			background-color: $grey-90;
 			transform: translateY(-2px);
 			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+			border: 1px solid rgba(0, 0, 0, 0.08);
 		}
 
 		&:focus {
@@ -759,11 +638,12 @@
 			padding: $unit-2x;
 			display: flex;
 			flex-direction: column;
-			gap: $unit-half;
+			gap: $unit;
 
 			.filename {
-				font-size: 0.875rem;
+				font-size: 1rem;
 				color: $grey-20;
+				font-weight: 400;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -772,6 +652,13 @@
 			.filesize {
 				font-size: 0.75rem;
 				color: $grey-40;
+			}
+
+			.media-info-bottom {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				gap: $unit-half;
 			}
 
 			.media-indicators {
@@ -1067,12 +954,10 @@
 		display: inline-flex;
 		align-items: center;
 		gap: $unit-half;
-		padding: 2px $unit;
-		border-radius: 4px;
-		font-size: 0.625rem;
+		padding: $unit-half $unit;
+		border-radius: $corner-radius-2xl;
+		font-size: 0.8rem;
 		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
 		line-height: 1;
 
 		svg {
@@ -1084,7 +969,6 @@
 		&.photography {
 			background-color: rgba(139, 92, 246, 0.1);
 			color: #7c3aed;
-			border: 1px solid rgba(139, 92, 246, 0.2);
 
 			svg {
 				fill: #7c3aed;
@@ -1094,13 +978,11 @@
 		&.alt-text {
 			background-color: rgba(34, 197, 94, 0.1);
 			color: #16a34a;
-			border: 1px solid rgba(34, 197, 94, 0.2);
 		}
 
 		&.no-alt-text {
 			background-color: rgba(239, 68, 68, 0.1);
 			color: #dc2626;
-			border: 1px solid rgba(239, 68, 68, 0.2);
 		}
 	}
 </style>

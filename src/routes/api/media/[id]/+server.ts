@@ -46,7 +46,6 @@ export const PUT: RequestHandler = async (event) => {
 
 	try {
 		const body = await parseRequestBody<{
-			altText?: string
 			description?: string
 			isPhotography?: boolean
 		}>(event.request)
@@ -68,12 +67,34 @@ export const PUT: RequestHandler = async (event) => {
 		const media = await prisma.media.update({
 			where: { id },
 			data: {
-				altText: body.altText !== undefined ? body.altText : existing.altText,
 				description: body.description !== undefined ? body.description : existing.description,
 				isPhotography:
 					body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography
 			}
 		})
+
+		// If isPhotography changed to true, set photoPublishedAt
+		if (body.isPhotography === true && !existing.isPhotography) {
+			await prisma.media.update({
+				where: { id },
+				data: {
+					photoPublishedAt: new Date(),
+					photoCaption: existing.description // Use description as initial caption
+				}
+			})
+		} else if (body.isPhotography === false && existing.isPhotography) {
+			// If turning off photography, clear photo fields
+			await prisma.media.update({
+				where: { id },
+				data: {
+					photoPublishedAt: null,
+					photoCaption: null,
+					photoTitle: null,
+					photoDescription: null,
+					photoSlug: null
+				}
+			})
+		}
 
 		logger.info('Media updated', { id, filename: media.filename })
 

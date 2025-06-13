@@ -1,0 +1,2 @@
+-- This migration was already applied manually or is empty
+-- Placeholder file to satisfy Prisma migration requirements

@@ -21,12 +21,12 @@
 			// For individual photos, check if we have album context
 			if (albumSlug) {
 				// Navigate to photo within album
-				const photoId = item.id.replace('photo-', '') // Remove 'photo-' prefix
-				goto(`/photos/${albumSlug}/${photoId}`)
+				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
+				goto(`/photos/${albumSlug}/${mediaId}`)
 			} else {
-				// Navigate to individual photo page using the photo ID
-				const photoId = item.id.replace('photo-', '') // Remove 'photo-' prefix
-				goto(`/photos/p/${photoId}`)
+				// Navigate to individual photo page using the media ID
+				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
+				goto(`/photos/p/${mediaId}`)
 			}
 		}
 	}

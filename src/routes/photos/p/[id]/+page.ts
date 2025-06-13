@@ -29,7 +29,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		return {
 			photo,
 			photoItems,
-			currentPhotoId: `photo-${photoId}`
+			currentPhotoId: `media-${photoId}` // Updated to use media prefix
 		}
 	} catch (error) {
 		console.error('Error loading photo:', error)
