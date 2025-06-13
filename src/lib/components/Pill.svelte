@@ -17,7 +17,7 @@
 </script>
 
 <a {href} class="pill {variant}" class:active>
-	<svelte:component this={icon} />
+	<icon />
 	<span>{text}</span>
 </a>
 

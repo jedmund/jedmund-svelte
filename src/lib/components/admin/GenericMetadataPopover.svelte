@@ -246,7 +246,7 @@
 					<h4>{field.label}</h4>
 				</div>
 			{:else if field.type === 'custom' && field.component}
-				<svelte:component this={field.component} {...field.props} bind:data />
+				<field.component {...field.props} bind:data />
 			{/if}
 		{/each}
 	</div>

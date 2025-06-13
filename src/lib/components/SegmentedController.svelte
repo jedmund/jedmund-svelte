@@ -119,8 +119,7 @@
 			onmouseenter={() => (hoveredIndex = index)}
 			onmouseleave={() => (hoveredIndex = null)}
 		>
-			<svelte:component
-				this={item.icon}
+			<item.icon
 				class="nav-icon {hoveredIndex === index ? 'animate' : ''}"
 			/>
 			<span>{item.text}</span>

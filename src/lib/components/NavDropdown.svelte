@@ -112,7 +112,7 @@
 		aria-haspopup="true"
 		style="color: {getTextColor(activeItem.variant)};"
 	>
-		<svelte:component this={activeItem.icon} class="nav-icon" />
+		<activeItem.icon class="nav-icon" />
 		<span>{activeItem.text}</span>
 		<ChevronDownIcon class="chevron {isOpen ? 'open' : ''}" />
 	</button>
@@ -126,7 +126,7 @@
 					class:active={item === activeItem}
 					onclick={() => (isOpen = false)}
 				>
-					<svelte:component this={item.icon} class="nav-icon" />
+					<item.icon class="nav-icon" />
 					<span>{item.text}</span>
 				</a>
 			{/each}
