@@ -5,6 +5,7 @@
 	import { generateMetaTags, generateCreativeWorkJsonLd } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
+	import { spring } from 'svelte/motion'
 	import type { PageData } from './$types'
 	import ArrowLeft from '$icons/arrow-left.svg'
 	import ArrowRight from '$icons/arrow-right.svg'
@@ -15,6 +16,25 @@
 	const album = $derived(data.album)
 	const navigation = $derived(data.navigation)
 	const error = $derived(data.error)
+
+	// Hover tracking for arrow buttons
+	let isHoveringLeft = $state(false)
+	let isHoveringRight = $state(false)
+	
+	// Spring stores for smooth button movement
+	const leftButtonCoords = spring({ x: 0, y: 0 }, {
+		stiffness: 0.3,
+		damping: 0.8
+	})
+	
+	const rightButtonCoords = spring({ x: 0, y: 0 }, {
+		stiffness: 0.3,
+		damping: 0.8
+	})
+	
+	// Default button positions (will be set once photo loads)
+	let defaultLeftX = 0
+	let defaultRightX = 0
 
 
 	const pageUrl = $derived($page.url.href)
@@ -63,6 +83,122 @@
 				})
 			: null
 	)
+
+	// Set default button positions when component mounts
+	$effect(() => {
+		if (!photo) return
+		
+		// Wait for DOM to update and image to load
+		const checkAndSetPositions = () => {
+			const pageContainer = document.querySelector('.photo-page') as HTMLElement
+			const photoImage = pageContainer?.querySelector('.photo-content-wrapper img') as HTMLElement
+			
+			if (photoImage && photoImage.complete) {
+				const imageRect = photoImage.getBoundingClientRect()
+				const pageRect = pageContainer.getBoundingClientRect()
+				
+				// Calculate default positions relative to the image
+				// Add 24px (half button width) since we're using translate(-50%, -50%)
+				defaultLeftX = (imageRect.left - pageRect.left) - 24 - 16 // half button width + gap
+				defaultRightX = (imageRect.right - pageRect.left) + 24 + 16 // half button width + gap
+				
+				// Set initial positions at the vertical center of the image
+				const centerY = (imageRect.top - pageRect.top) + (imageRect.height / 2)
+				leftButtonCoords.set({ x: defaultLeftX, y: centerY }, { hard: true })
+				rightButtonCoords.set({ x: defaultRightX, y: centerY }, { hard: true })
+				
+				// Check if mouse is already in a hover zone
+				checkInitialMousePosition(pageContainer, imageRect, pageRect)
+			} else {
+				// If image not loaded yet, try again
+				setTimeout(checkAndSetPositions, 50)
+			}
+		}
+		
+		checkAndSetPositions()
+	})
+	
+	// We'll just remove the initial check for now
+	function checkInitialMousePosition(pageContainer: HTMLElement, imageRect: DOMRect, pageRect: DOMRect) {
+		// This will be handled by the first mouse move
+	}
+
+	// Mouse tracking for hover areas
+	function handleMouseMove(event: MouseEvent) {
+		const pageContainer = event.currentTarget as HTMLElement
+		const photoWrapper = pageContainer.querySelector('.photo-content-wrapper') as HTMLElement
+		
+		if (!photoWrapper) return
+		
+		// Get the actual image element inside PhotoView
+		const photoImage = photoWrapper.querySelector('img') as HTMLElement
+		if (!photoImage) return
+		
+		const pageRect = pageContainer.getBoundingClientRect()
+		const photoRect = photoImage.getBoundingClientRect()
+		
+		const x = event.clientX
+		const mouseX = event.clientX - pageRect.left
+		const mouseY = event.clientY - pageRect.top
+		
+		// Check if mouse is in the left or right margin (outside the photo)
+		const wasHoveringLeft = isHoveringLeft
+		const wasHoveringRight = isHoveringRight
+		
+		isHoveringLeft = x < photoRect.left
+		isHoveringRight = x > photoRect.right
+		
+		// Calculate image center Y position
+		const imageCenterY = (photoRect.top - pageRect.top) + (photoRect.height / 2)
+		
+		// Update button positions
+		if (isHoveringLeft) {
+			leftButtonCoords.set({ x: mouseX, y: mouseY })
+		} else if (wasHoveringLeft && !isHoveringLeft) {
+			// Reset left button to default
+			leftButtonCoords.set({ x: defaultLeftX, y: imageCenterY })
+		}
+		
+		if (isHoveringRight) {
+			rightButtonCoords.set({ x: mouseX, y: mouseY })
+		} else if (wasHoveringRight && !isHoveringRight) {
+			// Reset right button to default
+			rightButtonCoords.set({ x: defaultRightX, y: imageCenterY })
+		}
+	}
+
+	function handleMouseLeave() {
+		isHoveringLeft = false
+		isHoveringRight = false
+		
+		// Reset buttons to default positions
+		const pageContainer = document.querySelector('.photo-page') as HTMLElement
+		const photoImage = pageContainer?.querySelector('.photo-content-wrapper img') as HTMLElement
+		
+		if (photoImage && pageContainer) {
+			const imageRect = photoImage.getBoundingClientRect()
+			const pageRect = pageContainer.getBoundingClientRect()
+			const centerY = (imageRect.top - pageRect.top) + (imageRect.height / 2)
+			
+			leftButtonCoords.set({ x: defaultLeftX, y: centerY })
+			rightButtonCoords.set({ x: defaultRightX, y: centerY })
+		}
+	}
+
+	// Keyboard navigation
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'ArrowLeft' && navigation?.prevPhoto) {
+			goto(`/photos/${album.slug}/${navigation.prevPhoto.id}`)
+		} else if (e.key === 'ArrowRight' && navigation?.nextPhoto) {
+			goto(`/photos/${album.slug}/${navigation.nextPhoto.id}`)
+		}
+	}
+
+	// Set up keyboard listener
+	$effect(() => {
+		window.addEventListener('keydown', handleKeydown)
+		return () => window.removeEventListener('keydown', handleKeydown)
+	})
 </script>
 
 <svelte:head>
@@ -102,7 +238,11 @@
 		</div>
 	</div>
 {:else}
-	<div class="photo-page">
+	<div 
+		class="photo-page"
+		onmousemove={handleMouseMove}
+		onmouseleave={handleMouseLeave}
+	>
 		<div class="photo-content-wrapper">
 			<PhotoView 
 				src={photo.url} 
@@ -110,31 +250,43 @@
 				title={photo.title}
 				id={photo.id}
 			/>
+		</div>
 
-			<!-- Adjacent Photos Navigation -->
-			<div class="adjacent-navigation">
-				{#if navigation.prevPhoto}
-					<button
-						class="nav-button prev"
-						onclick={() => goto(`/photos/${album.slug}/${navigation.prevPhoto.id}`)}
-						type="button"
-						aria-label="Previous photo"
-					>
-						<ArrowLeft class="nav-icon" />
-					</button>
-				{/if}
+		<!-- Adjacent Photos Navigation -->
+		<div class="adjacent-navigation">
+			{#if navigation.prevPhoto}
+				<button
+					class="nav-button prev"
+					class:hovering={isHoveringLeft}
+					style="
+						left: {$leftButtonCoords.x}px;
+						top: {$leftButtonCoords.y}px;
+						transform: translate(-50%, -50%);
+					"
+					onclick={() => goto(`/photos/${album.slug}/${navigation.prevPhoto.id}`)}
+					type="button"
+					aria-label="Previous photo"
+				>
+					<ArrowLeft class="nav-icon" />
+				</button>
+			{/if}
 
-				{#if navigation.nextPhoto}
-					<button
-						class="nav-button next"
-						onclick={() => goto(`/photos/${album.slug}/${navigation.nextPhoto.id}`)}
-						type="button"
-						aria-label="Next photo"
-					>
-						<ArrowRight class="nav-icon" />
-					</button>
-				{/if}
-			</div>
+			{#if navigation.nextPhoto}
+				<button
+					class="nav-button next"
+					class:hovering={isHoveringRight}
+					style="
+						left: {$rightButtonCoords.x}px;
+						top: {$rightButtonCoords.y}px;
+						transform: translate(-50%, -50%);
+					"
+					onclick={() => goto(`/photos/${album.slug}/${navigation.nextPhoto.id}`)}
+					type="button"
+					aria-label="Next photo"
+				>
+					<ArrowRight class="nav-icon" />
+				</button>
+			{/if}
 		</div>
 
 		<PhotoMetadata
@@ -209,7 +361,7 @@
 		margin: 0 auto;
 		display: flex;
 		align-items: center;
-		box-sizing: border-box;
+		justify-content: center;
 	}
 
 	// Adjacent Navigation
@@ -217,8 +369,8 @@
 		position: absolute;
 		top: 0;
 		bottom: 0;
-		left: calc(-48px - #{$unit-2x});
-		right: calc(-48px - #{$unit-2x});
+		left: 0;
+		right: 0;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -235,7 +387,7 @@
 		width: 48px;
 		height: 48px;
 		pointer-events: auto;
-		position: relative;
+		position: absolute;
 		border: none;
 		padding: 0;
 		background: $grey-100;
@@ -244,13 +396,18 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: all 0.2s ease;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		transition: background 0.2s ease, box-shadow 0.2s ease;
 
 		&:hover {
 			background: $grey-95;
-			transform: scale(1.1);
-			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+		}
+		
+		&.hovering {
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			
+			&:hover {
+				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+			}
 		}
 
 		&:focus-visible {
@@ -268,14 +425,6 @@
 			stroke-width: 2px;
 			stroke-linecap: round;
 			stroke-linejoin: round;
-		}
-
-		&.prev {
-			margin-right: auto;
-		}
-
-		&.next {
-			margin-left: auto;
 		}
 	}
 </style>
