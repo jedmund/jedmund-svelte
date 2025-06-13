@@ -1,13 +1,15 @@
 <script lang="ts">
 	import BackButton from '$components/BackButton.svelte'
+	import PhotoView from '$components/PhotoView.svelte'
+	import PhotoMetadata from '$components/PhotoMetadata.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import type { PageData } from './$types'
 	import { isAlbum } from '$lib/types/photos'
-	import Zoom from 'svelte-medium-image-zoom'
-	import 'svelte-medium-image-zoom/dist/styles.css'
+	import ArrowLeft from '$icons/arrow-left.svg'
+	import ArrowRight from '$icons/arrow-right.svg'
 
 	let { data }: { data: PageData } = $props()
 
@@ -17,15 +19,6 @@
 	const currentPhotoId = $derived(data.currentPhotoId)
 
 	const pageUrl = $derived($page.url.href)
-
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString)
-		return date.toLocaleDateString('en-US', {
-			month: 'long',
-			day: 'numeric',
-			year: 'numeric'
-		})
-	}
 
 	// Generate metadata
 	const metaTags = $derived(
@@ -72,13 +65,13 @@
 	// Get previous and next photos (excluding albums)
 	const adjacentPhotos = $derived(() => {
 		if (!photoItems.length || !currentPhotoId) return { prev: null, next: null }
-		
+
 		// Filter out albums - we only want photos
-		const photosOnly = photoItems.filter(item => !isAlbum(item))
-		const currentIndex = photosOnly.findIndex(item => item.id === currentPhotoId)
-		
+		const photosOnly = photoItems.filter((item) => !isAlbum(item))
+		const currentIndex = photosOnly.findIndex((item) => item.id === currentPhotoId)
+
 		if (currentIndex === -1) return { prev: null, next: null }
-		
+
 		return {
 			prev: currentIndex > 0 ? photosOnly[currentIndex - 1] : null,
 			next: currentIndex < photosOnly.length - 1 ? photosOnly[currentIndex + 1] : null
@@ -142,136 +135,49 @@
 {:else if photo}
 	<div class="photo-page">
 		<div class="photo-content-wrapper">
-			<div class="photo-container">
-				<Zoom>
-					<img src={photo.url} alt={photo.title || photo.caption || 'Photo'} class="photo-image" />
-				</Zoom>
-			</div>
+			<PhotoView 
+				src={photo.url} 
+				alt={photo.caption} 
+				title={photo.title}
+				id={photo.id}
+			/>
 
-			<!-- Adjacent Photos Navigation (Desktop Only) -->
-			<div class="adjacent-photos">
+			<!-- Adjacent Photos Navigation -->
+			<div class="adjacent-navigation">
 				{#if adjacentPhotos().prev}
-					<button 
-						class="adjacent-photo prev"
+					<button
+						class="nav-button prev"
 						onclick={() => navigateToPhoto(adjacentPhotos().prev)}
 						type="button"
 						aria-label="Previous photo"
 					>
-						<img 
-							src={adjacentPhotos().prev.src} 
-							alt={adjacentPhotos().prev.alt}
-							class="adjacent-image"
-						/>
+						<ArrowLeft class="nav-icon" />
 					</button>
-				{:else}
-					<div class="adjacent-placeholder"></div>
 				{/if}
 
 				{#if adjacentPhotos().next}
-					<button 
-						class="adjacent-photo next"
+					<button
+						class="nav-button next"
 						onclick={() => navigateToPhoto(adjacentPhotos().next)}
 						type="button"
 						aria-label="Next photo"
 					>
-						<img 
-							src={adjacentPhotos().next.src} 
-							alt={adjacentPhotos().next.alt}
-							class="adjacent-image"
-						/>
+						<ArrowRight class="nav-icon" />
 					</button>
-				{:else}
-					<div class="adjacent-placeholder"></div>
 				{/if}
 			</div>
 		</div>
 
-		<div class="photo-info-card">
-			{#if photo.title || photo.caption || photo.description}
-				<div class="photo-details">
-					{#if photo.title}
-						<h1 class="photo-title">{photo.title}</h1>
-					{/if}
-
-					{#if photo.caption || photo.description}
-						<p class="photo-description">{photo.caption || photo.description}</p>
-					{/if}
-				</div>
-			{/if}
-
-			{#if exifData || photo.createdAt}
-				<div class="metadata-grid">
-					{#if exifData?.camera}
-						<div class="metadata-item">
-							<span class="metadata-label">Camera</span>
-							<span class="metadata-value">{exifData.camera}</span>
-						</div>
-					{/if}
-
-					{#if exifData?.lens}
-						<div class="metadata-item">
-							<span class="metadata-label">Lens</span>
-							<span class="metadata-value">{exifData.lens}</span>
-						</div>
-					{/if}
-
-					{#if exifData?.focalLength}
-						<div class="metadata-item">
-							<span class="metadata-label">Focal Length</span>
-							<span class="metadata-value">{exifData.focalLength}</span>
-						</div>
-					{/if}
-
-					{#if exifData?.aperture}
-						<div class="metadata-item">
-							<span class="metadata-label">Aperture</span>
-							<span class="metadata-value">{exifData.aperture}</span>
-						</div>
-					{/if}
-
-					{#if exifData?.shutterSpeed}
-						<div class="metadata-item">
-							<span class="metadata-label">Shutter Speed</span>
-							<span class="metadata-value">{exifData.shutterSpeed}</span>
-						</div>
-					{/if}
-
-					{#if exifData?.iso}
-						<div class="metadata-item">
-							<span class="metadata-label">ISO</span>
-							<span class="metadata-value">{exifData.iso}</span>
-						</div>
-					{/if}
-
-					{#if exifData?.dateTaken}
-						<div class="metadata-item">
-							<span class="metadata-label">Date Taken</span>
-							<span class="metadata-value">{formatDate(exifData.dateTaken)}</span>
-						</div>
-					{:else if photo.createdAt}
-						<div class="metadata-item">
-							<span class="metadata-label">Date</span>
-							<span class="metadata-value">{formatDate(photo.createdAt)}</span>
-						</div>
-					{/if}
-
-					{#if exifData?.location}
-						<div class="metadata-item">
-							<span class="metadata-label">Location</span>
-							<span class="metadata-value">{exifData.location}</span>
-						</div>
-					{/if}
-				</div>
-			{/if}
-		</div>
-
-		<!-- Navigation Footer -->
-		<div class="navigation-footer">
-			<BackButton
-				href={photo.album ? `/photos/${photo.album.slug}` : '/photos'}
-				label={photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'}
-			/>
-		</div>
+		<PhotoMetadata
+			title={photo.title}
+			caption={photo.caption}
+			description={photo.description}
+			{exifData}
+			createdAt={photo.createdAt}
+			backHref={photo.album ? `/photos/${photo.album.slug}` : '/photos'}
+			backLabel={photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'}
+			showBackButton={true}
+		/>
 	</div>
 {/if}
 
@@ -312,6 +218,7 @@
 		flex-direction: column;
 		gap: $unit-2x;
 		box-sizing: border-box;
+		position: relative;
 
 		@include breakpoint('tablet') {
 			max-width: 900px;
@@ -327,134 +234,24 @@
 		position: relative;
 		max-width: 700px;
 		width: 100%;
-	}
-
-	.photo-container {
-		max-width: 700px;
-		width: 100%;
-		font-size: 0;
-		line-height: 0;
-		position: relative;
-
-		.photo-image {
-			display: block;
-			max-width: 100%;
-			width: 100%;
-			height: auto;
-			object-fit: contain;
-			border-radius: $image-corner-radius;
-			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-
-			@include breakpoint('phone') {
-				border-radius: $image-corner-radius;
-			}
-		}
-	}
-
-	.photo-info-card {
-		background: $grey-100;
-		border: 1px solid $grey-90;
-		border-radius: $image-corner-radius;
-		padding: $unit-4x;
-		max-width: 700px;
 		margin: 0 auto;
-		width: 100%;
-		box-sizing: border-box;
-
-		@include breakpoint('phone') {
-			padding: $unit-3x;
-			max-width: 100%;
-		}
-	}
-
-	.photo-details {
-		margin-bottom: $unit-4x;
-		padding-bottom: $unit-4x;
-		border-bottom: 1px solid $grey-90;
-		text-align: center;
-
-		@include breakpoint('phone') {
-			margin-bottom: $unit-3x;
-			padding-bottom: $unit-3x;
-		}
-
-		.photo-title {
-			font-size: 1.75rem;
-			font-weight: 600;
-			margin: 0 0 $unit-2x;
-			color: $grey-10;
-
-			@include breakpoint('phone') {
-				font-size: 1.25rem;
-				margin-bottom: $unit;
-			}
-		}
-
-		.photo-description {
-			font-size: 1rem;
-			color: $grey-30;
-			line-height: 1.6;
-			margin: 0;
-
-			@include breakpoint('phone') {
-				font-size: 0.875rem;
-			}
-		}
-	}
-
-	.metadata-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		gap: $unit-3x;
-
-		@include breakpoint('phone') {
-			grid-template-columns: 1fr;
-			gap: $unit-2x;
-		}
-	}
-
-	.metadata-item {
 		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-
-		.metadata-label {
-			font-size: 0.75rem;
-			font-weight: 600;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-			color: $grey-40;
-		}
-
-		.metadata-value {
-			font-size: 0.875rem;
-			color: $grey-10;
-			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
-				monospace;
-		}
+		align-items: center;
 	}
 
-	// Navigation Footer
-	.navigation-footer {
-		display: flex;
-		justify-content: center;
-		max-width: 700px;
-		margin: 0 auto;
-		width: 100%;
-	}
 
-	// Adjacent Photos Navigation
-	.adjacent-photos {
+	// Adjacent Navigation
+	.adjacent-navigation {
 		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: calc(100% + 400px); // Add space for the adjacent images
+		top: 0;
+		bottom: 0;
+		left: calc(-48px - #{$unit-2x});
+		right: calc(-48px - #{$unit-2x});
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		pointer-events: none;
-		z-index: 10;
+		z-index: 100;
 
 		// Hide on mobile and tablet
 		@include breakpoint('tablet') {
@@ -462,82 +259,51 @@
 		}
 	}
 
-	.adjacent-photo,
-	.adjacent-placeholder {
-		width: 200px;
-		height: 300px;
+	.nav-button {
+		width: 48px;
+		height: 48px;
 		pointer-events: auto;
-	}
-
-	.adjacent-photo {
 		position: relative;
 		border: none;
 		padding: 0;
-		background: none;
+		background: $grey-100;
 		cursor: pointer;
-		border-radius: $image-corner-radius;
-		overflow: hidden;
-		transition: all 0.3s ease;
-		opacity: 0.3;
-		filter: grayscale(100%);
-
-		&.prev {
-			transform: translateX(-25%);
-		}
-
-		&.next {
-			transform: translateX(25%);
-		}
-
-		&::before {
-			content: '';
-			position: absolute;
-			inset: -3px;
-			border-radius: $image-corner-radius;
-			border: 3px solid transparent;
-			z-index: 2;
-			pointer-events: none;
-			transition: border-color 0.2s ease;
-		}
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: 0;
-			border-radius: $image-corner-radius;
-			border: 2px solid transparent;
-			z-index: 3;
-			pointer-events: none;
-			transition: border-color 0.2s ease;
-		}
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 		&:hover {
-			opacity: 0.6;
-			filter: grayscale(50%);
-			transform: scale(1.02) translateX(-25%);
-
-			&.next {
-				transform: scale(1.02) translateX(25%);
-			}
+			background: $grey-95;
+			transform: scale(1.1);
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 		}
 
 		&:focus-visible {
 			outline: none;
-
-			&::before {
-				border-color: $red-60;
-			}
-
-			&::after {
-				border-color: $grey-100;
-			}
+			box-shadow:
+				0 0 0 3px $red-60,
+				0 0 0 5px $grey-100;
 		}
-	}
 
-	.adjacent-image {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		display: block;
+		:global(svg) {
+			stroke: $grey-10;
+			width: 16px;
+			height: 16px;
+			fill: none;
+			stroke-width: 2px;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		&.prev {
+			margin-right: auto;
+		}
+
+		&.next {
+			margin-left: auto;
+		}
 	}
 </style>

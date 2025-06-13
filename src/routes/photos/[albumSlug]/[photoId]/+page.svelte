@@ -1,8 +1,13 @@
 <script lang="ts">
 	import BackButton from '$components/BackButton.svelte'
+	import PhotoView from '$components/PhotoView.svelte'
+	import PhotoMetadata from '$components/PhotoMetadata.svelte'
 	import { generateMetaTags, generateCreativeWorkJsonLd } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
+	import { goto } from '$app/navigation'
 	import type { PageData } from './$types'
+	import ArrowLeft from '$icons/arrow-left.svg'
+	import ArrowRight from '$icons/arrow-right.svg'
 
 	let { data }: { data: PageData } = $props()
 
@@ -11,14 +16,6 @@
 	const navigation = $derived(data.navigation)
 	const error = $derived(data.error)
 
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString)
-		return date.toLocaleDateString('en-US', {
-			month: 'long',
-			day: 'numeric',
-			year: 'numeric'
-		})
-	}
 
 	const formatExif = (exifData: any) => {
 		if (!exifData) return null
@@ -47,6 +44,24 @@
 
 	const exif = $derived(photo ? formatExif(photo.exifData) : null)
 	const pageUrl = $derived($page.url.href)
+	
+	// Parse EXIF data if available (same as photo detail page)
+	const exifData = $derived(
+		photo?.exifData && typeof photo.exifData === 'object' ? photo.exifData : null
+	)
+	
+	// Debug: Log what data we have
+	$effect(() => {
+		if (photo) {
+			console.log('Photo data:', {
+				id: photo.id,
+				title: photo.title,
+				caption: photo.caption,
+				exifData: photo.exifData,
+				createdAt: photo.createdAt
+			})
+		}
+	})
 
 	// Generate metadata
 	const photoTitle = $derived(photo?.title || photo?.caption || `Photo ${navigation?.currentIndex}`)
@@ -127,155 +142,56 @@
 	</div>
 {:else}
 	<div class="photo-page">
-		<!-- Navigation Header -->
-		<header class="photo-header">
-			<nav class="breadcrumb">
-				<a href="/photos">Photos</a>
-				<span class="separator">→</span>
-				<a href="/photos/{album.slug}">{album.title}</a>
-				<span class="separator">→</span>
-				<span class="current">Photo {navigation.currentIndex} of {navigation.totalCount}</span>
-			</nav>
+		<div class="photo-content-wrapper">
+			<PhotoView 
+				src={photo.url} 
+				alt={photo.caption} 
+				title={photo.title}
+				id={photo.id}
+			/>
 
-			<div class="photo-nav">
+			<!-- Adjacent Photos Navigation -->
+			<div class="adjacent-navigation">
 				{#if navigation.prevPhoto}
-					<a href="/photos/{album.slug}/{navigation.prevPhoto.id}" class="nav-btn prev">
-						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path
-								d="M12.5 15L7.5 10L12.5 5"
-								stroke="currentColor"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-						Previous
-					</a>
-				{:else}
-					<div class="nav-btn disabled">
-						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path
-								d="M12.5 15L7.5 10L12.5 5"
-								stroke="currentColor"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-						Previous
-					</div>
+					<button
+						class="nav-button prev"
+						onclick={() => goto(`/photos/${album.slug}/${navigation.prevPhoto.id}`)}
+						type="button"
+						aria-label="Previous photo"
+					>
+						<ArrowLeft class="nav-icon" />
+					</button>
 				{/if}
 
 				{#if navigation.nextPhoto}
-					<a href="/photos/{album.slug}/{navigation.nextPhoto.id}" class="nav-btn next">
-						Next
-						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path
-								d="M7.5 5L12.5 10L7.5 15"
-								stroke="currentColor"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</a>
-				{:else}
-					<div class="nav-btn disabled">
-						Next
-						<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-							<path
-								d="M7.5 5L12.5 10L7.5 15"
-								stroke="currentColor"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</div>
+					<button
+						class="nav-button next"
+						onclick={() => goto(`/photos/${album.slug}/${navigation.nextPhoto.id}`)}
+						type="button"
+						aria-label="Next photo"
+					>
+						<ArrowRight class="nav-icon" />
+					</button>
 				{/if}
 			</div>
-		</header>
+		</div>
 
-		<!-- Photo Display -->
-		<main class="photo-main">
-			<div class="photo-container">
-				<img
-					src={photo.url}
-					alt={photo.caption || photo.title || 'Photo'}
-					class="main-photo"
-					loading="eager"
-				/>
-			</div>
-		</main>
-
-		<!-- Photo Details -->
-		<aside class="photo-details">
-			<div class="details-content">
-				{#if photo.title}
-					<h1 class="photo-title">{photo.title}</h1>
-				{/if}
-
-				{#if photo.caption}
-					<p class="photo-caption">{photo.caption}</p>
-				{/if}
-
-				{#if photo.description}
-					<p class="photo-description">{photo.description}</p>
-				{/if}
-
-				{#if exif}
-					<div class="photo-exif">
-						<h3>Photo Details</h3>
-
-						{#if exif.camera}
-							<div class="exif-item">
-								<span class="label">Camera</span>
-								<span class="value">{exif.camera}</span>
-							</div>
-						{/if}
-
-						{#if exif.lens}
-							<div class="exif-item">
-								<span class="label">Lens</span>
-								<span class="value">{exif.lens}</span>
-							</div>
-						{/if}
-
-						{#if exif.settings}
-							<div class="exif-item">
-								<span class="label">Settings</span>
-								<span class="value">{exif.settings}</span>
-							</div>
-						{/if}
-
-						{#if exif.location}
-							<div class="exif-item">
-								<span class="label">Location</span>
-								<span class="value">{exif.location}</span>
-							</div>
-						{/if}
-
-						{#if exif.dateTaken}
-							<div class="exif-item">
-								<span class="label">Date Taken</span>
-								<span class="value">{formatDate(exif.dateTaken)}</span>
-							</div>
-						{/if}
-					</div>
-				{/if}
-
-				<div class="photo-actions">
-					<a href="/photos/{album.slug}" class="back-to-album">← Back to {album.title}</a>
-				</div>
-			</div>
-		</aside>
+		<PhotoMetadata
+			title={photo.title}
+			caption={photo.caption}
+			description={photo.description}
+			{exifData}
+			createdAt={photo.createdAt}
+			backHref={`/photos/${album.slug}`}
+			backLabel={`Back to ${album.title}`}
+			showBackButton={true}
+		/>
 	</div>
 {/if}
 
 <style lang="scss">
-	:global(main) {
-		padding: 0;
-	}
+	@import '$styles/variables.scss';
+	@import '$styles/mixins.scss';
 
 	.error-container {
 		display: flex;
@@ -304,234 +220,100 @@
 	}
 
 	.photo-page {
-		min-height: 100vh;
-		display: grid;
-		grid-template-areas:
-			'header header'
-			'main details';
-		grid-template-columns: 1fr 400px;
-		grid-template-rows: auto 1fr;
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 $unit-3x $unit-4x;
+		align-items: center;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-2x;
+		box-sizing: border-box;
+		position: relative;
 
 		@include breakpoint('tablet') {
-			grid-template-areas:
-				'header'
-				'main'
-				'details';
-			grid-template-columns: 1fr;
-			grid-template-rows: auto 1fr auto;
+			max-width: 900px;
+		}
+
+		@include breakpoint('phone') {
+			padding: 0 $unit-2x $unit-2x;
+			gap: $unit;
 		}
 	}
 
-	.photo-header {
-		grid-area: header;
-		background: $grey-100;
-		border-bottom: 1px solid $grey-90;
-		padding: $unit-3x $unit-4x;
+	.photo-content-wrapper {
+		position: relative;
+		max-width: 700px;
+		width: 100%;
+		margin: 0 auto;
+		display: flex;
+		align-items: center;
+	}
+
+	// Adjacent Navigation
+	.adjacent-navigation {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: calc(-48px - #{$unit-2x});
+		right: calc(-48px - #{$unit-2x});
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		pointer-events: none;
+		z-index: 100;
 
-		@include breakpoint('phone') {
-			padding: $unit-2x;
-			flex-direction: column;
-			gap: $unit-2x;
-			align-items: stretch;
+		// Hide on mobile and tablet
+		@include breakpoint('tablet') {
+			display: none;
 		}
 	}
 
-	.breadcrumb {
-		font-size: 0.875rem;
-		color: $grey-40;
-
-		a {
-			color: $grey-40;
-			text-decoration: none;
-			transition: color 0.2s ease;
-
-			&:hover {
-				color: $grey-20;
-			}
-		}
-
-		.separator {
-			margin: 0 $unit;
-		}
-
-		.current {
-			color: $grey-20;
-		}
-	}
-
-	.photo-nav {
-		display: flex;
-		gap: $unit-2x;
-
-		@include breakpoint('phone') {
-			justify-content: space-between;
-		}
-	}
-
-	.nav-btn {
+	.nav-button {
+		width: 48px;
+		height: 48px;
+		pointer-events: auto;
+		position: relative;
+		border: none;
+		padding: 0;
+		background: $grey-100;
+		cursor: pointer;
+		border-radius: 50%;
 		display: flex;
 		align-items: center;
-		gap: $unit;
-		padding: $unit $unit-2x;
-		border-radius: $unit;
-		border: 1px solid $grey-85;
-		background: $grey-100;
-		color: $grey-20;
-		text-decoration: none;
-		font-size: 0.875rem;
-		font-weight: 500;
+		justify-content: center;
 		transition: all 0.2s ease;
-
-		&:hover:not(.disabled) {
-			border-color: $grey-70;
-			background: $grey-95;
-		}
-
-		&.disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
-
-		&.prev svg {
-			order: -1;
-		}
-
-		&.next svg {
-			order: 1;
-		}
-	}
-
-	.photo-main {
-		grid-area: main;
-		background: $grey-95;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: $unit-4x;
-		min-height: 60vh;
-
-		@include breakpoint('tablet') {
-			min-height: 50vh;
-		}
-
-		@include breakpoint('phone') {
-			padding: $unit-2x;
-		}
-	}
-
-	.photo-container {
-		max-width: 100%;
-		max-height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.main-photo {
-		max-width: 100%;
-		max-height: 80vh;
-		width: auto;
-		height: auto;
-		border-radius: $unit;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-		object-fit: contain;
-
-		@include breakpoint('tablet') {
-			max-height: 60vh;
-		}
-	}
-
-	.photo-details {
-		grid-area: details;
-		background: $grey-100;
-		border-left: 1px solid $grey-90;
-		overflow-y: auto;
-
-		@include breakpoint('tablet') {
-			border-left: none;
-			border-top: 1px solid $grey-90;
-		}
-	}
-
-	.details-content {
-		padding: $unit-4x;
-
-		@include breakpoint('phone') {
-			padding: $unit-3x $unit-2x;
-		}
-	}
-
-	.photo-title {
-		font-size: 1.5rem;
-		font-weight: 600;
-		margin: 0 0 $unit-2x;
-		color: $grey-10;
-	}
-
-	.photo-caption {
-		font-size: 1rem;
-		color: $grey-20;
-		margin: 0 0 $unit-3x;
-		line-height: 1.5;
-	}
-
-	.photo-description {
-		font-size: 1rem;
-		color: $grey-30;
-		margin: 0 0 $unit-4x;
-		line-height: 1.6;
-	}
-
-	.photo-exif {
-		margin-bottom: $unit-4x;
-
-		h3 {
-			font-size: 1rem;
-			font-weight: 600;
-			margin: 0 0 $unit-2x;
-			color: $grey-10;
-		}
-	}
-
-	.exif-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: $unit;
-		gap: $unit-2x;
-
-		.label {
-			font-size: 0.875rem;
-			color: $grey-50;
-			font-weight: 500;
-			flex-shrink: 0;
-		}
-
-		.value {
-			font-size: 0.875rem;
-			color: $grey-20;
-			text-align: right;
-			word-break: break-word;
-		}
-	}
-
-	.photo-actions {
-		padding-top: $unit-3x;
-		border-top: 1px solid $grey-90;
-	}
-
-	.back-to-album {
-		color: $grey-40;
-		text-decoration: none;
-		font-size: 0.925rem;
-		font-weight: 500;
-		transition: color 0.2s ease;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 		&:hover {
-			color: $grey-20;
+			background: $grey-95;
+			transform: scale(1.1);
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+		}
+
+		&:focus-visible {
+			outline: none;
+			box-shadow:
+				0 0 0 3px $red-60,
+				0 0 0 5px $grey-100;
+		}
+
+		:global(svg) {
+			stroke: $grey-10;
+			width: 16px;
+			height: 16px;
+			fill: none;
+			stroke-width: 2px;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		&.prev {
+			margin-right: auto;
+		}
+
+		&.next {
+			margin-left: auto;
 		}
 	}
 </style>
