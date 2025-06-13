@@ -6,6 +6,8 @@
 	import { onMount } from 'svelte'
 	import type { PageData } from './$types'
 	import { isAlbum } from '$lib/types/photos'
+	import Zoom from 'svelte-medium-image-zoom'
+	import 'svelte-medium-image-zoom/dist/styles.css'
 
 	let { data }: { data: PageData } = $props()
 
@@ -13,8 +15,6 @@
 	const error = $derived(data.error)
 	const photoItems = $derived(data.photoItems || [])
 	const currentPhotoId = $derived(data.currentPhotoId)
-	
-	let showModal = $state(false)
 
 	const pageUrl = $derived($page.url.href)
 
@@ -69,77 +69,42 @@
 		photo?.exifData && typeof photo.exifData === 'object' ? photo.exifData : null
 	)
 
-	// Get adjacent photos for filmstrip - always show 5 when possible
-	const filmstripItems = $derived(() => {
-		if (!photoItems.length || !currentPhotoId) return []
+	// Get previous and next photos (excluding albums)
+	const adjacentPhotos = $derived(() => {
+		if (!photoItems.length || !currentPhotoId) return { prev: null, next: null }
 		
-		const currentIndex = photoItems.findIndex(item => item.id === currentPhotoId)
-		if (currentIndex === -1) return []
+		// Filter out albums - we only want photos
+		const photosOnly = photoItems.filter(item => !isAlbum(item))
+		const currentIndex = photosOnly.findIndex(item => item.id === currentPhotoId)
 		
-		const targetCount = 5
-		const halfCount = Math.floor(targetCount / 2)
+		if (currentIndex === -1) return { prev: null, next: null }
 		
-		let start = currentIndex - halfCount
-		let end = currentIndex + halfCount + 1
-		
-		// Adjust if we're near the beginning
-		if (start < 0) {
-			end = Math.min(photoItems.length, end - start)
-			start = 0
+		return {
+			prev: currentIndex > 0 ? photosOnly[currentIndex - 1] : null,
+			next: currentIndex < photosOnly.length - 1 ? photosOnly[currentIndex + 1] : null
 		}
-		
-		// Adjust if we're near the end
-		if (end > photoItems.length) {
-			start = Math.max(0, start - (end - photoItems.length))
-			end = photoItems.length
-		}
-		
-		// Ensure we always get up to targetCount items if available
-		const itemsCount = end - start
-		if (itemsCount < targetCount && photoItems.length >= targetCount) {
-			if (start === 0) {
-				end = Math.min(targetCount, photoItems.length)
-			} else {
-				start = Math.max(0, photoItems.length - targetCount)
-			}
-		}
-		
-		return photoItems.slice(start, end)
 	})
 
-	// Handle filmstrip navigation
-	function handleFilmstripClick(item: any) {
-		if (isAlbum(item)) {
-			goto(`/photos/${item.slug}`)
-		} else {
-			const photoId = item.id.replace('photo-', '')
-			goto(`/photos/p/${photoId}`)
-		}
-	}
-
-	// Modal handlers
-	function openModal() {
-		showModal = true
-		document.body.style.overflow = 'hidden'
-	}
-
-	function closeModal() {
-		showModal = false
-		document.body.style.overflow = ''
+	// Handle photo navigation
+	function navigateToPhoto(item: any) {
+		if (!item) return
+		const photoId = item.id.replace('photo-', '')
+		goto(`/photos/p/${photoId}`)
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && showModal) {
-			closeModal()
+		// Arrow key navigation for photos
+		if (e.key === 'ArrowLeft' && adjacentPhotos().prev) {
+			navigateToPhoto(adjacentPhotos().prev)
+		} else if (e.key === 'ArrowRight' && adjacentPhotos().next) {
+			navigateToPhoto(adjacentPhotos().next)
 		}
 	}
 
 	// Set up keyboard listener
 	$effect(() => {
-		if (showModal) {
-			window.addEventListener('keydown', handleKeydown)
-			return () => window.removeEventListener('keydown', handleKeydown)
-		}
+		window.addEventListener('keydown', handleKeydown)
+		return () => window.removeEventListener('keydown', handleKeydown)
 	})
 </script>
 
@@ -176,9 +141,50 @@
 	</div>
 {:else if photo}
 	<div class="photo-page">
-		<button class="photo-container" onclick={openModal} type="button">
-			<img src={photo.url} alt={photo.title || photo.caption || 'Photo'} class="photo-image" />
-		</button>
+		<div class="photo-content-wrapper">
+			<div class="photo-container">
+				<Zoom>
+					<img src={photo.url} alt={photo.title || photo.caption || 'Photo'} class="photo-image" />
+				</Zoom>
+			</div>
+
+			<!-- Adjacent Photos Navigation (Desktop Only) -->
+			<div class="adjacent-photos">
+				{#if adjacentPhotos().prev}
+					<button 
+						class="adjacent-photo prev"
+						onclick={() => navigateToPhoto(adjacentPhotos().prev)}
+						type="button"
+						aria-label="Previous photo"
+					>
+						<img 
+							src={adjacentPhotos().prev.src} 
+							alt={adjacentPhotos().prev.alt}
+							class="adjacent-image"
+						/>
+					</button>
+				{:else}
+					<div class="adjacent-placeholder"></div>
+				{/if}
+
+				{#if adjacentPhotos().next}
+					<button 
+						class="adjacent-photo next"
+						onclick={() => navigateToPhoto(adjacentPhotos().next)}
+						type="button"
+						aria-label="Next photo"
+					>
+						<img 
+							src={adjacentPhotos().next.src} 
+							alt={adjacentPhotos().next.alt}
+							class="adjacent-image"
+						/>
+					</button>
+				{:else}
+					<div class="adjacent-placeholder"></div>
+				{/if}
+			</div>
+		</div>
 
 		<div class="photo-info-card">
 			{#if photo.title || photo.caption || photo.description}
@@ -259,64 +265,14 @@
 			{/if}
 		</div>
 
-		<!-- Filmstrip Navigation -->
-		<div class="filmstrip-card">
-			<div class="filmstrip-container">
-				{#each filmstripItems() as item}
-					<button 
-						class="filmstrip-item" 
-						class:selected={item.id === currentPhotoId}
-						onclick={() => handleFilmstripClick(item)}
-						type="button"
-					>
-						{#if isAlbum(item)}
-							<img 
-								src={item.coverPhoto.src} 
-								alt={item.title}
-								class="filmstrip-image"
-							/>
-							<div class="album-indicator">
-								<span class="album-count">{item.photos.length}</span>
-							</div>
-						{:else}
-							<img 
-								src={item.src} 
-								alt={item.alt}
-								class="filmstrip-image"
-							/>
-						{/if}
-					</button>
-				{/each}
-			</div>
-			
-			<div class="card-footer">
-				<BackButton
-					href={photo.album ? `/photos/${photo.album.slug}` : '/photos'}
-					label={photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'}
-				/>
-			</div>
+		<!-- Navigation Footer -->
+		<div class="navigation-footer">
+			<BackButton
+				href={photo.album ? `/photos/${photo.album.slug}` : '/photos'}
+				label={photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'}
+			/>
 		</div>
 	</div>
-
-	<!-- Photo Modal -->
-	{#if showModal}
-		<div 
-			class="photo-modal" 
-			onclick={closeModal}
-			role="dialog"
-			aria-modal="true"
-			aria-label="Full size photo"
-		>
-			<div class="modal-content">
-				<img 
-					src={photo.url} 
-					alt={photo.title || photo.caption || 'Photo'} 
-					class="modal-image"
-					onclick={closeModal}
-				/>
-			</div>
-		</div>
-	{/if}
 {/if}
 
 <style lang="scss">
@@ -367,56 +323,18 @@
 		}
 	}
 
+	.photo-content-wrapper {
+		position: relative;
+		max-width: 700px;
+		width: 100%;
+	}
+
 	.photo-container {
 		max-width: 700px;
 		width: 100%;
 		font-size: 0;
 		line-height: 0;
-		border: none;
-		padding: 0;
-		background: none;
-		cursor: zoom-in;
 		position: relative;
-
-		&::before {
-			content: '';
-			position: absolute;
-			inset: -3px;
-			border-radius: $image-corner-radius;
-			border: 3px solid transparent;
-			z-index: 2;
-			pointer-events: none;
-			transition: border-color 0.2s ease;
-		}
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: 0;
-			border-radius: $image-corner-radius;
-			border: 2px solid transparent;
-			z-index: 3;
-			pointer-events: none;
-			transition: border-color 0.2s ease;
-		}
-
-		&:focus-visible {
-			outline: none;
-
-			&::before {
-				border-color: $red-60;
-			}
-
-			&::after {
-				border-color: $grey-100;
-			}
-		}
-
-		&:hover {
-			.photo-image {
-				opacity: 0.95;
-			}
-		}
 
 		.photo-image {
 			display: block;
@@ -426,7 +344,6 @@
 			object-fit: contain;
 			border-radius: $image-corner-radius;
 			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-			transition: opacity 0.2s ease;
 
 			@include breakpoint('phone') {
 				border-radius: $image-corner-radius;
@@ -517,54 +434,66 @@
 		}
 	}
 
-	// Filmstrip Navigation
-	.filmstrip-card {
-		background: $grey-100;
-		border: 1px solid $grey-90;
-		border-radius: $image-corner-radius;
-		padding: $unit-4x;
+	// Navigation Footer
+	.navigation-footer {
+		display: flex;
+		justify-content: center;
 		max-width: 700px;
 		margin: 0 auto;
 		width: 100%;
-		box-sizing: border-box;
-
-		@include breakpoint('phone') {
-			padding: $unit-3x;
-			max-width: 100%;
-		}
 	}
 
-	.filmstrip-container {
+	// Adjacent Photos Navigation
+	.adjacent-photos {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: calc(100% + 400px); // Add space for the adjacent images
 		display: flex;
-		justify-content: center;
+		justify-content: space-between;
 		align-items: center;
-		gap: $unit-2x;
-		margin-bottom: $unit-2x;
-		padding: $unit 0;
+		pointer-events: none;
+		z-index: 10;
 
-		@include breakpoint('phone') {
-			gap: $unit;
+		// Hide on mobile and tablet
+		@include breakpoint('tablet') {
+			display: none;
 		}
 	}
 
-	.filmstrip-item {
-		flex: 0 0 auto;
-		height: 100px;
+	.adjacent-photo,
+	.adjacent-placeholder {
+		width: 200px;
+		height: 300px;
+		pointer-events: auto;
+	}
+
+	.adjacent-photo {
 		position: relative;
 		border: none;
 		padding: 0;
 		background: none;
 		cursor: pointer;
-		border-radius: $corner-radius-md;
+		border-radius: $image-corner-radius;
 		overflow: hidden;
-		transition: all 0.2s ease;
-		opacity: 0.6;
+		transition: all 0.3s ease;
+		opacity: 0.3;
+		filter: grayscale(100%);
+
+		&.prev {
+			transform: translateX(-25%);
+		}
+
+		&.next {
+			transform: translateX(25%);
+		}
 
 		&::before {
 			content: '';
 			position: absolute;
-			inset: 0;
-			border-radius: $corner-radius-md;
+			inset: -3px;
+			border-radius: $image-corner-radius;
 			border: 3px solid transparent;
 			z-index: 2;
 			pointer-events: none;
@@ -574,8 +503,8 @@
 		&::after {
 			content: '';
 			position: absolute;
-			inset: 3px;
-			border-radius: calc($corner-radius-md - 3px);
+			inset: 0;
+			border-radius: $image-corner-radius;
 			border: 2px solid transparent;
 			z-index: 3;
 			pointer-events: none;
@@ -583,12 +512,17 @@
 		}
 
 		&:hover {
-			opacity: 1;
-			transform: scale(1.02);
+			opacity: 0.6;
+			filter: grayscale(50%);
+			transform: scale(1.02) translateX(-25%);
+
+			&.next {
+				transform: scale(1.02) translateX(25%);
+			}
 		}
 
-		&.selected {
-			opacity: 1;
+		&:focus-visible {
+			outline: none;
 
 			&::before {
 				border-color: $red-60;
@@ -598,68 +532,12 @@
 				border-color: $grey-100;
 			}
 		}
-
-		@include breakpoint('phone') {
-			height: 70px;
-		}
 	}
 
-	.filmstrip-image {
-		height: 100%;
-		width: auto;
-		object-fit: cover;
-		display: block;
-	}
-
-	.album-indicator {
-		position: absolute;
-		bottom: $unit-half;
-		right: $unit-half;
-		background: rgba(0, 0, 0, 0.7);
-		color: white;
-		padding: 2px 6px;
-		border-radius: $corner-radius-xs;
-		font-size: 0.75rem;
-		font-weight: 600;
-	}
-
-	.card-footer {
-		display: flex;
-		justify-content: center;
-	}
-
-	// Modal styles
-	.photo-modal {
-		position: fixed;
-		top: 0;
-		left: 0;
+	.adjacent-image {
 		width: 100%;
 		height: 100%;
-		background: rgba(0, 0, 0, 0.7);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-		cursor: zoom-out;
-		padding: $unit-2x;
-		box-sizing: border-box;
-	}
-
-	.modal-content {
-		position: relative;
-		max-width: 95vw;
-		max-height: 95vh;
-		cursor: default;
-	}
-
-	.modal-image {
+		object-fit: cover;
 		display: block;
-		width: auto;
-		height: auto;
-		max-width: 100%;
-		max-height: 95vh;
-		object-fit: contain;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-		cursor: zoom-out;
 	}
 </style>
