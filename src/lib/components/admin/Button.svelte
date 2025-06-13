@@ -170,6 +170,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: $unit;
+		font-family: 'cstd', 'Helvetica Neue', Arial, sans-serif;
 		font-weight: 400;
 		border: none;
 		cursor: pointer;

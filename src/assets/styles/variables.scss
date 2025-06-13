@@ -58,13 +58,15 @@ $mention-padding: $unit-3x;
 
 $font-stack: 'Circular Std', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-$font-unit: 14px;
+$font-unit: 18px;
+$font-unit-mobile: 16px;
 
-$font-size-small: 0.7rem; // 10
-$font-size: 1rem; // 14
-$font-size-med: 1.25rem; // 16
-$font-size-large: 1.4rem; // 18
-$font-size-xlarge: 1.65rem; // 22
+$font-size-extra-small: 0.75rem; // 12
+$font-size-small: 0.875rem; // 14
+$font-size: 1rem; // 18
+$font-size-med: 1.25rem; // 20
+$font-size-large: 1.4rem; // 22
+$font-size-xlarge: 1.65rem; // 26
 
 $font-weight: 400;
 $font-weight-med: 500;

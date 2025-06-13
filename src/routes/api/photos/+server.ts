@@ -11,27 +11,28 @@ export const GET: RequestHandler = async (event) => {
 		const limit = parseInt(url.searchParams.get('limit') || '50')
 		const offset = parseInt(url.searchParams.get('offset') || '0')
 
-		// Fetch published photography albums
+		// Fetch published photography albums with their media
 		const albums = await prisma.album.findMany({
 			where: {
 				status: 'published',
 				isPhotography: true
 			},
 			include: {
-				photos: {
-					where: {
-						status: 'published'
-					},
+				media: {
 					orderBy: { displayOrder: 'asc' },
-					select: {
-						id: true,
-						filename: true,
-						url: true,
-						thumbnailUrl: true,
-						width: true,
-						height: true,
-						caption: true,
-						displayOrder: true
+					include: {
+						media: {
+							select: {
+								id: true,
+								filename: true,
+								url: true,
+								thumbnailUrl: true,
+								width: true,
+								height: true,
+								photoCaption: true,
+								exifData: true
+							}
+						}
 					}
 				}
 			},
@@ -40,74 +41,97 @@ export const GET: RequestHandler = async (event) => {
 			take: limit
 		})
 
-		// Fetch individual published photos (not in albums, marked for photography)
-		const individualPhotos = await prisma.photo.findMany({
+		// Fetch individual photos (marked for photography, not in any album)
+		const individualMedia = await prisma.media.findMany({
 			where: {
-				status: 'published',
-				showInPhotos: true,
-				albumId: null // Only photos not in albums
+				isPhotography: true,
+				albums: {
+					none: {} // Media not in any album
+				}
 			},
 			select: {
 				id: true,
-				slug: true,
+				photoSlug: true,
 				filename: true,
 				url: true,
 				thumbnailUrl: true,
 				width: true,
 				height: true,
-				caption: true,
-				title: true,
-				description: true
+				photoCaption: true,
+				photoTitle: true,
+				photoDescription: true,
+				createdAt: true,
+				photoPublishedAt: true,
+				exifData: true
 			},
-			orderBy: { createdAt: 'desc' },
+			orderBy: { photoPublishedAt: 'desc' },
 			skip: offset,
 			take: limit
 		})
 
 		// Transform albums to PhotoAlbum format
 		const photoAlbums: PhotoAlbum[] = albums
-			.filter((album) => album.photos.length > 0) // Only include albums with published photos
-			.map((album) => ({
-				id: `album-${album.id}`,
-				slug: album.slug, // Add slug for navigation
-				title: album.title,
-				description: album.description || undefined,
-				coverPhoto: {
-					id: `cover-${album.photos[0].id}`,
-					src: album.photos[0].url,
-					alt: album.photos[0].caption || album.title,
-					caption: album.photos[0].caption || undefined,
-					width: album.photos[0].width || 400,
-					height: album.photos[0].height || 400
-				},
-				photos: album.photos.map((photo) => ({
-					id: `photo-${photo.id}`,
-					src: photo.url,
-					alt: photo.caption || photo.filename,
-					caption: photo.caption || undefined,
-					width: photo.width || 400,
-					height: photo.height || 400
-				})),
-				createdAt: album.createdAt.toISOString()
-			}))
+			.filter((album) => album.media.length > 0) // Only include albums with media
+			.map((album) => {
+				const firstMedia = album.media[0].media
+				return {
+					id: `album-${album.id}`,
+					slug: album.slug,
+					title: album.title,
+					description: album.description || undefined,
+					coverPhoto: {
+						id: `cover-${firstMedia.id}`,
+						src: firstMedia.url,
+						alt: firstMedia.photoCaption || album.title,
+						caption: firstMedia.photoCaption || undefined,
+						width: firstMedia.width || 400,
+						height: firstMedia.height || 400
+					},
+					photos: album.media.map((albumMedia) => ({
+						id: `media-${albumMedia.media.id}`,
+						src: albumMedia.media.url,
+						alt: albumMedia.media.photoCaption || albumMedia.media.filename,
+						caption: albumMedia.media.photoCaption || undefined,
+						width: albumMedia.media.width || 400,
+						height: albumMedia.media.height || 400
+					})),
+					createdAt: album.createdAt.toISOString()
+				}
+			})
 
-		// Transform individual photos to Photo format
-		const photos: Photo[] = individualPhotos.map((photo) => ({
-			id: `photo-${photo.id}`,
-			src: photo.url,
-			alt: photo.title || photo.caption || photo.filename,
-			caption: photo.caption || undefined,
-			width: photo.width || 400,
-			height: photo.height || 400
-		}))
+		// Transform individual media to Photo format
+		const photos: Photo[] = individualMedia.map((media) => {
+			// Extract date from EXIF data if available
+			let photoDate: string
+			if (media.exifData && typeof media.exifData === 'object' && 'dateTaken' in media.exifData) {
+				// Use EXIF date if available
+				photoDate = media.exifData.dateTaken as string
+			} else if (media.photoPublishedAt) {
+				// Fall back to published date
+				photoDate = media.photoPublishedAt.toISOString()
+			} else {
+				// Fall back to created date
+				photoDate = media.createdAt.toISOString()
+			}
+
+			return {
+				id: `media-${media.id}`,
+				src: media.url,
+				alt: media.photoTitle || media.photoCaption || media.filename,
+				caption: media.photoCaption || undefined,
+				width: media.width || 400,
+				height: media.height || 400,
+				createdAt: photoDate
+			}
+		})
 
 		// Combine albums and individual photos
 		const photoItems: PhotoItem[] = [...photoAlbums, ...photos]
 
-		// Sort by creation date (albums use createdAt, individual photos would need publishedAt or createdAt)
+		// Sort by creation date (both albums and photos now have createdAt)
 		photoItems.sort((a, b) => {
-			const dateA = 'createdAt' in a ? new Date(a.createdAt) : new Date()
-			const dateB = 'createdAt' in b ? new Date(b.createdAt) : new Date()
+			const dateA = a.createdAt ? new Date(a.createdAt) : new Date()
+			const dateB = b.createdAt ? new Date(b.createdAt) : new Date()
 			return dateB.getTime() - dateA.getTime()
 		})
 

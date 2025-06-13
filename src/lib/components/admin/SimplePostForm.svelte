@@ -336,7 +336,7 @@
 
 	.title-input {
 		width: 100%;
-		padding: $unit-3x;
+		padding: $unit-4x;
 		border: none;
 		background: transparent;
 		font-size: 1rem;

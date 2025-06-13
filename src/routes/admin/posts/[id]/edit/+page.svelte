@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import Editor from '$lib/components/admin/Editor.svelte'
+	import CaseStudyEditor from '$lib/components/admin/CaseStudyEditor.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
@@ -134,7 +134,6 @@
 			content: tiptapContent
 		}
 	}
-
 
 	onMount(async () => {
 		// Wait a tick to ensure page params are loaded
@@ -366,6 +365,7 @@
 						? { label: 'Save', status: 'published' }
 						: { label: 'Publish', status: 'published' }}
 					dropdownActions={[{ label: 'Save as Draft', status: 'draft', show: status !== 'draft' }]}
+					viewUrl={slug ? `/universe/${slug}` : undefined}
 				/>
 			</div>
 		{/if}
@@ -390,7 +390,7 @@
 
 				{#if config?.showContent && contentReady}
 					<div class="editor-wrapper">
-						<Editor bind:data={content} placeholder="Continue writing..." />
+						<CaseStudyEditor bind:data={content} placeholder="Continue writing..." mode="default" />
 					</div>
 				{/if}
 			</div>
@@ -489,28 +489,6 @@
 		}
 	}
 
-	.btn {
-		padding: $unit-2x $unit-3x;
-		border: none;
-		border-radius: 50px;
-		font-size: 0.925rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		display: flex;
-		align-items: center;
-		gap: $unit;
-
-		&:disabled {
-			opacity: 0.6;
-			cursor: not-allowed;
-		}
-
-		&.btn-small {
-			padding: $unit $unit-2x;
-			font-size: 0.875rem;
-		}
-	}
-
 	.dropdown-menu {
 		position: absolute;
 		top: calc(100% + $unit);
@@ -553,13 +531,13 @@
 	.main-content {
 		display: flex;
 		flex-direction: column;
-		gap: $unit-3x;
+		gap: $unit-2x;
 		min-width: 0;
 	}
 
 	.title-input {
 		width: 100%;
-		padding: 0 $unit-2x;
+		padding: 0 $unit-4x;
 		border: none;
 		font-size: 2.5rem;
 		font-weight: 700;

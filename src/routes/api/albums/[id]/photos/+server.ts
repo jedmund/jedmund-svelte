@@ -8,7 +8,7 @@ import {
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
-// POST /api/albums/[id]/photos - Add a photo to an album
+// POST /api/albums/[id]/photos - Add media to an album
 export const POST: RequestHandler = async (event) => {
 	// Check authentication
 	if (!checkAdminAuth(event)) {
@@ -53,29 +53,39 @@ export const POST: RequestHandler = async (event) => {
 			return errorResponse('Only images can be added to albums', 400)
 		}
 
+		// Check if media is already in this album
+		const existing = await prisma.albumMedia.findUnique({
+			where: {
+				albumId_mediaId: {
+					albumId: albumId,
+					mediaId: body.mediaId
+				}
+			}
+		})
+
+		if (existing) {
+			return errorResponse('Media is already in this album', 409)
+		}
+
 		// Get the next display order if not provided
 		let displayOrder = body.displayOrder
 		if (displayOrder === undefined) {
-			const lastPhoto = await prisma.photo.findFirst({
+			const lastAlbumMedia = await prisma.albumMedia.findFirst({
 				where: { albumId },
 				orderBy: { displayOrder: 'desc' }
 			})
-			displayOrder = (lastPhoto?.displayOrder || 0) + 1
+			displayOrder = (lastAlbumMedia?.displayOrder || 0) + 1
 		}
 
-		// Create photo record from media
-		const photo = await prisma.photo.create({
+		// Create album-media relationship
+		const albumMedia = await prisma.albumMedia.create({
 			data: {
 				albumId,
-				filename: media.filename,
-				url: media.url,
-				thumbnailUrl: media.thumbnailUrl,
-				width: media.width,
-				height: media.height,
-				caption: media.description, // Use media description as initial caption
-				displayOrder,
-				status: 'published', // Photos in albums are published by default
-				showInPhotos: true
+				mediaId: body.mediaId,
+				displayOrder
+			},
+			include: {
+				media: true
 			}
 		})
 
@@ -89,31 +99,32 @@ export const POST: RequestHandler = async (event) => {
 			}
 		})
 
-		logger.info('Photo added to album', {
+		logger.info('Media added to album', {
 			albumId,
-			photoId: photo.id,
 			mediaId: body.mediaId
 		})
 
-		// Return photo with media information for frontend compatibility
-		const photoWithMedia = {
-			...photo,
-			mediaId: body.mediaId,
-			altText: media.altText,
-			description: media.description,
-			isPhotography: media.isPhotography,
-			mimeType: media.mimeType,
-			size: media.size
-		}
-
-		return jsonResponse(photoWithMedia)
+		// Return media with album context
+		return jsonResponse({
+			id: albumMedia.media.id,
+			mediaId: albumMedia.media.id,
+			filename: albumMedia.media.filename,
+			url: albumMedia.media.url,
+			thumbnailUrl: albumMedia.media.thumbnailUrl,
+			width: albumMedia.media.width,
+			height: albumMedia.media.height,
+			exifData: albumMedia.media.exifData,
+			caption: albumMedia.media.photoCaption || albumMedia.media.description,
+			displayOrder: albumMedia.displayOrder,
+			media: albumMedia.media
+		})
 	} catch (error) {
-		logger.error('Failed to add photo to album', error as Error)
-		return errorResponse('Failed to add photo to album', 500)
+		logger.error('Failed to add media to album', error as Error)
+		return errorResponse('Failed to add media to album', 500)
 	}
 }
 
-// PUT /api/albums/[id]/photos - Update photo order in album
+// PUT /api/albums/[id]/photos - Update media order in album
 export const PUT: RequestHandler = async (event) => {
 	// Check authentication
 	if (!checkAdminAuth(event)) {
@@ -127,12 +138,14 @@ export const PUT: RequestHandler = async (event) => {
 
 	try {
 		const body = await parseRequestBody<{
-			photoId: number
+			mediaId: number // Changed from photoId for clarity
 			displayOrder: number
 		}>(event.request)
 
-		if (!body || !body.photoId || body.displayOrder === undefined) {
-			return errorResponse('Photo ID and display order are required', 400)
+		// Also support legacy photoId parameter
+		const mediaId = body?.mediaId || (body as any)?.photoId
+		if (!mediaId || body?.displayOrder === undefined) {
+			return errorResponse('Media ID and display order are required', 400)
 		}
 
 		// Check if album exists
@@ -144,31 +157,41 @@ export const PUT: RequestHandler = async (event) => {
 			return errorResponse('Album not found', 404)
 		}
 
-		// Update photo display order
-		const photo = await prisma.photo.update({
+		// Update album-media display order
+		const albumMedia = await prisma.albumMedia.update({
 			where: {
-				id: body.photoId,
-				albumId // Ensure photo belongs to this album
+				albumId_mediaId: {
+					albumId: albumId,
+					mediaId: mediaId
+				}
 			},
 			data: {
 				displayOrder: body.displayOrder
+			},
+			include: {
+				media: true
 			}
 		})
 
-		logger.info('Photo order updated', {
+		logger.info('Media order updated', {
 			albumId,
-			photoId: body.photoId,
+			mediaId: mediaId,
 			displayOrder: body.displayOrder
 		})
 
-		return jsonResponse(photo)
+		// Return in photo format for compatibility
+		return jsonResponse({
+			id: albumMedia.media.id,
+			mediaId: albumMedia.media.id,
+			displayOrder: albumMedia.displayOrder
+		})
 	} catch (error) {
-		logger.error('Failed to update photo order', error as Error)
-		return errorResponse('Failed to update photo order', 500)
+		logger.error('Failed to update media order', error as Error)
+		return errorResponse('Failed to update media order', 500)
 	}
 }
 
-// DELETE /api/albums/[id]/photos - Remove a photo from an album (without deleting the media)
+// DELETE /api/albums/[id]/photos - Remove media from an album (without deleting the media)
 export const DELETE: RequestHandler = async (event) => {
 	// Check authentication
 	if (!checkAdminAuth(event)) {
@@ -182,15 +205,15 @@ export const DELETE: RequestHandler = async (event) => {
 
 	try {
 		const url = new URL(event.request.url)
-		const photoId = url.searchParams.get('photoId')
+		const mediaIdParam = url.searchParams.get('mediaId') || url.searchParams.get('photoId') // Support legacy param
 
-		logger.info('DELETE photo request', { albumId, photoId })
+		logger.info('DELETE media request', { albumId, mediaId: mediaIdParam })
 
-		if (!photoId || isNaN(parseInt(photoId))) {
-			return errorResponse('Photo ID is required as query parameter', 400)
+		if (!mediaIdParam || isNaN(parseInt(mediaIdParam))) {
+			return errorResponse('Media ID is required as query parameter', 400)
 		}
 
-		const photoIdNum = parseInt(photoId)
+		const mediaId = parseInt(mediaIdParam)
 
 		// Check if album exists
 		const album = await prisma.album.findUnique({
@@ -202,53 +225,51 @@ export const DELETE: RequestHandler = async (event) => {
 			return errorResponse('Album not found', 404)
 		}
 
-		// Check if photo exists in this album
-		const photo = await prisma.photo.findFirst({
+		// Check if media exists in this album
+		const albumMedia = await prisma.albumMedia.findUnique({
 			where: {
-				id: photoIdNum,
-				albumId: albumId // Ensure photo belongs to this album
-			}
-		})
-
-		logger.info('Photo lookup result', { photoIdNum, albumId, found: !!photo })
-
-		if (!photo) {
-			logger.error('Photo not found in album', { photoIdNum, albumId })
-			return errorResponse('Photo not found in this album', 404)
-		}
-
-		// Find and remove the specific media usage record for this photo
-		// We need to find the media ID associated with this photo to remove the correct usage record
-		const mediaUsage = await prisma.mediaUsage.findFirst({
-			where: {
-				contentType: 'album',
-				contentId: albumId,
-				fieldName: 'photos',
-				media: {
-					filename: photo.filename // Match by filename since that's how they're linked
+				albumId_mediaId: {
+					albumId: albumId,
+					mediaId: mediaId
 				}
 			}
 		})
 
-		if (mediaUsage) {
-			await prisma.mediaUsage.delete({
-				where: { id: mediaUsage.id }
-			})
+		logger.info('AlbumMedia lookup result', { mediaId, albumId, found: !!albumMedia })
+
+		if (!albumMedia) {
+			logger.error('Media not found in album', { mediaId, albumId })
+			return errorResponse('Media not found in this album', 404)
 		}
 
-		// Delete the photo record (this removes it from the album but keeps the media)
-		await prisma.photo.delete({
-			where: { id: photoIdNum }
+		// Remove media usage record
+		await prisma.mediaUsage.deleteMany({
+			where: {
+				mediaId: mediaId,
+				contentType: 'album',
+				contentId: albumId,
+				fieldName: 'photos'
+			}
 		})
 
-		logger.info('Photo removed from album', {
-			photoId: photoIdNum,
+		// Delete the album-media relationship
+		await prisma.albumMedia.delete({
+			where: {
+				albumId_mediaId: {
+					albumId: albumId,
+					mediaId: mediaId
+				}
+			}
+		})
+
+		logger.info('Media removed from album', {
+			mediaId: mediaId,
 			albumId: albumId
 		})
 
 		return new Response(null, { status: 204 })
 	} catch (error) {
-		logger.error('Failed to remove photo from album', error as Error)
-		return errorResponse('Failed to remove photo from album', 500)
+		logger.error('Failed to remove media from album', error as Error)
+		return errorResponse('Failed to remove media from album', 500)
 	}
 }

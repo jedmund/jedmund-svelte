@@ -14,7 +14,7 @@
 
 	let {
 		media,
-		alt = media.altText || media.filename || '',
+		alt = media.description || media.filename || '',
 		class: className = '',
 		containerWidth,
 		loading = 'lazy',

@@ -76,7 +76,8 @@ model Album {
   updatedAt          DateTime  @updatedAt
   
   // Relations
-  photos             Photo[]
+  photos             Photo[]                      // Will be removed after migration
+  media              AlbumMedia[]
   
   @@index([slug])
   @@index([status])
@@ -86,6 +87,7 @@ model Album {
 model Photo {
   id                 Int       @id @default(autoincrement())
   albumId            Int?
+  mediaId            Int?      // Reference to the Media item
   filename           String    @db.VarChar(255)
   url                String    @db.VarChar(500)
   thumbnailUrl       String?   @db.VarChar(500)
@@ -107,9 +109,11 @@ model Photo {
   
   // Relations
   album              Album?    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  media              Media?    @relation(fields: [mediaId], references: [id], onDelete: SetNull)
   
   @@index([slug])
   @@index([status])
+  @@index([mediaId])
 }
 
 // Media table (general uploads)
@@ -124,15 +128,24 @@ model Media {
   width              Int?
   height             Int?
   exifData           Json?                       // EXIF data for photos
-  altText            String?   @db.Text          // Alt text for accessibility
-  description        String?   @db.Text          // Optional description
+  description        String?   @db.Text          // Description (used for alt text and captions)
   isPhotography      Boolean   @default(false)   // Star for photos experience
+  
+  // Photo-specific fields (migrated from Photo model)
+  photoCaption       String?   @db.Text          // Caption when used as standalone photo
+  photoTitle         String?   @db.VarChar(255)  // Title when used as standalone photo
+  photoDescription   String?   @db.Text          // Description when used as standalone photo
+  photoSlug          String?   @unique @db.VarChar(255)  // Slug for standalone photo
+  photoPublishedAt   DateTime?                   // Published date for standalone photo
+  
   usedIn             Json      @default("[]")    // Track where media is used (legacy)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   
   // Relations
   usage              MediaUsage[]
+  photos             Photo[]                      // Will be removed after migration
+  albums             AlbumMedia[]
 }
 
 // Media usage tracking table
@@ -151,4 +164,21 @@ model MediaUsage {
   @@unique([mediaId, contentType, contentId, fieldName])
   @@index([mediaId])
   @@index([contentType, contentId])
+}
+
+// Album-Media relationship table (many-to-many)
+model AlbumMedia {
+  id                 Int       @id @default(autoincrement())
+  albumId            Int
+  mediaId            Int
+  displayOrder       Int       @default(0)
+  createdAt          DateTime  @default(now())
+  
+  // Relations
+  album              Album     @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  media              Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  
+  @@unique([albumId, mediaId])
+  @@index([albumId])
+  @@index([mediaId])
 }

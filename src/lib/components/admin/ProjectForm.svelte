@@ -4,7 +4,7 @@
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import FormFieldWrapper from './FormFieldWrapper.svelte'
-	import Editor from './Editor.svelte'
+	import CaseStudyEditor from './CaseStudyEditor.svelte'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
 	import ProjectImagesForm from './ProjectImagesForm.svelte'
@@ -236,6 +236,7 @@
 							show: formData.status !== 'password-protected'
 						}
 					]}
+					viewUrl={project?.slug ? `/work/${project.slug}` : undefined}
 				/>
 			{/if}
 		</div>
@@ -271,18 +272,16 @@
 				</div>
 
 				<!-- Case Study Panel -->
-				<div class="panel case-study-wrapper" class:active={activeTab === 'case-study'}>
-					<div class="editor-content">
-						<Editor
-							bind:this={editorRef}
-							bind:data={formData.caseStudyContent}
-							onChange={handleEditorChange}
-							placeholder="Write your case study here..."
-							minHeight={400}
-							autofocus={false}
-							class="case-study-editor"
-						/>
-					</div>
+				<div class="panel panel-case-study" class:active={activeTab === 'case-study'}>
+					<CaseStudyEditor
+						bind:this={editorRef}
+						bind:data={formData.caseStudyContent}
+						onChange={handleEditorChange}
+						placeholder="Write your case study here..."
+						minHeight={400}
+						autofocus={false}
+						mode="default"
+					/>
 				</div>
 			</div>
 		{/if}
@@ -314,6 +313,7 @@
 			width: 250px;
 			display: flex;
 			justify-content: flex-end;
+			gap: $unit-2x;
 		}
 	}
 
@@ -411,31 +411,16 @@
 		gap: $unit-6x;
 	}
 
-	.case-study-wrapper {
+	.panel-case-study {
 		background: white;
 		padding: 0;
 		min-height: 80vh;
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
-		overflow: hidden;
 
 		@include breakpoint('phone') {
-			height: 600px;
-		}
-	}
-
-	.editor-content {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		position: relative;
-
-		/* The editor component will handle its own padding and scrolling */
-		:global(.case-study-editor) {
-			flex: 1;
-			overflow: auto;
+			min-height: 600px;
 		}
 	}
 </style>

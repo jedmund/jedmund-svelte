@@ -3,25 +3,84 @@ import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
-// GET /api/photos/[id] - Get a single photo
+// GET /api/photos/[id] - Get a single media item as photo
 export const GET: RequestHandler = async (event) => {
 	const id = parseInt(event.params.id)
 	if (isNaN(id)) {
-		return errorResponse('Invalid photo ID', 400)
+		return errorResponse('Invalid media ID', 400)
 	}
 
 	try {
-		const photo = await prisma.photo.findUnique({
+		logger.info('Fetching photo', { mediaId: id })
+
+		const media = await prisma.media.findUnique({
 			where: { id },
 			include: {
-				album: {
-					select: { id: true, title: true, slug: true }
+				albums: {
+					include: {
+						album: {
+							select: { id: true, title: true, slug: true }
+						}
+					}
 				}
 			}
 		})
 
-		if (!photo) {
+		if (!media) {
+			logger.warn('Media not found', { mediaId: id })
 			return errorResponse('Photo not found', 404)
+		}
+
+		logger.info('Media found', {
+			mediaId: id,
+			isPhotography: media.isPhotography,
+			albumCount: media.albums.length
+		})
+
+		// For public access, only return media marked as photography
+		const isAdminRequest = checkAdminAuth(event)
+		logger.info('Authorization check', { isAdmin: isAdminRequest })
+
+		if (!isAdminRequest) {
+			if (!media.isPhotography) {
+				logger.warn('Media not marked as photography', { mediaId: id })
+				return errorResponse('Photo not found', 404)
+			}
+			// If media is in an album, check album is published and isPhotography
+			if (media.albums.length > 0) {
+				const album = media.albums[0].album
+				const fullAlbum = await prisma.album.findUnique({
+					where: { id: album.id }
+				})
+				logger.info('Album check', {
+					albumId: album.id,
+					status: fullAlbum?.status,
+					isPhotography: fullAlbum?.isPhotography
+				})
+				if (!fullAlbum || fullAlbum.status !== 'published' || !fullAlbum.isPhotography) {
+					logger.warn('Album not valid for public access', { albumId: album.id })
+					return errorResponse('Photo not found', 404)
+				}
+			}
+		}
+
+		// Transform to match expected photo format
+		const photo = {
+			id: media.id,
+			filename: media.filename,
+			url: media.url,
+			thumbnailUrl: media.thumbnailUrl,
+			width: media.width,
+			height: media.height,
+			exifData: media.exifData,
+			caption: media.photoCaption,
+			title: media.photoTitle,
+			description: media.photoDescription,
+			slug: media.photoSlug,
+			publishedAt: media.photoPublishedAt,
+			createdAt: media.createdAt,
+			album: media.albums.length > 0 ? media.albums[0].album : null,
+			media: media // Include full media object for compatibility
 		}
 
 		return jsonResponse(photo)
@@ -31,8 +90,7 @@ export const GET: RequestHandler = async (event) => {
 	}
 }
 
-// DELETE /api/photos/[id] - Delete a photo completely (removes photo record and media usage)
-// NOTE: This deletes the photo entirely. Use DELETE /api/albums/[id]/photos to remove from album only.
+// DELETE /api/photos/[id] - Remove media from photography display
 export const DELETE: RequestHandler = async (event) => {
 	// Check authentication
 	if (!checkAdminAuth(event)) {
@@ -41,44 +99,43 @@ export const DELETE: RequestHandler = async (event) => {
 
 	const id = parseInt(event.params.id)
 	if (isNaN(id)) {
-		return errorResponse('Invalid photo ID', 400)
+		return errorResponse('Invalid media ID', 400)
 	}
 
 	try {
-		// Check if photo exists
-		const photo = await prisma.photo.findUnique({
+		// Check if media exists
+		const media = await prisma.media.findUnique({
 			where: { id }
 		})
 
-		if (!photo) {
+		if (!media) {
 			return errorResponse('Photo not found', 404)
 		}
 
-		// Remove media usage tracking for this photo
-		if (photo.albumId) {
-			await prisma.mediaUsage.deleteMany({
-				where: {
-					contentType: 'album',
-					contentId: photo.albumId,
-					fieldName: 'photos'
-				}
-			})
-		}
-
-		// Delete the photo record
-		await prisma.photo.delete({
-			where: { id }
+		// Update media to remove from photography
+		await prisma.media.update({
+			where: { id },
+			data: {
+				isPhotography: false,
+				photoCaption: null,
+				photoTitle: null,
+				photoDescription: null,
+				photoSlug: null,
+				photoPublishedAt: null
+			}
 		})
 
-		logger.info('Photo deleted from album', {
-			photoId: id,
-			albumId: photo.albumId
+		// Remove from all albums
+		await prisma.albumMedia.deleteMany({
+			where: { mediaId: id }
 		})
+
+		logger.info('Media removed from photography', { mediaId: id })
 
 		return new Response(null, { status: 204 })
 	} catch (error) {
-		logger.error('Failed to delete photo', error as Error)
-		return errorResponse('Failed to delete photo', 500)
+		logger.error('Failed to remove photo', error as Error)
+		return errorResponse('Failed to remove photo', 500)
 	}
 }
 
@@ -91,14 +148,14 @@ export const PUT: RequestHandler = async (event) => {
 
 	const id = parseInt(event.params.id)
 	if (isNaN(id)) {
-		return errorResponse('Invalid photo ID', 400)
+		return errorResponse('Invalid media ID', 400)
 	}
 
 	try {
 		const body = await event.request.json()
 
-		// Check if photo exists
-		const existing = await prisma.photo.findUnique({
+		// Check if media exists
+		const existing = await prisma.media.findUnique({
 			where: { id }
 		})
 
@@ -106,20 +163,31 @@ export const PUT: RequestHandler = async (event) => {
 			return errorResponse('Photo not found', 404)
 		}
 
-		// Update photo
-		const photo = await prisma.photo.update({
+		// Update media photo fields
+		const media = await prisma.media.update({
 			where: { id },
 			data: {
-				caption: body.caption !== undefined ? body.caption : existing.caption,
-				title: body.title !== undefined ? body.title : existing.title,
-				description: body.description !== undefined ? body.description : existing.description,
-				displayOrder: body.displayOrder !== undefined ? body.displayOrder : existing.displayOrder,
-				status: body.status !== undefined ? body.status : existing.status,
-				showInPhotos: body.showInPhotos !== undefined ? body.showInPhotos : existing.showInPhotos
+				photoCaption: body.caption !== undefined ? body.caption : existing.photoCaption,
+				photoTitle: body.title !== undefined ? body.title : existing.photoTitle,
+				photoDescription:
+					body.description !== undefined ? body.description : existing.photoDescription,
+				isPhotography: body.showInPhotos !== undefined ? body.showInPhotos : existing.isPhotography,
+				photoPublishedAt:
+					body.publishedAt !== undefined ? body.publishedAt : existing.photoPublishedAt
 			}
 		})
 
-		logger.info('Photo updated', { photoId: id })
+		logger.info('Photo metadata updated', { mediaId: id })
+
+		// Return in photo format for compatibility
+		const photo = {
+			id: media.id,
+			caption: media.photoCaption,
+			title: media.photoTitle,
+			description: media.photoDescription,
+			showInPhotos: media.isPhotography,
+			publishedAt: media.photoPublishedAt
+		}
 
 		return jsonResponse(photo)
 	} catch (error) {

@@ -12,6 +12,7 @@
 		postId?: number
 		initialData?: {
 			title?: string
+			slug?: string
 			content?: JSONContent
 			gallery?: Media[]
 			status: 'draft' | 'published'
@@ -29,12 +30,23 @@
 
 	// Form data
 	let title = $state(initialData?.title || '')
+	let slug = $state(initialData?.slug || '')
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let gallery = $state<Media[]>([])
 	let tags = $state(initialData?.tags?.join(', ') || '')
 
 	// Editor ref
 	let editorRef: any
+
+	// Auto-generate slug from title
+	$effect(() => {
+		if (title && !slug) {
+			slug = title
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, '-')
+				.replace(/^-+|-+$/g, '')
+		}
+	})
 
 	// Initialize data for edit mode
 	$effect(() => {
@@ -114,7 +126,7 @@
 		try {
 			const postData = {
 				title: title.trim(),
-				slug: generateSlug(title),
+				slug: slug,
 				postType: 'album',
 				status: newStatus,
 				content,
@@ -153,13 +165,6 @@
 		} finally {
 			isSaving = false
 		}
-	}
-
-	function generateSlug(title: string): string {
-		return title
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
 	}
 
 	function handleCancel() {
@@ -241,6 +246,13 @@
 					placeholder="Enter album title"
 					required={true}
 					error={title.trim().length === 0 ? 'Title is required' : undefined}
+				/>
+
+				<Input
+					label="Slug"
+					bind:value={slug}
+					placeholder="album-url-slug"
+					helpText="URL-friendly version of the title"
 				/>
 			</div>
 

@@ -62,7 +62,7 @@
 	style="position: relative; overflow: hidden; background-color: {backgroundColor}; height: {containerHeight}; display: flex; justify-content: center; align-items: center;"
 >
 	<div style="position: relative; width: 100%; height: 100%;">
-		<svelte:component this={SVGComponent} />
+		<SVGComponent />
 	</div>
 </div>
 

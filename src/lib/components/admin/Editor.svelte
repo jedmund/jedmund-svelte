@@ -131,10 +131,12 @@
 	}
 
 	:global(.editor-content .editor-toolbar) {
-		border-radius: $card-corner-radius;
+		border-radius: $corner-radius-full;
+		border: 1px solid rgba(0, 0, 0, 0.08);
+		box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
 		box-sizing: border-box;
 		background: $grey-95;
-		padding: $unit-2x;
+		padding: $unit $unit-2x;
 		position: sticky;
 		z-index: 10;
 		overflow-x: auto;

@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte'
 	import { goto } from '$app/navigation'
 	import Modal from './Modal.svelte'
-	import Editor from './Editor.svelte'
+	import CaseStudyEditor from './CaseStudyEditor.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import FormFieldWrapper from './FormFieldWrapper.svelte'
 	import Button from './Button.svelte'
@@ -288,7 +288,7 @@
 			</div>
 
 			<div class="composer-body">
-				<Editor
+				<CaseStudyEditor
 					bind:this={editorInstance}
 					bind:data={content}
 					onChange={(newContent) => {
@@ -296,11 +296,10 @@
 						characterCount = getTextFromContent(newContent)
 					}}
 					placeholder="What's on your mind?"
-					simpleMode={true}
-					autofocus={true}
 					minHeight={80}
+					autofocus={true}
+					mode="inline"
 					showToolbar={false}
-					class="composer-editor"
 				/>
 
 				{#if attachedPhotos.length > 0}
@@ -440,7 +439,7 @@
 					</div>
 				{:else}
 					<div class="content-section">
-						<Editor
+						<CaseStudyEditor
 							bind:this={editorInstance}
 							bind:data={content}
 							onChange={(newContent) => {
@@ -448,9 +447,9 @@
 								characterCount = getTextFromContent(newContent)
 							}}
 							placeholder="Start writing your essay..."
-							simpleMode={false}
-							autofocus={true}
 							minHeight={500}
+							autofocus={true}
+							mode="default"
 						/>
 					</div>
 				{/if}
@@ -484,7 +483,7 @@
 				</svg>
 			</Button>
 			<div class="composer-body">
-				<Editor
+				<CaseStudyEditor
 					bind:this={editorInstance}
 					bind:data={content}
 					onChange={(newContent) => {
@@ -492,11 +491,10 @@
 						characterCount = getTextFromContent(newContent)
 					}}
 					placeholder="What's on your mind?"
-					simpleMode={true}
-					autofocus={true}
 					minHeight={120}
+					autofocus={true}
+					mode="inline"
 					showToolbar={false}
-					class="inline-composer-editor"
 				/>
 
 				{#if attachedPhotos.length > 0}
@@ -651,47 +649,6 @@
 	.composer-body {
 		display: flex;
 		flex-direction: column;
-
-		:global(.edra-editor) {
-			padding: 0;
-		}
-	}
-
-	:global(.composer-editor) {
-		border: none !important;
-		box-shadow: none !important;
-
-		:global(.editor-container) {
-			padding: 0 $unit-3x;
-		}
-
-		:global(.editor-content) {
-			padding: 0;
-			min-height: 80px;
-			font-size: 15px;
-			line-height: 1.5;
-		}
-
-		:global(.ProseMirror) {
-			padding: 0;
-			min-height: 80px;
-
-			&:focus {
-				outline: none;
-			}
-
-			p {
-				margin: 0;
-			}
-
-			&.ProseMirror-focused .is-editor-empty:first-child::before {
-				color: $grey-40;
-				content: attr(data-placeholder);
-				float: left;
-				pointer-events: none;
-				height: 0;
-			}
-		}
 	}
 
 	.link-fields {
@@ -790,10 +747,6 @@
 		.composer-body {
 			display: flex;
 			flex-direction: column;
-
-			:global(.edra-editor) {
-				padding: 0;
-			}
 		}
 	}
 
@@ -808,44 +761,6 @@
 
 		&:hover {
 			background-color: rgba(255, 255, 255, 0.95) !important;
-		}
-	}
-
-	:global(.inline-composer-editor) {
-		border: none !important;
-		box-shadow: none !important;
-		background: transparent !important;
-
-		:global(.editor-container) {
-			padding: $unit * 1.5 $unit-3x 0;
-		}
-
-		:global(.editor-content) {
-			padding: 0;
-			min-height: 120px;
-			font-size: 15px;
-			line-height: 1.5;
-		}
-
-		:global(.ProseMirror) {
-			padding: 0;
-			min-height: 120px;
-
-			&:focus {
-				outline: none;
-			}
-
-			p {
-				margin: 0;
-			}
-
-			&.ProseMirror-focused .is-editor-empty:first-child::before {
-				color: $grey-40;
-				content: attr(data-placeholder);
-				float: left;
-				pointer-events: none;
-				height: 0;
-			}
 		}
 	}
 

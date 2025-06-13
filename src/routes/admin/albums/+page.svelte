@@ -49,12 +49,24 @@
 
 	// Filter state
 	let photographyFilter = $state<string>('all')
+	let sortBy = $state<string>('newest')
 
 	// Filter options
 	const filterOptions = [
 		{ value: 'all', label: 'All albums' },
 		{ value: 'true', label: 'Photography albums' },
 		{ value: 'false', label: 'Regular albums' }
+	]
+
+	const sortOptions = [
+		{ value: 'newest', label: 'Newest first' },
+		{ value: 'oldest', label: 'Oldest first' },
+		{ value: 'title-asc', label: 'Title (A-Z)' },
+		{ value: 'title-desc', label: 'Title (Z-A)' },
+		{ value: 'date-desc', label: 'Date (newest)' },
+		{ value: 'date-asc', label: 'Date (oldest)' },
+		{ value: 'status-published', label: 'Published first' },
+		{ value: 'status-draft', label: 'Draft first' }
 	]
 
 	onMount(async () => {
@@ -103,8 +115,8 @@
 			}
 			albumTypeCounts = counts
 
-			// Apply initial filter
-			applyFilter()
+			// Apply initial filter and sort
+			applyFilterAndSort()
 		} catch (err) {
 			error = 'Failed to load albums'
 			console.error(err)
@@ -113,14 +125,62 @@
 		}
 	}
 
-	function applyFilter() {
-		if (photographyFilter === 'all') {
-			filteredAlbums = albums
-		} else if (photographyFilter === 'true') {
-			filteredAlbums = albums.filter((album) => album.isPhotography === true)
+	function applyFilterAndSort() {
+		let filtered = [...albums]
+
+		// Apply filter
+		if (photographyFilter === 'true') {
+			filtered = filtered.filter((album) => album.isPhotography === true)
 		} else if (photographyFilter === 'false') {
-			filteredAlbums = albums.filter((album) => album.isPhotography === false)
+			filtered = filtered.filter((album) => album.isPhotography === false)
 		}
+
+		// Apply sorting
+		switch (sortBy) {
+			case 'oldest':
+				filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+				break
+			case 'title-asc':
+				filtered.sort((a, b) => a.title.localeCompare(b.title))
+				break
+			case 'title-desc':
+				filtered.sort((a, b) => b.title.localeCompare(a.title))
+				break
+			case 'date-desc':
+				filtered.sort((a, b) => {
+					if (!a.date && !b.date) return 0
+					if (!a.date) return 1
+					if (!b.date) return -1
+					return new Date(b.date).getTime() - new Date(a.date).getTime()
+				})
+				break
+			case 'date-asc':
+				filtered.sort((a, b) => {
+					if (!a.date && !b.date) return 0
+					if (!a.date) return 1
+					if (!b.date) return -1
+					return new Date(a.date).getTime() - new Date(b.date).getTime()
+				})
+				break
+			case 'status-published':
+				filtered.sort((a, b) => {
+					if (a.status === b.status) return 0
+					return a.status === 'published' ? -1 : 1
+				})
+				break
+			case 'status-draft':
+				filtered.sort((a, b) => {
+					if (a.status === b.status) return 0
+					return a.status === 'draft' ? -1 : 1
+				})
+				break
+			case 'newest':
+			default:
+				filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+				break
+		}
+
+		filteredAlbums = filtered
 	}
 
 	function handleToggleDropdown(event: CustomEvent<{ albumId: number; event: MouseEvent }>) {
@@ -180,9 +240,13 @@
 
 			if (response.ok) {
 				await loadAlbums()
+			} else {
+				const errorData = await response.json()
+				error = errorData.error || 'Failed to delete album'
 			}
 		} catch (err) {
 			console.error('Failed to delete album:', err)
+			error = 'Failed to delete album. Please try again.'
 		} finally {
 			showDeleteModal = false
 			albumToDelete = null
@@ -195,7 +259,11 @@
 	}
 
 	function handleFilterChange() {
-		applyFilter()
+		applyFilterAndSort()
+	}
+
+	function handleSortChange() {
+		applyFilterAndSort()
 	}
 
 	function handleNewAlbum() {
@@ -219,9 +287,18 @@
 				<Select
 					bind:value={photographyFilter}
 					options={filterOptions}
-					buttonSize="small"
+					size="small"
 					variant="minimal"
 					onchange={handleFilterChange}
+				/>
+			{/snippet}
+			{#snippet right()}
+				<Select
+					bind:value={sortBy}
+					options={sortOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleSortChange}
 				/>
 			{/snippet}
 		</AdminFilters>
@@ -249,10 +326,10 @@
 					<AlbumListItem
 						{album}
 						isDropdownActive={activeDropdown === album.id}
-						ontoggleDropdown={handleToggleDropdown}
-						onedit={handleEdit}
-						ontogglePublish={handleTogglePublish}
-						ondelete={handleDelete}
+						on:toggleDropdown={handleToggleDropdown}
+						on:edit={handleEdit}
+						on:togglePublish={handleTogglePublish}
+						on:delete={handleDelete}
 					/>
 				{/each}
 			</div>
@@ -264,7 +341,7 @@
 	bind:isOpen={showDeleteModal}
 	title="Delete album?"
 	message={albumToDelete
-		? `Are you sure you want to delete "${albumToDelete.title}"? This action cannot be undone.`
+		? `Are you sure you want to delete "${albumToDelete.title}"? The album will be deleted but all photos will remain in your media library. This action cannot be undone.`
 		: ''}
 	onConfirm={confirmDelete}
 	onCancel={cancelDelete}
@@ -286,7 +363,7 @@
 			width: 32px;
 			height: 32px;
 			border: 3px solid $grey-80;
-			border-top-color: $primary-color;
+			border-top-color: $grey-40;
 			border-radius: 50%;
 			margin: 0 auto $unit-2x;
 			animation: spin 0.8s linear infinite;

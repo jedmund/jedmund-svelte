@@ -17,6 +17,7 @@ export interface Photo {
 	width: number
 	height: number
 	exif?: ExifData
+	createdAt?: string
 }
 
 export interface PhotoAlbum {

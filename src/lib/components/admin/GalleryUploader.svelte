@@ -4,6 +4,7 @@
 	import Input from './Input.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import MediaDetailsModal from './MediaDetailsModal.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 
 	interface Props {
@@ -20,6 +21,7 @@
 		helpText?: string
 		showBrowseLibrary?: boolean
 		maxFileSize?: number // MB limit
+		disabled?: boolean
 	}
 
 	let {
@@ -35,7 +37,8 @@
 		placeholder = 'Drag and drop images here, or click to browse',
 		helpText,
 		showBrowseLibrary = false,
-		maxFileSize = 10
+		maxFileSize = 10,
+		disabled = false
 	}: Props = $props()
 
 	// State
@@ -47,6 +50,8 @@
 	let draggedIndex = $state<number | null>(null)
 	let draggedOverIndex = $state<number | null>(null)
 	let isMediaLibraryOpen = $state(false)
+	let isImageModalOpen = $state(false)
+	let selectedImage = $state<any | null>(null)
 
 	// Computed properties
 	const hasImages = $derived(value && value.length > 0)
@@ -93,7 +98,7 @@
 
 	// Handle file selection/drop
 	async function handleFiles(files: FileList) {
-		if (files.length === 0) return
+		if (files.length === 0 || disabled) return
 
 		// Validate files
 		const filesToUpload: File[] = []
@@ -150,8 +155,13 @@
 
 			// Brief delay to show completion
 			setTimeout(() => {
-				const newValue = [...(value || []), ...uploadedMedia]
-				value = newValue
+				console.log('[GalleryUploader] Upload completed:', {
+					uploadedCount: uploadedMedia.length,
+					uploaded: uploadedMedia.map((m) => ({ id: m.id, filename: m.filename })),
+					currentValue: value?.map((v) => ({ id: v.id, mediaId: v.mediaId, filename: v.filename }))
+				})
+
+				// Don't update value here - let parent handle it through API response
 				// Only pass the newly uploaded media, not the entire gallery
 				onUpload(uploadedMedia)
 				isUploading = false
@@ -214,53 +224,25 @@
 		uploadError = null
 	}
 
-	// Update alt text on server
-	async function handleAltTextChange(item: any, newAltText: string) {
-		if (!item) return
-
-		try {
-			// For album photos, use mediaId; for direct media objects, use id
-			const mediaId = item.mediaId || item.id
-			if (!mediaId) {
-				console.error('No media ID found for alt text update')
-				return
-			}
-
-			const response = await authenticatedFetch(`/api/media/${mediaId}/metadata`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					altText: newAltText.trim() || null
-				})
-			})
-
-			if (response.ok) {
-				const updatedData = await response.json()
-				if (value) {
-					const index = value.findIndex((v) => (v.mediaId || v.id) === mediaId)
-					if (index !== -1) {
-						value[index] = {
-							...value[index],
-							altText: updatedData.altText,
-							updatedAt: updatedData.updatedAt
-						}
-						value = [...value]
-					}
-				}
-			}
-		} catch (error) {
-			console.error('Failed to update alt text:', error)
-		}
-	}
-
 	// Drag and drop reordering handlers
 	function handleImageDragStart(event: DragEvent, index: number) {
+		// Prevent reordering while uploading or disabled
+		if (isUploading || disabled) {
+			event.preventDefault()
+			return
+		}
+
 		draggedIndex = index
 		if (event.dataTransfer) {
 			event.dataTransfer.effectAllowed = 'move'
 		}
+
+		// Debug logging
+		console.log('[GalleryUploader] Drag start:', {
+			index,
+			item: value[index],
+			totalItems: value.length
+		})
 	}
 
 	function handleImageDragOver(event: DragEvent, index: number) {
@@ -278,7 +260,20 @@
 	function handleImageDrop(event: DragEvent, dropIndex: number) {
 		event.preventDefault()
 
-		if (draggedIndex === null || !value) return
+		if (draggedIndex === null || !value || isUploading || disabled) return
+
+		// Debug logging before reorder
+		console.log('[GalleryUploader] Before reorder:', {
+			draggedIndex,
+			dropIndex,
+			totalItems: value.length,
+			items: value.map((v, i) => ({
+				index: i,
+				id: v.id,
+				mediaId: v.mediaId,
+				filename: v.filename
+			}))
+		})
 
 		const newValue = [...value]
 		const draggedItem = newValue[draggedIndex]
@@ -289,6 +284,17 @@
 		// Insert at new position (adjust index if dragging to later position)
 		const adjustedDropIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex
 		newValue.splice(adjustedDropIndex, 0, draggedItem)
+
+		// Debug logging after reorder
+		console.log('[GalleryUploader] After reorder:', {
+			adjustedDropIndex,
+			newItems: newValue.map((v, i) => ({
+				index: i,
+				id: v.id,
+				mediaId: v.mediaId,
+				filename: v.filename
+			}))
+		})
 
 		value = newValue
 		onUpload(newValue)
@@ -314,6 +320,13 @@
 		// For gallery mode, selectedMedia will be an array
 		const mediaArray = Array.isArray(selectedMedia) ? selectedMedia : [selectedMedia]
 
+		// Debug logging
+		console.log('[GalleryUploader] Media selected from library:', {
+			selectedCount: mediaArray.length,
+			selected: mediaArray.map((m) => ({ id: m.id, filename: m.filename })),
+			currentValue: value?.map((v) => ({ id: v.id, mediaId: v.mediaId, filename: v.filename }))
+		})
+
 		// Filter out duplicates before passing to parent
 		// Create a comprehensive set of existing IDs (both id and mediaId)
 		const existingIds = new Set()
@@ -327,6 +340,11 @@
 			return !existingIds.has(media.id) && !existingIds.has(media.mediaId)
 		})
 
+		console.log('[GalleryUploader] Filtered new media:', {
+			newCount: newMedia.length,
+			newMedia: newMedia.map((m) => ({ id: m.id, filename: m.filename }))
+		})
+
 		if (newMedia.length > 0) {
 			// Don't modify the value array here - let the parent component handle it
 			// through the API calls and then update the bound value
@@ -336,6 +354,49 @@
 
 	function handleMediaLibraryClose() {
 		isMediaLibraryOpen = false
+	}
+
+	// Handle clicking on an image to open details modal
+	function handleImageClick(media: any) {
+		// Convert to Media format if needed
+		selectedImage = {
+			id: media.mediaId || media.id,
+			filename: media.filename,
+			originalName: media.originalName || media.filename,
+			mimeType: media.mimeType || 'image/jpeg',
+			size: media.size || 0,
+			url: media.url,
+			thumbnailUrl: media.thumbnailUrl,
+			width: media.width,
+			height: media.height,
+			altText: media.altText || '',
+			description: media.description || '',
+			isPhotography: media.isPhotography || false,
+			createdAt: media.createdAt,
+			updatedAt: media.updatedAt,
+			exifData: media.exifData || null,
+			usedIn: media.usedIn || []
+		}
+		isImageModalOpen = true
+	}
+
+	// Handle updates from the media details modal
+	function handleImageUpdate(updatedMedia: any) {
+		// Update the media in our value array
+		const index = value.findIndex((m) => (m.mediaId || m.id) === updatedMedia.id)
+		if (index !== -1) {
+			value[index] = {
+				...value[index],
+				altText: updatedMedia.altText,
+				description: updatedMedia.description,
+				isPhotography: updatedMedia.isPhotography,
+				updatedAt: updatedMedia.updatedAt
+			}
+			value = [...value] // Trigger reactivity
+		}
+
+		// Update selectedImage for the modal
+		selectedImage = updatedMedia
 	}
 </script>
 
@@ -347,10 +408,11 @@
 			class:drag-over={isDragOver}
 			class:uploading={isUploading}
 			class:has-error={!!uploadError}
-			ondragover={handleDragOver}
-			ondragleave={handleDragLeave}
-			ondrop={handleDrop}
-			onclick={handleBrowseClick}
+			class:disabled
+			ondragover={disabled ? undefined : handleDragOver}
+			ondragleave={disabled ? undefined : handleDragLeave}
+			ondrop={disabled ? undefined : handleDrop}
+			onclick={disabled ? undefined : handleBrowseClick}
 		>
 			{#if isUploading}
 				<!-- Upload Progress -->
@@ -461,12 +523,12 @@
 	<!-- Action Buttons -->
 	{#if !isUploading && canAddMore}
 		<div class="action-buttons">
-			<Button variant="primary" onclick={handleBrowseClick}>
+			<Button variant="primary" onclick={handleBrowseClick} {disabled}>
 				{hasImages ? 'Add More Images' : 'Choose Images'}
 			</Button>
 
 			{#if showBrowseLibrary}
-				<Button variant="ghost" onclick={handleBrowseLibrary}>Browse Library</Button>
+				<Button variant="ghost" onclick={handleBrowseLibrary} {disabled}>Browse Library</Button>
 			{/if}
 		</div>
 	{/if}
@@ -474,12 +536,13 @@
 	<!-- Image Gallery -->
 	{#if hasImages}
 		<div class="image-gallery">
-			{#each value as media, index (`${media.mediaId || media.id || index}`)}
+			{#each value as media, index (`photo-${media.id || 'temp'}-${media.mediaId || 'new'}-${index}`)}
 				<div
 					class="gallery-item"
 					class:dragging={draggedIndex === index}
 					class:drag-over={draggedOverIndex === index}
-					draggable="true"
+					class:disabled
+					draggable={!disabled}
 					ondragstart={(e) => handleImageDragStart(e, index)}
 					ondragover={(e) => handleImageDragOver(e, index)}
 					ondragleave={handleImageDragLeave}
@@ -506,36 +569,48 @@
 
 					<!-- Image Preview -->
 					<div class="image-preview">
-						<SmartImage
-							media={{
-								id: media.mediaId || media.id,
-								filename: media.filename,
-								originalName: media.originalName || media.filename,
-								mimeType: media.mimeType || 'image/jpeg',
-								size: media.size || 0,
-								url: media.url,
-								thumbnailUrl: media.thumbnailUrl,
-								width: media.width,
-								height: media.height,
-								altText: media.altText,
-								description: media.description,
-								isPhotography: media.isPhotography || false,
-								createdAt: media.createdAt,
-								updatedAt: media.updatedAt
-							}}
-							alt={media.altText || media.filename || 'Gallery image'}
-							containerWidth={300}
-							loading="lazy"
-							aspectRatio="1:1"
-							class="gallery-image"
-						/>
+						<button
+							class="image-button"
+							type="button"
+							onclick={() => handleImageClick(media)}
+							aria-label="Edit image {media.filename}"
+							{disabled}
+						>
+							<SmartImage
+								media={{
+									id: media.mediaId || media.id,
+									filename: media.filename,
+									originalName: media.originalName || media.filename,
+									mimeType: media.mimeType || 'image/jpeg',
+									size: media.size || 0,
+									url: media.url,
+									thumbnailUrl: media.thumbnailUrl,
+									width: media.width,
+									height: media.height,
+									altText: media.altText,
+									description: media.description,
+									isPhotography: media.isPhotography || false,
+									createdAt: media.createdAt,
+									updatedAt: media.updatedAt
+								}}
+								alt={media.altText || media.filename || 'Gallery image'}
+								containerWidth={300}
+								loading="lazy"
+								aspectRatio="1:1"
+								class="gallery-image"
+							/>
+						</button>
 
 						<!-- Remove Button -->
 						<button
 							class="remove-button"
-							onclick={() => handleRemoveImage(index)}
+							onclick={(e) => {
+								e.stopPropagation()
+								handleRemoveImage(index)
+							}}
 							type="button"
 							aria-label="Remove image"
+							{disabled}
 						>
 							<svg
 								width="16"
@@ -567,20 +642,6 @@
 							</svg>
 						</button>
 					</div>
-
-					<!-- Alt Text Input -->
-					{#if allowAltText}
-						<div class="alt-text-input">
-							<Input
-								type="text"
-								label="Alt Text"
-								value={media.altText || ''}
-								placeholder="Describe this image"
-								buttonSize="small"
-								onblur={(e) => handleAltTextChange(media, e.target.value)}
-							/>
-						</div>
-					{/if}
 
 					<!-- File Info -->
 					<div class="file-info">
@@ -622,6 +683,17 @@
 	confirmText="Add Selected"
 	onSelect={handleMediaSelect}
 	onClose={handleMediaLibraryClose}
+/>
+
+<!-- Media Details Modal -->
+<MediaDetailsModal
+	bind:isOpen={isImageModalOpen}
+	media={selectedImage}
+	onClose={() => {
+		isImageModalOpen = false
+		selectedImage = null
+	}}
+	onUpdate={handleImageUpdate}
 />
 
 <style lang="scss">
@@ -682,6 +754,16 @@
 		&.has-error {
 			border-color: $red-60;
 			background-color: rgba($red-60, 0.02);
+		}
+
+		&.disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+
+			&:hover {
+				border-color: $grey-80;
+				background-color: $grey-97;
+			}
 		}
 	}
 
@@ -828,18 +910,50 @@
 		&:hover .drag-handle {
 			opacity: 1;
 		}
+
+		&.disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+
+			.drag-handle {
+				cursor: not-allowed;
+			}
+
+			&:hover .drag-handle {
+				opacity: 0;
+			}
+		}
 	}
 
 	.image-preview {
 		position: relative;
 		aspect-ratio: 1;
 		overflow: hidden;
+		background-color: $grey-97;
 
-		:global(.gallery-image) {
+		.image-button {
 			width: 100%;
 			height: 100%;
-			object-fit: cover;
-			display: block;
+			padding: 0;
+			border: none;
+			background: none;
+			cursor: pointer;
+			transition: transform 0.2s ease;
+
+			&:hover:not(:disabled) {
+				transform: scale(1.02);
+			}
+
+			&:disabled {
+				cursor: not-allowed;
+			}
+
+			:global(.gallery-image) {
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+				display: block;
+			}
 		}
 
 		.remove-button {
@@ -858,21 +972,22 @@
 			color: $grey-40;
 			opacity: 0;
 			transition: all 0.2s ease;
+			z-index: 1;
 
 			&:hover {
 				background: white;
 				color: $red-60;
 				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 			}
+
+			&:disabled {
+				cursor: not-allowed;
+			}
 		}
 
 		&:hover .remove-button {
 			opacity: 1;
 		}
-	}
-
-	.alt-text-input {
-		padding: $unit-2x;
 	}
 
 	.file-info {

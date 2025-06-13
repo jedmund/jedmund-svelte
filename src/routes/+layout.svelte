@@ -1,23 +1,28 @@
 <script lang="ts">
+	import '../app.css'
 	import { page } from '$app/stores'
 	import Header from '$components/Header.svelte'
 	import Footer from '$components/Footer.svelte'
 	import { generatePersonJsonLd } from '$lib/utils/metadata'
 
+	let { children } = $props()
+
 	const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'))
 
 	// Generate person structured data for the site
-	const personJsonLd = $derived(generatePersonJsonLd({
-		name: 'Justin Edmund',
-		jobTitle: 'Software Designer',
-		description: 'Software designer based in San Francisco',
-		url: 'https://jedmund.com',
-		sameAs: [
-			'https://twitter.com/jedmund',
-			'https://github.com/jedmund',
-			'https://www.linkedin.com/in/jedmund'
-		]
-	}))
+	const personJsonLd = $derived(
+		generatePersonJsonLd({
+			name: 'Justin Edmund',
+			jobTitle: 'Software Designer',
+			description: 'Software designer based in San Francisco',
+			url: 'https://jedmund.com',
+			sameAs: [
+				'https://twitter.com/jedmund',
+				'https://github.com/jedmund',
+				'https://www.linkedin.com/in/jedmund'
+			]
+		})
+	)
 </script>
 
 <svelte:head>
@@ -31,7 +36,7 @@
 	{/if}
 
 	<main class:admin-route={isAdminRoute}>
-		<slot />
+		{@render children()}
 	</main>
 
 	{#if !isAdminRoute}
@@ -40,9 +45,6 @@
 </div>
 
 <style lang="scss">
-	@import '../assets/styles/reset.css';
-	@import '../assets/styles/globals.scss';
-
 	:global(html) {
 		background: var(--bg-color);
 		color: var(--text-color);

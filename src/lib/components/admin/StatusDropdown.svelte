@@ -17,6 +17,7 @@
 			status: string
 			show?: boolean
 		}>
+		viewUrl?: string
 	}
 
 	let {
@@ -25,7 +26,8 @@
 		disabled = false,
 		isLoading = false,
 		primaryAction,
-		dropdownActions = []
+		dropdownActions = [],
+		viewUrl
 	}: Props = $props()
 
 	let isDropdownOpen = $state(false)
@@ -62,6 +64,9 @@
 	const availableActions = $derived(
 		dropdownActions.filter((action) => action.show !== false && action.status !== currentStatus)
 	)
+
+	const showViewInDropdown = $derived(viewUrl && currentStatus === 'published')
+	const hasDropdownContent = $derived(availableActions.length > 0 || showViewInDropdown)
 </script>
 
 <div class="status-dropdown">
@@ -74,7 +79,7 @@
 		{isLoading ? `${primaryAction.label.replace(/e$/, 'ing')}...` : primaryAction.label}
 	</Button>
 
-	{#if availableActions.length > 0}
+	{#if hasDropdownContent}
 		<Button
 			variant="ghost"
 			iconOnly
@@ -100,6 +105,19 @@
 						{action.label}
 					</DropdownItem>
 				{/each}
+				{#if showViewInDropdown}
+					{#if availableActions.length > 0}
+						<div class="dropdown-divider"></div>
+					{/if}
+					<a
+						href={viewUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="dropdown-item view-link"
+					>
+						View on site
+					</a>
+				{/if}
 			</DropdownMenuContainer>
 		{/if}
 	{/if}
@@ -112,5 +130,29 @@
 		position: relative;
 		display: flex;
 		gap: $unit-half;
+	}
+
+	.dropdown-divider {
+		height: 1px;
+		background-color: $grey-90;
+		margin: $unit-half 0;
+	}
+
+	.dropdown-item.view-link {
+		display: block;
+		width: 100%;
+		padding: $unit-2x $unit-3x;
+		background: none;
+		border: none;
+		text-align: left;
+		font-size: 0.875rem;
+		color: $grey-20;
+		cursor: pointer;
+		transition: background-color 0.2s ease;
+		text-decoration: none;
+
+		&:hover {
+			background-color: $grey-95;
+		}
 	}
 </style>
