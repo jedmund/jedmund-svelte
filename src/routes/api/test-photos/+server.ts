@@ -172,47 +172,55 @@ export const GET: RequestHandler = async () => {
 				totalPublishedPhotos: publishedPhotos.length,
 				totalPhotosNoAlbum: allPhotosNoAlbum.length,
 				totalPhotosInDatabase: allPhotos.length,
-				photosByStatus: photosByStatus.map(item => ({
+				photosByStatus: photosByStatus.map((item) => ({
 					status: item.status,
 					count: item._count.id
 				})),
-				photosWithShowInPhotosFlag: allPhotos.filter(p => p.showInPhotos).length,
-				photosByFilename: allPhotos.filter(p => p.filename?.includes('B0000057')).map(p => ({
-					filename: p.filename,
-					showInPhotos: p.showInPhotos,
-					status: p.status,
-					albumId: p.albumId,
-					albumTitle: p.album?.title
-				}))
+				photosWithShowInPhotosFlag: allPhotos.filter((p) => p.showInPhotos).length,
+				photosByFilename: allPhotos
+					.filter((p) => p.filename?.includes('B0000057'))
+					.map((p) => ({
+						filename: p.filename,
+						showInPhotos: p.showInPhotos,
+						status: p.status,
+						albumId: p.albumId,
+						albumTitle: p.album?.title
+					}))
 			},
 			albums: {
 				totalAlbums: allAlbums.length,
-				photographyAlbums: allAlbums.filter(a => a.isPhotography).map(a => ({
-					id: a.id,
-					title: a.title,
-					slug: a.slug,
-					isPhotography: a.isPhotography,
-					status: a.status,
-					photoCount: a._count.photos
-				})),
-				nonPhotographyAlbums: allAlbums.filter(a => !a.isPhotography).map(a => ({
-					id: a.id,
-					title: a.title,
-					slug: a.slug,
-					isPhotography: a.isPhotography,
-					status: a.status,
-					photoCount: a._count.photos
-				})),
-				albumFive: albumFive ? {
-					id: albumFive.id,
-					title: albumFive.title,
-					slug: albumFive.slug,
-					isPhotography: albumFive.isPhotography,
-					status: albumFive.status,
-					publishedAt: albumFive.publishedAt,
-					photoCount: albumFive.photos.length,
-					photos: albumFive.photos
-				} : null,
+				photographyAlbums: allAlbums
+					.filter((a) => a.isPhotography)
+					.map((a) => ({
+						id: a.id,
+						title: a.title,
+						slug: a.slug,
+						isPhotography: a.isPhotography,
+						status: a.status,
+						photoCount: a._count.photos
+					})),
+				nonPhotographyAlbums: allAlbums
+					.filter((a) => !a.isPhotography)
+					.map((a) => ({
+						id: a.id,
+						title: a.title,
+						slug: a.slug,
+						isPhotography: a.isPhotography,
+						status: a.status,
+						photoCount: a._count.photos
+					})),
+				albumFive: albumFive
+					? {
+							id: albumFive.id,
+							title: albumFive.title,
+							slug: albumFive.slug,
+							isPhotography: albumFive.isPhotography,
+							status: albumFive.status,
+							publishedAt: albumFive.publishedAt,
+							photoCount: albumFive.photos.length,
+							photos: albumFive.photos
+						}
+					: null,
 				photosFromPhotographyAlbums: photosFromPhotographyAlbums.length,
 				photosFromPhotographyAlbumsSample: photosFromPhotographyAlbums.slice(0, 5)
 			},
@@ -227,7 +235,9 @@ export const GET: RequestHandler = async () => {
 			debug: {
 				expectedQuery: 'WHERE status = "published" AND showInPhotos = true AND albumId = null',
 				actualPhotosEndpointQuery: '/api/photos uses this exact query',
-				albumsWithPhotographyFlagTrue: allAlbums.filter(a => a.isPhotography).map(a => `${a.id}: ${a.title}`)
+				albumsWithPhotographyFlagTrue: allAlbums
+					.filter((a) => a.isPhotography)
+					.map((a) => `${a.id}: ${a.title}`)
 			}
 		}
 
@@ -236,6 +246,9 @@ export const GET: RequestHandler = async () => {
 		return jsonResponse(response)
 	} catch (error) {
 		logger.error('Failed to run test photos query', error as Error)
-		return errorResponse(`Failed to run test query: ${error instanceof Error ? error.message : 'Unknown error'}`, 500)
+		return errorResponse(
+			`Failed to run test query: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			500
+		)
 	}
 }

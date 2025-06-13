@@ -43,13 +43,13 @@
 		if (isOpen) {
 			// Save current scroll position
 			const scrollY = window.scrollY
-			
+
 			// Lock body scroll
 			document.body.style.position = 'fixed'
 			document.body.style.top = `-${scrollY}px`
 			document.body.style.width = '100%'
 			document.body.style.overflow = 'hidden'
-			
+
 			return () => {
 				// Restore body scroll
 				const scrollY = document.body.style.top
@@ -57,7 +57,7 @@
 				document.body.style.top = ''
 				document.body.style.width = ''
 				document.body.style.overflow = ''
-				
+
 				// Restore scroll position
 				if (scrollY) {
 					window.scrollTo(0, parseInt(scrollY || '0') * -1)

@@ -167,7 +167,6 @@
 		}
 	}
 
-
 	function handleCancel() {
 		if (hasChanges() && !confirm('Are you sure you want to cancel? Your changes will be lost.')) {
 			return

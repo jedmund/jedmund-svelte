@@ -22,7 +22,7 @@ async function checkPhotosDisplay() {
 		})
 
 		console.log(`Found ${photographyAlbums.length} published photography albums:`)
-		photographyAlbums.forEach(album => {
+		photographyAlbums.forEach((album) => {
 			console.log(`- "${album.title}" (${album.slug}): ${album.photos.length} published photos`)
 		})
 
@@ -36,7 +36,7 @@ async function checkPhotosDisplay() {
 		})
 
 		console.log(`\nFound ${individualPhotos.length} individual photos marked to show in Photos`)
-		individualPhotos.forEach(photo => {
+		individualPhotos.forEach((photo) => {
 			console.log(`- Photo ID ${photo.id}: ${photo.filename}`)
 		})
 
@@ -52,12 +52,17 @@ async function checkPhotosDisplay() {
 			}
 		})
 
-		console.log(`\nFound ${photosInAlbums.length} published photos in albums with showInPhotos=true`)
-		const albumGroups = photosInAlbums.reduce((acc, photo) => {
-			const albumTitle = photo.album?.title || 'Unknown'
-			acc[albumTitle] = (acc[albumTitle] || 0) + 1
-			return acc
-		}, {} as Record<string, number>)
+		console.log(
+			`\nFound ${photosInAlbums.length} published photos in albums with showInPhotos=true`
+		)
+		const albumGroups = photosInAlbums.reduce(
+			(acc, photo) => {
+				const albumTitle = photo.album?.title || 'Unknown'
+				acc[albumTitle] = (acc[albumTitle] || 0) + 1
+				return acc
+			},
+			{} as Record<string, number>
+		)
 
 		Object.entries(albumGroups).forEach(([album, count]) => {
 			console.log(`- Album "${album}": ${count} photos`)
@@ -80,10 +85,13 @@ async function checkPhotosDisplay() {
 		})
 
 		console.log(`\nTotal photos in database: ${allPhotos.length}`)
-		const statusCounts = allPhotos.reduce((acc, photo) => {
-			acc[photo.status] = (acc[photo.status] || 0) + 1
-			return acc
-		}, {} as Record<string, number>)
+		const statusCounts = allPhotos.reduce(
+			(acc, photo) => {
+				acc[photo.status] = (acc[photo.status] || 0) + 1
+				return acc
+			},
+			{} as Record<string, number>
+		)
 
 		Object.entries(statusCounts).forEach(([status, count]) => {
 			console.log(`- Status "${status}": ${count} photos`)
@@ -99,10 +107,11 @@ async function checkPhotosDisplay() {
 		})
 
 		console.log(`\nTotal albums in database: ${allAlbums.length}`)
-		allAlbums.forEach(album => {
-			console.log(`- "${album.title}" (${album.slug}): status=${album.status}, isPhotography=${album.isPhotography}, photos=${album._count.photos}`)
+		allAlbums.forEach((album) => {
+			console.log(
+				`- "${album.title}" (${album.slug}): status=${album.status}, isPhotography=${album.isPhotography}, photos=${album._count.photos}`
+			)
 		})
-
 	} catch (error) {
 		console.error('Error checking photos:', error)
 	} finally {

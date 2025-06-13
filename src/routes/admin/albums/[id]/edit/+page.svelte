@@ -394,22 +394,22 @@
 		try {
 			console.log('[Album Edit] handlePhotoReorder called:', {
 				reorderedCount: reorderedPhotos.length,
-				photos: reorderedPhotos.map((p, i) => ({ 
+				photos: reorderedPhotos.map((p, i) => ({
 					index: i,
-					id: p.id, 
-					mediaId: p.mediaId, 
-					filename: p.filename 
+					id: p.id,
+					mediaId: p.mediaId,
+					filename: p.filename
 				}))
 			})
-			
+
 			// Prevent concurrent reordering
 			if (isManagingPhotos) {
 				console.warn('[Album Edit] Skipping reorder - another operation in progress')
 				return
 			}
-			
+
 			isManagingPhotos = true
-			
+
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
 				goto('/admin/login')
@@ -435,7 +435,7 @@
 
 			// Update local state only after successful API calls
 			albumPhotos = [...reorderedPhotos]
-			
+
 			console.log('[Album Edit] Reorder completed successfully')
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to reorder photos'
@@ -495,15 +495,15 @@
 		try {
 			console.log('[Album Edit] handleGalleryAdd called:', {
 				newPhotosCount: newPhotos.length,
-				newPhotos: newPhotos.map(p => ({ 
-					id: p.id, 
-					mediaId: p.mediaId, 
+				newPhotos: newPhotos.map((p) => ({
+					id: p.id,
+					mediaId: p.mediaId,
 					filename: p.filename,
-					isFile: p instanceof File 
+					isFile: p instanceof File
 				})),
 				currentPhotosCount: albumPhotos.length
 			})
-			
+
 			if (newPhotos.length > 0) {
 				// All items from GalleryUploader should be media objects, not Files
 				// They either come from uploads (already processed to Media) or library selections
@@ -696,7 +696,9 @@
 					onRemove={handleGalleryRemove}
 					showBrowseLibrary={true}
 					placeholder="Add photos to this album by uploading or selecting from your media library"
-					helpText={isManagingPhotos ? "Processing photos..." : "Drag photos to reorder them. Click on photos to edit metadata."}
+					helpText={isManagingPhotos
+						? 'Processing photos...'
+						: 'Drag photos to reorder them. Click on photos to edit metadata.'}
 					disabled={isManagingPhotos}
 				/>
 			</div>
@@ -817,7 +819,6 @@
 			color: $grey-10;
 		}
 	}
-
 
 	.loading-container {
 		display: flex;

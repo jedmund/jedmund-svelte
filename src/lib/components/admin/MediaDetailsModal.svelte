@@ -205,7 +205,11 @@
 			<div class="image-pane">
 				{#if media.mimeType.startsWith('image/')}
 					<div class="image-container">
-						<SmartImage {media} alt={media.description || media.altText || media.filename} class="preview-image" />
+						<SmartImage
+							{media}
+							alt={media.description || media.altText || media.filename}
+							class="preview-image"
+						/>
 					</div>
 				{:else}
 					<div class="file-placeholder">

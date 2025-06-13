@@ -59,7 +59,7 @@ async function main() {
 					}
 				})
 				createdMediaCount++
-				
+
 				// Update the photo to reference the new media
 				await prisma.photo.update({
 					where: { id: photo.id },
@@ -69,10 +69,14 @@ async function main() {
 
 			// Create AlbumMedia record if photo belongs to an album
 			if (photo.albumId) {
-				const mediaId = photo.mediaId || (await prisma.photo.findUnique({
-					where: { id: photo.id },
-					select: { mediaId: true }
-				}))?.mediaId
+				const mediaId =
+					photo.mediaId ||
+					(
+						await prisma.photo.findUnique({
+							where: { id: photo.id },
+							select: { mediaId: true }
+						})
+					)?.mediaId
 
 				if (mediaId) {
 					// Check if AlbumMedia already exists
@@ -121,7 +125,6 @@ async function main() {
 		console.log(`\nVerification:`)
 		console.log(`- Media records with photo data: ${mediaWithPhotoData}`)
 		console.log(`- Album-media relationships: ${albumMediaRelations}`)
-
 	} catch (error) {
 		console.error('Migration failed:', error)
 		process.exit(1)

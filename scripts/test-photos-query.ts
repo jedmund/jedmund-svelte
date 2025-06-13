@@ -30,8 +30,10 @@ async function testPhotoQueries() {
 		})
 
 		console.log(`\nPhotos with showInPhotos=true and albumId=null: ${photosForDisplay.length}`)
-		photosForDisplay.forEach(photo => {
-			console.log(`  - ID: ${photo.id}, Status: ${photo.status}, Slug: ${photo.slug || 'none'}, File: ${photo.filename}`)
+		photosForDisplay.forEach((photo) => {
+			console.log(
+				`  - ID: ${photo.id}, Status: ${photo.status}, Slug: ${photo.slug || 'none'}, File: ${photo.filename}`
+			)
 		})
 
 		// Query 3: Check status distribution
@@ -60,8 +62,10 @@ async function testPhotoQueries() {
 			}
 		})
 
-		console.log(`\nPublished photos (status='published', showInPhotos=true, albumId=null): ${publishedPhotos.length}`)
-		publishedPhotos.forEach(photo => {
+		console.log(
+			`\nPublished photos (status='published', showInPhotos=true, albumId=null): ${publishedPhotos.length}`
+		)
+		publishedPhotos.forEach((photo) => {
 			console.log(`  - ID: ${photo.id}, File: ${photo.filename}, Published: ${photo.publishedAt}`)
 		})
 
@@ -76,7 +80,7 @@ async function testPhotoQueries() {
 
 		if (draftPhotos.length > 0) {
 			console.log(`\n⚠️  Found ${draftPhotos.length} draft photos with showInPhotos=true:`)
-			draftPhotos.forEach(photo => {
+			draftPhotos.forEach((photo) => {
 				console.log(`  - ID: ${photo.id}, File: ${photo.filename}`)
 			})
 			console.log('These photos need to be published to appear in the photos page!')
@@ -94,7 +98,6 @@ async function testPhotoQueries() {
 		uniqueStatuses.forEach(({ status }) => {
 			console.log(`  - "${status}"`)
 		})
-
 	} catch (error) {
 		console.error('Error running queries:', error)
 	} finally {

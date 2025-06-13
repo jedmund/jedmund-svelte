@@ -480,7 +480,9 @@
 												Alt
 											</span>
 										{:else}
-											<span class="indicator-pill no-alt-text" title="No description"> No Alt </span>
+											<span class="indicator-pill no-alt-text" title="No description">
+												No Alt
+											</span>
 										{/if}
 									</div>
 									<span class="filesize">{formatFileSize(item.size)}</span>

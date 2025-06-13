@@ -4,14 +4,14 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	try {
 		const { albumSlug, photoId } = params
 		const mediaId = parseInt(photoId)
-		
+
 		if (isNaN(mediaId)) {
 			throw new Error('Invalid photo ID')
 		}
 
 		// Fetch the photo and album data with navigation
 		const response = await fetch(`/api/photos/${albumSlug}/${mediaId}`)
-		
+
 		if (!response.ok) {
 			if (response.status === 404) {
 				throw new Error('Photo or album not found')

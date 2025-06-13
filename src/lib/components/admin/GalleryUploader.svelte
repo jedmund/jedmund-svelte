@@ -157,10 +157,10 @@
 			setTimeout(() => {
 				console.log('[GalleryUploader] Upload completed:', {
 					uploadedCount: uploadedMedia.length,
-					uploaded: uploadedMedia.map(m => ({ id: m.id, filename: m.filename })),
-					currentValue: value?.map(v => ({ id: v.id, mediaId: v.mediaId, filename: v.filename }))
+					uploaded: uploadedMedia.map((m) => ({ id: m.id, filename: m.filename })),
+					currentValue: value?.map((v) => ({ id: v.id, mediaId: v.mediaId, filename: v.filename }))
 				})
-				
+
 				// Don't update value here - let parent handle it through API response
 				// Only pass the newly uploaded media, not the entire gallery
 				onUpload(uploadedMedia)
@@ -224,7 +224,6 @@
 		uploadError = null
 	}
 
-
 	// Drag and drop reordering handlers
 	function handleImageDragStart(event: DragEvent, index: number) {
 		// Prevent reordering while uploading or disabled
@@ -232,12 +231,12 @@
 			event.preventDefault()
 			return
 		}
-		
+
 		draggedIndex = index
 		if (event.dataTransfer) {
 			event.dataTransfer.effectAllowed = 'move'
 		}
-		
+
 		// Debug logging
 		console.log('[GalleryUploader] Drag start:', {
 			index,
@@ -324,8 +323,8 @@
 		// Debug logging
 		console.log('[GalleryUploader] Media selected from library:', {
 			selectedCount: mediaArray.length,
-			selected: mediaArray.map(m => ({ id: m.id, filename: m.filename })),
-			currentValue: value?.map(v => ({ id: v.id, mediaId: v.mediaId, filename: v.filename }))
+			selected: mediaArray.map((m) => ({ id: m.id, filename: m.filename })),
+			currentValue: value?.map((v) => ({ id: v.id, mediaId: v.mediaId, filename: v.filename }))
 		})
 
 		// Filter out duplicates before passing to parent
@@ -343,7 +342,7 @@
 
 		console.log('[GalleryUploader] Filtered new media:', {
 			newCount: newMedia.length,
-			newMedia: newMedia.map(m => ({ id: m.id, filename: m.filename }))
+			newMedia: newMedia.map((m) => ({ id: m.id, filename: m.filename }))
 		})
 
 		if (newMedia.length > 0) {
@@ -384,7 +383,7 @@
 	// Handle updates from the media details modal
 	function handleImageUpdate(updatedMedia: any) {
 		// Update the media in our value array
-		const index = value.findIndex(m => (m.mediaId || m.id) === updatedMedia.id)
+		const index = value.findIndex((m) => (m.mediaId || m.id) === updatedMedia.id)
 		if (index !== -1) {
 			value[index] = {
 				...value[index],
@@ -395,7 +394,7 @@
 			}
 			value = [...value] // Trigger reactivity
 		}
-		
+
 		// Update selectedImage for the modal
 		selectedImage = updatedMedia
 	}
@@ -409,7 +408,7 @@
 			class:drag-over={isDragOver}
 			class:uploading={isUploading}
 			class:has-error={!!uploadError}
-			class:disabled={disabled}
+			class:disabled
 			ondragover={disabled ? undefined : handleDragOver}
 			ondragleave={disabled ? undefined : handleDragLeave}
 			ondrop={disabled ? undefined : handleDrop}
@@ -524,12 +523,12 @@
 	<!-- Action Buttons -->
 	{#if !isUploading && canAddMore}
 		<div class="action-buttons">
-			<Button variant="primary" onclick={handleBrowseClick} disabled={disabled}>
+			<Button variant="primary" onclick={handleBrowseClick} {disabled}>
 				{hasImages ? 'Add More Images' : 'Choose Images'}
 			</Button>
 
 			{#if showBrowseLibrary}
-				<Button variant="ghost" onclick={handleBrowseLibrary} disabled={disabled}>Browse Library</Button>
+				<Button variant="ghost" onclick={handleBrowseLibrary} {disabled}>Browse Library</Button>
 			{/if}
 		</div>
 	{/if}
@@ -542,7 +541,7 @@
 					class="gallery-item"
 					class:dragging={draggedIndex === index}
 					class:drag-over={draggedOverIndex === index}
-					class:disabled={disabled}
+					class:disabled
 					draggable={!disabled}
 					ondragstart={(e) => handleImageDragStart(e, index)}
 					ondragover={(e) => handleImageDragOver(e, index)}
@@ -575,7 +574,7 @@
 							type="button"
 							onclick={() => handleImageClick(media)}
 							aria-label="Edit image {media.filename}"
-							disabled={disabled}
+							{disabled}
 						>
 							<SmartImage
 								media={{
@@ -611,7 +610,7 @@
 							}}
 							type="button"
 							aria-label="Remove image"
-							disabled={disabled}
+							{disabled}
 						>
 							<svg
 								width="16"
@@ -760,7 +759,7 @@
 		&.disabled {
 			opacity: 0.6;
 			cursor: not-allowed;
-			
+
 			&:hover {
 				border-color: $grey-80;
 				background-color: $grey-97;
@@ -940,7 +939,7 @@
 			background: none;
 			cursor: pointer;
 			transition: transform 0.2s ease;
-			
+
 			&:hover:not(:disabled) {
 				transform: scale(1.02);
 			}
@@ -990,7 +989,6 @@
 			opacity: 1;
 		}
 	}
-
 
 	.file-info {
 		padding: $unit-2x;

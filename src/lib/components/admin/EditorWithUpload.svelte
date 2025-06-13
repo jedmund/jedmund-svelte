@@ -251,7 +251,11 @@
 			const editorInstance = (view as any).editor
 			if (editorInstance) {
 				// Use pasteHTML to let Tiptap process the HTML and apply configured extensions
-				editorInstance.chain().focus().insertContent(htmlData, { parseOptions: { preserveWhitespace: false } }).run()
+				editorInstance
+					.chain()
+					.focus()
+					.insertContent(htmlData, { parseOptions: { preserveWhitespace: false } })
+					.run()
 			} else {
 				// Fallback to plain text if editor instance not available
 				const { state, dispatch } = view
@@ -506,6 +510,7 @@
 			}
 		}}
 		class="edra-editor"
+		class:with-toolbar={showToolbar}
 	></div>
 </div>
 
@@ -724,7 +729,7 @@
 	</div>
 {/if}
 
-<style>
+<style lang="scss">
 	.edra {
 		width: 100%;
 		min-width: 0;
@@ -736,9 +741,10 @@
 	.editor-toolbar {
 		background: var(--edra-button-bg-color);
 		box-sizing: border-box;
-		padding: 0.5rem;
+		padding: $unit ($unit-2x + $unit);
 		position: sticky;
-		top: 68px;
+		box-sizing: border-box;
+		top: 75px;
 		z-index: 10;
 		overflow-x: auto;
 		overflow-y: hidden;
@@ -757,6 +763,10 @@
 		overflow: visible;
 		box-sizing: border-box;
 	}
+
+	// .edra-editor.with-toolbar {
+	// 	padding-top: 52px; /* Account for sticky toolbar height */
+	// }
 
 	:global(.ProseMirror) {
 		width: 100%;

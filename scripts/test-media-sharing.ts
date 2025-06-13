@@ -133,7 +133,7 @@ async function testMediaSharing() {
 		console.log(`✓ Album 1 has ${verifyAlbum1?.photos.length} photo(s)`)
 		console.log(`  - Photo mediaId: ${verifyAlbum1?.photos[0]?.mediaId}`)
 		console.log(`  - Media filename: ${verifyAlbum1?.photos[0]?.media?.filename}`)
-		
+
 		console.log(`✓ Album 2 has ${verifyAlbum2?.photos.length} photo(s)`)
 		console.log(`  - Photo mediaId: ${verifyAlbum2?.photos[0]?.mediaId}`)
 		console.log(`  - Media filename: ${verifyAlbum2?.photos[0]?.media?.filename}\n`)
@@ -186,7 +186,6 @@ async function testMediaSharing() {
 			where: { id: media.id }
 		})
 		console.log('✓ Test data cleaned up')
-
 	} catch (error) {
 		console.error('\n❌ ERROR:', error)
 		process.exit(1)

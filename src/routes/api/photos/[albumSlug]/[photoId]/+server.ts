@@ -60,7 +60,8 @@ export const GET: RequestHandler = async (event) => {
 
 		// Get navigation info
 		const prevMedia = albumMediaIndex > 0 ? album.media[albumMediaIndex - 1].media : null
-		const nextMedia = albumMediaIndex < album.media.length - 1 ? album.media[albumMediaIndex + 1].media : null
+		const nextMedia =
+			albumMediaIndex < album.media.length - 1 ? album.media[albumMediaIndex + 1].media : null
 
 		// Transform to photo format for compatibility
 		const photo = {

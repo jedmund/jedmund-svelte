@@ -5,11 +5,13 @@ This directory contains tools to debug why photos aren't appearing on the photos
 ## API Test Endpoint
 
 Visit the following URL in your browser while the dev server is running:
+
 ```
 http://localhost:5173/api/test-photos
 ```
 
 This endpoint will return detailed information about:
+
 - All photos with showInPhotos=true and albumId=null
 - Status distribution of these photos
 - Raw SQL query results
@@ -18,11 +20,13 @@ This endpoint will return detailed information about:
 ## Database Query Script
 
 Run the following command to query the database directly:
+
 ```bash
 npx tsx scripts/test-photos-query.ts
 ```
 
 This script will show:
+
 - Total photos in the database
 - Photos matching the criteria (showInPhotos=true, albumId=null)
 - Status distribution

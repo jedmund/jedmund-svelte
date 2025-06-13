@@ -9,7 +9,7 @@ if (typeof window !== 'undefined') {
 	window.addEventListener('mousemove', (e) => {
 		mousePosition.set({ x: e.clientX, y: e.clientY })
 	})
-	
+
 	// Also capture initial position if mouse is already over window
 	document.addEventListener('DOMContentLoaded', () => {
 		// Force a mouse event to get initial position
@@ -18,7 +18,7 @@ if (typeof window !== 'undefined') {
 			clientY: 0,
 			bubbles: true
 		})
-		
+
 		// If the mouse is already over the document, this will update
 		document.dispatchEvent(event)
 	})

@@ -16,11 +16,13 @@ This PRD outlines the implementation of automatic dominant color extraction for 
 ### Color Extraction Library Options
 
 1. **node-vibrant** (Recommended)
+
    - Pros: Lightweight, fast, good algorithm, actively maintained
    - Cons: Node.js only (server-side processing)
    - NPM: `node-vibrant`
 
 2. **color-thief-node**
+
    - Pros: Simple API, battle-tested algorithm
    - Cons: Less feature-rich than vibrant
    - NPM: `colorthief`
@@ -38,18 +40,19 @@ import Vibrant from 'node-vibrant'
 // Extract colors from uploaded image
 const palette = await Vibrant.from(buffer).getPalette()
 const dominantColors = {
-  vibrant: palette.Vibrant?.hex,
-  darkVibrant: palette.DarkVibrant?.hex,
-  lightVibrant: palette.LightVibrant?.hex,
-  muted: palette.Muted?.hex,
-  darkMuted: palette.DarkMuted?.hex,
-  lightMuted: palette.LightMuted?.hex
+	vibrant: palette.Vibrant?.hex,
+	darkVibrant: palette.DarkVibrant?.hex,
+	lightVibrant: palette.LightVibrant?.hex,
+	muted: palette.Muted?.hex,
+	darkMuted: palette.DarkMuted?.hex,
+	lightMuted: palette.LightMuted?.hex
 }
 ```
 
 ## Database Schema Changes
 
 ### Option 1: Add to Existing exifData JSON (Recommended)
+
 ```prisma
 model Media {
   // ... existing fields
@@ -58,6 +61,7 @@ model Media {
 ```
 
 ### Option 2: Separate Colors Field
+
 ```prisma
 model Media {
   // ... existing fields
@@ -74,19 +78,19 @@ Update the upload handler to extract colors:
 ```typescript
 // After successful upload to Cloudinary
 if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
-  const buffer = await file.arrayBuffer()
-  
-  // Extract EXIF data (existing)
-  const exifData = await extractExifData(file)
-  
-  // Extract dominant colors (new)
-  const colorData = await extractDominantColors(buffer)
-  
-  // Combine data
-  const metadata = {
-    ...exifData,
-    colors: colorData
-  }
+	const buffer = await file.arrayBuffer()
+
+	// Extract EXIF data (existing)
+	const exifData = await extractExifData(file)
+
+	// Extract dominant colors (new)
+	const colorData = await extractDominantColors(buffer)
+
+	// Combine data
+	const metadata = {
+		...exifData,
+		colors: colorData
+	}
 }
 ```
 
@@ -94,36 +98,40 @@ if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
 
 ```json
 {
-  "id": 123,
-  "url": "...",
-  "dominantColors": {
-    "vibrant": "#4285f4",
-    "darkVibrant": "#1a73e8",
-    "lightVibrant": "#8ab4f8",
-    "muted": "#5f6368",
-    "darkMuted": "#3c4043",
-    "lightMuted": "#e8eaed"
-  }
+	"id": 123,
+	"url": "...",
+	"dominantColors": {
+		"vibrant": "#4285f4",
+		"darkVibrant": "#1a73e8",
+		"lightVibrant": "#8ab4f8",
+		"muted": "#5f6368",
+		"darkMuted": "#3c4043",
+		"lightMuted": "#e8eaed"
+	}
 }
 ```
 
 ## UI/UX Considerations
 
 ### 1. Media Library Display
+
 - Show color swatches on hover/focus
 - Optional: Color-based filtering or sorting
 
 ### 2. Gallery Image Modal
+
 - Display color palette in metadata section
 - Show hex values for each color
 - Copy-to-clipboard functionality for colors
 
 ### 3. Album/Gallery Views
+
 - Use dominant color for background accents
 - Create dynamic gradients from extracted colors
 - Enhance loading states with color placeholders
 
 ### 4. Potential Future Features
+
 - Color-based search ("find blue images")
 - Automatic theme generation for albums
 - Color harmony analysis for galleries
@@ -131,6 +139,7 @@ if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
 ## Implementation Plan
 
 ### Phase 1: Backend Implementation (1 day)
+
 1. Install and configure node-vibrant
 2. Create color extraction utility function
 3. Integrate into upload pipeline
@@ -138,16 +147,19 @@ if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
 5. Update API responses
 
 ### Phase 2: Basic Frontend Display (0.5 day)
+
 1. Update Media type definitions
 2. Display colors in GalleryImageModal
 3. Add color swatches to media details
 
 ### Phase 3: Enhanced UI Features (1 day)
+
 1. Implement color-based backgrounds
 2. Add loading placeholders with colors
 3. Create color palette component
 
 ### Phase 4: Testing & Optimization (0.5 day)
+
 1. Test with various image types
 2. Optimize for performance
 3. Handle edge cases (B&W images, etc.)

@@ -7,17 +7,19 @@
 	const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'))
 
 	// Generate person structured data for the site
-	const personJsonLd = $derived(generatePersonJsonLd({
-		name: 'Justin Edmund',
-		jobTitle: 'Software Designer',
-		description: 'Software designer based in San Francisco',
-		url: 'https://jedmund.com',
-		sameAs: [
-			'https://twitter.com/jedmund',
-			'https://github.com/jedmund',
-			'https://www.linkedin.com/in/jedmund'
-		]
-	}))
+	const personJsonLd = $derived(
+		generatePersonJsonLd({
+			name: 'Justin Edmund',
+			jobTitle: 'Software Designer',
+			description: 'Software designer based in San Francisco',
+			url: 'https://jedmund.com',
+			sameAs: [
+				'https://twitter.com/jedmund',
+				'https://github.com/jedmund',
+				'https://www.linkedin.com/in/jedmund'
+			]
+		})
+	)
 </script>
 
 <svelte:head>

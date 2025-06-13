@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import Editor from '$lib/components/admin/Editor.svelte'
+	import CaseStudyEditor from '$lib/components/admin/CaseStudyEditor.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
@@ -195,7 +195,7 @@
 
 			{#if config?.showContent}
 				<div class="editor-wrapper">
-					<Editor bind:data={content} placeholder="Start writing..." />
+					<CaseStudyEditor bind:data={content} placeholder="Start writing..." mode="default" />
 				</div>
 			{/if}
 		</div>
@@ -314,13 +314,13 @@
 	.main-content {
 		display: flex;
 		flex-direction: column;
-		gap: $unit-3x;
+		gap: $unit-2x;
 		min-width: 0;
 	}
 
 	.title-input {
 		width: 100%;
-		padding: 0 $unit-2x;
+		padding: 0 $unit-4x;
 		border: none;
 		font-size: 2.5rem;
 		font-weight: 700;

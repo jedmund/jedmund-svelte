@@ -6,7 +6,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		const albumResponse = await fetch(`/api/albums/by-slug/${params.slug}`)
 		if (albumResponse.ok) {
 			const album = await albumResponse.json()
-			
+
 			// Check if this is a photography album and published
 			if (album.isPhotography && album.status === 'published') {
 				return {

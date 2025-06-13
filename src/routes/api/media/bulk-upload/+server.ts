@@ -12,17 +12,17 @@ async function extractExifData(file: File) {
 			size: file.size,
 			type: file.type
 		})
-		
+
 		const buffer = await file.arrayBuffer()
 		logger.info(`Buffer created for ${file.name}`, { bufferSize: buffer.byteLength })
-		
+
 		// Try parsing without pick first to see all available data
 		const fullExif = await exifr.parse(buffer)
 		logger.info(`Full EXIF data available for ${file.name}:`, {
 			hasData: !!fullExif,
 			availableFields: fullExif ? Object.keys(fullExif).slice(0, 10) : [] // First 10 fields
 		})
-		
+
 		// Now parse with specific fields
 		const exif = await exifr.parse(buffer, {
 			pick: [
@@ -43,7 +43,7 @@ async function extractExifData(file: File) {
 			]
 		})
 
-		logger.info(`EXIF parse result for ${file.name}:`, { 
+		logger.info(`EXIF parse result for ${file.name}:`, {
 			hasExif: !!exif,
 			exifKeys: exif ? Object.keys(exif) : []
 		})
@@ -74,16 +74,16 @@ async function extractExifData(file: File) {
 
 		if (exif.ExposureTime) {
 			formattedExif.shutterSpeed =
-				exif.ExposureTime < 1
-					? `1/${Math.round(1 / exif.ExposureTime)}`
-					: `${exif.ExposureTime}s`
+				exif.ExposureTime < 1 ? `1/${Math.round(1 / exif.ExposureTime)}` : `${exif.ExposureTime}s`
 		}
 
 		if (exif.ISO) {
 			formattedExif.iso = `ISO ${exif.ISO}`
 		} else if (exif.ISOSpeedRatings) {
 			// Handle alternative ISO field
-			const iso = Array.isArray(exif.ISOSpeedRatings) ? exif.ISOSpeedRatings[0] : exif.ISOSpeedRatings
+			const iso = Array.isArray(exif.ISOSpeedRatings)
+				? exif.ISOSpeedRatings[0]
+				: exif.ISOSpeedRatings
 			formattedExif.iso = `ISO ${iso}`
 		}
 
@@ -105,7 +105,8 @@ async function extractExifData(file: File) {
 
 		// Additional metadata
 		if (exif.Orientation) {
-			formattedExif.orientation = exif.Orientation === 1 ? 'Horizontal (normal)' : `Rotated (${exif.Orientation})`
+			formattedExif.orientation =
+				exif.Orientation === 1 ? 'Horizontal (normal)' : `Rotated (${exif.Orientation})`
 		}
 
 		if (exif.ColorSpace) {
