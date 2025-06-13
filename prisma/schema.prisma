@@ -86,6 +86,7 @@ model Album {
 model Photo {
   id                 Int       @id @default(autoincrement())
   albumId            Int?
+  mediaId            Int?      // Reference to the Media item
   filename           String    @db.VarChar(255)
   url                String    @db.VarChar(500)
   thumbnailUrl       String?   @db.VarChar(500)
@@ -107,9 +108,11 @@ model Photo {
   
   // Relations
   album              Album?    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  media              Media?    @relation(fields: [mediaId], references: [id], onDelete: SetNull)
   
   @@index([slug])
   @@index([status])
+  @@index([mediaId])
 }
 
 // Media table (general uploads)
@@ -133,6 +136,7 @@ model Media {
   
   // Relations
   usage              MediaUsage[]
+  photos             Photo[]
 }
 
 // Media usage tracking table

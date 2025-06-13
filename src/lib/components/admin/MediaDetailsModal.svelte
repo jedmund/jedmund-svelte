@@ -2,6 +2,7 @@
 	import Modal from './Modal.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import Textarea from './Textarea.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import type { Media } from '@prisma/client'
@@ -36,6 +37,9 @@
 	>([])
 	let loadingUsage = $state(false)
 
+	// EXIF toggle state
+	let showExif = $state(false)
+
 	// Initialize form when media changes
 	$effect(() => {
 		if (media) {
@@ -44,6 +48,7 @@
 			isPhotography = media.isPhotography || false
 			error = ''
 			successMessage = ''
+			showExif = false
 			loadUsage()
 		}
 	})
@@ -190,129 +195,197 @@
 {#if media}
 	<Modal
 		bind:isOpen
-		size="large"
+		size="jumbo"
 		closeOnBackdrop={!isSaving}
 		closeOnEscape={!isSaving}
 		on:close={handleClose}
+		showCloseButton={false}
 	>
 		<div class="media-details-modal">
-			<!-- Header -->
-			<div class="modal-header">
-				<div class="header-content">
-					<h2>Media Details</h2>
-					<p class="filename">{media.filename}</p>
-				</div>
-				{#if !isSaving}
-					<Button variant="ghost" onclick={handleClose} iconOnly aria-label="Close modal">
+			<!-- Left Pane - Image Preview -->
+			<div class="image-pane">
+				{#if media.mimeType.startsWith('image/')}
+					<div class="image-container">
+						<SmartImage {media} alt={media.altText || media.filename} class="preview-image" />
+					</div>
+				{:else}
+					<div class="file-placeholder">
 						<svg
-							slot="icon"
-							width="24"
-							height="24"
+							width="64"
+							height="64"
 							viewBox="0 0 24 24"
 							fill="none"
 							xmlns="http://www.w3.org/2000/svg"
 						>
 							<path
-								d="M6 6L18 18M6 18L18 6"
+								d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
 								stroke="currentColor"
 								stroke-width="2"
 								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<polyline
+								points="14,2 14,8 20,8"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
 							/>
 						</svg>
-					</Button>
+						<span class="file-type">{getFileType(media.mimeType)}</span>
+					</div>
 				{/if}
 			</div>
 
-			<!-- Content -->
-			<div class="modal-body">
-				<div class="media-preview-section">
-					<!-- Media Preview -->
-					<div class="media-preview">
-						{#if media.mimeType.startsWith('image/')}
-							<SmartImage {media} alt={media.altText || media.filename} />
-						{:else}
-							<div class="file-placeholder">
+			<!-- Right Pane - Details -->
+			<div class="details-pane">
+				<!-- Header -->
+				<div class="pane-header">
+					<h2 class="filename-header">{media.filename}</h2>
+					<div class="header-actions">
+						{#if !isSaving}
+							<Button variant="ghost" onclick={copyUrl} iconOnly aria-label="Copy URL">
 								<svg
-									width="64"
-									height="64"
+									slot="icon"
+									width="20"
+									height="20"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<rect
+										x="9"
+										y="9"
+										width="13"
+										height="13"
+										rx="2"
+										stroke="currentColor"
+										stroke-width="2"
+									/>
+									<path
+										d="M5 15H4C2.89543 15 2 14.1046 2 13V4C2 2.89543 2.89543 2 4 2H13C14.1046 2 15 2.89543 15 4V5"
+										stroke="currentColor"
+										stroke-width="2"
+									/>
+								</svg>
+							</Button>
+							<Button variant="ghost" onclick={handleClose} iconOnly aria-label="Close modal">
+								<svg
+									slot="icon"
+									width="24"
+									height="24"
 									viewBox="0 0 24 24"
 									fill="none"
 									xmlns="http://www.w3.org/2000/svg"
 								>
 									<path
-										d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
+										d="M6 6L18 18M6 18L18 6"
 										stroke="currentColor"
 										stroke-width="2"
 										stroke-linecap="round"
-										stroke-linejoin="round"
-									/>
-									<polyline
-										points="14,2 14,8 20,8"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
 									/>
 								</svg>
-								<span class="file-type">{getFileType(media.mimeType)}</span>
-							</div>
+							</Button>
 						{/if}
-					</div>
-
-					<!-- File Info -->
-					<div class="file-info">
-						<div class="info-row">
-							<span class="label">Type:</span>
-							<span class="value">{getFileType(media.mimeType)}</span>
-						</div>
-						<div class="info-row">
-							<span class="label">Size:</span>
-							<span class="value">{formatFileSize(media.size)}</span>
-						</div>
-						{#if media.width && media.height}
-							<div class="info-row">
-								<span class="label">Dimensions:</span>
-								<span class="value">{media.width} × {media.height}px</span>
-							</div>
-						{/if}
-						<div class="info-row">
-							<span class="label">Uploaded:</span>
-							<span class="value">{new Date(media.createdAt).toLocaleDateString()}</span>
-						</div>
-						<div class="info-row">
-							<span class="label">URL:</span>
-							<div class="url-section">
-								<span class="url-text">{media.url}</span>
-								<Button variant="ghost" buttonSize="small" onclick={copyUrl}>Copy</Button>
-							</div>
-						</div>
 					</div>
 				</div>
 
-				<!-- Edit Form -->
-				<div class="edit-form">
-					<h3>Accessibility & SEO</h3>
+				<!-- Content -->
+				<div class="pane-body">
+					<!-- File Info -->
+					<div class="file-info">
+						<div class="info-grid">
+							<div class="info-item">
+								<span class="label">Type</span>
+								<span class="value">{getFileType(media.mimeType)}</span>
+							</div>
+							<div class="info-item">
+								<span class="label">Size</span>
+								<span class="value">{formatFileSize(media.size)}</span>
+							</div>
+							{#if media.width && media.height}
+								<div class="info-item">
+									<span class="label">Dimensions</span>
+									<span class="value">{media.width} × {media.height}px</span>
+								</div>
+							{/if}
+							<div class="info-item">
+								<span class="label">Uploaded</span>
+								<span class="value">{new Date(media.createdAt).toLocaleDateString()}</span>
+							</div>
+						</div>
 
-					<Input
-						type="text"
-						label="Alt Text"
-						bind:value={altText}
-						placeholder="Describe this image for screen readers"
-						helpText="Help make your content accessible. Describe what's in the image."
-						disabled={isSaving}
-						fullWidth
-					/>
+						{#if media.exifData && Object.keys(media.exifData).length > 0}
+							{#if showExif}
+								<div class="exif-data">
+									{#if media.exifData.camera}
+										<div class="info-item">
+											<span class="label">Camera</span>
+											<span class="value">{media.exifData.camera}</span>
+										</div>
+									{/if}
+									{#if media.exifData.lens}
+										<div class="info-item">
+											<span class="label">Lens</span>
+											<span class="value">{media.exifData.lens}</span>
+										</div>
+									{/if}
+									{#if media.exifData.focalLength}
+										<div class="info-item">
+											<span class="label">Focal Length</span>
+											<span class="value">{media.exifData.focalLength}</span>
+										</div>
+									{/if}
+									{#if media.exifData.aperture}
+										<div class="info-item">
+											<span class="label">Aperture</span>
+											<span class="value">{media.exifData.aperture}</span>
+										</div>
+									{/if}
+									{#if media.exifData.shutterSpeed}
+										<div class="info-item">
+											<span class="label">Shutter Speed</span>
+											<span class="value">{media.exifData.shutterSpeed}</span>
+										</div>
+									{/if}
+									{#if media.exifData.iso}
+										<div class="info-item">
+											<span class="label">ISO</span>
+											<span class="value">{media.exifData.iso}</span>
+										</div>
+									{/if}
+									{#if media.exifData.dateTaken}
+										<div class="info-item">
+											<span class="label">Date Taken</span>
+											<span class="value"
+												>{new Date(media.exifData.dateTaken).toLocaleDateString()}</span
+											>
+										</div>
+									{/if}
+									{#if media.exifData.coordinates}
+										<div class="info-item">
+											<span class="label">GPS</span>
+											<span class="value">
+												{media.exifData.coordinates.latitude.toFixed(6)},
+												{media.exifData.coordinates.longitude.toFixed(6)}
+											</span>
+										</div>
+									{/if}
+								</div>
+							{/if}
 
-					<Input
-						type="textarea"
-						label="Description (Optional)"
-						bind:value={description}
-						placeholder="Additional description or caption"
-						helpText="Optional longer description for context or captions."
-						rows={3}
-						disabled={isSaving}
-						fullWidth
-					/>
+							<Button
+								variant="ghost"
+								onclick={() => (showExif = !showExif)}
+								buttonSize="small"
+								fullWidth
+								pill={false}
+								class="exif-toggle"
+							>
+								{showExif ? 'Hide EXIF' : 'Show EXIF'}
+							</Button>
+						{/if}
+					</div>
 
 					<!-- Photography Toggle -->
 					<div class="photography-toggle">
@@ -323,80 +396,104 @@
 								disabled={isSaving}
 								class="toggle-input"
 							/>
-							<span class="toggle-slider"></span>
 							<div class="toggle-content">
-								<span class="toggle-title">Photography</span>
-								<span class="toggle-description">Show this media in the photography experience</span
-								>
+								<span class="toggle-title">Show in Photos</span>
+								<span class="toggle-description">This photo will be displayed in Photos</span>
 							</div>
+							<span class="toggle-slider"></span>
 						</label>
 					</div>
 
-					<!-- Usage Tracking -->
-					<div class="usage-section">
-						<h4>Used In</h4>
-						{#if loadingUsage}
-							<div class="usage-loading">
-								<div class="spinner"></div>
-								<span>Loading usage information...</span>
-							</div>
-						{:else if usage.length > 0}
-							<ul class="usage-list">
-								{#each usage as usageItem}
-									<li class="usage-item">
-										<div class="usage-content">
-											<div class="usage-header">
-												{#if usageItem.contentUrl}
-													<a
-														href={usageItem.contentUrl}
-														class="usage-title"
-														target="_blank"
-														rel="noopener"
+					<!-- Edit Form -->
+					<div class="edit-form">
+						<Textarea
+							label="Alt Text"
+							bind:value={altText}
+							placeholder="Describe this image for screen readers"
+							rows={3}
+							disabled={isSaving}
+							fullWidth
+						/>
+
+						<Textarea
+							label="Description"
+							bind:value={description}
+							placeholder="Additional description or caption"
+							rows={3}
+							disabled={isSaving}
+							fullWidth
+						/>
+
+						<!-- Usage Tracking -->
+						<div class="usage-section">
+							<h4>Used In</h4>
+							{#if loadingUsage}
+								<div class="usage-loading">
+									<div class="spinner"></div>
+									<span>Loading usage information...</span>
+								</div>
+							{:else if usage.length > 0}
+								<ul class="usage-list">
+									{#each usage as usageItem}
+										<li class="usage-item">
+											<div class="usage-content">
+												<div class="usage-header">
+													{#if usageItem.contentUrl}
+														<a
+															href={usageItem.contentUrl}
+															class="usage-title"
+															target="_blank"
+															rel="noopener"
+														>
+															{usageItem.contentTitle}
+														</a>
+													{:else}
+														<span class="usage-title">{usageItem.contentTitle}</span>
+													{/if}
+													<span class="usage-type">{usageItem.contentType}</span>
+												</div>
+												<div class="usage-details">
+													<span class="usage-field">{usageItem.fieldDisplayName}</span>
+													<span class="usage-date"
+														>Added {new Date(usageItem.createdAt).toLocaleDateString()}</span
 													>
-														{usageItem.contentTitle}
-													</a>
-												{:else}
-													<span class="usage-title">{usageItem.contentTitle}</span>
-												{/if}
-												<span class="usage-type">{usageItem.contentType}</span>
+												</div>
 											</div>
-											<div class="usage-details">
-												<span class="usage-field">{usageItem.fieldDisplayName}</span>
-												<span class="usage-date"
-													>Added {new Date(usageItem.createdAt).toLocaleDateString()}</span
-												>
-											</div>
-										</div>
-									</li>
-								{/each}
-							</ul>
-						{:else}
-							<p class="no-usage">This media file is not currently used in any content.</p>
-						{/if}
+										</li>
+									{/each}
+								</ul>
+							{:else}
+								<p class="no-usage">This media file is not currently used in any content.</p>
+							{/if}
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<!-- Footer -->
-			<div class="modal-footer">
-				<div class="footer-left">
-					<Button variant="ghost" onclick={handleDelete} disabled={isSaving} class="delete-button">
-						Delete
-					</Button>
-				</div>
+				<!-- Footer -->
+				<div class="pane-footer">
+					<div class="footer-left">
+						<Button
+							variant="ghost"
+							onclick={handleDelete}
+							disabled={isSaving}
+							class="delete-button"
+						>
+							Delete
+						</Button>
+					</div>
 
-				<div class="footer-right">
-					{#if error}
-						<span class="error-text">{error}</span>
-					{/if}
-					{#if successMessage}
-						<span class="success-text">{successMessage}</span>
-					{/if}
+					<div class="footer-right">
+						{#if error}
+							<span class="error-text">{error}</span>
+						{/if}
+						{#if successMessage}
+							<span class="success-text">{successMessage}</span>
+						{/if}
 
-					<Button variant="ghost" onclick={handleClose} disabled={isSaving}>Cancel</Button>
-					<Button variant="primary" onclick={handleSave} disabled={isSaving}>
-						{isSaving ? 'Saving...' : 'Save Changes'}
-					</Button>
+						<Button variant="primary" onclick={handleSave} disabled={isSaving}>
+							{isSaving ? 'Saving...' : 'Save Changes'}
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -406,74 +503,36 @@
 <style lang="scss">
 	.media-details-modal {
 		display: flex;
-		flex-direction: column;
 		height: 100%;
-		max-height: 90vh;
-	}
-
-	.modal-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: $unit-4x;
-		border-bottom: 1px solid $grey-90;
-		flex-shrink: 0;
-
-		.header-content {
-			flex: 1;
-
-			h2 {
-				font-size: 1.5rem;
-				font-weight: 600;
-				margin: 0 0 $unit-half 0;
-				color: $grey-10;
-			}
-
-			.filename {
-				font-size: 0.875rem;
-				color: $grey-40;
-				margin: 0;
-				word-break: break-all;
-			}
-		}
-	}
-
-	.modal-body {
-		flex: 1;
-		overflow-y: auto;
-		padding: $unit-4x;
-		display: flex;
-		flex-direction: column;
-		gap: $unit-6x;
-	}
-
-	.media-preview-section {
-		display: grid;
-		grid-template-columns: 300px 1fr;
-		gap: $unit-4x;
-		align-items: start;
-
-		@include breakpoint('tablet') {
-			grid-template-columns: 1fr;
-			gap: $unit-3x;
-		}
-	}
-
-	.media-preview {
-		width: 100%;
-		max-width: 300px;
-		aspect-ratio: 4/3;
-		border-radius: 12px;
 		overflow: hidden;
-		background: $grey-95;
+	}
+
+	// Left pane - Image preview
+	.image-pane {
+		flex: 1;
+		background-color: #000;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		padding: $unit-4x;
+		position: relative;
+		overflow: hidden;
 
-		:global(img) {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
+		.image-container {
+			max-width: 90%;
+			max-height: 90%;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			:global(.preview-image) {
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+				border-radius: $corner-radius-md;
+				display: block;
+			}
 		}
 
 		.file-placeholder {
@@ -481,7 +540,7 @@
 			flex-direction: column;
 			align-items: center;
 			gap: $unit-2x;
-			color: $grey-50;
+			color: rgba(255, 255, 255, 0.6);
 
 			.file-type {
 				font-size: 0.875rem;
@@ -490,54 +549,113 @@
 		}
 	}
 
+	// Right pane - Details
+	.details-pane {
+		width: 400px;
+		background-color: white;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.pane-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: $unit-2x $unit-3x;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+		flex-shrink: 0;
+		gap: $unit-2x;
+
+		.filename-header {
+			flex: 1;
+			font-size: 1.125rem;
+			font-weight: 500;
+			margin: 0;
+			color: $grey-10;
+			word-break: break-all;
+			line-height: 1.5;
+		}
+
+		.header-actions {
+			display: flex;
+			align-items: center;
+			gap: $unit;
+		}
+	}
+
+	.pane-body {
+		flex: 1;
+		overflow-y: auto;
+		padding: $unit-4x;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-6x;
+	}
+
 	.file-info {
 		display: flex;
 		flex-direction: column;
-		gap: $unit-2x;
+		gap: $unit-3x;
+		padding: $unit-3x;
+		background-color: $grey-97;
+		border-radius: $corner-radius;
 	}
 
-	.info-row {
+	.info-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: $unit-3x;
+	}
+
+	.info-item {
 		display: flex;
-		align-items: center;
-		gap: $unit-2x;
+		flex-direction: column;
+		gap: $unit-half;
+
+		&.vertical {
+			grid-column: 1 / -1;
+		}
 
 		.label {
+			font-size: 0.75rem;
 			font-weight: 500;
-			color: $grey-30;
-			min-width: 80px;
+			color: $grey-50;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
 		}
 
 		.value {
+			font-size: 0.875rem;
 			color: $grey-10;
-			flex: 1;
+			font-weight: 500;
 		}
+	}
 
-		.url-section {
-			display: flex;
-			align-items: center;
-			gap: $unit-2x;
-			flex: 1;
+	:global(.btn.btn-ghost.exif-toggle) {
+		margin-top: $unit-2x;
+		justify-content: center;
+		background: transparent;
+		border: 1px solid $grey-70;
 
-			.url-text {
-				color: $grey-10;
-				font-size: 0.875rem;
-				word-break: break-all;
-				flex: 1;
-			}
+		&:hover {
+			background: rgba(0, 0, 0, 0.02);
+			border-color: $grey-70;
 		}
+	}
+
+	.exif-data {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: $unit-3x;
+		padding-top: $unit-3x;
+		border-top: 1px solid $grey-90;
 	}
 
 	.edit-form {
 		display: flex;
 		flex-direction: column;
 		gap: $unit-4x;
-
-		h3 {
-			font-size: 1.25rem;
-			font-weight: 600;
-			margin: 0;
-			color: $grey-10;
-		}
 
 		h4 {
 			font-size: 1rem;
@@ -551,6 +669,7 @@
 		.toggle-label {
 			display: flex;
 			align-items: center;
+			justify-content: space-between;
 			gap: $unit-3x;
 			cursor: pointer;
 			user-select: none;
@@ -561,7 +680,7 @@
 			opacity: 0;
 			pointer-events: none;
 
-			&:checked + .toggle-slider {
+			&:checked + .toggle-content + .toggle-slider {
 				background-color: $blue-60;
 
 				&::before {
@@ -569,7 +688,7 @@
 				}
 			}
 
-			&:disabled + .toggle-slider {
+			&:disabled + .toggle-content + .toggle-slider {
 				opacity: 0.5;
 				cursor: not-allowed;
 			}
@@ -711,12 +830,12 @@
 		}
 	}
 
-	.modal-footer {
+	.pane-footer {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: $unit-4x;
-		border-top: 1px solid $grey-90;
+		padding: $unit-2x $unit-3x;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
 		flex-shrink: 0;
 
 		.footer-left {
@@ -756,16 +875,30 @@
 	}
 
 	// Responsive adjustments
-	@include breakpoint('phone') {
-		.modal-header {
+	@media (max-width: 768px) {
+		.media-details-modal {
+			flex-direction: column;
+		}
+
+		.image-pane {
+			height: 300px;
+			flex: none;
+		}
+
+		.details-pane {
+			width: 100%;
+			flex: 1;
+		}
+
+		.pane-header {
 			padding: $unit-3x;
 		}
 
-		.modal-body {
+		.pane-body {
 			padding: $unit-3x;
 		}
 
-		.modal-footer {
+		.pane-footer {
 			padding: $unit-3x;
 			flex-direction: column;
 			gap: $unit-3x;

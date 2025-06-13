@@ -4,7 +4,7 @@
 	import Button from './Button.svelte'
 
 	export let isOpen = false
-	export let size: 'small' | 'medium' | 'large' | 'full' = 'medium'
+	export let size: 'small' | 'medium' | 'large' | 'jumbo' | 'full' = 'medium'
 	export let closeOnBackdrop = true
 	export let closeOnEscape = true
 	export let showCloseButton = true
@@ -116,6 +116,12 @@
 		&.modal-large {
 			width: 100%;
 			max-width: 800px;
+		}
+
+		&.modal-jumbo {
+			width: 90vw;
+			max-width: 1400px;
+			height: 80vh;
 		}
 
 		&.modal-full {

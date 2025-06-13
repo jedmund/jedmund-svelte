@@ -20,7 +20,10 @@ export const GET: RequestHandler = async (event) => {
 			where: { id },
 			include: {
 				photos: {
-					orderBy: { displayOrder: 'asc' }
+					orderBy: { displayOrder: 'asc' },
+					include: {
+						media: true // Include media relation for each photo
+					}
 				},
 				_count: {
 					select: { photos: true }
@@ -32,35 +35,13 @@ export const GET: RequestHandler = async (event) => {
 			return errorResponse('Album not found', 404)
 		}
 
-		// Get all media usage records for this album's photos in one query
-		const mediaUsages = await prisma.mediaUsage.findMany({
-			where: {
-				contentType: 'album',
-				contentId: album.id,
-				fieldName: 'photos'
-			},
-			include: {
-				media: true
-			}
-		})
-
-		// Create a map of media by mediaId for efficient lookup
-		const mediaMap = new Map()
-		mediaUsages.forEach((usage) => {
-			if (usage.media) {
-				mediaMap.set(usage.mediaId, usage.media)
-			}
-		})
-
-		// Enrich photos with media information using proper media usage tracking
+		// Enrich photos with media information from the included relation
 		const photosWithMedia = album.photos.map((photo) => {
-			// Find the corresponding media usage record for this photo
-			const usage = mediaUsages.find((u) => u.media && u.media.filename === photo.filename)
-			const media = usage?.media
+			const media = photo.media
 
 			return {
 				...photo,
-				mediaId: media?.id || null,
+				// Add media properties for backward compatibility
 				altText: media?.altText || '',
 				description: media?.description || photo.caption || '',
 				isPhotography: media?.isPhotography || false,
@@ -184,17 +165,24 @@ export const DELETE: RequestHandler = async (event) => {
 			return errorResponse('Album not found', 404)
 		}
 
-		// Check if album has photos
-		if (album._count.photos > 0) {
-			return errorResponse('Cannot delete album that contains photos', 409)
-		}
+		// Use a transaction to ensure both operations succeed or fail together
+		await prisma.$transaction(async (tx) => {
+			// First, unlink all photos from this album (set albumId to null)
+			if (album._count.photos > 0) {
+				await tx.photo.updateMany({
+					where: { albumId: id },
+					data: { albumId: null }
+				})
+				logger.info('Unlinked photos from album', { albumId: id, photoCount: album._count.photos })
+			}
 
-		// Delete album
-		await prisma.album.delete({
-			where: { id }
+			// Then delete the album
+			await tx.album.delete({
+				where: { id }
+			})
 		})
 
-		logger.info('Album deleted', { id, slug: album.slug })
+		logger.info('Album deleted', { id, slug: album.slug, photosUnlinked: album._count.photos })
 
 		return new Response(null, { status: 204 })
 	} catch (error) {

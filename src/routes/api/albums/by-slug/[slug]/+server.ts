@@ -29,7 +29,18 @@ export const GET: RequestHandler = async (event) => {
 						width: true,
 						height: true,
 						caption: true,
-						displayOrder: true
+						displayOrder: true,
+						mediaId: true,
+						media: {
+							select: {
+								id: true,
+								altText: true,
+								description: true,
+								isPhotography: true,
+								mimeType: true,
+								size: true
+							}
+						}
 					}
 				},
 				_count: {

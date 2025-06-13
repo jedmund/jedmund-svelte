@@ -10,25 +10,40 @@ export function setAdminAuth(username: string, password: string) {
 
 // Get auth headers for API requests
 export function getAuthHeaders(): HeadersInit {
-	if (!adminCredentials) {
-		// For development, use default credentials
-		// In production, this should redirect to login
-		adminCredentials = btoa('admin:localdev')
+	// First try to get from localStorage (where login stores it)
+	const storedAuth = typeof window !== 'undefined' ? localStorage.getItem('admin_auth') : null
+	if (storedAuth) {
+		return {
+			Authorization: `Basic ${storedAuth}`
+		}
 	}
 
+	// Fall back to in-memory credentials if set
+	if (adminCredentials) {
+		return {
+			Authorization: `Basic ${adminCredentials}`
+		}
+	}
+
+	// Development fallback
+	const fallbackAuth = btoa('admin:localdev')
 	return {
-		Authorization: `Basic ${adminCredentials}`
+		Authorization: `Basic ${fallbackAuth}`
 	}
 }
 
 // Check if user is authenticated (basic check)
 export function isAuthenticated(): boolean {
-	return adminCredentials !== null
+	const storedAuth = typeof window !== 'undefined' ? localStorage.getItem('admin_auth') : null
+	return storedAuth !== null || adminCredentials !== null
 }
 
 // Clear auth (logout)
 export function clearAuth() {
 	adminCredentials = null
+	if (typeof window !== 'undefined') {
+		localStorage.removeItem('admin_auth')
+	}
 }
 
 // Make authenticated API request

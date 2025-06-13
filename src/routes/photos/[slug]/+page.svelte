@@ -7,7 +7,9 @@
 
 	let { data }: { data: PageData } = $props()
 
+	const type = $derived(data.type)
 	const album = $derived(data.album)
+	const photo = $derived(data.photo)
 	const error = $derived(data.error)
 
 	// Transform album data to PhotoItem format for PhotoGrid
@@ -35,7 +37,7 @@
 
 	// Generate metadata
 	const metaTags = $derived(
-		album
+		type === 'album' && album
 			? generateMetaTags({
 					title: album.title,
 					description:
@@ -45,9 +47,17 @@
 					image: album.photos?.[0]?.url,
 					titleFormat: { type: 'by' }
 				})
+			: type === 'photo' && photo
+			? generateMetaTags({
+					title: photo.title || 'Photo',
+					description: photo.description || photo.caption || 'A photograph',
+					url: pageUrl,
+					image: photo.url,
+					titleFormat: { type: 'by' }
+				})
 			: generateMetaTags({
-					title: 'Album Not Found',
-					description: 'The album you are looking for could not be found.',
+					title: 'Not Found',
+					description: 'The content you are looking for could not be found.',
 					url: pageUrl,
 					noindex: true
 				})
@@ -55,7 +65,7 @@
 
 	// Generate image gallery JSON-LD
 	const galleryJsonLd = $derived(
-		album
+		type === 'album' && album
 			? generateImageGalleryJsonLd({
 					name: album.title,
 					description: album.description,
@@ -66,6 +76,15 @@
 							caption: photo.caption
 						})) || []
 				})
+			: type === 'photo' && photo
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'ImageObject',
+					name: photo.title || 'Photo',
+					description: photo.description || photo.caption,
+					contentUrl: photo.url,
+					url: pageUrl
+				}
 			: null
 	)
 </script>
@@ -96,12 +115,12 @@
 {#if error}
 	<div class="error-container">
 		<div class="error-message">
-			<h1>Album Not Found</h1>
+			<h1>Not Found</h1>
 			<p>{error}</p>
 			<BackButton href="/photos" label="Back to Photos" />
 		</div>
 	</div>
-{:else if album}
+{:else if type === 'album' && album}
 	<div class="album-page">
 		<!-- Album Card -->
 		<div class="album-card">
@@ -132,6 +151,36 @@
 				<p>This album doesn't contain any photos yet.</p>
 			</div>
 		{/if}
+	</div>
+{:else if type === 'photo' && photo}
+	<div class="photo-page">
+		<div class="photo-header">
+			<BackButton href="/photos" label="Back to Photos" />
+		</div>
+		
+		<div class="photo-container">
+			<img 
+				src={photo.url} 
+				alt={photo.title || photo.caption || 'Photo'} 
+				class="photo-image"
+			/>
+		</div>
+
+		<div class="photo-info">
+			{#if photo.title}
+				<h1 class="photo-title">{photo.title}</h1>
+			{/if}
+			
+			{#if photo.caption || photo.description}
+				<p class="photo-description">{photo.caption || photo.description}</p>
+			{/if}
+
+			{#if photo.exifData}
+				<div class="photo-exif">
+					<!-- EXIF data could be displayed here -->
+				</div>
+			{/if}
+		</div>
 	</div>
 {/if}
 
@@ -239,5 +288,56 @@
 		text-align: center;
 		padding: $unit-6x $unit-3x;
 		color: $grey-40;
+	}
+
+	.photo-page {
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: $unit-4x $unit-3x;
+
+		@include breakpoint('phone') {
+			padding: $unit-3x $unit-2x;
+		}
+	}
+
+	.photo-header {
+		margin-bottom: $unit-3x;
+	}
+
+	.photo-container {
+		margin-bottom: $unit-4x;
+		text-align: center;
+
+		.photo-image {
+			max-width: 100%;
+			height: auto;
+			border-radius: $card-corner-radius;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+		}
+	}
+
+	.photo-info {
+		max-width: 700px;
+		margin: 0 auto;
+		text-align: center;
+
+		.photo-title {
+			font-size: 2rem;
+			font-weight: 700;
+			margin: 0 0 $unit-2x;
+			color: $grey-10;
+
+			@include breakpoint('phone') {
+				font-size: 1.5rem;
+			}
+		}
+
+		.photo-description {
+			font-size: 1rem;
+			color: $grey-30;
+			line-height: 1.6;
+			margin: 0 0 $unit-3x;
+		}
 	}
 </style>

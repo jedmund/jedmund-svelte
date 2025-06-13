@@ -63,19 +63,24 @@ export const POST: RequestHandler = async (event) => {
 			displayOrder = (lastPhoto?.displayOrder || 0) + 1
 		}
 
-		// Create photo record from media
+		// Create photo record linked to media
 		const photo = await prisma.photo.create({
 			data: {
 				albumId,
+				mediaId: body.mediaId, // Link to the Media record
 				filename: media.filename,
 				url: media.url,
 				thumbnailUrl: media.thumbnailUrl,
 				width: media.width,
 				height: media.height,
+				exifData: media.exifData, // Include EXIF data from media
 				caption: media.description, // Use media description as initial caption
 				displayOrder,
 				status: 'published', // Photos in albums are published by default
 				showInPhotos: true
+			},
+			include: {
+				media: true // Include media relation in response
 			}
 		})
 
@@ -95,18 +100,8 @@ export const POST: RequestHandler = async (event) => {
 			mediaId: body.mediaId
 		})
 
-		// Return photo with media information for frontend compatibility
-		const photoWithMedia = {
-			...photo,
-			mediaId: body.mediaId,
-			altText: media.altText,
-			description: media.description,
-			isPhotography: media.isPhotography,
-			mimeType: media.mimeType,
-			size: media.size
-		}
-
-		return jsonResponse(photoWithMedia)
+		// Return photo with full media information
+		return jsonResponse(photo)
 	} catch (error) {
 		logger.error('Failed to add photo to album', error as Error)
 		return errorResponse('Failed to add photo to album', 500)
@@ -207,6 +202,9 @@ export const DELETE: RequestHandler = async (event) => {
 			where: {
 				id: photoIdNum,
 				albumId: albumId // Ensure photo belongs to this album
+			},
+			include: {
+				media: true // Include media relation to get mediaId
 			}
 		})
 
@@ -217,22 +215,15 @@ export const DELETE: RequestHandler = async (event) => {
 			return errorResponse('Photo not found in this album', 404)
 		}
 
-		// Find and remove the specific media usage record for this photo
-		// We need to find the media ID associated with this photo to remove the correct usage record
-		const mediaUsage = await prisma.mediaUsage.findFirst({
-			where: {
-				contentType: 'album',
-				contentId: albumId,
-				fieldName: 'photos',
-				media: {
-					filename: photo.filename // Match by filename since that's how they're linked
+		// Remove media usage record if photo has a mediaId
+		if (photo.mediaId) {
+			await prisma.mediaUsage.deleteMany({
+				where: {
+					mediaId: photo.mediaId,
+					contentType: 'album',
+					contentId: albumId,
+					fieldName: 'photos'
 				}
-			}
-		})
-
-		if (mediaUsage) {
-			await prisma.mediaUsage.delete({
-				where: { id: mediaUsage.id }
 			})
 		}
 

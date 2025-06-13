@@ -180,9 +180,13 @@
 
 			if (response.ok) {
 				await loadAlbums()
+			} else {
+				const errorData = await response.json()
+				error = errorData.error || 'Failed to delete album'
 			}
 		} catch (err) {
 			console.error('Failed to delete album:', err)
+			error = 'Failed to delete album. Please try again.'
 		} finally {
 			showDeleteModal = false
 			albumToDelete = null
@@ -264,7 +268,7 @@
 	bind:isOpen={showDeleteModal}
 	title="Delete album?"
 	message={albumToDelete
-		? `Are you sure you want to delete "${albumToDelete.title}"? This action cannot be undone.`
+		? `Are you sure you want to delete "${albumToDelete.title}"? The album will be deleted but all photos will remain in your media library. This action cannot be undone.`
 		: ''}
 	onConfirm={confirmDelete}
 	onCancel={cancelDelete}

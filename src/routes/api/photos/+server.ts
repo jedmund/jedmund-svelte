@@ -57,7 +57,10 @@ export const GET: RequestHandler = async (event) => {
 				height: true,
 				caption: true,
 				title: true,
-				description: true
+				description: true,
+				createdAt: true,
+				publishedAt: true,
+				exifData: true
 			},
 			orderBy: { createdAt: 'desc' },
 			skip: offset,
@@ -92,22 +95,38 @@ export const GET: RequestHandler = async (event) => {
 			}))
 
 		// Transform individual photos to Photo format
-		const photos: Photo[] = individualPhotos.map((photo) => ({
-			id: `photo-${photo.id}`,
-			src: photo.url,
-			alt: photo.title || photo.caption || photo.filename,
-			caption: photo.caption || undefined,
-			width: photo.width || 400,
-			height: photo.height || 400
-		}))
+		const photos: Photo[] = individualPhotos.map((photo) => {
+			// Extract date from EXIF data if available
+			let photoDate: string
+			if (photo.exifData && typeof photo.exifData === 'object' && 'dateTaken' in photo.exifData) {
+				// Use EXIF date if available
+				photoDate = photo.exifData.dateTaken as string
+			} else if (photo.publishedAt) {
+				// Fall back to published date
+				photoDate = photo.publishedAt.toISOString()
+			} else {
+				// Fall back to created date
+				photoDate = photo.createdAt.toISOString()
+			}
+
+			return {
+				id: `photo-${photo.id}`,
+				src: photo.url,
+				alt: photo.title || photo.caption || photo.filename,
+				caption: photo.caption || undefined,
+				width: photo.width || 400,
+				height: photo.height || 400,
+				createdAt: photoDate
+			}
+		})
 
 		// Combine albums and individual photos
 		const photoItems: PhotoItem[] = [...photoAlbums, ...photos]
 
-		// Sort by creation date (albums use createdAt, individual photos would need publishedAt or createdAt)
+		// Sort by creation date (both albums and photos now have createdAt)
 		photoItems.sort((a, b) => {
-			const dateA = 'createdAt' in a ? new Date(a.createdAt) : new Date()
-			const dateB = 'createdAt' in b ? new Date(b.createdAt) : new Date()
+			const dateA = a.createdAt ? new Date(a.createdAt) : new Date()
+			const dateB = b.createdAt ? new Date(b.createdAt) : new Date()
 			return dateB.getTime() - dateA.getTime()
 		})
 

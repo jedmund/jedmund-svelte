@@ -12,6 +12,7 @@
 	import GalleryUploader from '$lib/components/admin/GalleryUploader.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import AlbumMetadataPopover from '$lib/components/admin/AlbumMetadataPopover.svelte'
+	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 
 	// Form state
 	let album = $state<any>(null)
@@ -28,6 +29,7 @@
 	let isLoading = $state(true)
 	let isSaving = $state(false)
 	let error = $state('')
+	let showDeleteModal = $state(false)
 
 	// Photo management state
 	let isMediaLibraryOpen = $state(false)
@@ -153,7 +155,11 @@
 		}
 	}
 
-	async function handleDelete() {
+	function handleDelete() {
+		showDeleteModal = true
+	}
+
+	async function confirmDelete() {
 		try {
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
@@ -175,7 +181,13 @@
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to delete album'
 			console.error('Failed to delete album:', err)
+		} finally {
+			showDeleteModal = false
 		}
+	}
+
+	function cancelDelete() {
+		showDeleteModal = false
 	}
 
 	function handleCancel() {
@@ -380,6 +392,24 @@
 
 	async function handlePhotoReorder(reorderedPhotos: any[]) {
 		try {
+			console.log('[Album Edit] handlePhotoReorder called:', {
+				reorderedCount: reorderedPhotos.length,
+				photos: reorderedPhotos.map((p, i) => ({ 
+					index: i,
+					id: p.id, 
+					mediaId: p.mediaId, 
+					filename: p.filename 
+				}))
+			})
+			
+			// Prevent concurrent reordering
+			if (isManagingPhotos) {
+				console.warn('[Album Edit] Skipping reorder - another operation in progress')
+				return
+			}
+			
+			isManagingPhotos = true
+			
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
 				goto('/admin/login')
@@ -403,11 +433,17 @@
 
 			await Promise.all(updatePromises)
 
-			// Update local state
-			albumPhotos = reorderedPhotos
+			// Update local state only after successful API calls
+			albumPhotos = [...reorderedPhotos]
+			
+			console.log('[Album Edit] Reorder completed successfully')
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to reorder photos'
 			console.error('Failed to reorder photos:', err)
+			// Revert to original order on error
+			albumPhotos = [...albumPhotos]
+		} finally {
+			isManagingPhotos = false
 		}
 	}
 
@@ -457,20 +493,21 @@
 	// Handle new photos added through GalleryUploader (uploads or library selections)
 	async function handleGalleryAdd(newPhotos: any[]) {
 		try {
+			console.log('[Album Edit] handleGalleryAdd called:', {
+				newPhotosCount: newPhotos.length,
+				newPhotos: newPhotos.map(p => ({ 
+					id: p.id, 
+					mediaId: p.mediaId, 
+					filename: p.filename,
+					isFile: p instanceof File 
+				})),
+				currentPhotosCount: albumPhotos.length
+			})
+			
 			if (newPhotos.length > 0) {
-				// Check if these are new uploads (have File objects) or library selections (have media IDs)
-				const uploadsToAdd = newPhotos.filter((photo) => photo instanceof File || !photo.id)
-				const libraryPhotosToAdd = newPhotos.filter((photo) => photo.id && !(photo instanceof File))
-
-				// Handle new uploads
-				if (uploadsToAdd.length > 0) {
-					await handleAddPhotosFromUpload(uploadsToAdd)
-				}
-
-				// Handle library selections
-				if (libraryPhotosToAdd.length > 0) {
-					await handleAddPhotos(libraryPhotosToAdd)
-				}
+				// All items from GalleryUploader should be media objects, not Files
+				// They either come from uploads (already processed to Media) or library selections
+				await handleAddPhotos(newPhotos)
 			}
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to add photos'
@@ -659,7 +696,8 @@
 					onRemove={handleGalleryRemove}
 					showBrowseLibrary={true}
 					placeholder="Add photos to this album by uploading or selecting from your media library"
-					helpText="Drag photos to reorder them. Click on photos to edit metadata."
+					helpText={isManagingPhotos ? "Processing photos..." : "Drag photos to reorder them. Click on photos to edit metadata."}
+					disabled={isManagingPhotos}
 				/>
 			</div>
 
@@ -700,6 +738,17 @@
 	media={selectedMedia}
 	onClose={handleMediaDetailsClose}
 	onUpdate={handleMediaUpdate}
+/>
+
+<!-- Delete Confirmation Modal -->
+<DeleteConfirmationModal
+	bind:isOpen={showDeleteModal}
+	title="Delete album?"
+	message={album
+		? `Are you sure you want to delete "${album.title}"? The album will be deleted but all photos will remain in your media library. This action cannot be undone.`
+		: ''}
+	onConfirm={confirmDelete}
+	onCancel={cancelDelete}
 />
 
 <style lang="scss">

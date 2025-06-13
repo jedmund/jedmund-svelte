@@ -24,8 +24,9 @@
 				const photoId = item.id.replace('photo-', '') // Remove 'photo-' prefix
 				goto(`/photos/${albumSlug}/${photoId}`)
 			} else {
-				// For standalone photos, navigate to a generic photo page (to be implemented)
-				console.log('Individual photo navigation not yet implemented')
+				// Navigate to individual photo page using the photo ID
+				const photoId = item.id.replace('photo-', '') // Remove 'photo-' prefix
+				goto(`/photos/p/${photoId}`)
 			}
 		}
 	}

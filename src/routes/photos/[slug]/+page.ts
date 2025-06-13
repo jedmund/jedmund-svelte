@@ -2,30 +2,41 @@ import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	try {
-		// Fetch the specific album using the individual album endpoint which includes photos
-		const response = await fetch(`/api/albums/by-slug/${params.slug}`)
-		if (!response.ok) {
-			if (response.status === 404) {
-				throw new Error('Album not found')
+		// First try to fetch as an album
+		const albumResponse = await fetch(`/api/albums/by-slug/${params.slug}`)
+		if (albumResponse.ok) {
+			const album = await albumResponse.json()
+			
+			// Check if this is a photography album and published
+			if (album.isPhotography && album.status === 'published') {
+				return {
+					type: 'album' as const,
+					album,
+					photo: null
+				}
 			}
-			throw new Error('Failed to fetch album')
 		}
 
-		const album = await response.json()
-
-		// Check if this is a photography album and published
-		if (!album.isPhotography || album.status !== 'published') {
-			throw new Error('Album not found')
+		// If not found as album or not a photography album, try as individual photo
+		const photoResponse = await fetch(`/api/photos/by-slug/${params.slug}`)
+		if (photoResponse.ok) {
+			const photo = await photoResponse.json()
+			return {
+				type: 'photo' as const,
+				album: null,
+				photo
+			}
 		}
 
-		return {
-			album
-		}
+		// Neither album nor photo found
+		throw new Error('Content not found')
 	} catch (error) {
-		console.error('Error loading album:', error)
+		console.error('Error loading content:', error)
 		return {
+			type: null,
 			album: null,
-			error: error instanceof Error ? error.message : 'Failed to load album'
+			photo: null,
+			error: error instanceof Error ? error.message : 'Failed to load content'
 		}
 	}
 }

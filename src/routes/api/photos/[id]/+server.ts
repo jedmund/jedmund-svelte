@@ -16,12 +16,31 @@ export const GET: RequestHandler = async (event) => {
 			include: {
 				album: {
 					select: { id: true, title: true, slug: true }
-				}
+				},
+				media: true
 			}
 		})
 
 		if (!photo) {
 			return errorResponse('Photo not found', 404)
+		}
+
+		// For public access, only return published photos that are marked showInPhotos
+		// Admin endpoints can still access all photos
+		const isAdminRequest = checkAdminAuth(event)
+		if (!isAdminRequest) {
+			if (photo.status !== 'published' || !photo.showInPhotos) {
+				return errorResponse('Photo not found', 404)
+			}
+			// If photo is in an album, check album is published and isPhotography
+			if (photo.album) {
+				const album = await prisma.album.findUnique({
+					where: { id: photo.album.id }
+				})
+				if (!album || album.status !== 'published' || !album.isPhotography) {
+					return errorResponse('Photo not found', 404)
+				}
+			}
 		}
 
 		return jsonResponse(photo)
