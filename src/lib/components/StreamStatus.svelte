@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
-	
+
 	let isConnected = $state(false)
-	
+
 	$effect(() => {
-		const unsubscribe = nowPlayingStream.subscribe(state => {
+		const unsubscribe = nowPlayingStream.subscribe((state) => {
 			isConnected = state.connected
 		})
 		return unsubscribe
@@ -32,21 +32,21 @@
 		font-size: $font-size-small;
 		z-index: 1000;
 		animation: fadeIn 0.3s ease-out;
-		
+
 		&.connected {
 			.dot {
 				background: #4caf50;
 				animation: pulse 2s ease-in-out infinite;
 			}
 		}
-		
+
 		.dot {
 			width: 8px;
 			height: 8px;
 			border-radius: 50%;
 		}
 	}
-	
+
 	@keyframes fadeIn {
 		from {
 			opacity: 0;
@@ -57,9 +57,10 @@
 			transform: translateY(0);
 		}
 	}
-	
+
 	@keyframes pulse {
-		0%, 100% {
+		0%,
+		100% {
 			opacity: 1;
 			transform: scale(1);
 		}
@@ -68,7 +69,7 @@
 			transform: scale(0.9);
 		}
 	}
-	
+
 	@include breakpoint('phone') {
 		.stream-status {
 			bottom: $unit;

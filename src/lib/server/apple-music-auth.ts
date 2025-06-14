@@ -64,4 +64,3 @@ export function getAppleMusicHeaders(): Record<string, string> {
 		'Content-Type': 'application/json'
 	}
 }
-

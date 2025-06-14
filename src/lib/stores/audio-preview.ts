@@ -16,7 +16,7 @@ function createAudioPreviewStore() {
 	return {
 		subscribe,
 		play: (audio: HTMLAudioElement, albumId: string) => {
-			update(state => {
+			update((state) => {
 				// Pause any currently playing audio
 				if (state.currentAudio && state.currentAudio !== audio) {
 					state.currentAudio.pause()
@@ -29,7 +29,7 @@ function createAudioPreviewStore() {
 			})
 		},
 		stop: () => {
-			update(state => {
+			update((state) => {
 				if (state.currentAudio) {
 					state.currentAudio.pause()
 				}

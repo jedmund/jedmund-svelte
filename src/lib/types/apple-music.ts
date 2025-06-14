@@ -133,4 +133,3 @@ export function isAppleMusicTrack(resource: any): resource is AppleMusicTrack {
 export function getArtworkUrl(artwork: AppleMusicArtwork, size: number = 3000): string {
 	return artwork.url.replace('{w}x{h}', `${size}x${size}`)
 }
-

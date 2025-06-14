@@ -13,14 +13,14 @@
 
 	let isHovering = $state(false)
 	let audio: HTMLAudioElement | null = $state(null)
-	
+
 	// Create a unique ID for this album
 	const albumId = $derived(album ? `${album.artist.name}-${album.name}` : '')
-	
+
 	// Subscribe to the store to know if this album is playing
 	let isPlaying = $state(false)
 	$effect(() => {
-		const unsubscribe = audioPreview.subscribe(state => {
+		const unsubscribe = audioPreview.subscribe((state) => {
 			isPlaying = state.currentAlbumId === albumId && state.isPlaying
 		})
 		return unsubscribe
@@ -42,14 +42,14 @@
 	async function togglePreview(e: Event) {
 		e.preventDefault()
 		e.stopPropagation()
-		
+
 		if (!audio && album?.appleMusicData?.previewUrl) {
 			audio = new Audio(album.appleMusicData.previewUrl)
 			audio.addEventListener('ended', () => {
 				audioPreview.stop()
 			})
 		}
-		
+
 		if (audio) {
 			if (isPlaying) {
 				audioPreview.stop()
@@ -81,13 +81,13 @@
 	)
 
 	const hasPreview = $derived(!!album?.appleMusicData?.previewUrl)
-	
+
 	// Subscribe to real-time now playing updates
 	let realtimeNowPlaying = $state<{ isNowPlaying: boolean; nowPlayingTrack?: string } | null>(null)
-	
+
 	$effect(() => {
 		if (album) {
-			const unsubscribe = nowPlayingStream.isAlbumPlaying.subscribe(checkAlbum => {
+			const unsubscribe = nowPlayingStream.isAlbumPlaying.subscribe((checkAlbum) => {
 				const status = checkAlbum(album.artist.name, album.name)
 				if (status !== null) {
 					realtimeNowPlaying = status
@@ -96,7 +96,7 @@
 			return unsubscribe
 		}
 	})
-	
+
 	// Combine initial state with real-time updates
 	const isNowPlaying = $derived(realtimeNowPlaying?.isNowPlaying ?? album?.isNowPlaying ?? false)
 	const nowPlayingTrack = $derived(realtimeNowPlaying?.nowPlayingTrack ?? album?.nowPlayingTrack)
