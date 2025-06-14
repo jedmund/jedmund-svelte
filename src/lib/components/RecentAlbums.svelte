@@ -1,12 +1,25 @@
 <script lang="ts">
 	import Album from '$components/Album.svelte'
 	import type { Album as AlbumType } from '$lib/types/lastfm'
+	import { albumStream } from '$lib/stores/album-stream'
 
 	interface RecentAlbumsProps {
 		albums?: AlbumType[]
 	}
 
-	let { albums = [] }: RecentAlbumsProps = $props()
+	let { albums: initialAlbums = [] }: RecentAlbumsProps = $props()
+	
+	// Use SSE stream for real-time updates, fallback to initial albums
+	let albums = $state<AlbumType[]>(initialAlbums)
+	
+	$effect(() => {
+		const unsubscribe = albumStream.albums.subscribe((streamAlbums) => {
+			if (streamAlbums.length > 0) {
+				albums = streamAlbums
+			}
+		})
+		return unsubscribe
+	})
 	
 	let hoveredAlbumId: string | null = $state(null)
 	

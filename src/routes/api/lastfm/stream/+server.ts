@@ -1,6 +1,7 @@
 import { LastClient } from '@musicorum/lastfm'
 import type { RequestHandler } from './$types'
-import type { Album } from '$lib/types/lastfm'
+import type { Album, AlbumImages } from '$lib/types/lastfm'
+import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
 import { findAlbum, transformAlbumData } from '$lib/server/apple-music-client'
 import redis from '../../redis-client'
 
@@ -32,6 +33,7 @@ export const GET: RequestHandler = async ({ request }) => {
 		async start(controller) {
 			const client = new LastClient(LASTFM_API_KEY || '')
 			let lastNowPlayingState: Map<string, { isPlaying: boolean; track?: string }> = new Map()
+			let lastAlbumOrder: string[] = [] // Track album order changes
 			let intervalId: NodeJS.Timeout | null = null
 			let isClosed = false
 
@@ -52,6 +54,40 @@ export const GET: RequestHandler = async ({ request }) => {
 				}
 
 				try {
+					// Fetch full album data
+					const albums = await getRecentAlbums(client)
+					
+					// Enrich albums with additional info
+					const enrichedAlbums = await Promise.all(
+						albums.map(async (album) => {
+							try {
+								const enriched = await enrichAlbumWithInfo(client, album)
+								return await searchAppleMusicForAlbum(enriched)
+							} catch (error) {
+								console.error(`Error enriching album ${album.name}:`, error)
+								return album
+							}
+						})
+					)
+
+					// Check if album order has changed
+					const currentAlbumOrder = enrichedAlbums.map(a => `${a.artist.name}:${a.name}`)
+					const albumOrderChanged = JSON.stringify(currentAlbumOrder) !== JSON.stringify(lastAlbumOrder)
+					
+					if (albumOrderChanged) {
+						lastAlbumOrder = currentAlbumOrder
+						// Send full album update
+						if (!isClosed) {
+							try {
+								const data = JSON.stringify(enrichedAlbums)
+								controller.enqueue(encoder.encode(`event: albums\ndata: ${data}\n\n`))
+							} catch (e) {
+								isClosed = true
+							}
+						}
+					}
+
+					// Now playing updates
 					const nowPlayingAlbums = await getNowPlayingAlbums(client)
 					const updates: NowPlayingUpdate[] = []
 					const currentAlbums = new Set<string>()
@@ -301,4 +337,164 @@ function checkWithTracks(
 	}
 
 	return { isNowPlaying: false }
+}
+
+// Helper functions for album data
+function transformImages(images: LastfmImage[]): AlbumImages {
+	const imageMap: AlbumImages = {
+		small: '',
+		medium: '',
+		large: '',
+		extralarge: '',
+		mega: '',
+		default: ''
+	}
+
+	for (const image of images) {
+		const size = image.size as keyof AlbumImages
+		if (size in imageMap) {
+			imageMap[size] = image.url
+		}
+	}
+
+	return imageMap
+}
+
+async function enrichAlbumWithInfo(client: LastClient, album: Album): Promise<Album> {
+	// Check cache for album info
+	const cacheKey = `lastfm:albuminfo:${album.artist.name}:${album.name}`
+	const cached = await redis.get(cacheKey)
+
+	if (cached) {
+		console.log(`Using cached album info for "${album.name}"`)
+		const albumInfo = JSON.parse(cached)
+		return {
+			...album,
+			url: albumInfo?.url || '',
+			images: transformImages(albumInfo?.images || [])
+		}
+	}
+
+	console.log(`Fetching fresh album info for "${album.name}"`)
+	const albumInfo = await client.album.getInfo(album.name, album.artist.name)
+
+	// Cache for 1 hour - album info rarely changes
+	await redis.set(cacheKey, JSON.stringify(albumInfo), 'EX', 3600)
+
+	return {
+		...album,
+		url: albumInfo?.url || '',
+		images: transformImages(albumInfo?.images || [])
+	}
+}
+
+async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
+	try {
+		// Check cache first
+		const cacheKey = `apple:album:${album.artist.name}:${album.name}`
+		const cached = await redis.get(cacheKey)
+
+		if (cached) {
+			const cachedData = JSON.parse(cached)
+			return {
+				...album,
+				images: {
+					...album.images,
+					itunes: cachedData.highResArtwork || album.images.itunes
+				},
+				appleMusicData: cachedData
+			}
+		}
+
+		// Search Apple Music
+		const appleMusicAlbum = await findAlbum(album.artist.name, album.name)
+
+		if (appleMusicAlbum) {
+			const transformedData = await transformAlbumData(appleMusicAlbum)
+
+			// Cache the result for 24 hours
+			await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', 86400)
+
+			return {
+				...album,
+				images: {
+					...album.images,
+					itunes: transformedData.highResArtwork || album.images.itunes
+				},
+				appleMusicData: transformedData
+			}
+		}
+	} catch (error) {
+		console.error(
+			`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}":`,
+			error
+		)
+	}
+
+	// Return album unchanged if Apple Music search fails
+	return album
+}
+
+async function getRecentAlbums(
+	client: LastClient,
+	limit: number = 4
+): Promise<Album[]> {
+	// Check cache for recent tracks
+	const cacheKey = `lastfm:recent:${USERNAME}`
+	const cached = await redis.get(cacheKey)
+
+	let recentTracksResponse
+	if (cached) {
+		console.log('Using cached Last.fm recent tracks for album stream')
+		recentTracksResponse = JSON.parse(cached)
+		// Convert date strings back to Date objects
+		if (recentTracksResponse.tracks) {
+			recentTracksResponse.tracks = recentTracksResponse.tracks.map((track: any) => ({
+				...track,
+				date: track.date ? new Date(track.date) : undefined
+			}))
+		}
+	} else {
+		console.log('Fetching fresh Last.fm recent tracks for album stream')
+		recentTracksResponse = await client.user.getRecentTracks(USERNAME, {
+			limit: 50,
+			extended: true
+		})
+		// Cache for 30 seconds - reasonable for "recent" data
+		await redis.set(cacheKey, JSON.stringify(recentTracksResponse), 'EX', 30)
+	}
+
+	const uniqueAlbums = new Map<string, Album>()
+
+	for (const track of recentTracksResponse.tracks) {
+		if (uniqueAlbums.size >= limit) break
+
+		const albumKey = `${track.album.mbid || track.album.name}`
+		if (!uniqueAlbums.has(albumKey)) {
+			uniqueAlbums.set(albumKey, {
+				name: track.album.name,
+				artist: {
+					name: track.artist.name,
+					mbid: track.artist.mbid || ''
+				},
+				playCount: 1,
+				images: transformImages(track.images),
+				mbid: track.album.mbid || '',
+				url: track.url,
+				rank: uniqueAlbums.size + 1,
+				isNowPlaying: track.nowPlaying || false,
+				nowPlayingTrack: track.nowPlaying ? track.name : undefined
+			})
+		} else if (track.nowPlaying) {
+			// If album already exists but this track is now playing, update it
+			const existingAlbum = uniqueAlbums.get(albumKey)!
+			uniqueAlbums.set(albumKey, {
+				...existingAlbum,
+				isNowPlaying: true,
+				nowPlayingTrack: track.name
+			})
+		}
+	}
+
+	return Array.from(uniqueAlbums.values())
 }
