@@ -13,10 +13,10 @@ export const GET: RequestHandler = async ({ url }) => {
 	try {
 		// Check cache first (unless force refresh is requested)
 		const cacheKey = `og-metadata:${targetUrl}`
-		
+
 		if (!forceRefresh) {
 			const cached = await redis.get(cacheKey)
-			
+
 			if (cached) {
 				console.log(`Cache hit for ${targetUrl}`)
 				return json(JSON.parse(cached))
@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
 				/youtube\.com\/watch\?.*v=([^&\n?#]+)/
 			]
-			
+
 			let videoId = null
 			for (const pattern of patterns) {
 				const match = targetUrl.match(pattern)
@@ -183,7 +183,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Check cache first - using same cache key format
 		const cacheKey = `og-metadata:${targetUrl}`
 		const cached = await redis.get(cacheKey)
-		
+
 		if (cached) {
 			console.log(`Cache hit for ${targetUrl} (POST)`)
 			const ogData = JSON.parse(cached)
@@ -208,7 +208,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
 				/youtube\.com\/watch\?.*v=([^&\n?#]+)/
 			]
-			
+
 			let videoId = null
 			for (const pattern of patterns) {
 				const match = targetUrl.match(pattern)

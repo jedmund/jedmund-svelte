@@ -78,7 +78,10 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 	},
 
 	renderHTML({ HTMLAttributes }) {
-		return ['div', mergeAttributes({ 'data-url-embed': '' }, this.options.HTMLAttributes, HTMLAttributes)]
+		return [
+			'div',
+			mergeAttributes({ 'data-url-embed': '' }, this.options.HTMLAttributes, HTMLAttributes)
+		]
 	},
 
 	addCommands() {
@@ -102,35 +105,41 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 				(pos) =>
 				({ state, commands, chain }) => {
 					const { doc } = state
-					
+
 					// Find the link mark at the given position
 					const $pos = doc.resolve(pos)
 					const marks = $pos.marks()
-					const linkMark = marks.find(mark => mark.type.name === 'link')
-					
+					const linkMark = marks.find((mark) => mark.type.name === 'link')
+
 					if (!linkMark) return false
-					
+
 					const url = linkMark.attrs.href
 					if (!url) return false
-					
+
 					// Find the complete range of text with this link mark
 					let from = pos
 					let to = pos
-					
+
 					// Walk backwards to find the start
 					doc.nodesBetween(Math.max(0, pos - 300), pos, (node, nodePos) => {
-						if (node.isText && node.marks.some(m => m.type.name === 'link' && m.attrs.href === url)) {
+						if (
+							node.isText &&
+							node.marks.some((m) => m.type.name === 'link' && m.attrs.href === url)
+						) {
 							from = nodePos
 						}
 					})
-					
+
 					// Walk forwards to find the end
 					doc.nodesBetween(pos, Math.min(doc.content.size, pos + 300), (node, nodePos) => {
-						if (node.isText && node.marks.some(m => m.type.name === 'link' && m.attrs.href === url)) {
+						if (
+							node.isText &&
+							node.marks.some((m) => m.type.name === 'link' && m.attrs.href === url)
+						) {
 							to = nodePos + node.nodeSize
 						}
 					})
-					
+
 					// Use Tiptap's chain commands to replace content
 					return chain()
 						.focus()
@@ -179,40 +188,53 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 						// Check if it's a plain text paste
 						if (text && !html) {
 							// Simple URL regex check
-							const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
-							
+							const urlRegex =
+								/^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
+
 							if (urlRegex.test(text.trim())) {
 								// It's a URL, let it paste as a link naturally (don't prevent default)
 								// But track it so we can show dropdown after
 								const pastedUrl = text.trim()
-								
+
 								// Get the position before paste
 								const beforePos = view.state.selection.from
-								
+
 								setTimeout(() => {
 									const { state } = view
 									const { doc } = state
-									
+
 									// Find the link that was just inserted
 									// Start from where we were before paste
 									let linkStart = -1
 									let linkEnd = -1
-									
+
 									// Search for the link in a reasonable range
-									for (let pos = beforePos; pos < Math.min(doc.content.size, beforePos + pastedUrl.length + 10); pos++) {
+									for (
+										let pos = beforePos;
+										pos < Math.min(doc.content.size, beforePos + pastedUrl.length + 10);
+										pos++
+									) {
 										try {
 											const $pos = doc.resolve(pos)
 											const marks = $pos.marks()
-											const linkMark = marks.find(m => m.type.name === 'link' && m.attrs.href === pastedUrl)
-											
+											const linkMark = marks.find(
+												(m) => m.type.name === 'link' && m.attrs.href === pastedUrl
+											)
+
 											if (linkMark) {
 												// Found the link, now find its boundaries
 												linkStart = pos
-												
+
 												// Find the end of the link
-												for (let endPos = pos; endPos < Math.min(doc.content.size, pos + pastedUrl.length + 5); endPos++) {
+												for (
+													let endPos = pos;
+													endPos < Math.min(doc.content.size, pos + pastedUrl.length + 5);
+													endPos++
+												) {
 													const $endPos = doc.resolve(endPos)
-													const hasLink = $endPos.marks().some(m => m.type.name === 'link' && m.attrs.href === pastedUrl)
+													const hasLink = $endPos
+														.marks()
+														.some((m) => m.type.name === 'link' && m.attrs.href === pastedUrl)
 													if (hasLink) {
 														linkEnd = endPos + 1
 													} else {
@@ -225,7 +247,7 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 											// Position might be invalid, continue
 										}
 									}
-									
+
 									if (linkStart !== -1) {
 										// Store the pasted URL info with correct position
 										const tr = state.tr.setMeta('urlEmbedPaste', {
@@ -233,7 +255,7 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 											lastPastedPos: linkStart
 										})
 										view.dispatch(tr)
-										
+
 										// Notify the editor to show dropdown
 										if (options.onShowDropdown) {
 											options.onShowDropdown(linkStart, pastedUrl)

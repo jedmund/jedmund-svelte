@@ -7,7 +7,7 @@
 	import { onMount } from 'svelte'
 
 	const { editor, node, deleteNode, getPos }: NodeViewProps = $props()
-	
+
 	let loading = $state(true)
 	let error = $state(false)
 	let errorMessage = $state('')
@@ -26,32 +26,29 @@
 			}
 
 			const metadata = await response.json()
-			
+
 			// Replace this placeholder with the actual URL embed
 			const pos = getPos()
 			if (typeof pos === 'number') {
 				editor
 					.chain()
 					.focus()
-					.insertContentAt(
-						{ from: pos, to: pos + node.nodeSize },
-						[
-							{
-								type: 'urlEmbed',
-								attrs: {
-									url: url,
-									title: metadata.title,
-									description: metadata.description,
-									image: metadata.image,
-									favicon: metadata.favicon,
-									siteName: metadata.siteName
-								}
-							},
-							{
-								type: 'paragraph'
+					.insertContentAt({ from: pos, to: pos + node.nodeSize }, [
+						{
+							type: 'urlEmbed',
+							attrs: {
+								url: url,
+								title: metadata.title,
+								description: metadata.description,
+								image: metadata.image,
+								favicon: metadata.favicon,
+								siteName: metadata.siteName
 							}
-						]
-					)
+						},
+						{
+							type: 'paragraph'
+						}
+					])
 					.run()
 			}
 		} catch (err) {
@@ -64,7 +61,7 @@
 
 	function handleSubmit() {
 		if (!inputUrl.trim()) return
-		
+
 		// Basic URL validation
 		try {
 			new URL(inputUrl)
@@ -88,7 +85,7 @@
 	function handleClick(e: MouseEvent) {
 		if (!editor.isEditable) return
 		e.preventDefault()
-		
+
 		if (!showInput) {
 			showInput = true
 		}
@@ -126,7 +123,13 @@
 			<AlertCircle class="placeholder-icon" />
 			<div class="error-content">
 				<span class="placeholder-text">{errorMessage}</span>
-				<button onclick={() => { showInput = true; error = false; }} class="retry-button">
+				<button
+					onclick={() => {
+						showInput = true
+						error = false
+					}}
+					class="retry-button"
+				>
 					Try another URL
 				</button>
 			</div>
@@ -167,7 +170,7 @@
 		border-radius: 6px;
 		font-size: 0.875rem;
 		background: white;
-		
+
 		&:focus {
 			outline: none;
 			border-color: var(--primary-color, #3b82f6);

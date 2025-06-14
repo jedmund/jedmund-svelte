@@ -1,28 +1,28 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { fly } from 'svelte/transition'
-	
+
 	interface Props {
 		x: number
 		y: number
 		onConvert: () => void
 		onDismiss: () => void
 	}
-	
+
 	let { x, y, onConvert, onDismiss }: Props = $props()
-	
+
 	let dropdown: HTMLDivElement
-	
+
 	function handleConvert() {
 		onConvert()
 	}
-	
+
 	function handleClickOutside(event: MouseEvent) {
 		if (dropdown && !dropdown.contains(event.target as Node)) {
 			onDismiss()
 		}
 	}
-	
+
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
 			onDismiss()
@@ -30,16 +30,16 @@
 			handleConvert()
 		}
 	}
-	
+
 	onMount(() => {
 		// Add event listeners
 		document.addEventListener('click', handleClickOutside)
 		document.addEventListener('keydown', handleKeydown)
-		
+
 		// Don't focus the dropdown - this steals focus from the editor
 		// dropdown?.focus()
 	})
-	
+
 	onDestroy(() => {
 		document.removeEventListener('click', handleClickOutside)
 		document.removeEventListener('keydown', handleKeydown)
@@ -53,9 +53,7 @@
 	transition:fly={{ y: -10, duration: 200 }}
 	tabindex="-1"
 >
-	<button class="convert-button" onclick={handleConvert}>
-		Convert to card
-	</button>
+	<button class="convert-button" onclick={handleConvert}> Convert to card </button>
 </div>
 
 <style lang="scss">
@@ -70,7 +68,7 @@
 		outline: none;
 		min-width: 160px;
 	}
-	
+
 	.convert-button {
 		display: block;
 		width: 100%;
@@ -84,11 +82,11 @@
 		white-space: nowrap;
 		transition: background-color 0.2s;
 		text-align: left;
-		
+
 		&:hover {
 			background-color: $grey-95;
 		}
-		
+
 		&:focus {
 			outline: 2px solid $red-60;
 			outline-offset: -2px;
