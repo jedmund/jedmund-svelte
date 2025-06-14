@@ -9,33 +9,41 @@
 
 	interface AlbumProps {
 		album?: Album
+		albumId?: string
+		hoveredAlbumId?: string | null
+		onHover?: (albumId: string | null) => void
 	}
 
-	let { album = undefined }: AlbumProps = $props()
+	let { album = undefined, albumId = '', hoveredAlbumId = null, onHover }: AlbumProps = $props()
 
 	let isHovering = $state(false)
 	let audio: HTMLAudioElement | null = $state(null)
 
-	// Create a unique ID for this album
-	const albumId = $derived(album ? `${album.artist.name}-${album.name}` : '')
+	// Create a unique ID for this album if not provided
+	const currentAlbumId = $derived(albumId || (album ? `${album.artist.name}-${album.name}` : ''))
 
 	// Subscribe to the store to know if this album is playing
 	let isPlaying = $state(false)
 	$effect(() => {
 		const unsubscribe = audioPreview.subscribe((state) => {
-			isPlaying = state.currentAlbumId === albumId && state.isPlaying
+			isPlaying = state.currentAlbumId === currentAlbumId && state.isPlaying
 		})
 		return unsubscribe
 	})
 
 	const scale = new Spring(1, {
-		stiffness: 0.1,
-		damping: 0.25
+		stiffness: 0.2,
+		damping: 0.12
 	})
+
+	// Determine if this album should shrink
+	const shouldShrink = $derived(hoveredAlbumId !== null && hoveredAlbumId !== currentAlbumId)
 
 	$effect(() => {
 		if (isHovering) {
 			scale.target = 1.1
+		} else if (shouldShrink) {
+			scale.target = 0.95
 		} else {
 			scale.target = 1
 		}
@@ -57,7 +65,7 @@
 				audioPreview.stop()
 			} else {
 				// Update the store first, then play
-				audioPreview.play(audio, albumId)
+				audioPreview.play(audio, currentAlbumId)
 				try {
 					await audio.play()
 				} catch (error) {
@@ -111,8 +119,14 @@
 				href={album.url}
 				target="_blank"
 				rel="noopener noreferrer"
-				onmouseenter={() => (isHovering = true)}
-				onmouseleave={() => (isHovering = false)}
+				onmouseenter={() => {
+					isHovering = true
+					onHover?.(currentAlbumId)
+				}}
+				onmouseleave={() => {
+					isHovering = false
+					onHover?.(null)
+				}}
 			>
 				<div class="artwork-container">
 					<img
@@ -124,9 +138,10 @@
 					{#if isNowPlaying}
 						<NowPlaying trackName={nowPlayingTrack !== album.name ? nowPlayingTrack : undefined} />
 					{/if}
-					{#if hasPreview && isHovering}
+					{#if hasPreview && (isHovering || isPlaying)}
 						<button
 							class="preview-button"
+							class:corner={isPlaying && !isHovering}
 							onclick={togglePreview}
 							aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
 							class:playing={isPlaying}
@@ -206,12 +221,26 @@
 				align-items: center;
 				justify-content: center;
 				font-size: 24px;
-				transition: all 0.2s ease;
+				transition: all 0.3s ease;
 				backdrop-filter: blur(10px);
+
+				&.corner {
+					top: auto;
+					left: $unit * 1.5;
+					bottom: $unit-2x;
+					transform: none;
+					width: 40px;
+					height: 40px;
+					font-size: 18px;
+				}
 
 				&:hover {
 					background: rgba(0, 0, 0, 0.5);
 					transform: translate(-50%, -50%) scale(1.1);
+
+					&.corner {
+						transform: scale(1.1);
+					}
 				}
 
 				&.playing {

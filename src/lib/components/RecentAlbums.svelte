@@ -2,15 +2,30 @@
 	import Album from '$components/Album.svelte'
 	import type { Album as AlbumType } from '$lib/types/lastfm'
 
-	export let albums: AlbumType[] = []
+	interface RecentAlbumsProps {
+		albums?: AlbumType[]
+	}
+
+	let { albums = [] }: RecentAlbumsProps = $props()
+	
+	let hoveredAlbumId: string | null = $state(null)
+	
+	function handleAlbumHover(albumId: string | null) {
+		hoveredAlbumId = albumId
+	}
 </script>
 
 <section class="recent-albums">
 	{#if albums.length > 0}
 		<ul>
-			{#each albums.slice(0, 4) as album}
+			{#each albums.slice(0, 4) as album, index}
 				<li>
-					<Album {album} />
+					<Album 
+						{album} 
+						albumId={`${album.artist.name}-${album.name}`}
+						{hoveredAlbumId}
+						onHover={handleAlbumHover}
+					/>
 				</li>
 			{/each}
 		</ul>
