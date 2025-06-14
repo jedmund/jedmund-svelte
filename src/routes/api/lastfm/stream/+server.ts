@@ -6,7 +6,7 @@ import redis from '../../redis-client'
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
-const UPDATE_INTERVAL = 30000 // 30 seconds
+const UPDATE_INTERVAL = 15000 // 15 seconds for more responsive updates
 
 interface NowPlayingUpdate {
 	albumName: string
@@ -31,7 +31,7 @@ export const GET: RequestHandler = async ({ request }) => {
 	const stream = new ReadableStream({
 		async start(controller) {
 			const client = new LastClient(LASTFM_API_KEY || '')
-			let lastNowPlayingState: Map<string, boolean> = new Map()
+			let lastNowPlayingState: Map<string, { isPlaying: boolean; track?: string }> = new Map()
 			
 			// Send initial connection message
 			controller.enqueue(encoder.encode('event: connected\ndata: {}\n\n'))
@@ -40,15 +40,41 @@ export const GET: RequestHandler = async ({ request }) => {
 				try {
 					const nowPlayingAlbums = await getNowPlayingAlbums(client)
 					const updates: NowPlayingUpdate[] = []
+					const currentAlbums = new Set<string>()
 					
 					// Check for changes
 					for (const album of nowPlayingAlbums) {
 						const key = `${album.artistName}:${album.albumName}`
-						const wasPlaying = lastNowPlayingState.get(key) || false
+						currentAlbums.add(key)
 						
-						if (album.isNowPlaying !== wasPlaying) {
+						const lastState = lastNowPlayingState.get(key)
+						const wasPlaying = lastState?.isPlaying || false
+						const lastTrack = lastState?.track
+						
+						// Update if playing status changed OR if the track changed
+						if (album.isNowPlaying !== wasPlaying || 
+						    (album.isNowPlaying && album.nowPlayingTrack !== lastTrack)) {
 							updates.push(album)
-							lastNowPlayingState.set(key, album.isNowPlaying)
+							console.log(`Update for ${album.albumName}: playing=${album.isNowPlaying}, track=${album.nowPlayingTrack}`)
+						}
+						
+						lastNowPlayingState.set(key, {
+							isPlaying: album.isNowPlaying,
+							track: album.nowPlayingTrack
+						})
+					}
+					
+					// Check for albums that were in the list but aren't anymore (stopped playing)
+					for (const [key, state] of lastNowPlayingState.entries()) {
+						if (!currentAlbums.has(key) && state.isPlaying) {
+							const [artistName, albumName] = key.split(':')
+							updates.push({
+								albumName,
+								artistName,
+								isNowPlaying: false
+							})
+							console.log(`Album no longer in recent: ${albumName}`)
+							lastNowPlayingState.delete(key)
 						}
 					}
 					
@@ -173,20 +199,36 @@ function checkWithTracks(
 	const now = new Date()
 	const SCROBBLE_LAG = 3 * 60 * 1000 // 3 minutes
 	
+	// Clean up old tracks first
+	recentTracks = recentTracks.filter(track => {
+		// Keep tracks from last hour only
+		const hourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+		return track.scrobbleTime > hourAgo
+	})
+	
+	// Find the most recent track from this album
+	let mostRecentTrack: TrackPlayInfo | null = null
 	for (const trackInfo of recentTracks) {
-		if (trackInfo.albumName !== albumName) continue
-		
+		if (trackInfo.albumName === albumName) {
+			if (!mostRecentTrack || trackInfo.scrobbleTime > mostRecentTrack.scrobbleTime) {
+				mostRecentTrack = trackInfo
+			}
+		}
+	}
+	
+	if (mostRecentTrack) {
 		const trackData = tracks.find(t => 
-			t.name.toLowerCase() === trackInfo.trackName.toLowerCase()
+			t.name.toLowerCase() === mostRecentTrack.trackName.toLowerCase()
 		)
 		
 		if (trackData?.durationMs) {
-			const trackEndTime = new Date(trackInfo.scrobbleTime.getTime() + trackData.durationMs + SCROBBLE_LAG)
+			const trackEndTime = new Date(mostRecentTrack.scrobbleTime.getTime() + trackData.durationMs + SCROBBLE_LAG)
 			
 			if (now < trackEndTime) {
+				console.log(`Track "${mostRecentTrack.trackName}" is still playing (ends at ${trackEndTime.toLocaleTimeString()})`)
 				return {
 					isNowPlaying: true,
-					nowPlayingTrack: trackInfo.trackName
+					nowPlayingTrack: mostRecentTrack.trackName
 				}
 			}
 		}

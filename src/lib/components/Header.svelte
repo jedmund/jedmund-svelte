@@ -113,13 +113,6 @@
 		:global(svg) {
 			height: 100%;
 			width: 100%;
-			transition: transform 0.2s ease;
-		}
-
-		&:hover {
-			:global(svg) {
-				transform: scale(1.05);
-			}
 		}
 	}
 
