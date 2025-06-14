@@ -2,6 +2,7 @@
 	import { spring } from 'svelte/motion'
 	import type { Album } from '$lib/types/lastfm'
 	import { audioPreview } from '$lib/stores/audio-preview'
+	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
 	import NowPlaying from './NowPlaying.svelte'
 
 	interface AlbumProps {
@@ -81,16 +82,24 @@
 
 	const hasPreview = $derived(!!album?.appleMusicData?.previewUrl)
 	
-	// Debug log
+	// Subscribe to real-time now playing updates
+	let realtimeNowPlaying = $state<{ isNowPlaying: boolean; nowPlayingTrack?: string } | null>(null)
+	
 	$effect(() => {
 		if (album) {
-			console.log(`Album ${album.name}:`, {
-				hasAppleMusicData: !!album.appleMusicData,
-				previewUrl: album.appleMusicData?.previewUrl,
-				hasPreview
+			const unsubscribe = nowPlayingStream.isAlbumPlaying.subscribe(checkAlbum => {
+				const status = checkAlbum(album.artist.name, album.name)
+				if (status !== null) {
+					realtimeNowPlaying = status
+				}
 			})
+			return unsubscribe
 		}
 	})
+	
+	// Combine initial state with real-time updates
+	const isNowPlaying = $derived(realtimeNowPlaying?.isNowPlaying ?? album?.isNowPlaying ?? false)
+	const nowPlayingTrack = $derived(realtimeNowPlaying?.nowPlayingTrack ?? album?.nowPlayingTrack)
 </script>
 
 <div class="album">
@@ -110,8 +119,8 @@
 						style="transform: scale({$scale})"
 						loading="lazy"
 					/>
-					{#if album.isNowPlaying}
-						<NowPlaying trackName={album.nowPlayingTrack !== album.name ? album.nowPlayingTrack : undefined} />
+					{#if isNowPlaying}
+						<NowPlaying trackName={nowPlayingTrack !== album.name ? nowPlayingTrack : undefined} />
 					{/if}
 					{#if hasPreview && isHovering}
 						<button
