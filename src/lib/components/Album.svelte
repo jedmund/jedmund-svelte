@@ -2,6 +2,7 @@
 	import { spring } from 'svelte/motion'
 	import type { Album } from '$lib/types/lastfm'
 	import { audioPreview } from '$lib/stores/audio-preview'
+	import NowPlaying from './NowPlaying.svelte'
 
 	interface AlbumProps {
 		album?: Album
@@ -109,6 +110,9 @@
 						style="transform: scale({$scale})"
 						loading="lazy"
 					/>
+					{#if album.isNowPlaying}
+						<NowPlaying trackName={album.nowPlayingTrack !== album.name ? album.nowPlayingTrack : undefined} />
+					{/if}
 					{#if hasPreview && isHovering}
 						<button
 							class="preview-button"

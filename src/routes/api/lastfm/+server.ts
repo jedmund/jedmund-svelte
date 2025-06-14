@@ -10,13 +10,24 @@ const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
 const ALBUM_LIMIT = 10
 
+// Store last played tracks with timestamps
+interface TrackPlayInfo {
+	albumName: string
+	trackName: string
+	scrobbleTime: Date
+	durationMs?: number
+}
+
+let recentTracks: TrackPlayInfo[] = []
+
 export const GET: RequestHandler = async ({ url }) => {
 	const client = new LastClient(LASTFM_API_KEY || '')
+	const testMode = url.searchParams.get('test') === 'nowplaying'
 
 	try {
 		// const albums = await getWeeklyAlbumChart(client, USERNAME)
 
-		const albums = await getRecentAlbums(client, USERNAME, ALBUM_LIMIT)
+		const albums = await getRecentAlbums(client, USERNAME, ALBUM_LIMIT, testMode)
 		// console.log(albums)
 		const enrichedAlbums = await Promise.all(
 			albums.slice(0, ALBUM_LIMIT).map(async (album) => {
@@ -58,16 +69,39 @@ async function getWeeklyAlbumChart(client: LastClient, username: string): Promis
 async function getRecentAlbums(
 	client: LastClient,
 	username: string,
-	limit: number
+	limit: number,
+	testMode: boolean = false
 ): Promise<Album[]> {
-	const recentTracks = await client.user.getRecentTracks(username, { limit: 50, extended: true })
+	const recentTracksResponse = await client.user.getRecentTracks(username, { limit: 50, extended: true })
 	const uniqueAlbums = new Map<string, Album>()
-
-	for (const track of recentTracks.tracks) {
+	let nowPlayingTrack: string | undefined
+	let isFirstAlbum = true
+	
+	// Clear old tracks and collect new track play information
+	recentTracks = []
+	
+	for (const track of recentTracksResponse.tracks) {
+		// Store track play information for now playing calculation
+		if (track.date) {
+			recentTracks.push({
+				albumName: track.album.name,
+				trackName: track.name,
+				scrobbleTime: track.date
+			})
+		}
+		
 		if (uniqueAlbums.size >= limit) break
+
+		// Check if this is the currently playing track
+		if (track.nowPlaying && !nowPlayingTrack) {
+			nowPlayingTrack = track.name
+		}
 
 		const albumKey = `${track.album.mbid || track.album.name}`
 		if (!uniqueAlbums.has(albumKey)) {
+			// For testing: mark first album as now playing
+			const isNowPlaying = testMode && isFirstAlbum ? true : (track.nowPlaying || false)
+			
 			uniqueAlbums.set(albumKey, {
 				name: track.album.name,
 				artist: {
@@ -78,7 +112,19 @@ async function getRecentAlbums(
 				images: transformImages(track.images),
 				mbid: track.album.mbid || '',
 				url: track.url,
-				rank: uniqueAlbums.size + 1
+				rank: uniqueAlbums.size + 1,
+				// Mark if this album contains the now playing track
+				isNowPlaying: isNowPlaying,
+				nowPlayingTrack: isNowPlaying ? track.name : undefined
+			})
+			isFirstAlbum = false
+		} else if (track.nowPlaying) {
+			// If album already exists but this track is now playing, update it
+			const existingAlbum = uniqueAlbums.get(albumKey)!
+			uniqueAlbums.set(albumKey, {
+				...existingAlbum,
+				isNowPlaying: true,
+				nowPlayingTrack: track.name
 			})
 		}
 	}
@@ -111,8 +157,12 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 				hasPreview: !!cachedData.previewUrl,
 				trackCount: cachedData.tracks?.length || 0
 			})
+			
+			// Check if this album is currently playing based on track durations
+			const updatedAlbum = checkNowPlaying(album, cachedData)
+			
 			return {
-				...album,
+				...updatedAlbum,
 				images: {
 					...album.images,
 					itunes: cachedData.highResArtwork || album.images.itunes
@@ -129,9 +179,12 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 
 			// Cache the result for 24 hours
 			await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', 86400)
+			
+			// Check if this album is currently playing based on track durations
+			const updatedAlbum = checkNowPlaying(album, transformedData)
 
 			return {
-				...album,
+				...updatedAlbum,
 				images: {
 					...album.images,
 					itunes: transformedData.highResArtwork || album.images.itunes
@@ -181,4 +234,47 @@ function transformImages(images: LastfmImage[]): AlbumImages {
 	})
 
 	return transformedImages
+}
+
+function checkNowPlaying(album: Album, appleMusicData: any): Album {
+	// Don't override if already marked as now playing by Last.fm
+	if (album.isNowPlaying) {
+		return album
+	}
+	
+	// Check if any recent track from this album could still be playing
+	const now = new Date()
+	const SCROBBLE_LAG = 3 * 60 * 1000 // 3 minutes in milliseconds
+	
+	for (const trackInfo of recentTracks) {
+		if (trackInfo.albumName !== album.name) continue
+		
+		// Find the track duration from Apple Music data
+		const trackData = appleMusicData.tracks?.find((t: any) => 
+			t.name.toLowerCase() === trackInfo.trackName.toLowerCase()
+		)
+		
+		if (trackData?.durationMs) {
+			// Calculate when the track should end (scrobble time + duration + lag)
+			const trackEndTime = new Date(trackInfo.scrobbleTime.getTime() + trackData.durationMs + SCROBBLE_LAG)
+			
+			// If current time is before track end time, it's likely still playing
+			if (now < trackEndTime) {
+				console.log(`Detected now playing: "${trackInfo.trackName}" from "${album.name}"`, {
+					scrobbleTime: trackInfo.scrobbleTime,
+					durationMs: trackData.durationMs,
+					estimatedEndTime: trackEndTime,
+					currentTime: now
+				})
+				
+				return {
+					...album,
+					isNowPlaying: true,
+					nowPlayingTrack: trackInfo.trackName
+				}
+			}
+		}
+	}
+	
+	return album
 }

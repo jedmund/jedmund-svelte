@@ -175,7 +175,7 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 	
 	// Get preview URL from tracks if album doesn't have one
 	let previewUrl = attributes.previews?.[0]?.url
-	let tracks: Array<{ name: string; previewUrl?: string }> = []
+	let tracks: Array<{ name: string; previewUrl?: string; durationMs?: number }> = []
 	
 	// Always fetch tracks to get preview URLs
 	if (appleMusicAlbum.id) {
@@ -209,12 +209,13 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 				.filter((item: any) => item.type === 'songs')
 				.map((track: any) => ({
 					name: track.attributes?.name || 'Unknown',
-					previewUrl: track.attributes?.previews?.[0]?.url
+					previewUrl: track.attributes?.previews?.[0]?.url,
+					durationMs: track.attributes?.durationInMillis
 				}))
 			
 			// Log track details
 			tracks.forEach((track, index) => {
-				console.log(`Track ${index + 1}: ${track.name} - Preview: ${track.previewUrl ? 'Yes' : 'No'}`)
+				console.log(`Track ${index + 1}: ${track.name} - Preview: ${track.previewUrl ? 'Yes' : 'No'} - Duration: ${track.durationMs}ms`)
 			})
 			
 			// Find the first track with a preview if we don't have one

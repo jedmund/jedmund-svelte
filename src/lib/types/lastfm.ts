@@ -26,6 +26,8 @@ export interface Album {
 	url: string
 	rank: number
 	images: AlbumImages
+	isNowPlaying?: boolean
+	nowPlayingTrack?: string
 	appleMusicData?: {
 		appleMusicId?: string
 		highResArtwork?: string
@@ -40,6 +42,7 @@ export interface Album {
 		tracks?: Array<{
 			name: string
 			previewUrl?: string
+			durationMs?: number
 		}>
 	}
 }
