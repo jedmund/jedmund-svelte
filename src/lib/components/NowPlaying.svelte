@@ -4,6 +4,19 @@
 	}
 
 	let { trackName }: Props = $props()
+	
+	let textElement: HTMLSpanElement | null = $state(null)
+	let containerElement: HTMLDivElement | null = $state(null)
+	let shouldMarquee = $state(false)
+	
+	$effect(() => {
+		if (textElement && containerElement && trackName) {
+			// Check if text overflows
+			const textWidth = textElement.scrollWidth
+			const containerWidth = containerElement.clientWidth
+			shouldMarquee = textWidth > containerWidth
+		}
+	})
 </script>
 
 <div class="now-playing">
@@ -13,7 +26,19 @@
 		<span class="bar"></span>
 	</div>
 	{#if trackName}
-		<span class="track-name">{trackName}</span>
+		<div class="track-name-container" bind:this={containerElement}>
+			<span 
+				class="track-name" 
+				class:marquee={shouldMarquee}
+				bind:this={textElement}
+			>
+				{trackName}
+				{#if shouldMarquee}
+					<span class="marquee-gap">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+					{trackName}
+				{/if}
+			</span>
+		</div>
 	{/if}
 </div>
 
@@ -22,6 +47,8 @@
 		position: absolute;
 		top: $unit;
 		left: $unit;
+		right: $unit;
+		max-width: calc(100% - #{$unit * 2});
 		display: flex;
 		align-items: center;
 		gap: $unit-half;
@@ -33,6 +60,7 @@
 		backdrop-filter: blur(10px);
 		z-index: 10;
 		animation: fadeIn 0.3s ease-out;
+		width: fit-content;
 	}
 
 	@keyframes fadeIn {
@@ -85,12 +113,37 @@
 		}
 	}
 
-	.track-name {
-		max-width: 150px;
+	.track-name-container {
+		max-width: 200px;
 		overflow: hidden;
-		text-overflow: ellipsis;
+		position: relative;
+	}
+
+	.track-name {
+		display: inline-block;
 		white-space: nowrap;
 		font-weight: $font-weight-med;
+		
+		&.marquee {
+			animation: marquee 8s linear infinite;
+			
+			&:hover {
+				animation-play-state: paused;
+			}
+		}
+	}
+	
+	.marquee-gap {
+		display: inline-block;
+	}
+	
+	@keyframes marquee {
+		0% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(-50%);
+		}
 	}
 
 	@include breakpoint('phone') {
@@ -99,7 +152,7 @@
 			padding: $unit-fourth $unit-half;
 		}
 
-		.track-name {
+		.track-name-container {
 			display: none;
 		}
 	}

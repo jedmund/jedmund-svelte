@@ -1,9 +1,11 @@
 <script>
 	import { onMount, onDestroy } from 'svelte'
-	import { spring } from 'svelte/motion'
+	import { Spring } from 'svelte/motion'
 	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
+	import { albumStream } from '$lib/stores/album-stream'
 	import AvatarSVG from './AvatarSVG.svelte'
 	import AvatarHeadphones from './AvatarHeadphones.svelte'
+	import { get } from 'svelte/store'
 
 	// Props for testing/forcing states
 	let { forcePlayingMusic = false } = $props()
@@ -11,20 +13,24 @@
 	let isHovering = $state(false)
 	let isBlinking = $state(false)
 	let isPlayingMusic = $state(forcePlayingMusic)
+	
+	// Track store subscriptions for debugging
+	let nowPlayingStoreState = $state(null)
+	let albumStoreState = $state(null)
 
-	const scale = spring(1, {
+	const scale = new Spring(1, {
 		stiffness: 0.1,
 		damping: 0.125
 	})
 
 	function handleMouseEnter() {
 		isHovering = true
-		scale.set(1.25)
+		scale.target = 1.25
 	}
 
 	function handleMouseLeave() {
 		isHovering = false
-		scale.set(1)
+		scale.target = 1
 	}
 
 	function sleep(ms) {
@@ -60,11 +66,42 @@
 			}
 		}, 4000)
 
-		// Subscribe to now playing updates
-		const unsubscribe = nowPlayingStream.subscribe((state) => {
+		// Subscribe to now playing updates from both sources
+		const unsubscribeNowPlaying = nowPlayingStream.subscribe((state) => {
+			nowPlayingStoreState = state
 			// Check if any album is currently playing, unless forced
 			if (!forcePlayingMusic) {
-				isPlayingMusic = Array.from(state.updates.values()).some((update) => update.isNowPlaying)
+				const nowPlayingFromStream = Array.from(state.updates.values()).some((update) => update.isNowPlaying)
+				console.log('Avatar - nowPlayingStream update:', { 
+					updatesCount: state.updates.size, 
+					hasNowPlaying: nowPlayingFromStream 
+				})
+				// Don't set to false if we haven't received album data yet
+				if (nowPlayingFromStream || albumStoreState !== null) {
+					isPlayingMusic = nowPlayingFromStream || (albumStoreState?.some(album => album.isNowPlaying) ?? false)
+				}
+			}
+		})
+		
+		// Also check the album stream
+		const unsubscribeAlbums = albumStream.subscribe((state) => {
+			albumStoreState = state.albums
+			if (!forcePlayingMusic) {
+				const hasNowPlaying = state.albums.some(album => album.isNowPlaying)
+				
+				// Get the current state of nowPlayingStream
+				const nowPlayingState = nowPlayingStoreState || get(nowPlayingStream)
+				const nowPlayingFromStream = Array.from(nowPlayingState.updates.values()).some((update) => update.isNowPlaying)
+				
+				console.log('Avatar - albumStream update:', { 
+					albumsCount: state.albums.length, 
+					hasNowPlayingInAlbums: hasNowPlaying,
+					hasNowPlayingInStream: nowPlayingFromStream,
+					albums: state.albums.map(a => ({ name: a.name, isNowPlaying: a.isNowPlaying }))
+				})
+				
+				// Update isPlayingMusic based on whether any album is now playing from either source
+				isPlayingMusic = hasNowPlaying || nowPlayingFromStream
 			}
 		})
 
@@ -72,7 +109,8 @@
 			if (blinkInterval) {
 				clearInterval(blinkInterval)
 			}
-			unsubscribe()
+			unsubscribeNowPlaying()
+			unsubscribeAlbums()
 		}
 	})
 </script>
@@ -81,7 +119,7 @@
 	class="face-container"
 	onmouseenter={handleMouseEnter}
 	onmouseleave={handleMouseLeave}
-	style="transform: scale({$scale})"
+	style="transform: scale({scale.current})"
 >
 	<AvatarSVG>
 			<!-- Face group -->

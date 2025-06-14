@@ -22,6 +22,13 @@ function createAlbumStream() {
 	function connect() {
 		if (!browser || eventSource?.readyState === EventSource.OPEN) return
 
+		// Don't connect in Storybook
+		if (typeof window !== 'undefined' && window.parent !== window) {
+			// We're in an iframe, likely Storybook
+			console.log('Album stream disabled in Storybook')
+			return
+		}
+
 		// Clean up existing connection
 		disconnect()
 
@@ -36,6 +43,11 @@ function createAlbumStream() {
 		eventSource.addEventListener('albums', (event) => {
 			try {
 				const albums: Album[] = JSON.parse(event.data)
+				const nowPlayingAlbum = albums.find(a => a.isNowPlaying)
+				console.log('Album stream received albums:', {
+					totalAlbums: albums.length,
+					nowPlayingAlbum: nowPlayingAlbum ? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}` : 'none'
+				})
 				update((state) => ({
 					...state,
 					albums,

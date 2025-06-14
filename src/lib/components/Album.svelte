@@ -87,7 +87,14 @@
 
 	// Use high-res artwork if available
 	const artworkUrl = $derived(
-		album?.appleMusicData?.highResArtwork || album?.images.itunes || album?.images.mega || ''
+		album?.appleMusicData?.highResArtwork ||
+			album?.images?.itunes ||
+			album?.images?.mega ||
+			album?.images?.extralarge ||
+			album?.images?.large ||
+			album?.images?.medium ||
+			album?.images?.small ||
+			''
 	)
 
 	const hasPreview = $derived(!!album?.appleMusicData?.previewUrl)
@@ -110,6 +117,17 @@
 	// Combine initial state with real-time updates
 	const isNowPlaying = $derived(realtimeNowPlaying?.isNowPlaying ?? album?.isNowPlaying ?? false)
 	const nowPlayingTrack = $derived(realtimeNowPlaying?.nowPlayingTrack ?? album?.nowPlayingTrack)
+	
+	// Debug logging
+	$effect(() => {
+		if (album && isNowPlaying) {
+			console.log(`Album "${album.name}" is now playing:`, {
+				fromRealtime: realtimeNowPlaying?.isNowPlaying,
+				fromAlbum: album?.isNowPlaying,
+				track: nowPlayingTrack
+			})
+		}
+	})
 </script>
 
 <div class="album">
@@ -136,7 +154,7 @@
 						loading="lazy"
 					/>
 					{#if isNowPlaying}
-						<NowPlaying trackName={nowPlayingTrack !== album.name ? nowPlayingTrack : undefined} />
+						<NowPlaying trackName={nowPlayingTrack} />
 					{/if}
 					{#if hasPreview && (isHovering || isPlaying)}
 						<button
@@ -194,6 +212,9 @@
 			.artwork-container {
 				position: relative;
 				width: 100%;
+				aspect-ratio: 1 / 1;
+				background-color: $grey-5;
+				border-radius: $unit;
 			}
 
 			img {
@@ -201,8 +222,9 @@
 				border-radius: $unit;
 				box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 				width: 100%;
-				height: auto;
+				height: 100%;
 				object-fit: cover;
+				display: block;
 			}
 
 			.preview-button {

@@ -28,6 +28,13 @@ function createNowPlayingStream() {
 	function connect() {
 		if (!browser || eventSource?.readyState === EventSource.OPEN) return
 
+		// Don't connect in Storybook
+		if (typeof window !== 'undefined' && window.parent !== window) {
+			// We're in an iframe, likely Storybook
+			console.log('Now Playing stream disabled in Storybook')
+			return
+		}
+
 		// Clean up existing connection
 		disconnect()
 
