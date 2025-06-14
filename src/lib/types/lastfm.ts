@@ -26,6 +26,22 @@ export interface Album {
 	url: string
 	rank: number
 	images: AlbumImages
+	appleMusicData?: {
+		appleMusicId?: string
+		highResArtwork?: string
+		previewUrl?: string
+		genres?: string[]
+		releaseDate?: string
+		trackCount?: number
+		recordLabel?: string
+		copyright?: string
+		editorialNotes?: any
+		isComplete?: boolean
+		tracks?: Array<{
+			name: string
+			previewUrl?: string
+		}>
+	}
 }
 
 export interface WeeklyAlbumChart {

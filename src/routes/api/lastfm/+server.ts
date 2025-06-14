@@ -1,14 +1,10 @@
 import 'dotenv/config'
 import { LastClient } from '@musicorum/lastfm'
-import {
-	searchItunes,
-	ItunesSearchOptions,
-	ItunesMedia,
-	ItunesEntityMusic
-} from 'node-itunes-search'
 import type { RequestHandler } from './$types'
 import type { Album, AlbumImages } from '$lib/types/lastfm'
 import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
+import { findAlbum, transformAlbumData } from '$lib/server/apple-music-client'
+import redis from '../redis-client'
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
@@ -37,9 +33,9 @@ export const GET: RequestHandler = async ({ url }) => {
 		)
 
 		const validAlbums = enrichedAlbums.filter((album) => album !== null)
-		const albumsWithItunesArt = await addItunesArtToAlbums(validAlbums)
+		const albumsWithAppleMusicData = await addAppleMusicDataToAlbums(validAlbums)
 
-		return new Response(JSON.stringify({ albums: albumsWithItunesArt }), {
+		return new Response(JSON.stringify({ albums: albumsWithAppleMusicData }), {
 			headers: { 'Content-Type': 'application/json' }
 		})
 	} catch (error) {
@@ -99,39 +95,59 @@ async function enrichAlbumWithInfo(client: LastClient, album: Album): Promise<Al
 	}
 }
 
-async function addItunesArtToAlbums(albums: Album[]): Promise<Album[]> {
-	return Promise.all(albums.map(searchItunesForAlbum))
+async function addAppleMusicDataToAlbums(albums: Album[]): Promise<Album[]> {
+	return Promise.all(albums.map(searchAppleMusicForAlbum))
 }
 
-async function searchItunesForAlbum(album: Album): Promise<Album> {
-	const itunesResult = await searchItunesStores(album.name, album.artist.name)
+async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
+	try {
+		// Check cache first
+		const cacheKey = `apple:album:${album.artist.name}:${album.name}`
+		const cached = await redis.get(cacheKey)
 
-	if (itunesResult && itunesResult.results.length > 0) {
-		const firstResult = itunesResult.results[0]
-		album.images.itunes = firstResult.artworkUrl100.replace('100x100', '600x600')
-	}
-
-	return album
-}
-
-async function searchItunesStores(albumName: string, artistName: string): Promise<any | null> {
-	const stores = ['JP', 'US']
-	for (const store of stores) {
-		const encodedTerm = encodeURIComponent(`${albumName} ${artistName}`)
-		const result = await searchItunes(
-			new ItunesSearchOptions({
-				term: encodedTerm,
-				country: store,
-				media: ItunesMedia.Music,
-				entity: ItunesEntityMusic.Album,
-				limit: 1
+		if (cached) {
+			const cachedData = JSON.parse(cached)
+			console.log(`Using cached data for "${album.name}":`, {
+				hasPreview: !!cachedData.previewUrl,
+				trackCount: cachedData.tracks?.length || 0
 			})
-		)
+			return {
+				...album,
+				images: {
+					...album.images,
+					itunes: cachedData.highResArtwork || album.images.itunes
+				},
+				appleMusicData: cachedData
+			}
+		}
 
-		if (result.resultCount > 0) return result
+		// Search Apple Music
+		const appleMusicAlbum = await findAlbum(album.artist.name, album.name)
+
+		if (appleMusicAlbum) {
+			const transformedData = await transformAlbumData(appleMusicAlbum)
+
+			// Cache the result for 24 hours
+			await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', 86400)
+
+			return {
+				...album,
+				images: {
+					...album.images,
+					itunes: transformedData.highResArtwork || album.images.itunes
+				},
+				appleMusicData: transformedData
+			}
+		}
+	} catch (error) {
+		console.error(
+			`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}":`,
+			error
+		)
 	}
 
-	return null
+	// Return album unchanged if Apple Music search fails
+	return album
 }
 
 function transformImages(images: LastfmImage[]): AlbumImages {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion'
 	import type { Album } from '$lib/types/lastfm'
+	import { audioPreview } from '$lib/stores/audio-preview'
 
 	interface AlbumProps {
 		album?: Album
@@ -9,6 +10,19 @@
 	let { album = undefined }: AlbumProps = $props()
 
 	let isHovering = $state(false)
+	let audio: HTMLAudioElement | null = $state(null)
+	
+	// Create a unique ID for this album
+	const albumId = $derived(album ? `${album.artist.name}-${album.name}` : '')
+	
+	// Subscribe to the store to know if this album is playing
+	let isPlaying = $state(false)
+	$effect(() => {
+		const unsubscribe = audioPreview.subscribe(state => {
+			isPlaying = state.currentAlbumId === albumId && state.isPlaying
+		})
+		return unsubscribe
+	})
 
 	const scale = spring(1, {
 		stiffness: 0.2,
@@ -22,31 +36,104 @@
 			scale.set(1)
 		}
 	})
+
+	async function togglePreview(e: Event) {
+		e.preventDefault()
+		e.stopPropagation()
+		
+		if (!audio && album?.appleMusicData?.previewUrl) {
+			audio = new Audio(album.appleMusicData.previewUrl)
+			audio.addEventListener('ended', () => {
+				audioPreview.stop()
+			})
+		}
+		
+		if (audio) {
+			if (isPlaying) {
+				audioPreview.stop()
+			} else {
+				// Update the store first, then play
+				audioPreview.play(audio, albumId)
+				try {
+					await audio.play()
+				} catch (error) {
+					console.error('Failed to play preview:', error)
+					audioPreview.stop()
+				}
+			}
+		}
+	}
+
+	$effect(() => {
+		// Cleanup audio when component unmounts
+		return () => {
+			if (audio && isPlaying) {
+				audioPreview.stop()
+			}
+		}
+	})
+
+	// Use high-res artwork if available
+	const artworkUrl = $derived(
+		album?.appleMusicData?.highResArtwork || album?.images.itunes || album?.images.mega || ''
+	)
+
+	const hasPreview = $derived(!!album?.appleMusicData?.previewUrl)
+	
+	// Debug log
+	$effect(() => {
+		if (album) {
+			console.log(`Album ${album.name}:`, {
+				hasAppleMusicData: !!album.appleMusicData,
+				previewUrl: album.appleMusicData?.previewUrl,
+				hasPreview
+			})
+		}
+	})
 </script>
 
 <div class="album">
 	{#if album}
-		<a
-			href={album.url}
-			target="_blank"
-			rel="noopener noreferrer"
-			onmouseenter={() => (isHovering = true)}
-			onmouseleave={() => (isHovering = false)}
-		>
-			<img
-				src={album.images.itunes ? album.images.itunes : album.images.mega}
-				alt={album.name}
-				style="transform: scale({$scale})"
-			/>
-			<div class="info">
-				<span class="album-name">
-					{album.name}
-				</span>
-				<p class="artist-name">
-					{album.artist.name}
-				</p>
-			</div>
-		</a>
+		<div class="album-wrapper">
+			<a
+				href={album.url}
+				target="_blank"
+				rel="noopener noreferrer"
+				onmouseenter={() => (isHovering = true)}
+				onmouseleave={() => (isHovering = false)}
+			>
+				<div class="artwork-container">
+					<img
+						src={artworkUrl}
+						alt={album.name}
+						style="transform: scale({$scale})"
+						loading="lazy"
+					/>
+					{#if hasPreview && isHovering}
+						<button
+							class="preview-button"
+							onclick={togglePreview}
+							aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
+							class:playing={isPlaying}
+						>
+							{#if isPlaying}
+								<span aria-hidden="true">❚❚</span>
+							{:else}
+								<span aria-hidden="true">▶</span>
+							{/if}
+						</button>
+					{/if}
+				</div>
+				<div class="info">
+					<span class="album-name">
+						{album.name}
+					</span>
+					<p class="artist-name">
+						{album.artist.name}
+					</p>
+				</div>
+			</a>
+		</div>
 	{:else}
 		<p>No album provided</p>
 	{/if}
@@ -57,6 +144,14 @@
 		width: 100%;
 		height: 100%;
 
+		.album-wrapper {
+			display: flex;
+			flex-direction: column;
+			gap: $unit;
+			width: 100%;
+			height: 100%;
+		}
+
 		a {
 			display: flex;
 			flex-direction: column;
@@ -66,6 +161,12 @@
 			width: 100%;
 			height: 100%;
 
+			.artwork-container {
+				position: relative;
+				width: 100%;
+				overflow: hidden;
+			}
+
 			img {
 				border: 1px solid rgba(0, 0, 0, 0.1);
 				border-radius: $unit;
@@ -73,6 +174,34 @@
 				width: 100%;
 				height: auto;
 				object-fit: cover;
+			}
+
+			.preview-button {
+				position: absolute;
+				bottom: $unit;
+				right: $unit;
+				width: 40px;
+				height: 40px;
+				background: rgba(0, 0, 0, 0.8);
+				color: white;
+				border: none;
+				border-radius: 50%;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 16px;
+				transition: all 0.2s ease;
+				backdrop-filter: blur(10px);
+
+				&:hover {
+					background: rgba(0, 0, 0, 0.9);
+					transform: scale(1.1);
+				}
+
+				&.playing {
+					background: $accent-color;
+				}
 			}
 
 			.info {
@@ -102,6 +231,10 @@
 					color: $grey-40;
 				}
 			}
+		}
+
+		.preview-container {
+			margin-top: $unit;
 		}
 	}
 </style>
