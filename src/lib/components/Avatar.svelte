@@ -3,9 +3,11 @@
 	// We can do a thought bubble-y thing with the album art that takes you to the album section of the page
 	import { onMount, onDestroy } from 'svelte'
 	import { spring } from 'svelte/motion'
+	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
 
-	let isHovering = false
-	let isBlinking = false
+	let isHovering = $state(false)
+	let isBlinking = $state(false)
+	let isPlayingMusic = $state(false)
 
 	const scale = spring(1, {
 		stiffness: 0.1,
@@ -55,10 +57,17 @@
 			}
 		}, 4000)
 
+		// Subscribe to now playing updates
+		const unsubscribe = nowPlayingStream.subscribe((state) => {
+			// Check if any album is currently playing
+			isPlayingMusic = Array.from(state.updates.values()).some((update) => update.isNowPlaying)
+		})
+
 		return () => {
 			if (blinkInterval) {
 				clearInterval(blinkInterval)
 			}
+			unsubscribe()
 		}
 	})
 </script>
@@ -356,6 +365,75 @@
 			</clipPath>
 		</defs>
 	</svg>
+
+	<!-- Headphones overlay when playing music -->
+	{#if isPlayingMusic}
+		<div class="headphones-container">
+			<svg
+				width="86"
+				height="202"
+				viewBox="0 0 86 202"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+				style="width: 8.84px; height: auto; position: absolute; left: 68%; top: 32%; animation: fadeIn 0.3s ease-out;"
+			>
+				<path
+					d="M56.6854 195.667C63.0485 191.195 71.8296 179.809 77.087 168.9C89.0428 144.091 92.2289 102.907 65.7859 86.2014C45.9684 73.9065 19.7285 85.9377 9.43434 106.872C2.48924 121.207 -0.100899 137.51 0.00299303 151.553C0.0550549 158.587 0.783319 165.136 2.01973 170.671C3.2404 176.136 5.01771 180.892 7.33744 184.111L7.42625 184.234L7.52449 184.348C13.8609 191.696 24.8872 200.228 37.3464 201.171C43.6642 201.649 50.288 200.162 56.6854 195.667Z"
+					fill="#D9D9D9"
+				/>
+				<path
+					d="M59.5 190.756C69.2084 179.099 75.5 169.756 79.5 158.256C55.0216 178.249 18.4869 138.632 7 122.256L2.5 150.256L6 175.756L14 188.756C22.988 194.631 28.2191 197.535 39.5 198.756C47.3937 198.19 51.7776 196.59 59.5 190.756Z"
+					fill="#C4C4C4"
+				/>
+				<path
+					d="M65.7859 86.2014C92.2289 102.907 89.0428 144.091 77.087 168.9C71.8296 179.809 63.0485 191.195 56.6854 195.667C50.288 200.162 43.6642 201.649 37.3464 201.171C24.8872 200.228 14 193.756 7.52449 184.348L7.42625 184.234L7.33744 184.111C5.01771 180.892 3.2404 176.136 2.01973 170.671C0.783319 165.136 0.0550549 158.587 0.00299303 151.553C-0.100899 137.51 2.48924 121.207 9.43434 106.872C19.7285 85.9377 45.9684 73.9065 65.7859 86.2014ZM62.7309 92.4309C18.5 64.7561 -5.5 152.756 14 184.111C19.5 191.756 26.5 195.256 37 196.756C44.1521 197.778 49.5 196.256 55.5 191.756C88.5 161.756 91.5 115.756 62.7309 92.4309Z"
+					fill="#070610"
+				/>
+				<ellipse
+					cx="52.9243"
+					cy="148.889"
+					rx="23.6644"
+					ry="34.6366"
+					transform="rotate(15.2136 52.9243 148.889)"
+					fill="url(#paint0_linear_headphones)"
+				/>
+				<path
+					d="M61.8821 115.948C67.9817 117.607 72.5741 122.742 75.0255 129.81C77.4759 136.875 77.7642 145.823 75.2772 154.968C72.7902 164.113 68.0103 171.682 62.3192 176.533C56.6259 181.386 50.0655 183.488 43.9659 181.829C37.8664 180.17 33.2739 175.035 30.8225 167.968C28.3721 160.902 28.0848 151.955 30.5717 142.81C33.0587 133.665 37.8377 126.096 43.5288 121.245C49.2221 116.392 55.7825 114.29 61.8821 115.948Z"
+					stroke="black"
+					stroke-opacity="0.04"
+				/>
+				<path
+					d="M63.4999 105.756C59.6929 111.276 52.1372 110.743 52.4999 105.756C54.5 78.256 48.8535 51.051 44.4999 31.756C43.2386 26.1657 50.0012 22.3638 56.4999 31.756C65.6128 44.9263 69.8913 96.4896 63.4999 105.756Z"
+					fill="#CCCCCC"
+				/>
+				<path
+					d="M47 24.756C48.5 24.256 51 23.7561 53.231 25.7452C73.5171 46.5549 69.6524 96.6664 65.4819 105.987C64.4309 110.126 60.9683 112.483 57.8619 112.256C56.3101 112.143 54.7629 111.597 53.5962 110.62C52.3998 109.618 50.8727 107.446 51.0035 105.648L51.1763 103.081C52.777 76.9845 49.876 50.8066 43.4175 33.1486C42.1049 29.6189 43.5884 26.4618 47 24.756ZM52 28.256C50.8336 26.9568 49.2098 26.1611 47.5 26.756C44.6798 27.7374 44.5 30.756 45.5 32.756C51.752 42.5329 55.5593 69.5264 54.1695 103.273L53.9956 105.865C53.9453 106.56 54.2225 107.143 54.7964 107.624C55.4003 108.13 56.3169 108.492 57.354 108.568C59.4256 108.719 61.447 107.747 62.0464 105.387C65.1582 98.5154 69.6073 47.8691 52 28.256Z"
+					fill="black"
+				/>
+				<path
+					d="M50.5 22.2561L47.5 38.2561L44.5 42.2561L41 40.7561L36 26.2561L45.5 14.2561L50.5 22.2561Z"
+					fill="#935C0A"
+				/>
+				<path
+					d="M11.8771 5.23835C11.3044 4.46433 11.4186 3.36941 12.216 2.82978C20.0877 -2.49724 33.4255 -0.56012 32.1836 10.8355C53.6363 5.53796 57.7794 29.8565 47.8743 41.3154C47.3637 41.9061 46.5303 42.0748 45.8019 41.7937V41.7937C44.3261 41.2242 44.022 39.123 44.9497 37.8418C51.4507 28.8638 48.3771 9.19044 29.916 17.316L28.5706 18.241C26.9453 19.3584 24.8549 17.6975 25.576 15.8616L26.1729 14.3424C29.7019 2.94735 22.8674 0.0733882 14.5317 5.64813C13.6712 6.22364 12.4928 6.07057 11.8771 5.23835V5.23835Z"
+					fill="black"
+				/>
+				<defs>
+					<linearGradient
+						id="paint0_linear_headphones"
+						x1="52.9243"
+						y1="114.252"
+						x2="59.7348"
+						y2="183.17"
+						gradientUnits="userSpaceOnUse"
+					>
+						<stop stop-color="#BABABA" />
+						<stop offset="0.829668" stop-color="#B3B3B3" />
+					</linearGradient>
+				</defs>
+			</svg>
+		</div>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -365,10 +443,8 @@
 		height: var(--face-size);
 		display: inline-block;
 		position: relative;
-
-		&:hover {
-			transform: scale(1.25);
-		}
+		border-radius: $avatar-radius;
+		transition: transform 0.2s ease;
 	}
 
 	.svg-wrapper {
@@ -411,9 +487,44 @@
 		opacity: 1;
 	}
 
-	:global(.face-container svg) {
+	.face-container > svg {
 		border-radius: $avatar-radius;
 		width: 100%;
 		height: 100%;
+	}
+
+	.headphones-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 10;
+
+		svg {
+			position: absolute;
+			// The headphones should be 17% of the avatar width
+			// For a 52px avatar in header: 52px * 0.17 = 8.84px
+			// But we want it relative to the container which scales
+			width: calc(var(--face-size) * 0.17);
+			height: auto;
+			// Position based on 323px left, 152px top when avatar is 497x497
+			left: 72%; // Adjusted for proper positioning
+			top: 32%; // Adjusted for proper positioning
+			animation: fadeIn 0.3s ease-out;
+			transform-origin: center top; // Bob from the top
+		}
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 </style>

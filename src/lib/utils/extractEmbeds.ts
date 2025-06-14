@@ -21,7 +21,7 @@ export function extractEmbeds(content: any): ExtractedEmbed[] {
 			/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
 			/youtube\.com\/watch\?.*v=([^&\n?#]+)/
 		]
-		
+
 		for (const pattern of patterns) {
 			const match = url.match(pattern)
 			if (match && match[1]) {
@@ -36,7 +36,7 @@ export function extractEmbeds(content: any): ExtractedEmbed[] {
 		if (node.type === 'urlEmbed' && node.attrs?.url) {
 			const url = node.attrs.url
 			const isYouTube = /(?:youtube\.com|youtu\.be)/.test(url)
-			
+
 			if (isYouTube) {
 				const videoId = getYouTubeVideoId(url)
 				if (videoId) {

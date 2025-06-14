@@ -83,18 +83,18 @@
 	let mediaDropdownTriggerRef = $state<HTMLElement>()
 	let dropdownPosition = $state({ top: 0, left: 0 })
 	let mediaDropdownPosition = $state({ top: 0, left: 0 })
-	
+
 	// URL convert dropdown state
 	let showUrlConvertDropdown = $state(false)
 	let urlConvertDropdownPosition = $state({ x: 0, y: 0 })
 	let urlConvertPos = $state<number | null>(null)
-	
+
 	// Link context menu state
 	let showLinkContextMenu = $state(false)
 	let linkContextMenuPosition = $state({ x: 0, y: 0 })
 	let linkContextUrl = $state<string | null>(null)
 	let linkContextPos = $state<number | null>(null)
-	
+
 	// Link edit dialog state
 	let showLinkEditDialog = $state(false)
 	let linkEditDialogPosition = $state({ x: 0, y: 0 })
@@ -239,85 +239,89 @@
 			showLinkEditDialog = false
 		}
 	}
-	
+
 	// Handle URL convert dropdown
 	const handleShowUrlConvertDropdown = (pos: number, url: string) => {
 		if (!editor) return
-		
+
 		// Get the cursor coordinates
 		const coords = editor.view.coordsAtPos(pos)
 		urlConvertDropdownPosition = { x: coords.left, y: coords.bottom + 5 }
 		urlConvertPos = pos
 		showUrlConvertDropdown = true
 	}
-	
+
 	// Handle link context menu
-	const handleShowLinkContextMenu = (pos: number, url: string, coords: { x: number, y: number }) => {
+	const handleShowLinkContextMenu = (
+		pos: number,
+		url: string,
+		coords: { x: number; y: number }
+	) => {
 		if (!editor) return
-		
+
 		linkContextMenuPosition = { x: coords.x, y: coords.y + 5 }
 		linkContextUrl = url
 		linkContextPos = pos
 		showLinkContextMenu = true
 	}
-	
+
 	const handleConvertToEmbed = () => {
 		if (!editor || urlConvertPos === null) return
-		
+
 		editor.commands.convertLinkToEmbed(urlConvertPos)
 		showUrlConvertDropdown = false
 		urlConvertPos = null
 	}
-	
+
 	const handleConvertLinkToEmbed = () => {
 		if (!editor || linkContextPos === null) return
-		
+
 		editor.commands.convertLinkToEmbed(linkContextPos)
 		showLinkContextMenu = false
 		linkContextPos = null
 		linkContextUrl = null
 	}
-	
+
 	const handleEditLink = () => {
 		if (!editor || !linkContextUrl) return
-		
+
 		linkEditUrl = linkContextUrl
 		linkEditPos = linkContextPos
 		linkEditDialogPosition = { ...linkContextMenuPosition }
 		showLinkEditDialog = true
 		showLinkContextMenu = false
 	}
-	
+
 	const handleSaveLink = (newUrl: string) => {
 		if (!editor) return
-		
+
 		editor.chain().focus().extendMarkRange('link').setLink({ href: newUrl }).run()
 		showLinkEditDialog = false
 		linkEditPos = null
 		linkEditUrl = ''
 	}
-	
+
 	const handleCopyLink = () => {
 		if (!linkContextUrl) return
-		
+
 		navigator.clipboard.writeText(linkContextUrl)
 		showLinkContextMenu = false
 		linkContextPos = null
 		linkContextUrl = null
 	}
-	
+
 	const handleRemoveLink = () => {
 		if (!editor) return
-		
+
 		editor.chain().focus().extendMarkRange('link').unsetLink().run()
 		showLinkContextMenu = false
 		linkContextPos = null
 		linkContextUrl = null
 	}
-	
+
 	const handleOpenLink = () => {
 		if (!linkContextUrl) return
-		
+
 		window.open(linkContextUrl, '_blank', 'noopener,noreferrer')
 		showLinkContextMenu = false
 		linkContextPos = null
@@ -325,7 +329,13 @@
 	}
 
 	$effect(() => {
-		if (showTextStyleDropdown || showMediaDropdown || showUrlConvertDropdown || showLinkContextMenu || showLinkEditDialog) {
+		if (
+			showTextStyleDropdown ||
+			showMediaDropdown ||
+			showUrlConvertDropdown ||
+			showLinkContextMenu ||
+			showLinkEditDialog
+		) {
 			document.addEventListener('click', handleClickOutside)
 			return () => {
 				document.removeEventListener('click', handleClickOutside)
@@ -484,16 +494,16 @@
 					// Dismiss URL convert dropdown if user types
 					if (showUrlConvertDropdown && transaction.docChanged) {
 						// Check if the change is actual typing (not just cursor movement)
-						const hasTextChange = transaction.steps.some(step => 
-							step.toJSON().stepType === 'replace' || 
-							step.toJSON().stepType === 'replaceAround'
+						const hasTextChange = transaction.steps.some(
+							(step) =>
+								step.toJSON().stepType === 'replace' || step.toJSON().stepType === 'replaceAround'
 						)
 						if (hasTextChange) {
 							showUrlConvertDropdown = false
 							urlConvertPos = null
 						}
 					}
-					
+
 					// Call the original onUpdate if provided
 					if (onUpdate) {
 						onUpdate({ editor: updatedEditor, transaction })

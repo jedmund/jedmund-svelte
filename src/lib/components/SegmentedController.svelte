@@ -119,9 +119,7 @@
 			onmouseenter={() => (hoveredIndex = index)}
 			onmouseleave={() => (hoveredIndex = null)}
 		>
-			<item.icon
-				class="nav-icon {hoveredIndex === index ? 'animate' : ''}"
-			/>
+			<item.icon class="nav-icon {hoveredIndex === index ? 'animate' : ''}" />
 			<span>{item.text}</span>
 		</a>
 	{/each}

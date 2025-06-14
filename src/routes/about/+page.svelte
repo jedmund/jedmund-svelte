@@ -4,6 +4,7 @@
 	import MentionList from '$components/MentionList.svelte'
 	import Page from '$components/Page.svelte'
 	import RecentAlbums from '$components/RecentAlbums.svelte'
+	import StreamStatus from '$components/StreamStatus.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 
@@ -101,6 +102,8 @@
 		{/if}
 	</section> -->
 	</Page>
+
+	<StreamStatus />
 </section>
 
 <style lang="scss">
