@@ -61,10 +61,12 @@
 				San Francisco.
 			</p>
 			<p>
-				Right now, I'm spending my free time building a hobby journaling app called <a
-					href="https://maitsu.co"
-					target="_blank">Maitsu</a
-				>. I've spent time at several companies over the last 11 years, but you might know me from
+				Currently, I'm a product designer at <a href="https://grammarly.com" target="_blank"
+					>Grammarly</a
+				>. I spend my free time building a hobby journaling app called
+				<a href="https://maitsu.co" target="_blank">Maitsu</a> and running a competitive crew in
+				<a href="https://granbluefantasy.jp" target="_blank">Granblue Fantasy</a>. I've spent time
+				at several companies over the last 15 years, but you might know me from
 				<a href="https://www.pinterest.com/" target="_blank">Pinterest</a>, where I was the first
 				design hire.
 			</p>
@@ -151,6 +153,10 @@
 		color: #333;
 		background: $grey-100;
 		border-radius: $card-corner-radius;
+
+		p {
+			margin-bottom: $unit-2x;
+		}
 
 		p:first-child {
 			margin-top: 0;
