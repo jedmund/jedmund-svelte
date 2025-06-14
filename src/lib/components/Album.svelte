@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { spring } from 'svelte/motion'
+	import { Spring } from 'svelte/motion'
 	import type { Album } from '$lib/types/lastfm'
 	import { audioPreview } from '$lib/stores/audio-preview'
 	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
 	import NowPlaying from './NowPlaying.svelte'
+	import PlayIcon from '$icons/play.svg'
+	import PauseIcon from '$icons/pause.svg'
 
 	interface AlbumProps {
 		album?: Album
@@ -26,16 +28,16 @@
 		return unsubscribe
 	})
 
-	const scale = spring(1, {
-		stiffness: 0.2,
-		damping: 0.145
+	const scale = new Spring(1, {
+		stiffness: 0.1,
+		damping: 0.25
 	})
 
 	$effect(() => {
 		if (isHovering) {
-			scale.set(1.1)
+			scale.target = 1.1
 		} else {
-			scale.set(1)
+			scale.target = 1
 		}
 	})
 
@@ -116,7 +118,7 @@
 					<img
 						src={artworkUrl}
 						alt={album.name}
-						style="transform: scale({$scale})"
+						style="transform: scale({scale.current})"
 						loading="lazy"
 					/>
 					{#if isNowPlaying}
@@ -130,9 +132,9 @@
 							class:playing={isPlaying}
 						>
 							{#if isPlaying}
-								<span aria-hidden="true">❚❚</span>
+								<PauseIcon />
 							{:else}
-								<span aria-hidden="true">▶</span>
+								<PlayIcon />
 							{/if}
 						</button>
 					{/if}
@@ -190,11 +192,12 @@
 
 			.preview-button {
 				position: absolute;
-				bottom: $unit;
-				right: $unit;
-				width: 40px;
-				height: 40px;
-				background: rgba(0, 0, 0, 0.8);
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				width: 60px;
+				height: 60px;
+				background: rgba(0, 0, 0, 0.4);
 				color: white;
 				border: none;
 				border-radius: 50%;
@@ -202,13 +205,13 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				font-size: 16px;
+				font-size: 24px;
 				transition: all 0.2s ease;
 				backdrop-filter: blur(10px);
 
 				&:hover {
-					background: rgba(0, 0, 0, 0.9);
-					transform: scale(1.1);
+					background: rgba(0, 0, 0, 0.5);
+					transform: translate(-50%, -50%) scale(1.1);
 				}
 
 				&.playing {
