@@ -88,7 +88,6 @@
 <style lang="scss">
 	.photo-item {
 		break-inside: avoid;
-		margin-bottom: $unit-3x;
 
 		@include breakpoint('tablet') {
 			margin-bottom: $unit-2x;
