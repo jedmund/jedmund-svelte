@@ -15,13 +15,13 @@
 	// Initialize state with server-side data
 	let allPhotoItems = $state<PhotoItem[]>(data.photoItems || [])
 	let currentOffset = $state(data.pagination?.limit || 20)
-	
+
 	// Track loaded photo IDs to prevent duplicates
-	let loadedPhotoIds = $state(new Set(data.photoItems?.map(item => item.id) || []))
-	
+	let loadedPhotoIds = $state(new Set(data.photoItems?.map((item) => item.id) || []))
+
 	const error = $derived(data.error)
 	const pageUrl = $derived($page.url.href)
-	
+
 	// Error message for retry display
 	let lastError = $state<string>('')
 
@@ -32,30 +32,30 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch photos: ${response.statusText}`)
 			}
-			
+
 			const data = await response.json()
-			
+
 			// Filter out duplicates
 			const newItems = (data.photoItems || []).filter(
 				(item: PhotoItem) => !loadedPhotoIds.has(item.id)
 			)
-			
+
 			// Add new photo IDs to the set
 			newItems.forEach((item: PhotoItem) => loadedPhotoIds.add(item.id))
-			
+
 			// Append new photos to existing list
 			allPhotoItems = [...allPhotoItems, ...newItems]
-			
+
 			// Update pagination state
 			currentOffset += data.pagination?.limit || 20
-			
+
 			// Update loader state
 			if (!data.pagination?.hasMore || newItems.length === 0) {
 				loaderState.complete()
 			} else {
 				loaderState.loaded()
 			}
-			
+
 			// Clear any previous error
 			lastError = ''
 		} catch (err) {
@@ -117,37 +117,37 @@
 		</div>
 	{:else}
 		<MasonryPhotoGrid photoItems={allPhotoItems} />
-		
-		<InfiniteLoader 
-			{loaderState} 
+
+		<InfiniteLoader
+			{loaderState}
 			triggerLoad={loadMore}
-			intersectionOptions={{ rootMargin: "0px 0px 200px 0px" }}
+			intersectionOptions={{ rootMargin: '0px 0px 200px 0px' }}
 		>
 			<!-- Empty content since we're rendering the grid above -->
 			<div style="height: 1px;"></div>
-			
+
 			{#snippet loading()}
 				<div class="loading-container">
 					<LoadingSpinner size="medium" text="Loading more photos..." />
 				</div>
 			{/snippet}
-			
+
 			{#snippet error()}
 				<div class="error-retry">
 					<p class="error-text">{lastError || 'Failed to load photos'}</p>
-					<button 
-						class="retry-button" 
+					<button
+						class="retry-button"
 						onclick={() => {
-							lastError = '';
-							loaderState.reset();
-							loadMore();
+							lastError = ''
+							loaderState.reset()
+							loadMore()
 						}}
 					>
 						Try again
 					</button>
 				</div>
 			{/snippet}
-			
+
 			{#snippet noData()}
 				<div class="end-message">
 					<p>You've reached the end</p>
@@ -214,7 +214,7 @@
 	.end-message {
 		text-align: center;
 		padding: $unit-6x 0;
-		
+
 		p {
 			margin: 0;
 			color: $grey-50;
@@ -249,11 +249,11 @@
 		font-weight: 500;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
-		
+
 		&:hover {
 			background-color: darken($primary-color, 10%);
 		}
-		
+
 		&:active {
 			transform: scale(0.98);
 		}

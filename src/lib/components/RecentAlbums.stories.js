@@ -12,18 +12,25 @@ const mockAlbums = [
 		url: 'https://www.last.fm/music/Radiohead/In+Rainbows',
 		rank: 1,
 		images: {
-			small: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			medium: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			large: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			extralarge: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			small:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			medium:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			large:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			extralarge:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
 			mega: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			default: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
+			default:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
 		},
 		isNowPlaying: false,
 		appleMusicData: {
 			appleMusicId: '1109714933',
-			highResArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/5c/e8/e3/5ce8e347-3bea-3bb0-0664-a6e1c9125d3a/mzaf_7638610958907470670.plus.aac.p.m4a',
+			highResArtwork:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			previewUrl:
+				'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/5c/e8/e3/5ce8e347-3bea-3bb0-0664-a6e1c9125d3a/mzaf_7638610958907470670.plus.aac.p.m4a',
 			genres: ['Alternative', 'Music'],
 			releaseDate: '2007-10-10',
 			trackCount: 10,
@@ -40,19 +47,26 @@ const mockAlbums = [
 		url: 'https://www.last.fm/music/Radiohead/OK+Computer',
 		rank: 2,
 		images: {
-			small: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			medium: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			large: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			extralarge: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			small:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			medium:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			large:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			extralarge:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
 			mega: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			default: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
+			default:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
 		},
 		isNowPlaying: true,
 		nowPlayingTrack: 'Paranoid Android',
 		appleMusicData: {
 			appleMusicId: '1097861387',
-			highResArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/65/f2/85/65f285d2-5a99-f502-89f8-ca2c4da24d19/mzaf_1760708625972666865.plus.aac.p.m4a'
+			highResArtwork:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			previewUrl:
+				'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/65/f2/85/65f285d2-5a99-f502-89f8-ca2c4da24d19/mzaf_1760708625972666865.plus.aac.p.m4a'
 		}
 	},
 	{
@@ -65,17 +79,24 @@ const mockAlbums = [
 		url: 'https://www.last.fm/music/Pink+Floyd/The+Dark+Side+of+the+Moon',
 		rank: 3,
 		images: {
-			small: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			medium: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			large: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			extralarge: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			small:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			medium:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			large:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			extralarge:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
 			mega: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			default: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
+			default:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
 		},
 		appleMusicData: {
 			appleMusicId: '1065973699',
-			highResArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/57/15/fb/5715fb67-0424-8e6e-a1ff-2c0cf09e4bdc/mzaf_3641989451682986919.plus.aac.p.m4a'
+			highResArtwork:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			previewUrl:
+				'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/57/15/fb/5715fb67-0424-8e6e-a1ff-2c0cf09e4bdc/mzaf_3641989451682986919.plus.aac.p.m4a'
 		}
 	},
 	{
@@ -88,16 +109,22 @@ const mockAlbums = [
 		url: 'https://www.last.fm/music/Joy+Division/Unknown+Pleasures',
 		rank: 4,
 		images: {
-			small: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			medium: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			large: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			extralarge: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			small:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			medium:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			large:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
+			extralarge:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
 			mega: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp',
-			default: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
+			default:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
 		},
 		appleMusicData: {
 			appleMusicId: '659989492',
-			highResArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
+			highResArtwork:
+				'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/85/2e/2b/852e2b6c-93ec-806a-95b2-8f5eda2f775c/22UMGIM18886.rgb.jpg/592x592bb.webp'
 		}
 	}
 ]

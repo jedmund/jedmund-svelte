@@ -1,10 +1,4 @@
-<svg
-	width="497"
-	height="497"
-	viewBox="0 0 497 497"
-	fill="none"
-	xmlns="http://www.w3.org/2000/svg"
->
+<svg width="497" height="497" viewBox="0 0 497 497" fill="none" xmlns="http://www.w3.org/2000/svg">
 	<g>
 		<!-- Common elements -->
 		<!-- Skin -->

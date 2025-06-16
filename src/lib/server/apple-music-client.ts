@@ -169,11 +169,17 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 	}
 
 	// Helper function to perform the album search and matching
-	async function searchAndMatch(searchAlbum: string, storefront: string = DEFAULT_STOREFRONT): Promise<{album: AppleMusicAlbum, storefront: string} | null> {
+	async function searchAndMatch(
+		searchAlbum: string,
+		storefront: string = DEFAULT_STOREFRONT
+	): Promise<{ album: AppleMusicAlbum; storefront: string } | null> {
 		const searchQuery = `${artist} ${searchAlbum}`
 		const response = await searchAlbums(searchQuery, 5, storefront)
 
-		console.log(`Search results for "${searchQuery}" in ${storefront} storefront:`, JSON.stringify(response, null, 2))
+		console.log(
+			`Search results for "${searchQuery}" in ${storefront} storefront:`,
+			JSON.stringify(response, null, 2)
+		)
 
 		if (!response.results?.albums?.data?.length) {
 			console.log(`No albums found in ${storefront} storefront`)
@@ -209,7 +215,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 			)
 		}
 
-		return match ? {album: match, storefront} : null
+		return match ? { album: match, storefront } : null
 	}
 
 	try {
@@ -226,9 +232,11 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		if (!result) {
 			const cleanedAlbum = removeLeadingPunctuation(album)
 			if (cleanedAlbum !== album && cleanedAlbum.length > 0) {
-				console.log(`No match found for "${album}", trying without leading punctuation: "${cleanedAlbum}"`)
+				console.log(
+					`No match found for "${album}", trying without leading punctuation: "${cleanedAlbum}"`
+				)
 				result = await searchAndMatch(cleanedAlbum)
-				
+
 				// Also try Japanese storefront with cleaned album name
 				if (!result) {
 					console.log(`Still no match, trying Japanese storefront with cleaned name`)
@@ -246,7 +254,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		// Store the storefront information with the album
 		const matchedAlbum = result.album as any
 		matchedAlbum._storefront = result.storefront
-		
+
 		// Return the match
 		return result.album
 	} catch (error) {
@@ -269,7 +277,7 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 		try {
 			// Determine which storefront to use
 			const storefront = (appleMusicAlbum as any)._storefront || DEFAULT_STOREFRONT
-			
+
 			// Fetch album details with tracks
 			const endpoint = `/catalog/${storefront}/albums/${appleMusicAlbum.id}?include=tracks`
 			const response = await makeAppleMusicRequest<{

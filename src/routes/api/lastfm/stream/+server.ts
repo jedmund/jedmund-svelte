@@ -56,26 +56,29 @@ export const GET: RequestHandler = async ({ request }) => {
 				try {
 					// Fetch full album data
 					const albums = await getRecentAlbums(client)
-					
+
 					// Update recentTracks for duration-based now playing detection
 					await getNowPlayingAlbums(client) // This populates recentTracks
-					
+
 					// Enrich albums with additional info and check now playing status
 					const enrichedAlbums = await Promise.all(
 						albums.map(async (album) => {
 							try {
 								const enriched = await enrichAlbumWithInfo(client, album)
 								const withAppleMusic = await searchAppleMusicForAlbum(enriched)
-								
+
 								// Check if this album is currently playing using duration-based detection
 								if (withAppleMusic.appleMusicData?.tracks && !withAppleMusic.isNowPlaying) {
-									const nowPlayingCheck = checkWithTracks(withAppleMusic.name, withAppleMusic.appleMusicData.tracks)
+									const nowPlayingCheck = checkWithTracks(
+										withAppleMusic.name,
+										withAppleMusic.appleMusicData.tracks
+									)
 									if (nowPlayingCheck?.isNowPlaying) {
 										withAppleMusic.isNowPlaying = true
 										withAppleMusic.nowPlayingTrack = nowPlayingCheck.nowPlayingTrack
 									}
 								}
-								
+
 								return withAppleMusic
 							} catch (error) {
 								console.error(`Error enriching album ${album.name}:`, error)
@@ -83,12 +86,14 @@ export const GET: RequestHandler = async ({ request }) => {
 							}
 						})
 					)
-					
+
 					// Ensure only one album is marked as now playing in the enriched albums
-					const nowPlayingCount = enrichedAlbums.filter(a => a.isNowPlaying).length
+					const nowPlayingCount = enrichedAlbums.filter((a) => a.isNowPlaying).length
 					if (nowPlayingCount > 1) {
-						console.log(`Multiple enriched albums marked as now playing (${nowPlayingCount}), keeping only the most recent one`)
-						
+						console.log(
+							`Multiple enriched albums marked as now playing (${nowPlayingCount}), keeping only the most recent one`
+						)
+
 						// The albums are already in order from most recent to oldest
 						// So we keep the first now playing album and mark others as not playing
 						let foundFirst = false
@@ -107,24 +112,27 @@ export const GET: RequestHandler = async ({ request }) => {
 					}
 
 					// Check if album order has changed or now playing status changed
-					const currentAlbumOrder = enrichedAlbums.map(a => `${a.artist.name}:${a.name}`)
-					const albumOrderChanged = JSON.stringify(currentAlbumOrder) !== JSON.stringify(lastAlbumOrder)
-					
+					const currentAlbumOrder = enrichedAlbums.map((a) => `${a.artist.name}:${a.name}`)
+					const albumOrderChanged =
+						JSON.stringify(currentAlbumOrder) !== JSON.stringify(lastAlbumOrder)
+
 					// Also check if any now playing status changed
 					let nowPlayingChanged = false
 					for (const album of enrichedAlbums) {
 						const key = `${album.artist.name}:${album.name}`
 						const lastState = lastNowPlayingState.get(key)
-						if (album.isNowPlaying !== (lastState?.isPlaying || false) ||
-							(album.isNowPlaying && album.nowPlayingTrack !== lastState?.track)) {
+						if (
+							album.isNowPlaying !== (lastState?.isPlaying || false) ||
+							(album.isNowPlaying && album.nowPlayingTrack !== lastState?.track)
+						) {
 							nowPlayingChanged = true
 							break
 						}
 					}
-					
+
 					if (albumOrderChanged || nowPlayingChanged) {
 						lastAlbumOrder = currentAlbumOrder
-						
+
 						// Update now playing state
 						for (const album of enrichedAlbums) {
 							const key = `${album.artist.name}:${album.name}`
@@ -133,16 +141,18 @@ export const GET: RequestHandler = async ({ request }) => {
 								track: album.nowPlayingTrack
 							})
 						}
-						
+
 						// Send full album update
 						if (!isClosed) {
 							try {
 								const data = JSON.stringify(enrichedAlbums)
 								controller.enqueue(encoder.encode(`event: albums\ndata: ${data}\n\n`))
-								const nowPlayingAlbum = enrichedAlbums.find(a => a.isNowPlaying)
+								const nowPlayingAlbum = enrichedAlbums.find((a) => a.isNowPlaying)
 								console.log('Sent album update with now playing status:', {
 									totalAlbums: enrichedAlbums.length,
-									nowPlayingAlbum: nowPlayingAlbum ? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}` : 'none'
+									nowPlayingAlbum: nowPlayingAlbum
+										? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
+										: 'none'
 								})
 							} catch (e) {
 								isClosed = true
@@ -158,9 +168,9 @@ export const GET: RequestHandler = async ({ request }) => {
 					// (Recent albums already have their now playing status included)
 					for (const album of nowPlayingAlbums) {
 						const isInRecentAlbums = enrichedAlbums.some(
-							a => a.artist.name === album.artistName && a.name === album.albumName
+							(a) => a.artist.name === album.artistName && a.name === album.albumName
 						)
-						
+
 						if (!isInRecentAlbums) {
 							const key = `${album.artistName}:${album.albumName}`
 							const lastState = lastNowPlayingState.get(key)
@@ -321,19 +331,21 @@ async function getNowPlayingAlbums(client: LastClient): Promise<NowPlayingUpdate
 	}
 
 	// Ensure only one album is marked as now playing - keep the most recent one
-	const nowPlayingAlbums = Array.from(albums.values()).filter(a => a.isNowPlaying)
+	const nowPlayingAlbums = Array.from(albums.values()).filter((a) => a.isNowPlaying)
 	if (nowPlayingAlbums.length > 1) {
-		console.log(`Multiple albums marked as now playing (${nowPlayingAlbums.length}), keeping only the most recent one`)
-		
+		console.log(
+			`Multiple albums marked as now playing (${nowPlayingAlbums.length}), keeping only the most recent one`
+		)
+
 		// Find the most recent track
 		let mostRecentTime = new Date(0)
 		let mostRecentAlbum = nowPlayingAlbums[0]
-		
+
 		for (const album of nowPlayingAlbums) {
 			// Find the most recent track for this album
-			const albumTracks = recentTracks.filter(t => t.albumName === album.albumName)
+			const albumTracks = recentTracks.filter((t) => t.albumName === album.albumName)
 			if (albumTracks.length > 0) {
-				const latestTrack = albumTracks.reduce((latest, track) => 
+				const latestTrack = albumTracks.reduce((latest, track) =>
 					track.scrobbleTime > latest.scrobbleTime ? track : latest
 				)
 				if (latestTrack.scrobbleTime > mostRecentTime) {
@@ -342,9 +354,9 @@ async function getNowPlayingAlbums(client: LastClient): Promise<NowPlayingUpdate
 				}
 			}
 		}
-		
+
 		// Mark all others as not playing
-		nowPlayingAlbums.forEach(album => {
+		nowPlayingAlbums.forEach((album) => {
 			if (album !== mostRecentAlbum) {
 				const key = `${album.artistName}:${album.albumName}`
 				albums.set(key, {
@@ -533,10 +545,7 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 	return album
 }
 
-async function getRecentAlbums(
-	client: LastClient,
-	limit: number = 4
-): Promise<Album[]> {
+async function getRecentAlbums(client: LastClient, limit: number = 4): Promise<Album[]> {
 	// Check cache for recent tracks
 	const cacheKey = `lastfm:recent:${USERNAME}`
 	const cached = await redis.get(cacheKey)

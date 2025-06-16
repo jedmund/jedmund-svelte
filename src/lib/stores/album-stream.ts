@@ -43,10 +43,12 @@ function createAlbumStream() {
 		eventSource.addEventListener('albums', (event) => {
 			try {
 				const albums: Album[] = JSON.parse(event.data)
-				const nowPlayingAlbum = albums.find(a => a.isNowPlaying)
+				const nowPlayingAlbum = albums.find((a) => a.isNowPlaying)
 				console.log('Album stream received albums:', {
 					totalAlbums: albums.length,
-					nowPlayingAlbum: nowPlayingAlbum ? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}` : 'none'
+					nowPlayingAlbum: nowPlayingAlbum
+						? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
+						: 'none'
 				})
 				update((state) => ({
 					...state,

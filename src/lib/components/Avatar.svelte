@@ -13,7 +13,7 @@
 	let isHovering = $state(false)
 	let isBlinking = $state(false)
 	let isPlayingMusic = $state(forcePlayingMusic)
-	
+
 	// Track store subscriptions for debugging
 	let nowPlayingStoreState = $state(null)
 	let albumStoreState = $state(null)
@@ -71,35 +71,40 @@
 			nowPlayingStoreState = state
 			// Check if any album is currently playing, unless forced
 			if (!forcePlayingMusic) {
-				const nowPlayingFromStream = Array.from(state.updates.values()).some((update) => update.isNowPlaying)
-				console.log('Avatar - nowPlayingStream update:', { 
-					updatesCount: state.updates.size, 
-					hasNowPlaying: nowPlayingFromStream 
+				const nowPlayingFromStream = Array.from(state.updates.values()).some(
+					(update) => update.isNowPlaying
+				)
+				console.log('Avatar - nowPlayingStream update:', {
+					updatesCount: state.updates.size,
+					hasNowPlaying: nowPlayingFromStream
 				})
 				// Don't set to false if we haven't received album data yet
 				if (nowPlayingFromStream || albumStoreState !== null) {
-					isPlayingMusic = nowPlayingFromStream || (albumStoreState?.some(album => album.isNowPlaying) ?? false)
+					isPlayingMusic =
+						nowPlayingFromStream || (albumStoreState?.some((album) => album.isNowPlaying) ?? false)
 				}
 			}
 		})
-		
+
 		// Also check the album stream
 		const unsubscribeAlbums = albumStream.subscribe((state) => {
 			albumStoreState = state.albums
 			if (!forcePlayingMusic) {
-				const hasNowPlaying = state.albums.some(album => album.isNowPlaying)
-				
+				const hasNowPlaying = state.albums.some((album) => album.isNowPlaying)
+
 				// Get the current state of nowPlayingStream
 				const nowPlayingState = nowPlayingStoreState || get(nowPlayingStream)
-				const nowPlayingFromStream = Array.from(nowPlayingState.updates.values()).some((update) => update.isNowPlaying)
-				
-				console.log('Avatar - albumStream update:', { 
-					albumsCount: state.albums.length, 
+				const nowPlayingFromStream = Array.from(nowPlayingState.updates.values()).some(
+					(update) => update.isNowPlaying
+				)
+
+				console.log('Avatar - albumStream update:', {
+					albumsCount: state.albums.length,
 					hasNowPlayingInAlbums: hasNowPlaying,
 					hasNowPlayingInStream: nowPlayingFromStream,
-					albums: state.albums.map(a => ({ name: a.name, isNowPlaying: a.isNowPlaying }))
+					albums: state.albums.map((a) => ({ name: a.name, isNowPlaying: a.isNowPlaying }))
 				})
-				
+
 				// Update isPlayingMusic based on whether any album is now playing from either source
 				isPlayingMusic = hasNowPlaying || nowPlayingFromStream
 			}
@@ -122,8 +127,8 @@
 	style="transform: scale({scale.current})"
 >
 	<AvatarSVG>
-			<!-- Face group -->
-			<g slot="face" class="face" class:hover={isHovering} class:blink={isBlinking}>
+		<!-- Face group -->
+		<g slot="face" class="face" class:hover={isHovering} class:blink={isBlinking}>
 			<!-- Normal face -->
 			<g class="normal">
 				<path

@@ -8,10 +8,10 @@
 	}
 
 	let { albums: initialAlbums = [] }: RecentAlbumsProps = $props()
-	
+
 	// Use SSE stream for real-time updates, fallback to initial albums
 	let albums = $state<AlbumType[]>(initialAlbums)
-	
+
 	$effect(() => {
 		const unsubscribe = albumStream.albums.subscribe((streamAlbums) => {
 			if (streamAlbums.length > 0) {
@@ -20,9 +20,9 @@
 		})
 		return unsubscribe
 	})
-	
+
 	let hoveredAlbumId: string | null = $state(null)
-	
+
 	function handleAlbumHover(albumId: string | null) {
 		hoveredAlbumId = albumId
 	}
@@ -33,8 +33,8 @@
 		<ul>
 			{#each albums.slice(0, 4) as album, index}
 				<li>
-					<Album 
-						{album} 
+					<Album
+						{album}
 						albumId={`${album.artist.name}-${album.name}`}
 						{hoveredAlbumId}
 						onHover={handleAlbumHover}

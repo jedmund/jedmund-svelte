@@ -117,7 +117,7 @@
 	// Combine initial state with real-time updates
 	const isNowPlaying = $derived(realtimeNowPlaying?.isNowPlaying ?? album?.isNowPlaying ?? false)
 	const nowPlayingTrack = $derived(realtimeNowPlaying?.nowPlayingTrack ?? album?.nowPlayingTrack)
-	
+
 	// Debug logging
 	$effect(() => {
 		if (album && isNowPlaying) {

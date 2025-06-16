@@ -13,13 +13,13 @@
 
 	// Responsive column configuration
 	// These values work well with our existing design
-	let minColWidth = 200  // Minimum column width in px
-	let maxColWidth = 400  // Maximum column width in px
-	let gap = 16          // Gap between items (equivalent to $unit-2x)
+	let minColWidth = 200 // Minimum column width in px
+	let maxColWidth = 400 // Maximum column width in px
+	let gap = 16 // Gap between items (equivalent to $unit-2x)
 
 	// On tablet/phone, we want larger minimum widths
 	let windowWidth = $state(0)
-	
+
 	$effect(() => {
 		// Adjust column widths based on viewport
 		if (windowWidth < 768) {

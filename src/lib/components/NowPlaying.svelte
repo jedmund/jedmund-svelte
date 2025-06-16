@@ -4,11 +4,11 @@
 	}
 
 	let { trackName }: Props = $props()
-	
+
 	let textElement: HTMLSpanElement | null = $state(null)
 	let containerElement: HTMLDivElement | null = $state(null)
 	let shouldMarquee = $state(false)
-	
+
 	$effect(() => {
 		if (textElement && containerElement && trackName) {
 			// Check if text overflows
@@ -27,11 +27,7 @@
 	</div>
 	{#if trackName}
 		<div class="track-name-container" bind:this={containerElement}>
-			<span 
-				class="track-name" 
-				class:marquee={shouldMarquee}
-				bind:this={textElement}
-			>
+			<span class="track-name" class:marquee={shouldMarquee} bind:this={textElement}>
 				{trackName}
 				{#if shouldMarquee}
 					<span class="marquee-gap">&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -123,20 +119,20 @@
 		display: inline-block;
 		white-space: nowrap;
 		font-weight: $font-weight-med;
-		
+
 		&.marquee {
 			animation: marquee 8s linear infinite;
-			
+
 			&:hover {
 				animation-play-state: paused;
 			}
 		}
 	}
-	
+
 	.marquee-gap {
 		display: inline-block;
 	}
-	
+
 	@keyframes marquee {
 		0% {
 			transform: translateX(0);

@@ -80,12 +80,12 @@ export const GET: RequestHandler = async (event) => {
 					}
 				}
 			}
-			
+
 			// Fallback to photoPublishedAt
 			if (media.photoPublishedAt) {
 				return new Date(media.photoPublishedAt)
 			}
-			
+
 			// Final fallback to createdAt
 			return new Date(media.createdAt)
 		}
@@ -95,7 +95,7 @@ export const GET: RequestHandler = async (event) => {
 			.filter((album) => album.media.length > 0) // Only include albums with media
 			.map((album) => {
 				const firstMedia = album.media[0].media
-				
+
 				// Find the most recent EXIF date from all photos in the album
 				let albumDate = new Date(album.createdAt)
 				for (const albumMedia of album.media) {
@@ -104,7 +104,7 @@ export const GET: RequestHandler = async (event) => {
 						albumDate = mediaDate
 					}
 				}
-				
+
 				return {
 					id: `album-${album.id}`,
 					slug: album.slug,
