@@ -13,9 +13,8 @@
 	// Generate metadata for photos page
 	const metaTags = $derived(
 		generateMetaTags({
-			title: 'Photography',
-			description:
-				'A collection of photography from travels, daily life, and creative projects. Captured moments from around the world.',
+			title: 'Photos',
+			description: 'A collection of photography from travels, daily life, and creative projects.',
 			url: pageUrl
 		})
 	)

@@ -47,7 +47,7 @@
 	let selectedMedia: Media | null = null
 	let isMediaDetailsOpen = false
 
-	const CHARACTER_LIMIT = 280
+	const CHARACTER_LIMIT = 600
 	const dispatch = createEventDispatcher()
 
 	function handleClose() {
