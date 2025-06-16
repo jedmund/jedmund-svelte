@@ -218,3 +218,167 @@ export async function deleteOrphanedFiles(
 
 	return results
 }
+
+/**
+ * Cleans up broken references from the database
+ */
+export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
+	cleanedMedia: number
+	cleanedProjects: number
+	cleanedPosts: number
+	errors: string[]
+}> {
+	const results = {
+		cleanedMedia: 0,
+		cleanedProjects: 0,
+		cleanedPosts: 0,
+		errors: [] as string[]
+	}
+
+	try {
+		// Clean up Media table
+		const mediaToClean = await prisma.media.findMany({
+			where: {
+				OR: [
+					{ url: { contains: 'cloudinary.com' } },
+					{ thumbnailUrl: { contains: 'cloudinary.com' } }
+				]
+			}
+		})
+
+		for (const media of mediaToClean) {
+			let updated = false
+			const updates: any = {}
+
+			if (media.url?.includes('cloudinary.com')) {
+				const publicId = extractPublicId(media.url)
+				if (publicId && publicIds.includes(publicId)) {
+					updates.url = null
+					updated = true
+				}
+			}
+
+			if (media.thumbnailUrl?.includes('cloudinary.com')) {
+				const publicId = extractPublicId(media.thumbnailUrl)
+				if (publicId && publicIds.includes(publicId)) {
+					updates.thumbnailUrl = null
+					updated = true
+				}
+			}
+
+			if (updated) {
+				await prisma.media.update({
+					where: { id: media.id },
+					data: updates
+				})
+				results.cleanedMedia++
+			}
+		}
+
+		// Clean up Project table
+		const projectsToClean = await prisma.project.findMany({
+			where: {
+				OR: [
+					{ featuredImage: { contains: 'cloudinary.com' } },
+					{ logoUrl: { contains: 'cloudinary.com' } }
+				]
+			}
+		})
+
+		for (const project of projectsToClean) {
+			let updated = false
+			const updates: any = {}
+
+			if (project.featuredImage?.includes('cloudinary.com')) {
+				const publicId = extractPublicId(project.featuredImage)
+				if (publicId && publicIds.includes(publicId)) {
+					updates.featuredImage = null
+					updated = true
+				}
+			}
+
+			if (project.logoUrl?.includes('cloudinary.com')) {
+				const publicId = extractPublicId(project.logoUrl)
+				if (publicId && publicIds.includes(publicId)) {
+					updates.logoUrl = null
+					updated = true
+				}
+			}
+
+			// Handle gallery items
+			if (project.gallery && typeof project.gallery === 'object') {
+				const gallery = project.gallery as any[]
+				const cleanedGallery = gallery.filter(item => {
+					if (item.url?.includes('cloudinary.com')) {
+						const publicId = extractPublicId(item.url)
+						return !(publicId && publicIds.includes(publicId))
+					}
+					return true
+				})
+
+				if (cleanedGallery.length !== gallery.length) {
+					updates.gallery = cleanedGallery
+					updated = true
+				}
+			}
+
+			if (updated) {
+				await prisma.project.update({
+					where: { id: project.id },
+					data: updates
+				})
+				results.cleanedProjects++
+			}
+		}
+
+		// Clean up Post table
+		const postsToClean = await prisma.post.findMany({
+			where: {
+				featuredImage: { contains: 'cloudinary.com' }
+			}
+		})
+
+		for (const post of postsToClean) {
+			let updated = false
+			const updates: any = {}
+
+			if (post.featuredImage?.includes('cloudinary.com')) {
+				const publicId = extractPublicId(post.featuredImage)
+				if (publicId && publicIds.includes(publicId)) {
+					updates.featuredImage = null
+					updated = true
+				}
+			}
+
+			// Handle attachments
+			if (post.attachments && typeof post.attachments === 'object') {
+				const attachments = post.attachments as any[]
+				const cleanedAttachments = attachments.filter(attachment => {
+					if (attachment.url?.includes('cloudinary.com')) {
+						const publicId = extractPublicId(attachment.url)
+						return !(publicId && publicIds.includes(publicId))
+					}
+					return true
+				})
+
+				if (cleanedAttachments.length !== attachments.length) {
+					updates.attachments = cleanedAttachments
+					updated = true
+				}
+			}
+
+			if (updated) {
+				await prisma.post.update({
+					where: { id: post.id },
+					data: updates
+				})
+				results.cleanedPosts++
+			}
+		}
+	} catch (error) {
+		results.errors.push(error instanceof Error ? error.message : 'Unknown error')
+		console.error('Error cleaning up broken references:', error)
+	}
+
+	return results
+}

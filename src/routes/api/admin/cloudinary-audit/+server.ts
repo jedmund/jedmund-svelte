@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import { checkAdminAuth } from '$lib/server/api-utils'
-import { auditCloudinaryResources, deleteOrphanedFiles } from '$lib/server/cloudinary-audit'
+import { auditCloudinaryResources, deleteOrphanedFiles, cleanupBrokenReferences } from '$lib/server/cloudinary-audit'
 import { formatBytes } from '$lib/utils/format'
 import { isCloudinaryConfigured } from '$lib/server/cloudinary'
 
@@ -84,5 +84,30 @@ export const DELETE: RequestHandler = async (event) => {
 	} catch (error) {
 		console.error('Cloudinary delete error:', error)
 		return json({ error: 'Failed to delete Cloudinary resources' }, { status: 500 })
+	}
+}
+
+export const PATCH: RequestHandler = async (event) => {
+	try {
+		if (!checkAdminAuth(event)) {
+			return json({ error: 'Unauthorized' }, { status: 401 })
+		}
+
+		const body = await event.request.json()
+		const { publicIds } = body
+
+		if (!Array.isArray(publicIds) || publicIds.length === 0) {
+			return json({ error: 'No public IDs provided' }, { status: 400 })
+		}
+
+		const results = await cleanupBrokenReferences(publicIds)
+
+		return json({
+			message: 'Broken references cleaned up',
+			results
+		})
+	} catch (error) {
+		console.error('Cleanup error:', error)
+		return json({ error: 'Failed to clean up broken references' }, { status: 500 })
 	}
 }

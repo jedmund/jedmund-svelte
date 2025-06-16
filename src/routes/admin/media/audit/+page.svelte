@@ -40,6 +40,9 @@
 	let selectedFiles = new Set<string>()
 	let showDeleteModal = false
 	let deleteResults: { succeeded: number; failed: string[] } | null = null
+	let cleanupResults: { cleanedMedia: number; cleanedProjects: number; cleanedPosts: number; errors: string[] } | null = null
+	let showCleanupModal = false
+	let cleaningUp = false
 
 	$: allSelected = auditData && selectedFiles.size === auditData.orphanedFiles.length
 	$: hasSelection = selectedFiles.size > 0
@@ -99,6 +102,7 @@
 	}
 
 	async function deleteSelected(dryRun = true) {
+		console.log('deleteSelected called', { dryRun, hasSelection, deleting, selectedFiles: Array.from(selectedFiles) })
 		if (!hasSelection || deleting) return
 
 		if (!dryRun) {
@@ -155,6 +159,50 @@
 		const day = date.getDate().toString().padStart(2, '0')
 		const year = date.getFullYear().toString().slice(-2)
 		return `${month}/${day}/${year}`
+	}
+
+	async function cleanupBrokenReferences() {
+		if (!auditData || auditData.missingReferences.length === 0 || cleaningUp) return
+
+		showCleanupModal = false
+		cleaningUp = true
+		cleanupResults = null
+
+		try {
+			const auth = localStorage.getItem('admin_auth')
+			if (!auth) {
+				error = 'Not authenticated'
+				cleaningUp = false
+				return
+			}
+
+			const response = await fetch('/api/admin/cloudinary-audit', {
+				method: 'PATCH',
+				headers: { 
+					'Content-Type': 'application/json',
+					Authorization: `Basic ${auth}`
+				},
+				body: JSON.stringify({
+					publicIds: auditData.missingReferences
+				})
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to clean up broken references')
+			}
+
+			const result = await response.json()
+			cleanupResults = result.results
+
+			// Refresh audit after successful cleanup
+			setTimeout(() => {
+				runAudit()
+			}, 2000)
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'An error occurred'
+		} finally {
+			cleaningUp = false
+		}
 	}
 </script>
 
@@ -318,6 +366,37 @@
 				{/if}
 			</div>
 		{/if}
+
+		{#if auditData.missingReferences.length > 0}
+			<div class="broken-references-section">
+				<h2>Broken References</h2>
+				<p class="broken-references-info">
+					Found {auditData.missingReferences.length} files referenced in the database but missing from Cloudinary.
+				</p>
+				<Button
+					variant="secondary"
+					size="small"
+					onclick={() => (showCleanupModal = true)}
+					disabled={cleaningUp}
+					icon={AlertCircle}
+					iconPosition="left"
+				>
+					Clean Up Broken References
+				</Button>
+				
+				{#if cleanupResults}
+					<div class="cleanup-results">
+						<h3>Cleanup Complete</h3>
+						<p>✓ Cleaned {cleanupResults.cleanedMedia} media records</p>
+						<p>✓ Cleaned {cleanupResults.cleanedProjects} project records</p>
+						<p>✓ Cleaned {cleanupResults.cleanedPosts} post records</p>
+						{#if cleanupResults.errors.length > 0}
+							<p>✗ Errors: {cleanupResults.errors.join(', ')}</p>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		{/if}
 	{/if}
 </AdminPage>
 
@@ -332,6 +411,21 @@
 		<Button variant="secondary" onclick={() => (showDeleteModal = false)}>Cancel</Button>
 		<Button variant="danger" onclick={() => deleteSelected(false)} disabled={deleting}>
 			{deleting ? 'Deleting...' : 'Delete Files'}
+		</Button>
+	</div>
+</Modal>
+
+<!-- Cleanup Confirmation Modal -->
+<Modal bind:open={showCleanupModal} title="Clean Up Broken References">
+	<div class="cleanup-confirmation">
+		<p>Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?</p>
+		<p class="warning">⚠️ This will remove Cloudinary URLs from database records where the files no longer exist.</p>
+		<p>This action cannot be undone.</p>
+	</div>
+	<div slot="actions">
+		<Button variant="secondary" onclick={() => (showCleanupModal = false)}>Cancel</Button>
+		<Button variant="danger" onclick={cleanupBrokenReferences} disabled={cleaningUp}>
+			{cleaningUp ? 'Cleaning Up...' : 'Clean Up References'}
 		</Button>
 	</div>
 </Modal>
@@ -662,6 +756,58 @@
 		p {
 			margin: 0.25rem 0;
 			color: $grey-30;
+		}
+	}
+
+	.broken-references-section {
+		margin-top: 2rem;
+		padding: 1.5rem;
+		background: $grey-95;
+		border-radius: 8px;
+		border: 1px solid rgba($yellow-60, 0.2);
+
+		h2 {
+			margin: 0 0 0.5rem;
+			font-size: 1.25rem;
+			color: $grey-10;
+		}
+
+		.broken-references-info {
+			margin: 0 0 1rem;
+			color: $grey-30;
+		}
+	}
+
+	.cleanup-results {
+		margin-top: 1rem;
+		padding: 1rem;
+		background: rgba($blue-60, 0.1);
+		border-radius: 8px;
+
+		h3 {
+			margin: 0 0 0.5rem;
+			color: $blue-60;
+			font-size: 1rem;
+		}
+
+		p {
+			margin: 0.25rem 0;
+			color: $grey-30;
+			font-size: 0.875rem;
+		}
+	}
+
+	.cleanup-confirmation {
+		padding: 1rem 0;
+
+		p {
+			margin: 0.5rem 0;
+		}
+
+		.warning {
+			color: $yellow-60;
+			font-weight: 500;
+			margin: 1rem 0;
 		}
 	}
 
