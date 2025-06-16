@@ -24,25 +24,141 @@ export const GET: RequestHandler = async (event) => {
 		const mimeType = event.url.searchParams.get('mimeType')
 		const unused = event.url.searchParams.get('unused') === 'true'
 		const search = event.url.searchParams.get('search')
-		const isPhotography = event.url.searchParams.get('isPhotography')
+		const publishedFilter = event.url.searchParams.get('publishedFilter')
+		const sort = event.url.searchParams.get('sort') || 'newest'
 
 		// Build where clause
-		const where: any = {}
+		const whereConditions: any[] = []
 
-		if (mimeType) {
-			where.mimeType = { startsWith: mimeType }
+		// Handle mime type filtering
+		if (mimeType && mimeType !== 'all') {
+			switch (mimeType) {
+				case 'image':
+					// JPG, PNG images (excluding GIF which is in video)
+					whereConditions.push({
+						OR: [
+							{ mimeType: { startsWith: 'image/jpeg' } },
+							{ mimeType: { startsWith: 'image/jpg' } },
+							{ mimeType: { startsWith: 'image/png' } },
+							{ mimeType: { startsWith: 'image/webp' } }
+						]
+					})
+					break
+				case 'video':
+					// MP4, MOV, GIF
+					whereConditions.push({
+						OR: [
+							{ mimeType: { startsWith: 'video/' } },
+							{ mimeType: { equals: 'image/gif' } }
+						]
+					})
+					break
+				case 'audio':
+					// WAV, MP3, M4A
+					whereConditions.push({
+						mimeType: { startsWith: 'audio/' }
+					})
+					break
+				case 'vector':
+					// SVG
+					whereConditions.push({
+						mimeType: { equals: 'image/svg+xml' }
+					})
+					break
+			}
 		}
 
 		if (unused) {
-			where.usedIn = { equals: [] }
+			whereConditions.push({ usedIn: { equals: [] } })
 		}
 
 		if (search) {
-			where.filename = { contains: search, mode: 'insensitive' }
+			whereConditions.push({ filename: { contains: search, mode: 'insensitive' } })
 		}
 
-		if (isPhotography !== null) {
-			where.isPhotography = isPhotography === 'true'
+		// Handle published filter
+		if (publishedFilter && publishedFilter !== 'all') {
+			switch (publishedFilter) {
+				case 'unpublished':
+					// Media that is not used anywhere and not marked as photography
+					whereConditions.push({
+						AND: [
+							{ usedIn: { equals: [] } },
+							{ isPhotography: false },
+							{
+								usage: {
+									none: {}
+								}
+							},
+							{
+								albums: {
+									none: {}
+								}
+							}
+						]
+					})
+					break
+				case 'photos':
+					// Media marked as photography or used in albums
+					whereConditions.push({
+						OR: [
+							{ isPhotography: true },
+							{ usedIn: { array_contains: 'album' } },
+							{
+								albums: {
+									some: {}
+								}
+							}
+						]
+					})
+					break
+				case 'universe':
+					// Media used in blog posts or essays (check both usedIn and usage relation)
+					whereConditions.push({
+						OR: [
+							{ usedIn: { array_contains: 'post' } },
+							{ usedIn: { array_contains: 'essay' } },
+							{
+								usage: {
+									some: {
+										contentType: { in: ['post', 'essay'] }
+									}
+								}
+							}
+						]
+					})
+					break
+			}
+		}
+
+		// Combine all conditions with AND
+		const where = whereConditions.length > 0 
+			? (whereConditions.length === 1 ? whereConditions[0] : { AND: whereConditions })
+			: {}
+
+		// Build orderBy clause based on sort parameter
+		let orderBy: any = { createdAt: 'desc' } // default to newest
+		
+		switch (sort) {
+			case 'oldest':
+				orderBy = { createdAt: 'asc' }
+				break
+			case 'name-asc':
+				orderBy = { filename: 'asc' }
+				break
+			case 'name-desc':
+				orderBy = { filename: 'desc' }
+				break
+			case 'size-asc':
+				orderBy = { size: 'asc' }
+				break
+			case 'size-desc':
+				orderBy = { size: 'desc' }
+				break
+			case 'newest':
+			default:
+				orderBy = { createdAt: 'desc' }
+				break
 		}
 
 		// Get total count
@@ -51,7 +167,7 @@ export const GET: RequestHandler = async (event) => {
 		// Get media items
 		const media = await prisma.media.findMany({
 			where,
-			orderBy: { createdAt: 'desc' },
+			orderBy,
 			skip,
 			take: limit,
 			select: {
