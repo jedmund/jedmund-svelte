@@ -6,8 +6,11 @@
 	import Input from '$lib/components/admin/Input.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
+	import DropdownMenuContainer from '$lib/components/admin/DropdownMenuContainer.svelte'
+	import DropdownItem from '$lib/components/admin/DropdownItem.svelte'
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import MediaUploadModal from '$lib/components/admin/MediaUploadModal.svelte'
+	import ChevronDown from '$icons/chevron-down.svg'
 	import type { Media } from '@prisma/client'
 
 	let media = $state<Media[]>([])
@@ -20,9 +23,10 @@
 
 	// Filter states
 	let filterType = $state<string>('all')
-	let photographyFilter = $state<string>('all')
+	let publishedFilter = $state<string>('all')
 	let searchQuery = $state('')
 	let searchTimeout: ReturnType<typeof setTimeout>
+	let sortBy = $state<string>('newest')
 
 	// Filter options
 	const typeFilterOptions = [
@@ -30,13 +34,23 @@
 		{ value: 'image', label: 'Images' },
 		{ value: 'video', label: 'Videos' },
 		{ value: 'audio', label: 'Audio' },
-		{ value: 'application/pdf', label: 'PDFs' }
+		{ value: 'vector', label: 'Vectors' }
 	]
 
-	const photographyFilterOptions = [
-		{ value: 'all', label: 'All media' },
-		{ value: 'true', label: 'Photography only' },
-		{ value: 'false', label: 'Non-photography' }
+	const publishedFilterOptions = [
+		{ value: 'all', label: 'Published in' },
+		{ value: 'photos', label: 'Photos' },
+		{ value: 'universe', label: 'Universe' },
+		{ value: 'unpublished', label: 'Unpublished' }
+	]
+
+	const sortOptions = [
+		{ value: 'newest', label: 'Newest first' },
+		{ value: 'oldest', label: 'Oldest first' },
+		{ value: 'name-asc', label: 'Name (A-Z)' },
+		{ value: 'name-desc', label: 'Name (Z-A)' },
+		{ value: 'size-asc', label: 'Size (smallest)' },
+		{ value: 'size-desc', label: 'Size (largest)' }
 	]
 
 	// Modal states
@@ -48,6 +62,9 @@
 	let selectedMediaIds = $state<Set<number>>(new Set())
 	let isMultiSelectMode = $state(false)
 	let isDeleting = $state(false)
+	
+	// Dropdown state
+	let isDropdownOpen = $state(false)
 
 	onMount(async () => {
 		await loadMedia()
@@ -73,11 +90,14 @@
 			if (filterType !== 'all') {
 				url += `&mimeType=${filterType}`
 			}
-			if (photographyFilter !== 'all') {
-				url += `&isPhotography=${photographyFilter}`
+			if (publishedFilter !== 'all') {
+				url += `&publishedFilter=${publishedFilter}`
 			}
 			if (searchQuery) {
 				url += `&search=${encodeURIComponent(searchQuery)}`
+			}
+			if (sortBy) {
+				url += `&sort=${sortBy}`
 			}
 
 			const response = await fetch(url, {
@@ -109,6 +129,11 @@
 	}
 
 	function handleSearch() {
+		currentPage = 1
+		loadMedia(1)
+	}
+
+	function handleSortChange() {
 		currentPage = 1
 		loadMedia(1)
 	}
@@ -154,11 +179,36 @@
 
 	function openUploadModal() {
 		isUploadModalOpen = true
+		isDropdownOpen = false
 	}
+
+	function handleDropdownToggle(e: MouseEvent) {
+		e.stopPropagation()
+		isDropdownOpen = !isDropdownOpen
+	}
+
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target as HTMLElement
+		if (!target.closest('.actions-dropdown')) {
+			isDropdownOpen = false
+		}
+	}
+
+	function handleAuditStorage() {
+		window.location.href = '/admin/media/audit'
+	}
+
+	$effect(() => {
+		if (isDropdownOpen) {
+			document.addEventListener('click', handleClickOutside)
+			return () => document.removeEventListener('click', handleClickOutside)
+		}
+	})
 
 	// Multiselect functions
 	function toggleMultiSelectMode() {
 		isMultiSelectMode = !isMultiSelectMode
+		isDropdownOpen = false
 		if (!isMultiSelectMode) {
 			selectedMediaIds.clear()
 			selectedMediaIds = new Set()
@@ -318,15 +368,28 @@
 <AdminPage>
 	<AdminHeader title="Media Library" slot="header">
 		{#snippet actions()}
-			<Button
-				variant="secondary"
-				buttonSize="large"
-				onclick={toggleMultiSelectMode}
-				class={isMultiSelectMode ? 'active' : ''}
-			>
-				{isMultiSelectMode ? 'Exit Select' : 'Select'}
-			</Button>
-			<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload</Button>
+			<div class="actions-dropdown">
+				<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload</Button>
+				<Button
+					variant="ghost"
+					iconOnly
+					buttonSize="large"
+					onclick={handleDropdownToggle}
+				>
+					<ChevronDown slot="icon" />
+				</Button>
+				
+				{#if isDropdownOpen}
+					<DropdownMenuContainer>
+						<DropdownItem onclick={toggleMultiSelectMode}>
+							{isMultiSelectMode ? 'Exit Select' : 'Select Files'}
+						</DropdownItem>
+						<DropdownItem onclick={handleAuditStorage}>
+							Audit Storage
+						</DropdownItem>
+					</DropdownMenuContainer>
+				{/if}
+			</div>
 		{/snippet}
 	</AdminHeader>
 
@@ -344,14 +407,21 @@
 					onchange={handleFilterChange}
 				/>
 				<Select
-					bind:value={photographyFilter}
-					options={photographyFilterOptions}
+					bind:value={publishedFilter}
+					options={publishedFilterOptions}
 					size="small"
 					variant="minimal"
 					onchange={handleFilterChange}
 				/>
 			{/snippet}
 			{#snippet right()}
+				<Select
+					bind:value={sortBy}
+					options={sortOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleSortChange}
+				/>
 				<Input
 					type="search"
 					bind:value={searchQuery}
@@ -559,6 +629,39 @@
 			&:hover {
 				background-color: $grey-90;
 				color: $grey-10;
+			}
+		}
+	}
+
+	.actions-dropdown {
+		position: relative;
+		display: flex;
+		gap: $unit-half;
+
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+			fill: none;
+			stroke: currentColor;
+			stroke-width: 2;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+	}
+
+	// Ensure search input matches filter dropdown sizing
+	:global(.admin-filters) {
+		:global(input[type="search"]) {
+			height: 36px; // Match Select component small size
+			font-size: 0.875rem; // Match Select component font size
+			min-width: 200px; // Wider to show full placeholder
+		}
+
+		// Make the sort dropdown narrower
+		:global(.admin-filters__right) {
+			:global(.select:first-child) {
+				min-width: 140px;
+				max-width: 160px;
 			}
 		}
 	}
