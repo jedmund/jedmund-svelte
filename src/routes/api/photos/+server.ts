@@ -35,10 +35,8 @@ export const GET: RequestHandler = async (event) => {
 						}
 					}
 				}
-			},
-			orderBy: { createdAt: 'desc' },
-			skip: offset,
-			take: limit
+			}
+			// Remove orderBy to sort everything together later
 		})
 
 		// Fetch individual photos (marked for photography, not in any album)
@@ -63,17 +61,50 @@ export const GET: RequestHandler = async (event) => {
 				createdAt: true,
 				photoPublishedAt: true,
 				exifData: true
-			},
-			orderBy: { photoPublishedAt: 'desc' },
-			skip: offset,
-			take: limit
+			}
+			// Remove orderBy to sort everything together later
 		})
+
+		// Helper function to extract date from EXIF data
+		const getPhotoDate = (media: any): Date => {
+			// Try to get date from EXIF data
+			if (media.exifData && typeof media.exifData === 'object') {
+				// Check for common EXIF date fields
+				const exif = media.exifData as any
+				const dateTaken = exif.DateTimeOriginal || exif.DateTime || exif.dateTaken
+				if (dateTaken) {
+					// Parse EXIF date format (typically "YYYY:MM:DD HH:MM:SS")
+					const parsedDate = new Date(dateTaken.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3'))
+					if (!isNaN(parsedDate.getTime())) {
+						return parsedDate
+					}
+				}
+			}
+			
+			// Fallback to photoPublishedAt
+			if (media.photoPublishedAt) {
+				return new Date(media.photoPublishedAt)
+			}
+			
+			// Final fallback to createdAt
+			return new Date(media.createdAt)
+		}
 
 		// Transform albums to PhotoAlbum format
 		const photoAlbums: PhotoAlbum[] = albums
 			.filter((album) => album.media.length > 0) // Only include albums with media
 			.map((album) => {
 				const firstMedia = album.media[0].media
+				
+				// Find the most recent EXIF date from all photos in the album
+				let albumDate = new Date(album.createdAt)
+				for (const albumMedia of album.media) {
+					const mediaDate = getPhotoDate(albumMedia.media)
+					if (mediaDate > albumDate) {
+						albumDate = mediaDate
+					}
+				}
+				
 				return {
 					id: `album-${album.id}`,
 					slug: album.slug,
@@ -95,24 +126,14 @@ export const GET: RequestHandler = async (event) => {
 						width: albumMedia.media.width || 400,
 						height: albumMedia.media.height || 400
 					})),
-					createdAt: album.createdAt.toISOString()
+					createdAt: albumDate.toISOString()
 				}
 			})
 
 		// Transform individual media to Photo format
 		const photos: Photo[] = individualMedia.map((media) => {
-			// Extract date from EXIF data if available
-			let photoDate: string
-			if (media.exifData && typeof media.exifData === 'object' && 'dateTaken' in media.exifData) {
-				// Use EXIF date if available
-				photoDate = media.exifData.dateTaken as string
-			} else if (media.photoPublishedAt) {
-				// Fall back to published date
-				photoDate = media.photoPublishedAt.toISOString()
-			} else {
-				// Fall back to created date
-				photoDate = media.createdAt.toISOString()
-			}
+			// Use the same helper function to get the photo date
+			const photoDate = getPhotoDate(media)
 
 			return {
 				id: `media-${media.id}`,
@@ -121,27 +142,32 @@ export const GET: RequestHandler = async (event) => {
 				caption: media.photoCaption || undefined,
 				width: media.width || 400,
 				height: media.height || 400,
-				createdAt: photoDate
+				createdAt: photoDate.toISOString()
 			}
 		})
 
 		// Combine albums and individual photos
-		const photoItems: PhotoItem[] = [...photoAlbums, ...photos]
+		let allPhotoItems: PhotoItem[] = [...photoAlbums, ...photos]
 
 		// Sort by creation date (both albums and photos now have createdAt)
-		photoItems.sort((a, b) => {
+		// Newest first (reverse chronological)
+		allPhotoItems.sort((a, b) => {
 			const dateA = a.createdAt ? new Date(a.createdAt) : new Date()
 			const dateB = b.createdAt ? new Date(b.createdAt) : new Date()
 			return dateB.getTime() - dateA.getTime()
 		})
 
+		// Apply pagination after sorting
+		const totalItems = allPhotoItems.length
+		const paginatedItems = allPhotoItems.slice(offset, offset + limit)
+
 		const response = {
-			photoItems,
+			photoItems: paginatedItems,
 			pagination: {
-				total: photoItems.length,
+				total: totalItems,
 				limit,
 				offset,
-				hasMore: photoItems.length === limit // Simple check, could be more sophisticated
+				hasMore: offset + limit < totalItems
 			}
 		}
 

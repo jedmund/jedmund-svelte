@@ -2,7 +2,7 @@ import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ fetch }) => {
 	try {
-		const response = await fetch('/api/photos?limit=50')
+		const response = await fetch('/api/photos?limit=20')
 		if (!response.ok) {
 			throw new Error('Failed to fetch photos')
 		}

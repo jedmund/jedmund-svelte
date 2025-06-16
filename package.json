@@ -103,6 +103,8 @@
     "redis": "^4.7.0",
     "sharp": "^0.34.2",
     "steamapi": "^3.0.11",
+    "svelte-bricks": "^0.3.2",
+    "svelte-infinite": "^0.5.0",
     "svelte-medium-image-zoom": "^0.2.6",
     "svelte-portal": "^2.2.1",
     "svelte-tiptap": "^2.1.0",
