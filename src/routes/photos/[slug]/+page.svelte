@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PhotoGrid from '$components/PhotoGrid.svelte'
+	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
 	import BackButton from '$components/BackButton.svelte'
 	import { generateMetaTags, generateImageGalleryJsonLd } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
@@ -12,7 +12,7 @@
 	const photo = $derived(data.photo)
 	const error = $derived(data.error)
 
-	// Transform album data to PhotoItem format for PhotoGrid
+	// Transform album data to PhotoItem format for MasonryPhotoGrid
 	const photoItems = $derived(
 		album?.photos?.map((photo: any) => ({
 			id: `photo-${photo.id}`,
@@ -145,7 +145,7 @@
 
 		<!-- Photo Grid -->
 		{#if photoItems.length > 0}
-			<PhotoGrid {photoItems} albumSlug={album.slug} />
+			<MasonryPhotoGrid {photoItems} albumSlug={album.slug} />
 		{:else}
 			<div class="empty-album">
 				<p>This album doesn't contain any photos yet.</p>
