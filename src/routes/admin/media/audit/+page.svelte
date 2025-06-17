@@ -465,8 +465,14 @@
 		</div>
 		<div class="cleanup-confirmation">
 			<p>Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?</p>
-			<p class="warning">⚠️ This will remove Cloudinary URLs from database records where the files no longer exist.</p>
-			<p>This action cannot be undone.</p>
+			<p class="warning">⚠️ This will:</p>
+			<ul class="cleanup-actions">
+				<li>Delete Media records where the main file no longer exists in Cloudinary</li>
+				<li>Remove broken thumbnail URLs from Media records</li>
+				<li>Remove broken image URLs from Projects and Posts</li>
+				<li>Remove broken images from galleries and attachments</li>
+			</ul>
+			<p class="warning">This action cannot be undone.</p>
 		</div>
 		<div class="modal-actions">
 			<Button variant="secondary" onclick={() => {
@@ -887,6 +893,18 @@
 			color: $yellow-60;
 			font-weight: 500;
 			margin: 1rem 0;
+		}
+
+		.cleanup-actions {
+			margin: 0.75rem 0 0.75rem 1.5rem;
+			padding: 0;
+			list-style-type: disc;
+			color: $grey-30;
+			font-size: 0.875rem;
+
+			li {
+				margin: 0.25rem 0;
+			}
 		}
 	}
 

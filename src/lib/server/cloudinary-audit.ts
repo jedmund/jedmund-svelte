@@ -247,29 +247,38 @@ export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
 		})
 
 		for (const media of mediaToClean) {
-			let updated = false
-			const updates: any = {}
+			let shouldDelete = false
+			let updateThumbnail = false
 
+			// Check if the main URL is broken
 			if (media.url?.includes('cloudinary.com')) {
 				const publicId = extractPublicId(media.url)
 				if (publicId && publicIds.includes(publicId)) {
-					updates.url = null
-					updated = true
+					// If the main URL is broken, we need to delete the entire record
+					// since url is a required field
+					shouldDelete = true
 				}
 			}
 
-			if (media.thumbnailUrl?.includes('cloudinary.com')) {
+			// Check if only the thumbnail is broken
+			if (!shouldDelete && media.thumbnailUrl?.includes('cloudinary.com')) {
 				const publicId = extractPublicId(media.thumbnailUrl)
 				if (publicId && publicIds.includes(publicId)) {
-					updates.thumbnailUrl = null
-					updated = true
+					updateThumbnail = true
 				}
 			}
 
-			if (updated) {
+			if (shouldDelete) {
+				// Delete the media record entirely since the main URL is broken
+				await prisma.media.delete({
+					where: { id: media.id }
+				})
+				results.cleanedMedia++
+			} else if (updateThumbnail) {
+				// Only update the thumbnail to null if it's broken
 				await prisma.media.update({
 					where: { id: media.id },
-					data: updates
+					data: { thumbnailUrl: null }
 				})
 				results.cleanedMedia++
 			}
