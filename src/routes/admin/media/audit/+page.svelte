@@ -44,7 +44,7 @@
 	let showCleanupModal = false
 	let cleaningUp = false
 
-	$: allSelected = auditData && selectedFiles.size === auditData.orphanedFiles.length
+	$: allSelected = auditData && selectedFiles.size >= Math.min(20, auditData.orphanedFiles.length)
 	$: hasSelection = selectedFiles.size > 0
 	$: selectedSize =
 		auditData?.orphanedFiles
@@ -90,7 +90,9 @@
 		if (allSelected) {
 			selectedFiles.clear()
 		} else {
-			selectedFiles = new Set(auditData?.orphanedFiles.map((f) => f.publicId) || [])
+			// Select only the first 20 files
+			const first20Files = auditData?.orphanedFiles.slice(0, 20).map((f) => f.publicId) || []
+			selectedFiles = new Set(first20Files)
 		}
 	}
 
@@ -288,10 +290,13 @@
 					{:else}
 						<span>{auditData.orphanedFiles.length} orphaned files found</span>
 					{/if}
+					{#if auditData.orphanedFiles.length > 20}
+						<span class="limit-notice">(Max 20 at once)</span>
+					{/if}
 				</div>
 				<div class="actions">
 					<Button variant="text" buttonSize="small" onclick={toggleSelectAll}>
-						{allSelected ? 'Deselect All' : 'Select All'}
+						{allSelected ? 'Deselect All' : 'Select 20'}
 					</Button>
 					<Button
 						variant="danger"
@@ -314,7 +319,7 @@
 				<table>
 					<thead>
 						<tr>
-							<th class="checkbox">
+							<th class="checkbox" title="Select first 20">
 								<input type="checkbox" checked={allSelected} onchange={toggleSelectAll} />
 							</th>
 							<th>Preview</th>
@@ -326,12 +331,24 @@
 					</thead>
 					<tbody>
 						{#each auditData.orphanedFiles as file}
-							<tr class:selected={selectedFiles.has(file.publicId)}>
+							<tr 
+								class:selected={selectedFiles.has(file.publicId)}
+								onclick={() => toggleFile(file.publicId)}
+								role="button"
+								tabindex="0"
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault()
+										toggleFile(file.publicId)
+									}
+								}}
+							>
 								<td class="checkbox">
 									<input
 										type="checkbox"
 										checked={selectedFiles.has(file.publicId)}
 										onchange={() => toggleFile(file.publicId)}
+										onclick={(e) => e.stopPropagation()}
 									/>
 								</td>
 								<td class="preview">
@@ -641,6 +658,14 @@
 		.selection-info {
 			color: $grey-30;
 			font-size: 0.875rem;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+
+			.limit-notice {
+				color: $yellow-60;
+				font-size: 0.8125rem;
+			}
 		}
 
 		.actions {
@@ -732,8 +757,26 @@
 				}
 			}
 
-			tr.selected {
-				background: rgba($red-60, 0.05);
+			tr {
+				cursor: pointer;
+				transition: background-color 0.15s ease;
+
+				&:hover {
+					background: $grey-95;
+				}
+
+				&.selected {
+					background: rgba($red-60, 0.05);
+
+					&:hover {
+						background: rgba($red-60, 0.08);
+					}
+				}
+
+				&:focus {
+					outline: 2px solid rgba($blue-60, 0.5);
+					outline-offset: -2px;
+				}
 			}
 		}
 	}
