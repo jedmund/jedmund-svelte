@@ -305,6 +305,10 @@
 	})
 </script>
 
+<svelte:head>
+	<title>{post && post.title ? `${post.title} - Admin @jedmund` : 'Edit Post - Admin @jedmund'}</title>
+</svelte:head>
+
 <AdminPage>
 	<header slot="header">
 		{#if !loading && post}

@@ -10,6 +10,10 @@
 		: undefined
 </script>
 
+<svelte:head>
+	<title>Compose - Universe - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<UniverseComposer isOpen={true} initialMode="page" initialPostType={postType} {initialContent} />
 </AdminPage>

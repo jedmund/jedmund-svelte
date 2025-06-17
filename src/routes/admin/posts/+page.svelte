@@ -268,6 +268,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Universe - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<AdminHeader title="Universe" slot="header">
 		{#snippet actions()}

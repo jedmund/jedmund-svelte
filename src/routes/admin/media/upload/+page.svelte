@@ -135,6 +135,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Upload Media - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<header slot="header">
 		<h1>Upload Media</h1>

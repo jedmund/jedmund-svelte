@@ -365,6 +365,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Media Library - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<AdminHeader title="Media Library" slot="header">
 		{#snippet actions()}

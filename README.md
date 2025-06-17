@@ -1,38 +1,52 @@
-# create-svelte
+# jedmund.com
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+Personal portfolio website built with SvelteKit featuring a content management system for showcasing creative work, writing, and personal interests.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Content management system for organizing and displaying various types of media
+- Photo galleries with masonry layout and infinite scrolling
+- Blog/journal section for long-form writing
+- Music listening history integration via Last.fm API
+- Gaming activity tracking from Steam and PlayStation
+- Project showcase pages with detailed case studies
+- Responsive design with customizable themes
 
+## Tech Stack
+
+- SvelteKit with Svelte 5 (Runes mode)
+- Redis for caching external API responses
+- SCSS for styling
+- Integration with Last.fm, Steam, PSN, iTunes, and Giant Bomb APIs
+
+## Development
+
+Install dependencies:
 ```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
+npm install
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
+Start development server:
 ```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
-
-To create a production version of your app:
-
+Build for production:
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+## Environment Variables
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+Required environment variables:
+- `LASTFM_API_KEY` - Last.fm API key for music data
+- `REDIS_URL` - Redis connection URL for caching
+
+## Commands
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run check` - Type check with svelte-check
+- `npm run lint` - Check formatting and linting
+- `npm run format` - Auto-format code with prettier

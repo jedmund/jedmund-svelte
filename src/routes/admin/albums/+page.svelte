@@ -271,6 +271,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Albums - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<AdminHeader title="Albums" slot="header">
 		{#snippet actions()}

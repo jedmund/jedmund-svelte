@@ -123,6 +123,10 @@
 	})
 </script>
 
+<svelte:head>
+	<title>New Post - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">

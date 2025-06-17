@@ -6,3 +6,7 @@
 		goto('/admin/projects', { replaceState: true })
 	})
 </script>
+
+<svelte:head>
+	<title>Admin @jedmund</title>
+</svelte:head>

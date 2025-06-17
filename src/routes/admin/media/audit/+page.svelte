@@ -206,6 +206,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Media Audit - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">

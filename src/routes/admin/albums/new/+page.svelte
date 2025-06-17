@@ -263,6 +263,10 @@
 	const canSave = $derived(title.trim().length > 0 && slug.trim().length > 0)
 </script>
 
+<svelte:head>
+	<title>New Album - Admin @jedmund</title>
+</svelte:head>
+
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">

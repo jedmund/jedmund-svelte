@@ -42,6 +42,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{project ? `Edit ${project.title}` : 'Edit Project'} - Admin @jedmund</title>
+</svelte:head>
+
 {#if isLoading}
 	<div class="loading">Loading project...</div>
 {:else if error}

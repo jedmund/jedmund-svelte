@@ -36,6 +36,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Admin Login @jedmund</title>
+</svelte:head>
+
 <div class="login-page">
 	<div class="login-card">
 		<form onsubmit={handleLogin}>

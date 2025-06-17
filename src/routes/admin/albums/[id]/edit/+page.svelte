@@ -585,6 +585,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{album && album.title ? `${album.title} - Admin @jedmund` : 'Edit Album - Admin @jedmund'}</title>
+</svelte:head>
+
 <AdminPage>
 	<header slot="header">
 		{#if !isLoading && album}
