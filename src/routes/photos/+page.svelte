@@ -1,9 +1,14 @@
 <script lang="ts">
 	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
+	import SingleColumnPhotoGrid from '$components/SingleColumnPhotoGrid.svelte'
+	import ThreeColumnPhotoGrid from '$components/ThreeColumnPhotoGrid.svelte'
+	import ViewModeSelector from '$components/ViewModeSelector.svelte'
+	import type { ViewMode } from '$components/ViewModeSelector.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
+	import { browser } from '$app/environment'
 	import type { PageData } from './$types'
 	import type { PhotoItem } from '$lib/types/photos'
 
@@ -15,6 +20,26 @@
 	// Initialize state with server-side data
 	let allPhotoItems = $state<PhotoItem[]>(data.photoItems || [])
 	let currentOffset = $state(data.pagination?.limit || 20)
+	
+	// View mode state with localStorage persistence
+	let viewMode = $state<ViewMode>('masonry')
+	
+	// Load saved view mode on mount
+	$effect(() => {
+		if (browser) {
+			const savedMode = localStorage.getItem('photoViewMode') as ViewMode
+			if (savedMode && ['masonry', 'single', 'grid'].includes(savedMode)) {
+				viewMode = savedMode
+			}
+		}
+	})
+	
+	// Save view mode when it changes
+	function handleViewModeChange(mode: ViewMode) {
+		if (browser) {
+			localStorage.setItem('photoViewMode', mode)
+		}
+	}
 
 	// Track loaded photo IDs to prevent duplicates
 	let loadedPhotoIds = $state(new Set(data.photoItems?.map((item) => item.id) || []))
@@ -116,7 +141,15 @@
 			</div>
 		</div>
 	{:else}
-		<MasonryPhotoGrid photoItems={allPhotoItems} />
+		<ViewModeSelector bind:currentMode={viewMode} onModeChange={handleViewModeChange} />
+		
+		{#if viewMode === 'masonry'}
+			<MasonryPhotoGrid photoItems={allPhotoItems} />
+		{:else if viewMode === 'single'}
+			<SingleColumnPhotoGrid photoItems={allPhotoItems} />
+		{:else if viewMode === 'grid'}
+			<ThreeColumnPhotoGrid photoItems={allPhotoItems} />
+		{/if}
 
 		<InfiniteLoader
 			{loaderState}
