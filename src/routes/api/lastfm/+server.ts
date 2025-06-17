@@ -5,6 +5,7 @@ import type { Album, AlbumImages } from '$lib/types/lastfm'
 import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
 import { findAlbum, transformAlbumData } from '$lib/server/apple-music-client'
 import redis from '../redis-client'
+import { logger } from '$lib/server/logger'
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
@@ -35,7 +36,7 @@ export const GET: RequestHandler = async ({ url }) => {
 					return await enrichAlbumWithInfo(client, album)
 				} catch (error) {
 					if (error instanceof Error && error.message.includes('Album not found')) {
-						console.debug(`Skipping album: ${album.name} (Album not found)`)
+						logger.music('debug', `Skipping album: ${album.name} (Album not found)`)
 						return null // Skip the album
 					}
 					throw error // Re-throw if it's a different error
@@ -78,7 +79,7 @@ async function getRecentAlbums(
 
 	let recentTracksResponse
 	if (cached) {
-		console.log('Using cached Last.fm recent tracks')
+		logger.music('debug', 'Using cached Last.fm recent tracks')
 		recentTracksResponse = JSON.parse(cached)
 		// Convert date strings back to Date objects
 		if (recentTracksResponse.tracks) {
@@ -162,7 +163,7 @@ async function enrichAlbumWithInfo(client: LastClient, album: Album): Promise<Al
 	const cached = await redis.get(cacheKey)
 
 	if (cached) {
-		console.log(`Using cached album info for "${album.name}"`)
+		logger.music('debug', `Using cached album info for "${album.name}"`)
 		const albumInfo = JSON.parse(cached)
 		return {
 			...album,
@@ -196,7 +197,7 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 
 		if (cached) {
 			const cachedData = JSON.parse(cached)
-			console.log(`Using cached data for "${album.name}":`, {
+			logger.music('debug', `Using cached data for "${album.name}":`, {
 				hasPreview: !!cachedData.previewUrl,
 				trackCount: cachedData.tracks?.length || 0
 			})

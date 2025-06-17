@@ -4,6 +4,7 @@ import type { Album, AlbumImages } from '$lib/types/lastfm'
 import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
 import { findAlbum, transformAlbumData } from '$lib/server/apple-music-client'
 import redis from '../../redis-client'
+import { logger } from '$lib/server/logger'
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
@@ -41,7 +42,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			try {
 				controller.enqueue(encoder.encode('event: connected\ndata: {}\n\n'))
 			} catch (e) {
-				console.error('Failed to send initial message:', e)
+				logger.error('Failed to send initial message:', e as Error, undefined, 'music')
 				return
 			}
 
@@ -81,7 +82,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
 								return withAppleMusic
 							} catch (error) {
-								console.error(`Error enriching album ${album.name}:`, error)
+								logger.error(`Error enriching album ${album.name}:`, error as Error, undefined, 'music')
 								return album
 							}
 						})
@@ -90,7 +91,7 @@ export const GET: RequestHandler = async ({ request }) => {
 					// Ensure only one album is marked as now playing in the enriched albums
 					const nowPlayingCount = enrichedAlbums.filter((a) => a.isNowPlaying).length
 					if (nowPlayingCount > 1) {
-						console.log(
+						logger.music('debug',
 							`Multiple enriched albums marked as now playing (${nowPlayingCount}), keeping only the most recent one`
 						)
 
@@ -100,11 +101,11 @@ export const GET: RequestHandler = async ({ request }) => {
 						enrichedAlbums.forEach((album, index) => {
 							if (album.isNowPlaying) {
 								if (foundFirst) {
-									console.log(`Marking album "${album.name}" at position ${index} as not playing`)
+									logger.music('debug', `Marking album "${album.name}" at position ${index} as not playing`)
 									album.isNowPlaying = false
 									album.nowPlayingTrack = undefined
 								} else {
-									console.log(`Keeping album "${album.name}" at position ${index} as now playing`)
+									logger.music('debug', `Keeping album "${album.name}" at position ${index} as now playing`)
 									foundFirst = true
 								}
 							}
@@ -148,7 +149,7 @@ export const GET: RequestHandler = async ({ request }) => {
 								const data = JSON.stringify(enrichedAlbums)
 								controller.enqueue(encoder.encode(`event: albums\ndata: ${data}\n\n`))
 								const nowPlayingAlbum = enrichedAlbums.find((a) => a.isNowPlaying)
-								console.log('Sent album update with now playing status:', {
+								logger.music('debug', 'Sent album update with now playing status:', {
 									totalAlbums: enrichedAlbums.length,
 									nowPlayingAlbum: nowPlayingAlbum
 										? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
@@ -183,7 +184,7 @@ export const GET: RequestHandler = async ({ request }) => {
 								(album.isNowPlaying && album.nowPlayingTrack !== lastTrack)
 							) {
 								updates.push(album)
-								console.log(
+								logger.music('debug',
 									`Now playing update for non-recent album ${album.albumName}: playing=${album.isNowPlaying}, track=${album.nowPlayingTrack}`
 								)
 							}
@@ -217,7 +218,7 @@ export const GET: RequestHandler = async ({ request }) => {
 						}
 					}
 				} catch (error) {
-					console.error('Error checking for updates:', error)
+					logger.error('Error checking for updates:', error as Error, undefined, 'music')
 				}
 			}
 
@@ -243,7 +244,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
 		cancel() {
 			// Cleanup when stream is cancelled
-			console.log('SSE stream cancelled')
+			logger.music('debug', 'SSE stream cancelled')
 		}
 	})
 
@@ -264,7 +265,7 @@ async function getNowPlayingAlbums(client: LastClient): Promise<NowPlayingUpdate
 
 	let recentTracksResponse
 	if (cached) {
-		console.log('Using cached Last.fm recent tracks for streaming')
+		logger.music('debug', 'Using cached Last.fm recent tracks for streaming')
 		recentTracksResponse = JSON.parse(cached)
 		// Convert date strings back to Date objects
 		if (recentTracksResponse.tracks) {
@@ -274,7 +275,7 @@ async function getNowPlayingAlbums(client: LastClient): Promise<NowPlayingUpdate
 			}))
 		}
 	} else {
-		console.log('Fetching fresh Last.fm recent tracks for streaming')
+		logger.music('debug', 'Fetching fresh Last.fm recent tracks for streaming')
 		recentTracksResponse = await client.user.getRecentTracks(USERNAME, {
 			limit: 50,
 			extended: true
@@ -333,7 +334,7 @@ async function getNowPlayingAlbums(client: LastClient): Promise<NowPlayingUpdate
 	// Ensure only one album is marked as now playing - keep the most recent one
 	const nowPlayingAlbums = Array.from(albums.values()).filter((a) => a.isNowPlaying)
 	if (nowPlayingAlbums.length > 1) {
-		console.log(
+		logger.music('debug',
 			`Multiple albums marked as now playing (${nowPlayingAlbums.length}), keeping only the most recent one`
 		)
 
@@ -393,7 +394,7 @@ async function checkNowPlayingWithDuration(
 		const appleMusicData = JSON.parse(cached)
 		return checkWithTracks(albumName, appleMusicData.tracks)
 	} catch (error) {
-		console.error(`Error checking duration for ${albumName}:`, error)
+		logger.error(`Error checking duration for ${albumName}:`, error as Error, undefined, 'music')
 		return null
 	}
 }
@@ -435,7 +436,7 @@ function checkWithTracks(
 			)
 
 			if (now < trackEndTime) {
-				console.log(
+				logger.music('debug',
 					`Track "${mostRecentTrack.trackName}" is still playing (ends at ${trackEndTime.toLocaleTimeString()})`
 				)
 				return {
@@ -476,7 +477,7 @@ async function enrichAlbumWithInfo(client: LastClient, album: Album): Promise<Al
 	const cached = await redis.get(cacheKey)
 
 	if (cached) {
-		console.log(`Using cached album info for "${album.name}"`)
+		logger.music('debug', `Using cached album info for "${album.name}"`)
 		const albumInfo = JSON.parse(cached)
 		return {
 			...album,
@@ -485,7 +486,7 @@ async function enrichAlbumWithInfo(client: LastClient, album: Album): Promise<Al
 		}
 	}
 
-	console.log(`Fetching fresh album info for "${album.name}"`)
+	logger.music('debug', `Fetching fresh album info for "${album.name}"`)
 	const albumInfo = await client.album.getInfo(album.name, album.artist.name)
 
 	// Cache for 1 hour - album info rarely changes
@@ -535,9 +536,11 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 			}
 		}
 	} catch (error) {
-		console.error(
+		logger.error(
 			`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}":`,
-			error
+			error as Error,
+			undefined,
+			'music'
 		)
 	}
 
@@ -552,7 +555,7 @@ async function getRecentAlbums(client: LastClient, limit: number = 4): Promise<A
 
 	let recentTracksResponse
 	if (cached) {
-		console.log('Using cached Last.fm recent tracks for album stream')
+		logger.music('debug', 'Using cached Last.fm recent tracks for album stream')
 		recentTracksResponse = JSON.parse(cached)
 		// Convert date strings back to Date objects
 		if (recentTracksResponse.tracks) {
@@ -562,7 +565,7 @@ async function getRecentAlbums(client: LastClient, limit: number = 4): Promise<A
 			}))
 		}
 	} else {
-		console.log('Fetching fresh Last.fm recent tracks for album stream')
+		logger.music('debug', 'Fetching fresh Last.fm recent tracks for album stream')
 		recentTracksResponse = await client.user.getRecentTracks(USERNAME, {
 			limit: 50,
 			extended: true

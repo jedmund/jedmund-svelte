@@ -7,6 +7,7 @@ import type {
 } from '$lib/types/apple-music'
 import { isAppleMusicError } from '$lib/types/apple-music'
 import { ApiRateLimiter } from './rate-limiter'
+import { logger } from './logger'
 
 const APPLE_MUSIC_API_BASE = 'https://api.music.apple.com/v1'
 const DEFAULT_STOREFRONT = 'us' // Default to US storefront
@@ -37,7 +38,7 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 	const url = `${APPLE_MUSIC_API_BASE}${endpoint}`
 	const headers = getAppleMusicHeaders()
 
-	console.log('Making Apple Music API request:', {
+	logger.music('debug', 'Making Apple Music API request:', {
 		url,
 		headers: {
 			...headers,
@@ -50,11 +51,11 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 
 		if (!response.ok) {
 			const errorText = await response.text()
-			console.error('Apple Music API error response:', {
+			logger.error('Apple Music API error response:', undefined, {
 				status: response.status,
 				statusText: response.statusText,
 				body: errorText
-			})
+			}, 'music')
 
 			// Record failure and handle rate limiting
 			if (identifier) {
@@ -82,7 +83,7 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 
 		return await response.json()
 	} catch (error) {
-		console.error('Apple Music API request failed:', error)
+		logger.error('Apple Music API request failed:', error as Error, undefined, 'music')
 		throw error
 	}
 }
@@ -127,7 +128,7 @@ export async function getAlbumDetails(id: string): Promise<AppleMusicAlbum | nul
 			included?: AppleMusicTrack[]
 		}>(endpoint, `album:${id}`)
 
-		console.log(`Album details for ${id}:`, {
+		logger.music('debug', `Album details for ${id}:`, {
 			hasData: !!response.data?.[0],
 			hasRelationships: !!response.data?.[0]?.relationships,
 			hasTracks: !!response.data?.[0]?.relationships?.tracks,
@@ -137,12 +138,12 @@ export async function getAlbumDetails(id: string): Promise<AppleMusicAlbum | nul
 
 		// Check if tracks are in the included array
 		if (response.included?.length) {
-			console.log('First included track:', JSON.stringify(response.included[0], null, 2))
+			logger.music('debug', 'First included track:', { track: response.included[0] })
 		}
 
 		return response.data?.[0] || null
 	} catch (error) {
-		console.error(`Failed to get album details for ID ${id}:`, error)
+		logger.error(`Failed to get album details for ID ${id}:`, error as Error, undefined, 'music')
 		return null
 	}
 }
@@ -158,7 +159,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 
 	// Check if this album was already marked as not found
 	if (await rateLimiter.isNotFoundCached(identifier)) {
-		console.log(`Album "${album}" by "${artist}" is cached as not found`)
+		logger.music('debug', `Album "${album}" by "${artist}" is cached as not found`)
 		return null
 	}
 
@@ -176,19 +177,18 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		const searchQuery = `${artist} ${searchAlbum}`
 		const response = await searchAlbums(searchQuery, 5, storefront)
 
-		console.log(
-			`Search results for "${searchQuery}" in ${storefront} storefront:`,
-			JSON.stringify(response, null, 2)
-		)
+		logger.music('debug', `Search results for "${searchQuery}" in ${storefront} storefront:`, {
+			response
+		})
 
 		if (!response.results?.albums?.data?.length) {
-			console.log(`No albums found in ${storefront} storefront`)
+			logger.music('debug', `No albums found in ${storefront} storefront`)
 			return null
 		}
 
 		// Try to find the best match
 		const albums = response.results.albums.data
-		console.log(`Found ${albums.length} albums`)
+		logger.music('debug', `Found ${albums.length} albums`)
 
 		// First try exact match with original album name
 		let match = albums.find(
@@ -224,7 +224,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 
 		// If no match, try Japanese storefront
 		if (!result) {
-			console.log(`No match found in US storefront, trying Japanese storefront`)
+			logger.music('debug', `No match found in US storefront, trying Japanese storefront`)
 			result = await searchAndMatch(album, JAPANESE_STOREFRONT)
 		}
 
@@ -232,14 +232,14 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		if (!result) {
 			const cleanedAlbum = removeLeadingPunctuation(album)
 			if (cleanedAlbum !== album && cleanedAlbum.length > 0) {
-				console.log(
+				logger.music('debug', 
 					`No match found for "${album}", trying without leading punctuation: "${cleanedAlbum}"`
 				)
 				result = await searchAndMatch(cleanedAlbum)
 
 				// Also try Japanese storefront with cleaned album name
 				if (!result) {
-					console.log(`Still no match, trying Japanese storefront with cleaned name`)
+					logger.music('debug', `Still no match, trying Japanese storefront with cleaned name`)
 					result = await searchAndMatch(cleanedAlbum, JAPANESE_STOREFRONT)
 				}
 			}
@@ -258,7 +258,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		// Return the match
 		return result.album
 	} catch (error) {
-		console.error(`Failed to find album "${album}" by "${artist}":`, error)
+		logger.error(`Failed to find album "${album}" by "${artist}":`, error as Error, undefined, 'music')
 		// Don't cache as not found on error - might be temporary
 		return null
 	}
@@ -285,7 +285,7 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 				included?: AppleMusicTrack[]
 			}>(endpoint, `album:${appleMusicAlbum.id}`)
 
-			console.log(`Album details response structure:`, {
+			logger.music('debug', `Album details response structure:`, {
 				hasData: !!response.data,
 				dataLength: response.data?.length,
 				hasIncluded: !!response.included,
@@ -300,7 +300,7 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 			const tracksData = albumData?.relationships?.tracks?.data
 
 			if (tracksData?.length) {
-				console.log(`Found ${tracksData.length} tracks for album "${attributes.name}"`)
+				logger.music('debug', `Found ${tracksData.length} tracks for album "${attributes.name}"`)
 
 				// Process all tracks
 				tracks = tracksData
@@ -313,7 +313,7 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 
 				// Log track details
 				tracks.forEach((track, index) => {
-					console.log(
+					logger.music('debug', 
 						`Track ${index + 1}: ${track.name} - Preview: ${track.previewUrl ? 'Yes' : 'No'} - Duration: ${track.durationMs}ms`
 					)
 				})
@@ -323,16 +323,16 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 					for (const track of tracksData) {
 						if (track.type === 'songs' && track.attributes?.previews?.[0]?.url) {
 							previewUrl = track.attributes.previews[0].url
-							console.log(`Using preview URL from track "${track.attributes.name}"`)
+							logger.music('debug', `Using preview URL from track "${track.attributes.name}"`)
 							break
 						}
 					}
 				}
 			} else {
-				console.log('No tracks found in album response')
+				logger.music('debug', 'No tracks found in album response')
 			}
 		} catch (error) {
-			console.error('Failed to fetch album tracks:', error)
+			logger.error('Failed to fetch album tracks:', error as Error, undefined, 'music')
 		}
 	}
 

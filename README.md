@@ -42,6 +42,9 @@ Required environment variables:
 - `LASTFM_API_KEY` - Last.fm API key for music data
 - `REDIS_URL` - Redis connection URL for caching
 
+Optional environment variables:
+- `DEBUG` - Enable debug logging for specific categories (e.g., `DEBUG=music` for music-related logs)
+
 ## Commands
 
 - `npm run dev` - Start development server

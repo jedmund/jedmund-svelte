@@ -1,6 +1,7 @@
 import { dev } from '$app/environment'
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type LogCategory = 'music' | 'api' | 'db' | 'media' | 'general'
 
 interface LogEntry {
 	level: LogLevel
@@ -8,19 +9,46 @@ interface LogEntry {
 	timestamp: string
 	context?: Record<string, any>
 	error?: Error
+	category?: LogCategory
 }
 
 class Logger {
-	private shouldLog(level: LogLevel): boolean {
-		// In development, log everything
-		if (dev) return true
+	private debugCategories: Set<LogCategory> = new Set()
+
+	constructor() {
+		// Parse DEBUG environment variable to enable specific categories
+		const debugEnv = process.env.DEBUG || ''
+		if (debugEnv) {
+			const categories = debugEnv.split(',').map(c => c.trim()) as LogCategory[]
+			categories.forEach(cat => this.debugCategories.add(cat))
+		}
+	}
+
+	private shouldLog(level: LogLevel, category?: LogCategory): boolean {
+		// Always log warnings and errors
+		if (level === 'warn' || level === 'error') return true
+
+		// In development, check if category debugging is enabled
+		if (dev && category && this.debugCategories.size > 0) {
+			return this.debugCategories.has(category)
+		}
+
+		// In development without category debugging, log everything except music logs
+		if (dev && !category) return true
+		if (dev && category === 'music') return this.debugCategories.has('music')
 
 		// In production, only log warnings and errors
-		return level === 'warn' || level === 'error'
+		return false
 	}
 
 	private formatLog(entry: LogEntry): string {
-		const parts = [`[${entry.timestamp}]`, `[${entry.level.toUpperCase()}]`, entry.message]
+		const parts = [`[${entry.timestamp}]`, `[${entry.level.toUpperCase()}]`]
+		
+		if (entry.category) {
+			parts.push(`[${entry.category.toUpperCase()}]`)
+		}
+		
+		parts.push(entry.message)
 
 		if (entry.context) {
 			parts.push(JSON.stringify(entry.context, null, 2))
@@ -36,15 +64,16 @@ class Logger {
 		return parts.join(' ')
 	}
 
-	private log(level: LogLevel, message: string, context?: Record<string, any>, error?: Error) {
-		if (!this.shouldLog(level)) return
+	private log(level: LogLevel, message: string, context?: Record<string, any>, error?: Error, category?: LogCategory) {
+		if (!this.shouldLog(level, category)) return
 
 		const entry: LogEntry = {
 			level,
 			message,
 			timestamp: new Date().toISOString(),
 			context,
-			error
+			error,
+			category
 		}
 
 		const formatted = this.formatLog(entry)
@@ -63,20 +92,25 @@ class Logger {
 		}
 	}
 
-	debug(message: string, context?: Record<string, any>) {
-		this.log('debug', message, context)
+	debug(message: string, context?: Record<string, any>, category?: LogCategory) {
+		this.log('debug', message, context, undefined, category)
 	}
 
-	info(message: string, context?: Record<string, any>) {
-		this.log('info', message, context)
+	info(message: string, context?: Record<string, any>, category?: LogCategory) {
+		this.log('info', message, context, undefined, category)
 	}
 
-	warn(message: string, context?: Record<string, any>) {
-		this.log('warn', message, context)
+	warn(message: string, context?: Record<string, any>, category?: LogCategory) {
+		this.log('warn', message, context, undefined, category)
 	}
 
-	error(message: string, error?: Error, context?: Record<string, any>) {
-		this.log('error', message, context, error)
+	error(message: string, error?: Error, context?: Record<string, any>, category?: LogCategory) {
+		this.log('error', message, context, error, category)
+	}
+
+	// Convenience method for music-related logs
+	music(level: LogLevel, message: string, context?: Record<string, any>) {
+		this.log(level, message, context, undefined, 'music')
 	}
 
 	// Log API requests

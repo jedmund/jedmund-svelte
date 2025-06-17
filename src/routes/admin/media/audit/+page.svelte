@@ -50,6 +50,8 @@
 		auditData?.orphanedFiles
 			.filter((f) => selectedFiles.has(f.publicId))
 			.reduce((sum, f) => sum + f.size, 0) || 0
+	
+	$: console.log('Reactive state:', { hasSelection, selectedFilesSize: selectedFiles.size, deleting, showDeleteModal, showCleanupModal })
 
 	onMount(() => {
 		runAudit()
@@ -93,12 +95,14 @@
 	}
 
 	function toggleFile(publicId: string) {
+		console.log('toggleFile called', publicId)
 		if (selectedFiles.has(publicId)) {
 			selectedFiles.delete(publicId)
 		} else {
 			selectedFiles.add(publicId)
 		}
 		selectedFiles = selectedFiles // Trigger reactivity
+		console.log('selectedFiles after toggle:', Array.from(selectedFiles))
 	}
 
 	async function deleteSelected(dryRun = true) {
@@ -286,13 +290,16 @@
 					{/if}
 				</div>
 				<div class="actions">
-					<Button variant="text" size="small" onclick={toggleSelectAll}>
+					<Button variant="text" buttonSize="small" onclick={toggleSelectAll}>
 						{allSelected ? 'Deselect All' : 'Select All'}
 					</Button>
 					<Button
 						variant="danger"
-						size="small"
-						onclick={() => (showDeleteModal = true)}
+						buttonSize="small"
+						onclick={() => {
+							console.log('Delete Selected clicked', { hasSelection, deleting, selectedFiles: Array.from(selectedFiles) })
+							showDeleteModal = true
+						}}
 						disabled={!hasSelection || deleting}
 						icon={Trash2}
 						iconPosition="left"
@@ -379,8 +386,11 @@
 				</p>
 				<Button
 					variant="secondary"
-					size="small"
-					onclick={() => (showCleanupModal = true)}
+					buttonSize="small"
+					onclick={() => {
+						console.log('Clean Up Broken References clicked', { cleaningUp, missingReferencesCount: auditData?.missingReferences.length })
+						showCleanupModal = true
+					}}
 					disabled={cleaningUp}
 					icon={AlertCircle}
 					iconPosition="left"
@@ -405,32 +415,54 @@
 </AdminPage>
 
 <!-- Delete Confirmation Modal -->
-<Modal bind:open={showDeleteModal} title="Delete Orphaned Files">
-	<div class="delete-confirmation">
-		<p>Are you sure you want to delete {selectedFiles.size} orphaned files?</p>
-		<p class="size-info">This will free up {formatBytes(selectedSize)} of storage.</p>
-		<p class="warning">⚠️ This action cannot be undone.</p>
-	</div>
-	<div slot="actions">
-		<Button variant="secondary" onclick={() => (showDeleteModal = false)}>Cancel</Button>
-		<Button variant="danger" onclick={() => deleteSelected(false)} disabled={deleting}>
-			{deleting ? 'Deleting...' : 'Delete Files'}
-		</Button>
+<Modal bind:isOpen={showDeleteModal}>
+	<div class="audit-modal-content">
+		<div class="modal-header">
+			<h2>Delete Orphaned Files</h2>
+		</div>
+		<div class="delete-confirmation">
+			<p>Are you sure you want to delete {selectedFiles.size} orphaned files?</p>
+			<p class="size-info">This will free up {formatBytes(selectedSize)} of storage.</p>
+			<p class="warning">⚠️ This action cannot be undone.</p>
+		</div>
+		<div class="modal-actions">
+			<Button variant="secondary" onclick={() => {
+				console.log('Cancel clicked')
+				showDeleteModal = false
+			}}>Cancel</Button>
+			<Button variant="danger" onclick={() => {
+				console.log('Delete Files clicked')
+				deleteSelected(false)
+			}} disabled={deleting}>
+				{deleting ? 'Deleting...' : 'Delete Files'}
+			</Button>
+		</div>
 	</div>
 </Modal>
 
 <!-- Cleanup Confirmation Modal -->
-<Modal bind:open={showCleanupModal} title="Clean Up Broken References">
-	<div class="cleanup-confirmation">
-		<p>Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?</p>
-		<p class="warning">⚠️ This will remove Cloudinary URLs from database records where the files no longer exist.</p>
-		<p>This action cannot be undone.</p>
-	</div>
-	<div slot="actions">
-		<Button variant="secondary" onclick={() => (showCleanupModal = false)}>Cancel</Button>
-		<Button variant="danger" onclick={cleanupBrokenReferences} disabled={cleaningUp}>
-			{cleaningUp ? 'Cleaning Up...' : 'Clean Up References'}
-		</Button>
+<Modal bind:isOpen={showCleanupModal}>
+	<div class="audit-modal-content">
+		<div class="modal-header">
+			<h2>Clean Up Broken References</h2>
+		</div>
+		<div class="cleanup-confirmation">
+			<p>Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?</p>
+			<p class="warning">⚠️ This will remove Cloudinary URLs from database records where the files no longer exist.</p>
+			<p>This action cannot be undone.</p>
+		</div>
+		<div class="modal-actions">
+			<Button variant="secondary" onclick={() => {
+				console.log('Cancel cleanup clicked')
+				showCleanupModal = false
+			}}>Cancel</Button>
+			<Button variant="danger" onclick={() => {
+				console.log('Clean Up References clicked')
+				cleanupBrokenReferences()
+			}} disabled={cleaningUp}>
+				{cleaningUp ? 'Cleaning Up...' : 'Clean Up References'}
+			</Button>
+		</div>
 	</div>
 </Modal>
 
@@ -813,6 +845,33 @@
 			font-weight: 500;
 			margin: 1rem 0;
 		}
+	}
+
+	.modal-header {
+		margin-bottom: 1rem;
+
+		h2 {
+			margin: 0;
+			font-size: 1.25rem;
+			font-weight: 600;
+			color: $grey-10;
+		}
+	}
+
+	.audit-modal-content {
+		display: flex;
+		flex-direction: column;
+		padding: 1.5rem;
+		min-width: 400px;
+	}
+
+	.modal-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid $grey-90;
 	}
 
 	@keyframes spin {
