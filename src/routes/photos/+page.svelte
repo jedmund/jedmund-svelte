@@ -1,6 +1,7 @@
 <script lang="ts">
 	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
+	import ViewModeSelector from '$components/ViewModeSelector.svelte'
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
@@ -15,6 +16,7 @@
 	// Initialize state with server-side data
 	let allPhotoItems = $state<PhotoItem[]>(data.photoItems || [])
 	let currentOffset = $state(data.pagination?.limit || 20)
+	let containerWidth = $state<'normal' | 'wide'>('normal')
 
 	// Track loaded photo IDs to prevent duplicates
 	let loadedPhotoIds = $state(new Set(data.photoItems?.map((item) => item.id) || []))
@@ -100,7 +102,7 @@
 	<link rel="canonical" href={metaTags.other.canonical} />
 </svelte:head>
 
-<div class="photos-container">
+<div class="photos-container" class:wide={containerWidth === 'wide'}>
 	{#if error}
 		<div class="error-container">
 			<div class="error-message">
@@ -116,6 +118,10 @@
 			</div>
 		</div>
 	{:else}
+		<ViewModeSelector 
+			width={containerWidth}
+			onWidthChange={(width) => containerWidth = width}
+		/>
 		<MasonryPhotoGrid photoItems={allPhotoItems} />
 
 		<InfiniteLoader
@@ -163,6 +169,18 @@
 		max-width: 700px;
 		margin: 0 auto;
 		padding: 0 $unit-3x;
+		transition: max-width 0.3s ease;
+
+		&.wide {
+			max-width: 900px;
+		}
+
+		:global(.view-mode-selector) {
+			margin-bottom: $unit-3x;
+			position: sticky;
+			top: $unit-2x;
+			z-index: 10;
+		}
 
 		@include breakpoint('phone') {
 			padding: 0 $unit-2x;
