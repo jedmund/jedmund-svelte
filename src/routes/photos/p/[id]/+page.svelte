@@ -1,6 +1,6 @@
 <script lang="ts">
 	import BackButton from '$components/BackButton.svelte'
-	import PhotoView from '$components/PhotoView.svelte'
+	import PhotoViewEnhanced from '$components/PhotoViewEnhanced.svelte'
 	import PhotoMetadata from '$components/PhotoMetadata.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
@@ -355,7 +355,14 @@
 {:else if photo}
 	<div class="photo-page" onmousemove={handleMouseMove} onmouseleave={handleMouseLeave}>
 		<div class="photo-content-wrapper">
-			<PhotoView src={photo.url} alt={photo.caption} title={photo.title} id={photo.id} />
+			<PhotoViewEnhanced 
+				src={photo.url} 
+				alt={photo.caption} 
+				title={photo.title} 
+				id={photo.id}
+				width={photo.width}
+				height={photo.height}
+			/>
 		</div>
 
 		<!-- Adjacent Photos Navigation -->

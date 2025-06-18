@@ -112,7 +112,7 @@ export const GET: RequestHandler = async (event) => {
 					description: album.description || undefined,
 					coverPhoto: {
 						id: `cover-${firstMedia.id}`,
-						src: firstMedia.thumbnailUrl || firstMedia.url,
+						src: firstMedia.url,
 						alt: firstMedia.photoCaption || album.title,
 						caption: firstMedia.photoCaption || undefined,
 						width: firstMedia.width || 400,
@@ -120,7 +120,7 @@ export const GET: RequestHandler = async (event) => {
 					},
 					photos: album.media.map((albumMedia) => ({
 						id: `media-${albumMedia.media.id}`,
-						src: albumMedia.media.thumbnailUrl || albumMedia.media.url,
+						src: albumMedia.media.url,
 						alt: albumMedia.media.photoCaption || albumMedia.media.filename,
 						caption: albumMedia.media.photoCaption || undefined,
 						width: albumMedia.media.width || 400,
@@ -137,7 +137,7 @@ export const GET: RequestHandler = async (event) => {
 
 			return {
 				id: `media-${media.id}`,
-				src: media.thumbnailUrl || media.url,
+				src: media.url,
 				alt: media.photoTitle || media.photoCaption || media.filename,
 				caption: media.photoCaption || undefined,
 				width: media.width || 400,
