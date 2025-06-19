@@ -309,6 +309,21 @@
 									<span class="value">{media.width} × {media.height}px</span>
 								</div>
 							{/if}
+							{#if media.dominantColor}
+								<div class="info-item">
+									<span class="label">Dominant Color</span>
+									<span class="value color-value">
+										<span 
+											class="color-swatch" 
+											style="background-color: {media.dominantColor}"
+											title={media.dominantColor}
+										></span>
+										{media.dominantColor}
+									</span>
+								</div>
+							{:else}
+								<!-- Debug: dominantColor = {JSON.stringify(media.dominantColor)} -->
+							{/if}
 							<div class="info-item">
 								<span class="label">Uploaded</span>
 								<span class="value">{new Date(media.createdAt).toLocaleDateString()}</span>
@@ -625,7 +640,22 @@
 			font-size: 0.875rem;
 			color: $grey-10;
 			font-weight: 500;
+			
+			&.color-value {
+				display: flex;
+				align-items: center;
+				gap: $unit-2x;
+			}
 		}
+	}
+	
+	.color-swatch {
+		display: inline-block;
+		width: 20px;
+		height: 20px;
+		border-radius: 4px;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 	}
 
 	:global(.btn.btn-ghost.exif-toggle) {

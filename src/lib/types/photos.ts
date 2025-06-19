@@ -16,6 +16,9 @@ export interface Photo {
 	caption?: string
 	width: number
 	height: number
+	dominantColor?: string
+	colors?: any
+	aspectRatio?: number
 	exif?: ExifData
 	createdAt?: string
 }

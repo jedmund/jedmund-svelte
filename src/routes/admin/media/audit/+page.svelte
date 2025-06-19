@@ -51,7 +51,6 @@
 			.filter((f) => selectedFiles.has(f.publicId))
 			.reduce((sum, f) => sum + f.size, 0) || 0
 	
-	$: console.log('Reactive state:', { hasSelection, selectedFilesSize: selectedFiles.size, deleting, showDeleteModal, showCleanupModal })
 
 	onMount(() => {
 		runAudit()
@@ -97,18 +96,15 @@
 	}
 
 	function toggleFile(publicId: string) {
-		console.log('toggleFile called', publicId)
 		if (selectedFiles.has(publicId)) {
 			selectedFiles.delete(publicId)
 		} else {
 			selectedFiles.add(publicId)
 		}
 		selectedFiles = selectedFiles // Trigger reactivity
-		console.log('selectedFiles after toggle:', Array.from(selectedFiles))
 	}
 
 	async function deleteSelected(dryRun = true) {
-		console.log('deleteSelected called', { dryRun, hasSelection, deleting, selectedFiles: Array.from(selectedFiles) })
 		if (!hasSelection || deleting) return
 
 		if (!dryRun) {
@@ -302,7 +298,6 @@
 						variant="danger"
 						buttonSize="small"
 						onclick={() => {
-							console.log('Delete Selected clicked', { hasSelection, deleting, selectedFiles: Array.from(selectedFiles) })
 							showDeleteModal = true
 						}}
 						disabled={!hasSelection || deleting}
@@ -405,7 +400,6 @@
 					variant="secondary"
 					buttonSize="small"
 					onclick={() => {
-						console.log('Clean Up Broken References clicked', { cleaningUp, missingReferencesCount: auditData?.missingReferences.length })
 						showCleanupModal = true
 					}}
 					disabled={cleaningUp}
@@ -444,11 +438,9 @@
 		</div>
 		<div class="modal-actions">
 			<Button variant="secondary" onclick={() => {
-				console.log('Cancel clicked')
 				showDeleteModal = false
 			}}>Cancel</Button>
 			<Button variant="danger" onclick={() => {
-				console.log('Delete Files clicked')
 				deleteSelected(false)
 			}} disabled={deleting}>
 				{deleting ? 'Deleting...' : 'Delete Files'}
@@ -476,11 +468,9 @@
 		</div>
 		<div class="modal-actions">
 			<Button variant="secondary" onclick={() => {
-				console.log('Cancel cleanup clicked')
 				showCleanupModal = false
 			}}>Cancel</Button>
 			<Button variant="danger" onclick={() => {
-				console.log('Clean Up References clicked')
 				cleanupBrokenReferences()
 			}} disabled={cleaningUp}>
 				{cleaningUp ? 'Cleaning Up...' : 'Clean Up References'}

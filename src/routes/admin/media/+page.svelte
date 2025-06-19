@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
+	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
@@ -195,7 +196,7 @@
 	}
 
 	function handleAuditStorage() {
-		window.location.href = '/admin/media/audit'
+		goto('/admin/media/audit')
 	}
 
 	$effect(() => {
@@ -390,6 +391,9 @@
 						</DropdownItem>
 						<DropdownItem onclick={handleAuditStorage}>
 							Audit Storage
+						</DropdownItem>
+						<DropdownItem onclick={() => goto('/admin/media/regenerate')}>
+							Regenerate Cloudinary
 						</DropdownItem>
 					</DropdownMenuContainer>
 				{/if}

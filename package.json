@@ -16,6 +16,11 @@
 		"db:studio": "prisma studio",
 		"db:init": "tsx scripts/init-db.ts",
 		"db:deploy": "prisma migrate deploy",
+		"db:backup:local": "./scripts/backup-db.sh local",
+		"db:backup:remote": "./scripts/backup-db.sh remote",
+		"db:backup:sync": "./scripts/backup-db.sh sync",
+		"db:restore": "./scripts/restore-db.sh",
+		"db:backups": "./scripts/list-backups.sh",
 		"setup:local": "./scripts/setup-local.sh",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"

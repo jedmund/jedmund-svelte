@@ -29,6 +29,9 @@ export const GET: RequestHandler = async (event) => {
 								thumbnailUrl: true,
 								width: true,
 								height: true,
+								dominantColor: true,
+								colors: true,
+								aspectRatio: true,
 								photoCaption: true,
 								exifData: true
 							}
@@ -55,6 +58,9 @@ export const GET: RequestHandler = async (event) => {
 				thumbnailUrl: true,
 				width: true,
 				height: true,
+				dominantColor: true,
+				colors: true,
+				aspectRatio: true,
 				photoCaption: true,
 				photoTitle: true,
 				photoDescription: true,
@@ -116,7 +122,10 @@ export const GET: RequestHandler = async (event) => {
 						alt: firstMedia.photoCaption || album.title,
 						caption: firstMedia.photoCaption || undefined,
 						width: firstMedia.width || 400,
-						height: firstMedia.height || 400
+						height: firstMedia.height || 400,
+						dominantColor: firstMedia.dominantColor || undefined,
+						colors: firstMedia.colors || undefined,
+						aspectRatio: firstMedia.aspectRatio || undefined
 					},
 					photos: album.media.map((albumMedia) => ({
 						id: `media-${albumMedia.media.id}`,
@@ -124,7 +133,10 @@ export const GET: RequestHandler = async (event) => {
 						alt: albumMedia.media.photoCaption || albumMedia.media.filename,
 						caption: albumMedia.media.photoCaption || undefined,
 						width: albumMedia.media.width || 400,
-						height: albumMedia.media.height || 400
+						height: albumMedia.media.height || 400,
+						dominantColor: albumMedia.media.dominantColor || undefined,
+						colors: albumMedia.media.colors || undefined,
+						aspectRatio: albumMedia.media.aspectRatio || undefined
 					})),
 					createdAt: albumDate.toISOString()
 				}
@@ -142,6 +154,9 @@ export const GET: RequestHandler = async (event) => {
 				caption: media.photoCaption || undefined,
 				width: media.width || 400,
 				height: media.height || 400,
+				dominantColor: media.dominantColor || undefined,
+				colors: media.colors || undefined,
+				aspectRatio: media.aspectRatio || undefined,
 				createdAt: photoDate.toISOString()
 			}
 		})
