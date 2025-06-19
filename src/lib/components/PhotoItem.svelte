@@ -37,6 +37,16 @@
 
 	const photo = $derived(isAlbum(item) ? item.coverPhoto : item)
 	const isAlbumItem = $derived(isAlbum(item))
+	const placeholderStyle = $derived(
+		photo.dominantColor 
+			? `background: ${photo.dominantColor}` 
+			: ''
+	)
+	const aspectRatioStyle = $derived(
+		photo.aspectRatio 
+			? `aspect-ratio: ${photo.aspectRatio}` 
+			: ''
+	)
 </script>
 
 <div class="photo-item" class:is-album={isAlbumItem}>
@@ -46,7 +56,7 @@
 			<div class="album-stack">
 				<div class="stack-photo stack-back"></div>
 				<div class="stack-photo stack-middle"></div>
-				<div class="stack-photo stack-front">
+				<div class="stack-photo stack-front" style={aspectRatioStyle}>
 					<img
 						src={photo.src}
 						alt={photo.alt}
@@ -55,9 +65,7 @@
 						onload={handleImageLoad}
 						class:loaded={imageLoaded}
 					/>
-					{#if !imageLoaded}
-						<div class="image-placeholder"></div>
-					{/if}
+					<div class="image-placeholder" style={placeholderStyle} class:loaded={imageLoaded}></div>
 				</div>
 				<div class="album-overlay">
 					<div class="album-info">
@@ -68,7 +76,7 @@
 			</div>
 		{:else}
 			<!-- Single photo -->
-			<div class="single-photo">
+			<div class="single-photo" style={aspectRatioStyle}>
 				<img
 					src={photo.src}
 					alt={photo.alt}
@@ -77,9 +85,7 @@
 					onload={handleImageLoad}
 					class:loaded={imageLoaded}
 				/>
-				{#if !imageLoaded}
-					<div class="image-placeholder"></div>
-				{/if}
+				<div class="image-placeholder" style={placeholderStyle} class:loaded={imageLoaded}></div>
 			</div>
 		{/if}
 	</button>
@@ -129,6 +135,8 @@
 			border-radius: $corner-radius;
 			opacity: 0;
 			transition: opacity 0.4s ease;
+			position: relative;
+			z-index: 2;
 
 			&.loaded {
 				opacity: 1;
@@ -177,6 +185,8 @@
 				border-radius: $corner-radius;
 				opacity: 0;
 				transition: opacity 0.4s ease;
+				position: relative;
+				z-index: 2;
 
 				&.loaded {
 					opacity: 1;
@@ -232,34 +242,18 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
-		background-size: 200% 200%;
-		animation: shimmer 1.5s ease-in-out infinite;
+		background: #f0f0f0; // Lighter default grey
 		border-radius: $corner-radius;
+		opacity: 1;
+		transition: opacity 0.4s ease;
+		z-index: 1;
+		overflow: hidden;
 
-		&::after {
-			content: '';
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 40px;
-			height: 40px;
-			background: rgba(0, 0, 0, 0.1);
-			border-radius: 50%;
-			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21,15 16,10 5,21'/%3E%3C/svg%3E");
-			background-repeat: no-repeat;
-			background-position: center;
-			background-size: 24px 24px;
+
+		&.loaded {
+			opacity: 0;
+			pointer-events: none;
 		}
 	}
 
-	@keyframes shimmer {
-		0% {
-			background-position: 200% 0;
-		}
-		100% {
-			background-position: -200% 0;
-		}
-	}
 </style>
