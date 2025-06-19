@@ -16,25 +16,12 @@
 		onWidthChange?: (width: 'normal' | 'wide') => void
 	}
 
-	let { 
-		mode = 'masonry',
-		width = 'normal',
-		onModeChange,
-		onWidthChange
-	}: Props = $props()
+	let { mode = 'two-column', width = 'wide', onModeChange, onWidthChange }: Props = $props()
 </script>
 
 <div class="view-mode-selector">
 	<div class="mode-section">
-		<button 
-			class="mode-button" 
-			class:selected={mode === 'masonry'}
-			aria-label="Masonry view"
-			onclick={() => onModeChange?.('masonry')}
-		>
-			<PhotosIcon />
-		</button>
-		<button 
+		<button
 			class="mode-button"
 			class:selected={mode === 'single'}
 			aria-label="Single column view"
@@ -42,7 +29,7 @@
 		>
 			<ViewSingleIcon />
 		</button>
-		<button 
+		<button
 			class="mode-button"
 			class:selected={mode === 'two-column'}
 			aria-label="Two column view"
@@ -50,7 +37,15 @@
 		>
 			<ViewTwoColumnIcon />
 		</button>
-		<button 
+		<button
+			class="mode-button"
+			class:selected={mode === 'masonry'}
+			aria-label="Masonry view"
+			onclick={() => onModeChange?.('masonry')}
+		>
+			<PhotosIcon />
+		</button>
+		<button
 			class="mode-button"
 			class:selected={mode === 'horizontal'}
 			aria-label="Horizontal scroll view"
@@ -59,27 +54,27 @@
 			<ViewHorizontalIcon />
 		</button>
 	</div>
-	
+
 	{#if mode !== 'horizontal'}
 		<div class="separator"></div>
-		
+
 		<div class="width-section">
-		<button 
-			class="mode-button" 
-			class:selected={width === 'normal'}
-			aria-label="Normal width"
-			onclick={() => onWidthChange?.('normal')}
-		>
-			<WidthNormalIcon />
-		</button>
-		<button 
-			class="mode-button"
-			class:selected={width === 'wide'}
-			aria-label="Wide width"
-			onclick={() => onWidthChange?.('wide')}
-		>
-			<WidthWideIcon />
-		</button>
+			<button
+				class="mode-button"
+				class:selected={width === 'normal'}
+				aria-label="Normal width"
+				onclick={() => onWidthChange?.('normal')}
+			>
+				<WidthNormalIcon />
+			</button>
+			<button
+				class="mode-button"
+				class:selected={width === 'wide'}
+				aria-label="Wide width"
+				onclick={() => onWidthChange?.('wide')}
+			>
+				<WidthWideIcon />
+			</button>
 		</div>
 	{/if}
 </div>
@@ -96,18 +91,18 @@
 		align-items: center;
 		gap: $unit-2x;
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-		
+
 		@include breakpoint('phone') {
 			display: none;
 		}
 	}
-	
+
 	.mode-section,
 	.width-section {
 		display: flex;
 		gap: $unit-half;
 	}
-	
+
 	.separator {
 		flex: 1;
 		min-width: $unit-2x;
