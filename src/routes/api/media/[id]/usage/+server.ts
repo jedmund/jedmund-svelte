@@ -23,8 +23,8 @@ export const GET: RequestHandler = async (event) => {
 				id: true,
 				filename: true,
 				url: true,
-				altText: true,
 				description: true,
+				dominantColor: true,
 				isPhotography: true
 			}
 		})
@@ -41,8 +41,8 @@ export const GET: RequestHandler = async (event) => {
 				id: media.id,
 				filename: media.filename,
 				url: media.url,
-				altText: media.altText,
 				description: media.description,
+				dominantColor: media.dominantColor,
 				isPhotography: media.isPhotography
 			},
 			usage: usage,
