@@ -3,6 +3,7 @@ import type { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary'
 import { logger } from './logger'
 import { uploadFileLocally } from './local-storage'
 import { dev } from '$app/environment'
+import { selectBestDominantColor } from './color-utils'
 
 // Configure Cloudinary
 cloudinary.config({
@@ -67,6 +68,9 @@ export interface UploadResult {
 	height?: number
 	format?: string
 	size?: number
+	dominantColor?: string
+	colors?: any
+	aspectRatio?: number
 	error?: string
 }
 
@@ -92,6 +96,10 @@ export async function uploadFile(
 				}
 			}
 
+			const aspectRatio = localResult.width && localResult.height 
+				? localResult.width / localResult.height 
+				: undefined
+
 			return {
 				success: true,
 				publicId: `local/${localResult.filename}`,
@@ -101,7 +109,8 @@ export async function uploadFile(
 				width: localResult.width,
 				height: localResult.height,
 				format: file.type.split('/')[1],
-				size: localResult.size
+				size: localResult.size,
+				aspectRatio
 			}
 		}
 
@@ -122,7 +131,9 @@ export async function uploadFile(
 			...customOptions,
 			public_id: `${Date.now()}-${fileNameWithoutExt}`,
 			// For SVG files, explicitly set format to preserve extension
-			...(isSvg && { format: 'svg' })
+			...(isSvg && { format: 'svg' }),
+			// Request color analysis for images
+			colors: true
 		}
 
 		// Log upload attempt for debugging
@@ -151,6 +162,20 @@ export async function uploadFile(
 			secure: true
 		})
 
+		// Extract dominant color using smart selection
+		let dominantColor: string | undefined
+		if (result.colors && Array.isArray(result.colors) && result.colors.length > 0) {
+			dominantColor = selectBestDominantColor(result.colors, {
+				minPercentage: 2,
+				preferVibrant: true,
+				excludeGreys: false,
+				preferBrighter: true
+			})
+		}
+
+		// Calculate aspect ratio
+		const aspectRatio = result.width && result.height ? result.width / result.height : undefined
+
 		logger.mediaUpload(file.name, file.size, file.type, true)
 
 		return {
@@ -162,7 +187,10 @@ export async function uploadFile(
 			width: result.width,
 			height: result.height,
 			format: result.format,
-			size: result.bytes
+			size: result.bytes,
+			dominantColor,
+			colors: result.colors,
+			aspectRatio
 		}
 	} catch (error) {
 		logger.error('Cloudinary upload failed', error as Error)
@@ -273,8 +301,14 @@ export function extractPublicId(url: string): string | null {
 	try {
 		// Cloudinary URLs typically follow this pattern:
 		// https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
-		const match = url.match(/\/v\d+\/(.+)\.[a-zA-Z]+$/)
-		return match ? match[1] : null
+		// First decode the URL to handle encoded characters
+		const decodedUrl = decodeURIComponent(url)
+		const match = decodedUrl.match(/\/v\d+\/(.+)\.[a-zA-Z]+$/)
+		if (match) {
+			// Re-encode the public ID for Cloudinary API
+			return match[1]
+		}
+		return null
 	} catch {
 		return null
 	}

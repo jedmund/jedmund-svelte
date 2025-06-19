@@ -93,6 +93,9 @@ model Photo {
   thumbnailUrl       String?   @db.VarChar(500)
   width              Int?
   height             Int?
+  dominantColor      String?   @db.VarChar(7)    // Hex color like #FFFFFF
+  colors             Json?                       // Full color palette from Cloudinary
+  aspectRatio        Float?                      // Width/height ratio
   exifData           Json?
   caption            String?   @db.Text
   displayOrder       Int       @default(0)
@@ -127,6 +130,9 @@ model Media {
   thumbnailUrl       String?   @db.Text
   width              Int?
   height             Int?
+  dominantColor      String?   @db.VarChar(7)    // Hex color like #FFFFFF
+  colors             Json?                       // Full color palette from Cloudinary
+  aspectRatio        Float?                      // Width/height ratio
   exifData           Json?                       // EXIF data for photos
   description        String?   @db.Text          // Description (used for alt text and captions)
   isPhotography      Boolean   @default(false)   // Star for photos experience

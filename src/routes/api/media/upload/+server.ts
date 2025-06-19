@@ -161,6 +161,9 @@ export const POST: RequestHandler = async (event) => {
 				thumbnailUrl: uploadResult.thumbnailUrl,
 				width: uploadResult.width,
 				height: uploadResult.height,
+				dominantColor: uploadResult.dominantColor,
+				colors: uploadResult.colors,
+				aspectRatio: uploadResult.aspectRatio,
 				exifData: exifData,
 				description: description?.trim() || null,
 				isPhotography: isPhotography
