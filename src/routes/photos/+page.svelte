@@ -1,12 +1,19 @@
 <script lang="ts">
 	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
+	import SingleColumnPhotoGrid from '$components/SingleColumnPhotoGrid.svelte'
+	import TwoColumnPhotoGrid from '$components/TwoColumnPhotoGrid.svelte'
+	import HorizontalScrollPhotoGrid from '$components/HorizontalScrollPhotoGrid.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import ViewModeSelector from '$components/ViewModeSelector.svelte'
+	import type { ViewMode } from '$components/ViewModeSelector.svelte'
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
+	import { goto } from '$app/navigation'
+	import { browser } from '$app/environment'
 	import type { PageData } from './$types'
 	import type { PhotoItem } from '$lib/types/photos'
+	import type { Snapshot } from './$types'
 
 	const { data }: { data: PageData } = $props()
 
@@ -18,6 +25,12 @@
 	let currentOffset = $state(data.pagination?.limit || 20)
 	let containerWidth = $state<'normal' | 'wide'>('normal')
 
+	// Initialize view mode from URL or default
+	const urlMode = $page.url.searchParams.get('view') as ViewMode
+	let viewMode = $state<ViewMode>(
+		urlMode && ['masonry', 'single', 'two-column', 'horizontal'].includes(urlMode) ? urlMode : 'masonry'
+	)
+
 	// Track loaded photo IDs to prevent duplicates
 	let loadedPhotoIds = $state(new Set(data.photoItems?.map((item) => item.id) || []))
 
@@ -26,6 +39,53 @@
 
 	// Error message for retry display
 	let lastError = $state<string>('')
+	let isLoadingAll = $state(false)
+
+	// Update URL when view mode changes
+	async function handleViewModeChange(mode: ViewMode) {
+		viewMode = mode
+		if (browser) {
+			const url = new URL($page.url)
+			if (mode === 'masonry') {
+				url.searchParams.delete('view')
+			} else {
+				url.searchParams.set('view', mode)
+			}
+			goto(url.toString(), { replaceState: true, keepFocus: true })
+
+			// Load all remaining photos for horizontal mode
+			if (mode === 'horizontal' && data.pagination?.hasMore && !isLoadingAll) {
+				loadAllPhotos()
+			}
+		}
+	}
+
+	// Load all photos for horizontal mode
+	async function loadAllPhotos() {
+		if (isLoadingAll) return
+		isLoadingAll = true
+
+		try {
+			while (currentOffset < (data.pagination?.total || Infinity)) {
+				const response = await fetch(`/api/photos?limit=50&offset=${currentOffset}`)
+				if (!response.ok) break
+
+				const result = await response.json()
+				const newItems = (result.photoItems || []).filter(
+					(item: PhotoItem) => !loadedPhotoIds.has(item.id)
+				)
+
+				newItems.forEach((item: PhotoItem) => loadedPhotoIds.add(item.id))
+				allPhotoItems = [...allPhotoItems, ...newItems]
+				currentOffset += result.pagination?.limit || 50
+
+				if (!result.pagination?.hasMore) break
+			}
+		} finally {
+			isLoadingAll = false
+			loaderState.complete()
+		}
+	}
 
 	// Load more photos
 	async function loadMore() {
@@ -68,9 +128,16 @@
 	}
 
 	// Initialize loader state based on initial data
+	let hasInitialized = false
 	$effect(() => {
-		if (!data.pagination?.hasMore) {
-			loaderState.complete()
+		if (!hasInitialized) {
+			hasInitialized = true
+			if (!data.pagination?.hasMore) {
+				loaderState.complete()
+			} else if (viewMode === 'horizontal') {
+				// Load all photos for horizontal mode on initial load
+				loadAllPhotos()
+			}
 		}
 	})
 
@@ -82,6 +149,37 @@
 			url: pageUrl
 		})
 	)
+
+	// Snapshot to preserve scroll position
+	export const snapshot: Snapshot<{
+		scrollY: number
+		horizontalScroll: number | undefined
+	}> = {
+		capture: () => {
+			if (!browser) return { scrollY: 0, horizontalScroll: undefined }
+
+			return {
+				scrollY: window.scrollY,
+				horizontalScroll: document.querySelector('.horizontal-scroll')?.scrollLeft
+			}
+		},
+		restore: (data) => {
+			if (!browser) return
+
+			// Small delay to ensure content is rendered
+			setTimeout(() => {
+				if (data.scrollY) {
+					window.scrollTo(0, data.scrollY)
+				}
+				if (data.horizontalScroll !== undefined) {
+					const element = document.querySelector('.horizontal-scroll')
+					if (element) {
+						element.scrollLeft = data.horizontalScroll
+					}
+				}
+			}, 10)
+		}
+	}
 </script>
 
 <svelte:head>
@@ -102,7 +200,11 @@
 	<link rel="canonical" href={metaTags.other.canonical} />
 </svelte:head>
 
-<div class="photos-container" class:wide={containerWidth === 'wide'}>
+<div
+	class="photos-container"
+	class:wide={containerWidth === 'wide'}
+	class:horizontal-mode={viewMode === 'horizontal'}
+>
 	{#if error}
 		<div class="error-container">
 			<div class="error-message">
@@ -118,48 +220,68 @@
 			</div>
 		</div>
 	{:else}
-		<ViewModeSelector 
+		<ViewModeSelector
+			mode={viewMode}
 			width={containerWidth}
-			onWidthChange={(width) => containerWidth = width}
+			onModeChange={handleViewModeChange}
+			onWidthChange={(width) => (containerWidth = width)}
 		/>
-		<MasonryPhotoGrid photoItems={allPhotoItems} />
 
-		<InfiniteLoader
-			{loaderState}
-			triggerLoad={loadMore}
-			intersectionOptions={{ rootMargin: '0px 0px 200px 0px' }}
-		>
-			<!-- Empty content since we're rendering the grid above -->
-			<div style="height: 1px;"></div>
+		<div class="grid-container" class:full-width={viewMode === 'horizontal'}>
+			{#if viewMode === 'masonry'}
+				<MasonryPhotoGrid photoItems={allPhotoItems} />
+			{:else if viewMode === 'single'}
+				<SingleColumnPhotoGrid photoItems={allPhotoItems} />
+			{:else if viewMode === 'two-column'}
+				<TwoColumnPhotoGrid photoItems={allPhotoItems} />
+			{:else if viewMode === 'horizontal'}
+				<HorizontalScrollPhotoGrid photoItems={allPhotoItems} />
+				{#if isLoadingAll}
+					<div class="loading-more-indicator">
+						<LoadingSpinner size="small" text="Loading all photos..." />
+					</div>
+				{/if}
+			{/if}
+		</div>
 
-			{#snippet loading()}
-				<div class="loading-container">
-					<LoadingSpinner size="medium" text="Loading more photos..." />
-				</div>
-			{/snippet}
+		{#if viewMode !== 'horizontal'}
+			<InfiniteLoader
+				{loaderState}
+				triggerLoad={loadMore}
+				intersectionOptions={{ rootMargin: '0px 0px 200px 0px' }}
+			>
+				<!-- Empty content since we're rendering the grid above -->
+				<div style="height: 1px;"></div>
 
-			{#snippet error()}
-				<div class="error-retry">
-					<p class="error-text">{lastError || 'Failed to load photos'}</p>
-					<button
-						class="retry-button"
-						onclick={() => {
-							lastError = ''
-							loaderState.reset()
-							loadMore()
-						}}
-					>
-						Try again
-					</button>
-				</div>
-			{/snippet}
+				{#snippet loading()}
+					<div class="loading-container">
+						<LoadingSpinner size="medium" text="Loading more photos..." />
+					</div>
+				{/snippet}
 
-			{#snippet noData()}
-				<div class="end-message">
-					<p>You've reached the end</p>
-				</div>
-			{/snippet}
-		</InfiniteLoader>
+				{#snippet error()}
+					<div class="error-retry">
+						<p class="error-text">{lastError || 'Failed to load photos'}</p>
+						<button
+							class="retry-button"
+							onclick={() => {
+								lastError = ''
+								loaderState.reset()
+								loadMore()
+							}}
+						>
+							Try again
+						</button>
+					</div>
+				{/snippet}
+
+				{#snippet noData()}
+					<div class="end-message">
+						<p>You've reached the end</p>
+					</div>
+				{/snippet}
+			</InfiniteLoader>
+		{/if}
 	{/if}
 </div>
 
@@ -172,7 +294,23 @@
 		transition: max-width 0.3s ease;
 
 		&.wide {
-			max-width: 900px;
+			max-width: 1100px;
+		}
+
+		&.horizontal-mode {
+			max-width: none;
+			padding-left: 0;
+			padding-right: 0;
+
+			:global(.view-mode-selector) {
+				max-width: 700px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			&.wide :global(.view-mode-selector) {
+				max-width: 1100px;
+			}
 		}
 
 		:global(.view-mode-selector) {
@@ -227,6 +365,17 @@
 		align-items: center;
 		min-height: 100px;
 		margin-top: $unit-4x;
+	}
+
+	.loading-more-indicator {
+		position: fixed;
+		bottom: $unit-3x;
+		right: $unit-3x;
+		background: $grey-100;
+		padding: $unit-2x $unit-3x;
+		border-radius: $corner-radius-lg;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		z-index: 20;
 	}
 
 	.end-message {
