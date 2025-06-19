@@ -1,32 +1,69 @@
 <script lang="ts">
 	import { getContext } from 'svelte'
 	import PhotosIcon from '$icons/photos.svg?component'
+	import ViewSingleIcon from '$icons/view-single.svg?component'
+	import ViewTwoColumnIcon from '$icons/view-two-column.svg?component'
+	import ViewHorizontalIcon from '$icons/view-horizontal.svg?component'
 	import WidthNormalIcon from '$icons/width-normal.svg?component'
 	import WidthWideIcon from '$icons/width-wide.svg?component'
 
+	export type ViewMode = 'masonry' | 'single' | 'two-column' | 'horizontal'
+
 	interface Props {
-		mode?: 'masonry'
+		mode?: ViewMode
 		width?: 'normal' | 'wide'
+		onModeChange?: (mode: ViewMode) => void
 		onWidthChange?: (width: 'normal' | 'wide') => void
 	}
 
 	let { 
 		mode = 'masonry',
 		width = 'normal',
+		onModeChange,
 		onWidthChange
 	}: Props = $props()
 </script>
 
 <div class="view-mode-selector">
 	<div class="mode-section">
-		<button class="mode-button selected" aria-label="Masonry view">
+		<button 
+			class="mode-button" 
+			class:selected={mode === 'masonry'}
+			aria-label="Masonry view"
+			onclick={() => onModeChange?.('masonry')}
+		>
 			<PhotosIcon />
+		</button>
+		<button 
+			class="mode-button"
+			class:selected={mode === 'single'}
+			aria-label="Single column view"
+			onclick={() => onModeChange?.('single')}
+		>
+			<ViewSingleIcon />
+		</button>
+		<button 
+			class="mode-button"
+			class:selected={mode === 'two-column'}
+			aria-label="Two column view"
+			onclick={() => onModeChange?.('two-column')}
+		>
+			<ViewTwoColumnIcon />
+		</button>
+		<button 
+			class="mode-button"
+			class:selected={mode === 'horizontal'}
+			aria-label="Horizontal scroll view"
+			onclick={() => onModeChange?.('horizontal')}
+		>
+			<ViewHorizontalIcon />
 		</button>
 	</div>
 	
-	<div class="separator"></div>
-	
-	<div class="width-section">
+	{#if mode !== 'horizontal'}
+		<div class="separator"></div>
+		
+		<div class="width-section">
 		<button 
 			class="mode-button" 
 			class:selected={width === 'normal'}
@@ -43,7 +80,8 @@
 		>
 			<WidthWideIcon />
 		</button>
-	</div>
+		</div>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -58,6 +96,10 @@
 		align-items: center;
 		gap: $unit-2x;
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		
+		@include breakpoint('phone') {
+			display: none;
+		}
 	}
 	
 	.mode-section,
