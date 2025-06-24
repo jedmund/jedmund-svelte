@@ -7,8 +7,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		if (albumResponse.ok) {
 			const album = await albumResponse.json()
 
-			// Check if this is a photography album and published
-			if (album.isPhotography && album.status === 'published') {
+			// Check if album is published
+			if (album.status === 'published') {
 				return {
 					type: 'album' as const,
 					album,
