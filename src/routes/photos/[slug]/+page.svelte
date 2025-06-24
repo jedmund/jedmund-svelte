@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Page from '$components/Page.svelte'
 	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
 	import BackButton from '$components/BackButton.svelte'
 	import { generateMetaTags, generateImageGalleryJsonLd } from '$lib/utils/metadata'
@@ -165,160 +166,147 @@
 
 {#if error}
 	<div class="error-container">
-		<div class="error-message">
-			<h1>Not Found</h1>
-			<p>{error}</p>
-			<BackButton href="/photos" label="Back to Photos" />
-		</div>
+		<Page>
+			<div class="error-message">
+				<h1>Not Found</h1>
+				<p>{error}</p>
+				<BackButton href="/photos" label="Back to Photos" />
+			</div>
+		</Page>
 	</div>
 {:else if type === 'album' && album}
-	<div class="album-page">
-		<!-- Album Card -->
-		<div class="album-card">
-			<h1 class="album-title">{album.title}</h1>
+	<div class="album-wrapper">
+		<Page>
+			{#snippet header()}
+				<div class="album-header">
+					<h1 class="album-title">{album.title}</h1>
 
-			{#if album.description}
-				<p class="album-description">{album.description}</p>
-			{/if}
+					{#if album.description}
+						<p class="album-description">{album.description}</p>
+					{/if}
 
-			<div class="album-meta">
-				{#if album.date}
-					<span class="meta-item">📅 {formatDate(album.date)}</span>
-				{/if}
-				{#if album.location}
-					<span class="meta-item">📍 {album.location}</span>
-				{/if}
-				<span class="meta-item"
-					>📷 {album.photos?.length || 0} photo{(album.photos?.length || 0) !== 1 ? 's' : ''}</span
-				>
-			</div>
-		</div>
-
-		<!-- Album Content -->
-		{#if album.content}
-			<div class="album-content-wrapper">
-				<div class="edra-rendered-content">
-					{@html renderEdraContent(album.content)}
+					<div class="album-meta">
+						{#if album.date}
+							<span class="meta-item">📅 {formatDate(album.date)}</span>
+						{/if}
+						{#if album.location}
+							<span class="meta-item">📍 {album.location}</span>
+						{/if}
+						<span class="meta-item"
+							>📷 {album.photos?.length || 0} photo{(album.photos?.length || 0) !== 1 ? 's' : ''}</span
+						>
+					</div>
 				</div>
-			</div>
-		{:else}
-			<!-- Legacy Photo Grid (for albums without composed content) -->
-			{#if photoItems.length > 0}
-				<MasonryPhotoGrid {photoItems} albumSlug={album.slug} />
+			{/snippet}
+
+			<!-- Album Content -->
+			{#if album.content}
+				<div class="album-content">
+					<div class="edra-rendered-content">
+						{@html renderEdraContent(album.content)}
+					</div>
+				</div>
 			{:else}
-				<div class="empty-album">
-					<p>This album doesn't contain any photos yet.</p>
-				</div>
+				<!-- Legacy Photo Grid (for albums without composed content) -->
+				{#if photoItems.length > 0}
+					<div class="legacy-photos">
+						<MasonryPhotoGrid {photoItems} albumSlug={album.slug} />
+					</div>
+				{:else}
+					<div class="empty-album">
+						<p>This album doesn't contain any photos yet.</p>
+					</div>
+				{/if}
 			{/if}
-		{/if}
+		</Page>
 	</div>
 {:else if type === 'photo' && photo}
-	<div class="photo-page">
-		<div class="photo-header">
-			<BackButton href="/photos" label="Back to Photos" />
-		</div>
+	<div class="photo-wrapper">
+		<Page>
+			<div class="photo-header">
+				<BackButton href="/photos" label="Back to Photos" />
+			</div>
 
-		<div class="photo-container">
-			<img src={photo.url} alt={photo.title || photo.caption || 'Photo'} class="photo-image" />
-		</div>
+			<div class="photo-container">
+				<img src={photo.url} alt={photo.title || photo.caption || 'Photo'} class="photo-image" />
+			</div>
 
-		<div class="photo-info">
-			{#if photo.title}
-				<h1 class="photo-title">{photo.title}</h1>
-			{/if}
+			<div class="photo-info">
+				{#if photo.title}
+					<h1 class="photo-title">{photo.title}</h1>
+				{/if}
 
-			{#if photo.caption || photo.description}
-				<p class="photo-description">{photo.caption || photo.description}</p>
-			{/if}
+				{#if photo.caption || photo.description}
+					<p class="photo-description">{photo.caption || photo.description}</p>
+				{/if}
 
-			{#if photo.exifData}
-				<div class="photo-exif">
-					<!-- EXIF data could be displayed here -->
-				</div>
-			{/if}
-		</div>
+				{#if photo.exifData}
+					<div class="photo-exif">
+						<!-- EXIF data could be displayed here -->
+					</div>
+				{/if}
+			</div>
+		</Page>
 	</div>
 {/if}
 
 <style lang="scss">
-	.error-container {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 60vh;
-		padding: $unit-6x $unit-3x;
+	/* Container Styles */
+	.error-container,
+	.album-wrapper,
+	.photo-wrapper {
+		width: 100%;
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 0 $unit-2x;
+		box-sizing: border-box;
 	}
 
 	.error-message {
 		text-align: center;
-		max-width: 500px;
+		padding: $unit-6x 0;
 
 		h1 {
 			font-size: 1.75rem;
 			font-weight: 600;
-			margin: 0 0 $unit-2x;
 			color: $red-60;
+			margin: 0 0 $unit-2x;
 		}
 
 		p {
-			margin: 0 0 $unit-3x;
 			color: $grey-40;
+			margin: 0 0 $unit-4x;
 			line-height: 1.5;
 		}
 	}
 
-	.album-page {
-		width: 100%;
-		max-width: 900px;
-		margin: 0 auto;
-		padding: 0 $unit-3x;
-
-		@include breakpoint('phone') {
-			padding: $unit-3x $unit-2x;
-		}
-	}
-
-	.album-card {
-		background: $grey-100;
-		border: 1px solid $grey-90;
-		border-radius: $card-corner-radius;
-		padding: $unit-6x;
-		margin-bottom: $unit-3x;
+	/* Album Styles */
+	.album-header {
 		text-align: center;
-
-		@include breakpoint('tablet') {
-			margin-bottom: $unit-2x;
-		}
-
-		@include breakpoint('phone') {
-			padding: $unit-4x $unit-3x;
-		}
+		padding-bottom: $unit-3x;
+		border-bottom: 1px solid $grey-90;
+		margin-bottom: $unit-4x;
 	}
 
 	.album-title {
-		font-size: 2.25rem;
+		font-size: 2rem;
 		font-weight: 700;
 		margin: 0 0 $unit-2x;
 		color: $grey-10;
 
 		@include breakpoint('phone') {
-			font-size: 1.875rem;
+			font-size: 1.75rem;
 		}
 	}
 
 	.album-description {
 		font-size: 1rem;
 		color: $grey-30;
-		margin: 0 0 $unit-4x;
+		margin: 0 0 $unit-3x;
 		line-height: 1.5;
 		max-width: 600px;
 		margin-left: auto;
 		margin-right: auto;
-
-		@include breakpoint('phone') {
-			font-size: 1rem;
-			margin-bottom: $unit-3x;
-		}
 	}
 
 	.album-meta {
@@ -340,18 +328,18 @@
 		}
 	}
 
-	.empty-album {
-		text-align: center;
-		padding: $unit-6x $unit-3x;
-		color: $grey-40;
+	.album-content {
+		padding: $unit-2x 0;
 	}
 
-	.album-content-wrapper {
-		margin-top: $unit-4x;
+	.legacy-photos {
+		padding: $unit-2x 0;
+	}
 
-		@include breakpoint('phone') {
-			margin-top: $unit-3x;
-		}
+	.empty-album {
+		text-align: center;
+		padding: $unit-6x 0;
+		color: $grey-40;
 	}
 
 	.edra-rendered-content {
@@ -475,17 +463,7 @@
 		}
 	}
 
-	.photo-page {
-		width: 100%;
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: $unit-4x $unit-3x;
-
-		@include breakpoint('phone') {
-			padding: $unit-3x $unit-2x;
-		}
-	}
-
+	/* Photo Page Styles */
 	.photo-header {
 		margin-bottom: $unit-3x;
 	}
@@ -497,18 +475,16 @@
 		.photo-image {
 			max-width: 100%;
 			height: auto;
-			border-radius: $card-corner-radius;
-			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+			border-radius: $unit;
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 		}
 	}
 
 	.photo-info {
-		max-width: 700px;
-		margin: 0 auto;
 		text-align: center;
 
 		.photo-title {
-			font-size: 2rem;
+			font-size: 1.75rem;
 			font-weight: 700;
 			margin: 0 0 $unit-2x;
 			color: $grey-10;
@@ -522,7 +498,10 @@
 			font-size: 1rem;
 			color: $grey-30;
 			line-height: 1.6;
-			margin: 0 0 $unit-3x;
+			margin: 0;
+			max-width: 600px;
+			margin-left: auto;
+			margin-right: auto;
 		}
 	}
 </style>
