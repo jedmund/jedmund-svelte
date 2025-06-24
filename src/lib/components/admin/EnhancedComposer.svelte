@@ -1,52 +1,15 @@
 <script lang="ts">
 	import { type Editor } from '@tiptap/core'
-	import { onMount } from 'svelte'
+	import { onMount, setContext } from 'svelte'
 	import { initiateEditor } from '$lib/components/edra/editor.js'
+	import { getEditorExtensions, EDITOR_PRESETS } from '$lib/components/edra/editor-extensions.js'
 	import { EdraToolbar, EdraBubbleMenu } from '$lib/components/edra/headless/index.js'
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle'
 	import { focusEditor, type EdraProps } from '$lib/components/edra/utils.js'
 	import EdraToolBarIcon from '$lib/components/edra/headless/components/EdraToolBarIcon.svelte'
 	import { commands } from '$lib/components/edra/commands/commands.js'
-
-	// Import all the same components as Edra
-	import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
-	import { all, createLowlight } from 'lowlight'
-	import { SvelteNodeViewRenderer } from 'svelte-tiptap'
-	import CodeExtended from '$lib/components/edra/headless/components/CodeExtended.svelte'
-	import { AudioPlaceholder } from '$lib/components/edra/extensions/audio/AudioPlaceholder.js'
-	import AudioPlaceholderComponent from '$lib/components/edra/headless/components/AudioPlaceholder.svelte'
-	import AudioExtendedComponent from '$lib/components/edra/headless/components/AudioExtended.svelte'
-	import { ImagePlaceholder } from '$lib/components/edra/extensions/image/ImagePlaceholder.js'
-	import ImageUploadPlaceholder from './ImageUploadPlaceholder.svelte' // Our custom component
-	import { VideoPlaceholder } from '$lib/components/edra/extensions/video/VideoPlaceholder.js'
-	import VideoPlaceholderComponent from '$lib/components/edra/headless/components/VideoPlaceholder.svelte'
-	import { ImageExtended } from '$lib/components/edra/extensions/image/ImageExtended.js'
-	import ImageExtendedComponent from '$lib/components/edra/headless/components/ImageExtended.svelte'
-	import VideoExtendedComponent from '$lib/components/edra/headless/components/VideoExtended.svelte'
-	import { VideoExtended } from '$lib/components/edra/extensions/video/VideoExtended.js'
-	import { AudioExtended } from '$lib/components/edra/extensions/audio/AudiExtended.js'
-	import LinkMenu from '$lib/components/edra/headless/menus/link-menu.svelte'
-	import TableRowMenu from '$lib/components/edra/headless/menus/table/table-row-menu.svelte'
-	import TableColMenu from '$lib/components/edra/headless/menus/table/table-col-menu.svelte'
-	import slashcommand from '$lib/components/edra/extensions/slash-command/slashcommand.js'
-	import SlashCommandList from '$lib/components/edra/headless/components/SlashCommandList.svelte'
-	import IFramePlaceholderComponent from '$lib/components/edra/headless/components/IFramePlaceholder.svelte'
-	import { IFramePlaceholder } from '$lib/components/edra/extensions/iframe/IFramePlaceholder.js'
-	import { IFrameExtended } from '$lib/components/edra/extensions/iframe/IFrameExtended.js'
-	import IFrameExtendedComponent from '$lib/components/edra/headless/components/IFrameExtended.svelte'
-	import { GalleryPlaceholder } from '$lib/components/edra/extensions/gallery/GalleryPlaceholder.js'
-	import GalleryPlaceholderComponent from '$lib/components/edra/headless/components/GalleryPlaceholder.svelte'
-	import { GalleryExtended } from '$lib/components/edra/extensions/gallery/GalleryExtended.js'
-	import GalleryExtendedComponent from '$lib/components/edra/headless/components/GalleryExtended.svelte'
-	import { UrlEmbed } from '$lib/components/edra/extensions/url-embed/UrlEmbed.js'
-	import { UrlEmbedPlaceholder } from '$lib/components/edra/extensions/url-embed/UrlEmbedPlaceholder.js'
-	import UrlEmbedPlaceholderComponent from '$lib/components/edra/headless/components/UrlEmbedPlaceholder.svelte'
-	import { UrlEmbedExtended } from '$lib/components/edra/extensions/url-embed/UrlEmbedExtended.js'
-	import UrlEmbedExtendedComponent from '$lib/components/edra/headless/components/UrlEmbedExtended.svelte'
-	import { LinkContextMenu } from '$lib/components/edra/extensions/link-context-menu/LinkContextMenu.js'
-	import UrlConvertDropdown from '$lib/components/edra/headless/components/UrlConvertDropdown.svelte'
-	import LinkContextMenuComponent from '$lib/components/edra/headless/components/LinkContextMenu.svelte'
-	import LinkEditDialog from '$lib/components/edra/headless/components/LinkEditDialog.svelte'
+	import EnhancedImagePlaceholder from '$lib/components/edra/headless/components/EnhancedImagePlaceholder.svelte'
+	import type { JSONContent } from '@tiptap/core'
 
 	// Import Edra styles
 	import '$lib/components/edra/headless/style.css'
@@ -54,29 +17,82 @@
 	import '$lib/components/edra/editor.css'
 	import '$lib/components/edra/onedark.css'
 
-	const lowlight = createLowlight(all)
+	// Import menus
+	import LinkMenu from '$lib/components/edra/headless/menus/link-menu.svelte'
+	import TableRowMenu from '$lib/components/edra/headless/menus/table/table-row-menu.svelte'
+	import TableColMenu from '$lib/components/edra/headless/menus/table/table-col-menu.svelte'
+	import UrlConvertDropdown from '$lib/components/edra/headless/components/UrlConvertDropdown.svelte'
+	import LinkContextMenuComponent from '$lib/components/edra/headless/components/LinkContextMenu.svelte'
+	import LinkEditDialog from '$lib/components/edra/headless/components/LinkEditDialog.svelte'
+	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
+	import { mediaSelectionStore } from '$lib/stores/media-selection'
+	import type { Media } from '@prisma/client'
+
+	// Component types
+	type ComposerVariant = 'full' | 'inline' | 'minimal'
+
+	interface Props {
+		variant?: ComposerVariant
+		data?: JSONContent
+		onChange?: (content: JSONContent) => void
+		onCharacterCount?: (count: number) => void
+		placeholder?: string
+		minHeight?: number
+		autofocus?: boolean
+		editable?: boolean
+		class?: string
+		showToolbar?: boolean
+		showSlashCommands?: boolean
+		albumId?: number
+		features?: {
+			imageUpload?: boolean
+			mediaLibrary?: boolean
+			urlEmbed?: boolean
+			tables?: boolean
+			codeBlocks?: boolean
+		}
+	}
 
 	let {
-		class: className = '',
-		content = undefined,
+		variant = 'full',
+		data = $bindable({
+			type: 'doc',
+			content: [{ type: 'paragraph' }]
+		}),
+		onChange,
+		onCharacterCount,
+		placeholder = variant === 'inline' ? "What's on your mind?" : 'Type "/" for commands...',
+		minHeight = variant === 'inline' ? 80 : 400,
+		autofocus = false,
 		editable = true,
-		limit = undefined,
-		editor = $bindable<Editor | undefined>(),
-		showSlashCommands = true,
-		showLinkBubbleMenu = true,
-		showTableBubbleMenu = true,
-		onUpdate,
-		showToolbar = true,
-		placeholder = 'Type "/" for commands...',
-		onEditorReady
-	}: EdraProps & {
-		showToolbar?: boolean
-		placeholder?: string
-		onEditorReady?: (editor: Editor) => void
-	} = $props()
+		class: className = '',
+		showToolbar = variant === 'full',
+		showSlashCommands = variant !== 'minimal',
+		albumId,
+		features = {
+			imageUpload: true,
+			mediaLibrary: true,
+			urlEmbed: true,
+			tables: true,
+			codeBlocks: true
+		}
+	}: Props = $props()
 
+	// Set editor context for child components
+	setContext('editorContext', {
+		albumId,
+		contentType: albumId ? 'album' : 'default',
+		isAlbumEditor: !!albumId
+	})
+
+	// State
+	let editor = $state<Editor | undefined>()
 	let element = $state<HTMLElement>()
 	let isLoading = $state(true)
+	let initialized = false
+	const mediaSelectionState = $derived($mediaSelectionStore)
+
+	// Dropdown states
 	let showTextStyleDropdown = $state(false)
 	let showMediaDropdown = $state(false)
 	let dropdownTriggerRef = $state<HTMLElement>()
@@ -101,19 +117,37 @@
 	let linkEditUrl = $state<string>('')
 	let linkEditPos = $state<number | null>(null)
 
-	// Filter out unwanted commands
+	// Get filtered commands based on variant and features
 	const getFilteredCommands = () => {
 		const filtered = { ...commands }
 
-		// Remove these groups entirely
-		delete filtered['undo-redo']
-		delete filtered['headings'] // In text style dropdown
-		delete filtered['lists'] // In text style dropdown
-		delete filtered['alignment'] // Not needed
-		delete filtered['table'] // Not needed
-		delete filtered['media'] // Will be in media dropdown
+		// Remove groups based on variant
+		if (variant === 'minimal') {
+			delete filtered['undo-redo']
+			delete filtered['headings']
+			delete filtered['lists']
+			delete filtered['alignment']
+			delete filtered['table']
+			delete filtered['media']
+			delete filtered['fonts']
+		} else if (variant === 'inline') {
+			delete filtered['undo-redo']
+			delete filtered['headings']
+			delete filtered['lists']
+			delete filtered['alignment']
+			delete filtered['table']
+			delete filtered['media']
+		} else {
+			// Full variant - reorganize for toolbar
+			delete filtered['undo-redo']
+			delete filtered['headings'] // In text style dropdown
+			delete filtered['lists'] // In text style dropdown
+			delete filtered['alignment']
+			delete filtered['table']
+			delete filtered['media'] // In media dropdown
+		}
 
-		// Reorganize text-formatting commands
+		// Reorganize text formatting for toolbar
 		if (filtered['text-formatting']) {
 			const allCommands = filtered['text-formatting'].commands
 			const basicFormatting = []
@@ -153,17 +187,22 @@
 		return filtered
 	}
 
-	// Get media commands, but filter out iframe
+	// Get media commands, but filter out based on features
 	const getMediaCommands = () => {
-		if (commands.media) {
-			return commands.media.commands.filter((cmd) => cmd.name !== 'iframe-placeholder')
+		if (!commands.media) return []
+
+		let mediaCommands = [...commands.media.commands]
+
+		// Filter based on features
+		if (!features.urlEmbed) {
+			mediaCommands = mediaCommands.filter((cmd) => cmd.name !== 'iframe-placeholder')
 		}
-		return []
+
+		return mediaCommands
 	}
 
 	const filteredCommands = getFilteredCommands()
-	const colorCommands = commands.colors.commands
-	const fontCommands = commands.fonts.commands
+	const colorCommands = commands.colors?.commands || []
 	const excludedCommands = ['colors', 'fonts']
 
 	// Get current text style for dropdown
@@ -179,7 +218,7 @@
 		return 'Paragraph'
 	}
 
-	// Derived state for current text style to avoid reactive mutations
+	// Derived state for current text style
 	let currentTextStyle = $derived(editor ? getCurrentTextStyle(editor) : 'Paragraph')
 
 	// Calculate dropdown position
@@ -240,42 +279,37 @@
 		}
 	}
 
-	// Handle URL convert dropdown
+	// URL convert handlers
 	const handleShowUrlConvertDropdown = (pos: number, url: string) => {
 		if (!editor) return
-
-		// Get the cursor coordinates
 		const coords = editor.view.coordsAtPos(pos)
 		urlConvertDropdownPosition = { x: coords.left, y: coords.bottom + 5 }
 		urlConvertPos = pos
 		showUrlConvertDropdown = true
 	}
 
-	// Handle link context menu
+	const handleConvertToEmbed = () => {
+		if (!editor || urlConvertPos === null) return
+		editor.commands.convertLinkToEmbed(urlConvertPos)
+		showUrlConvertDropdown = false
+		urlConvertPos = null
+	}
+
+	// Link context menu handlers
 	const handleShowLinkContextMenu = (
 		pos: number,
 		url: string,
 		coords: { x: number; y: number }
 	) => {
 		if (!editor) return
-
 		linkContextMenuPosition = { x: coords.x, y: coords.y + 5 }
 		linkContextUrl = url
 		linkContextPos = pos
 		showLinkContextMenu = true
 	}
 
-	const handleConvertToEmbed = () => {
-		if (!editor || urlConvertPos === null) return
-
-		editor.commands.convertLinkToEmbed(urlConvertPos)
-		showUrlConvertDropdown = false
-		urlConvertPos = null
-	}
-
 	const handleConvertLinkToEmbed = () => {
 		if (!editor || linkContextPos === null) return
-
 		editor.commands.convertLinkToEmbed(linkContextPos)
 		showLinkContextMenu = false
 		linkContextPos = null
@@ -284,7 +318,6 @@
 
 	const handleEditLink = () => {
 		if (!editor || !linkContextUrl) return
-
 		linkEditUrl = linkContextUrl
 		linkEditPos = linkContextPos
 		linkEditDialogPosition = { ...linkContextMenuPosition }
@@ -294,7 +327,6 @@
 
 	const handleSaveLink = (newUrl: string) => {
 		if (!editor) return
-
 		editor.chain().focus().extendMarkRange('link').setLink({ href: newUrl }).run()
 		showLinkEditDialog = false
 		linkEditPos = null
@@ -303,7 +335,6 @@
 
 	const handleCopyLink = () => {
 		if (!linkContextUrl) return
-
 		navigator.clipboard.writeText(linkContextUrl)
 		showLinkContextMenu = false
 		linkContextPos = null
@@ -312,7 +343,6 @@
 
 	const handleRemoveLink = () => {
 		if (!editor) return
-
 		editor.chain().focus().extendMarkRange('link').unsetLink().run()
 		showLinkContextMenu = false
 		linkContextPos = null
@@ -321,29 +351,67 @@
 
 	const handleOpenLink = () => {
 		if (!linkContextUrl) return
-
 		window.open(linkContextUrl, '_blank', 'noopener,noreferrer')
 		showLinkContextMenu = false
 		linkContextPos = null
 		linkContextUrl = null
 	}
 
-	$effect(() => {
-		if (
-			showTextStyleDropdown ||
-			showMediaDropdown ||
-			showUrlConvertDropdown ||
-			showLinkContextMenu ||
-			showLinkEditDialog
-		) {
-			document.addEventListener('click', handleClickOutside)
-			return () => {
-				document.removeEventListener('click', handleClickOutside)
-			}
-		}
-	})
+	// Handle media selection from the global store
+	function handleGlobalMediaSelect(media: Media | Media[]) {
+		if (!editor) return
 
-	// Custom paste handler for both images and text
+		const selectedMedia = Array.isArray(media) ? media[0] : media
+		if (selectedMedia) {
+			// Set a reasonable default width (max 600px)
+			const displayWidth =
+				selectedMedia.width && selectedMedia.width > 600 ? 600 : selectedMedia.width
+
+			editor
+				.chain()
+				.focus()
+				.setImage({
+					src: selectedMedia.url,
+					alt: selectedMedia.altText || '',
+					title: selectedMedia.description || '',
+					width: displayWidth,
+					height: selectedMedia.height,
+					align: 'center'
+				})
+				.run()
+		}
+
+		// Close the modal
+		mediaSelectionStore.close()
+
+		// Remove the placeholder if it exists
+		if (editor.storage.imageModal?.placeholderPos !== undefined) {
+			const pos = editor.storage.imageModal.placeholderPos
+			editor
+				.chain()
+				.focus()
+				.deleteRange({ from: pos, to: pos + 1 })
+				.run()
+			editor.storage.imageModal.placeholderPos = undefined
+		}
+	}
+
+	function handleGlobalMediaClose() {
+		mediaSelectionStore.close()
+
+		// Remove the placeholder if user cancelled
+		if (editor && editor.storage.imageModal?.placeholderPos !== undefined) {
+			const pos = editor.storage.imageModal.placeholderPos
+			editor
+				.chain()
+				.focus()
+				.deleteRange({ from: pos, to: pos + 1 })
+				.run()
+			editor.storage.imageModal.placeholderPos = undefined
+		}
+	}
+
+	// Handle paste for images
 	function handlePaste(view: any, event: ClipboardEvent) {
 		const clipboardData = event.clipboardData
 		if (!clipboardData) return false
@@ -352,7 +420,7 @@
 		const imageItem = Array.from(clipboardData.items).find(
 			(item) => item.type.indexOf('image') === 0
 		)
-		if (imageItem) {
+		if (imageItem && features.imageUpload) {
 			const file = imageItem.getAsFile()
 			if (!file) return false
 
@@ -375,33 +443,30 @@
 		if (htmlData && plainText) {
 			event.preventDefault()
 
-			// Use editor commands to insert HTML content, but let Tiptap handle the parsing
-			// This will preserve links while stripping unwanted formatting based on editor config
+			// Use editor commands to insert HTML content
 			const editorInstance = (view as any).editor
 			if (editorInstance) {
-				// Use pasteHTML to let Tiptap process the HTML and apply configured extensions
 				editorInstance
 					.chain()
 					.focus()
 					.insertContent(htmlData, { parseOptions: { preserveWhitespace: false } })
 					.run()
 			} else {
-				// Fallback to plain text if editor instance not available
+				// Fallback to plain text
 				const { state, dispatch } = view
 				const { selection } = state
 				const transaction = state.tr.insertText(plainText, selection.from, selection.to)
 				dispatch(transaction)
 			}
 
-			return true // Prevent default paste behavior
+			return true
 		}
 
-		// Let default handling take care of plain text only
 		return false
 	}
 
 	async function uploadImage(file: File) {
-		if (!editor) return
+		if (!editor || !features.imageUpload) return
 
 		// Create a placeholder while uploading
 		const placeholderSrc = URL.createObjectURL(file)
@@ -415,6 +480,11 @@
 
 			const formData = new FormData()
 			formData.append('file', file)
+
+			// Add albumId if available
+			if (albumId) {
+				formData.append('albumId', albumId.toString())
+			}
 
 			const response = await fetch('/api/media/upload', {
 				method: 'POST',
@@ -431,7 +501,6 @@
 			const media = await response.json()
 
 			// Replace placeholder with actual URL
-			// Set a reasonable default width (max 600px)
 			const displayWidth = media.width && media.width > 600 ? 600 : media.width
 
 			editor.commands.insertContent({
@@ -455,92 +524,125 @@
 		}
 	}
 
+	// Update content when editor changes
+	function handleUpdate({ editor: updatedEditor, transaction }: any) {
+		// Skip the first update to avoid circular updates
+		if (!initialized) {
+			initialized = true
+			return
+		}
+
+		// Dismiss URL convert dropdown if user types
+		if (showUrlConvertDropdown && transaction.docChanged) {
+			const hasTextChange = transaction.steps.some(
+				(step: any) =>
+					step.toJSON().stepType === 'replace' || step.toJSON().stepType === 'replaceAround'
+			)
+			if (hasTextChange) {
+				showUrlConvertDropdown = false
+				urlConvertPos = null
+			}
+		}
+
+		const json = updatedEditor.getJSON()
+		data = json
+		onChange?.(json)
+
+		// Calculate character count if callback provided
+		if (onCharacterCount) {
+			const text = updatedEditor.getText()
+			onCharacterCount(text.length)
+		}
+	}
+
+	$effect(() => {
+		if (
+			showTextStyleDropdown ||
+			showMediaDropdown ||
+			showUrlConvertDropdown ||
+			showLinkContextMenu ||
+			showLinkEditDialog
+		) {
+			document.addEventListener('click', handleClickOutside)
+			return () => {
+				document.removeEventListener('click', handleClickOutside)
+			}
+		}
+	})
+
 	onMount(() => {
+		// Get extensions with custom options
+		const extensions = getEditorExtensions({
+			showSlashCommands,
+			onShowUrlConvertDropdown: features.urlEmbed ? handleShowUrlConvertDropdown : undefined,
+			onShowLinkContextMenu: handleShowLinkContextMenu,
+			imagePlaceholderComponent: EnhancedImagePlaceholder
+		})
+
+		// Initialize editor storage for image modal
 		const newEditor = initiateEditor(
 			element,
-			content,
-			limit,
-			[
-				CodeBlockLowlight.configure({
-					lowlight
-				}).extend({
-					addNodeView() {
-						return SvelteNodeViewRenderer(CodeExtended)
-					}
-				}),
-				AudioPlaceholder(AudioPlaceholderComponent),
-				ImagePlaceholder(ImageUploadPlaceholder), // Use our custom component
-				GalleryPlaceholder(GalleryPlaceholderComponent),
-				IFramePlaceholder(IFramePlaceholderComponent),
-				IFrameExtended(IFrameExtendedComponent),
-				VideoPlaceholder(VideoPlaceholderComponent),
-				AudioExtended(AudioExtendedComponent),
-				ImageExtended(ImageExtendedComponent),
-				GalleryExtended(GalleryExtendedComponent),
-				VideoExtended(VideoExtendedComponent),
-				UrlEmbed.configure({
-					onShowDropdown: handleShowUrlConvertDropdown
-				}),
-				UrlEmbedPlaceholder(UrlEmbedPlaceholderComponent),
-				UrlEmbedExtended(UrlEmbedExtendedComponent),
-				LinkContextMenu.configure({
-					onShowContextMenu: handleShowLinkContextMenu
-				}),
-				...(showSlashCommands ? [slashcommand(SlashCommandList)] : [])
-			],
+			data,
+			undefined, // no character limit by default
+			extensions,
 			{
 				editable,
-				onUpdate: ({ editor: updatedEditor, transaction }) => {
-					// Dismiss URL convert dropdown if user types
-					if (showUrlConvertDropdown && transaction.docChanged) {
-						// Check if the change is actual typing (not just cursor movement)
-						const hasTextChange = transaction.steps.some(
-							(step) =>
-								step.toJSON().stepType === 'replace' || step.toJSON().stepType === 'replaceAround'
-						)
-						if (hasTextChange) {
-							showUrlConvertDropdown = false
-							urlConvertPos = null
-						}
-					}
-
-					// Call the original onUpdate if provided
-					if (onUpdate) {
-						onUpdate({ editor: updatedEditor, transaction })
-					}
-				},
+				onUpdate: handleUpdate,
 				editorProps: {
 					attributes: {
 						class: 'prose prose-sm max-w-none focus:outline-none'
 					},
-					handlePaste: handlePaste
+					handlePaste: features.imageUpload ? handlePaste : undefined
 				}
 			},
 			placeholder
 		)
+
+		// Initialize storage for image modal
+		newEditor.storage.imageModal = { autoOpen: false }
+
 		editor = newEditor
 
-		// Notify parent component that editor is ready
-		if (onEditorReady) {
-			onEditorReady(newEditor)
-		}
-
-		// Add placeholder
-		if (placeholder && editor) {
-			editor.extensionManager.extensions
-				.find((ext) => ext.name === 'placeholder')
-				?.configure({
-					placeholder
-				})
+		// Auto-focus if requested
+		if (autofocus) {
+			setTimeout(() => {
+				newEditor.commands.focus()
+			}, 100)
 		}
 
 		isLoading = false
 
 		return () => editor?.destroy()
 	})
+
+
+	// Public API
+	export function save(): JSONContent | null {
+		return editor?.getJSON() || null
+	}
+
+	export function clear() {
+		editor?.commands.clearContent()
+	}
+
+	export function focus() {
+		editor?.commands.focus()
+	}
+
+	export function blur() {
+		editor?.commands.blur()
+	}
+
+	export function getContent() {
+		return editor?.getJSON()
+	}
+
+	export function getText() {
+		return editor?.getText() || ''
+	}
 </script>
 
-<div class={`edra ${className}`}>
+<div class={`composer composer--${variant} ${className}`}>
 	{#if showToolbar && editor && !isLoading}
 		<div class="editor-toolbar">
 			<div class="edra-toolbar">
@@ -576,84 +678,89 @@
 					<span class="separator"></span>
 				{/each}
 
-				<!-- Media Dropdown -->
-				<div class="text-style-dropdown">
-					<button
-						bind:this={mediaDropdownTriggerRef}
-						class="dropdown-trigger"
-						onclick={toggleMediaDropdown}
-					>
-						<span>Insert</span>
-						<svg
-							width="12"
-							height="12"
-							viewBox="0 0 12 12"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
+				{#if features.mediaLibrary}
+					<!-- Media Dropdown -->
+					<div class="text-style-dropdown">
+						<button
+							bind:this={mediaDropdownTriggerRef}
+							class="dropdown-trigger"
+							onclick={toggleMediaDropdown}
 						>
-							<path
-								d="M3 4.5L6 7.5L9 4.5"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</button>
-				</div>
+							<span>Insert</span>
+							<svg
+								width="12"
+								height="12"
+								viewBox="0 0 12 12"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M3 4.5L6 7.5L9 4.5"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						</button>
+					</div>
 
-				<span class="separator"></span>
+					<span class="separator"></span>
+				{/if}
 
-				<EdraToolBarIcon
-					command={colorCommands[0]}
-					{editor}
-					style={`color: ${editor.getAttributes('textStyle').color};`}
-					onclick={() => {
-						const color = editor.getAttributes('textStyle').color
-						const hasColor = editor.isActive('textStyle', { color })
-						if (hasColor) {
-							editor.chain().focus().unsetColor().run()
-						} else {
-							const color = prompt('Enter the color of the text:')
-							if (color !== null) {
-								editor.chain().focus().setColor(color).run()
+				{#if colorCommands.length > 0}
+					<EdraToolBarIcon
+						command={colorCommands[0]}
+						{editor}
+						style={`color: ${editor.getAttributes('textStyle').color};`}
+						onclick={() => {
+							const color = editor.getAttributes('textStyle').color
+							const hasColor = editor.isActive('textStyle', { color })
+							if (hasColor) {
+								editor.chain().focus().unsetColor().run()
+							} else {
+								const color = prompt('Enter the color of the text:')
+								if (color !== null) {
+									editor.chain().focus().setColor(color).run()
+								}
 							}
-						}
-					}}
-				/>
-				<EdraToolBarIcon
-					command={colorCommands[1]}
-					{editor}
-					style={`background-color: ${editor.getAttributes('highlight').color};`}
-					onclick={() => {
-						const hasHightlight = editor.isActive('highlight')
-						if (hasHightlight) {
-							editor.chain().focus().unsetHighlight().run()
-						} else {
-							const color = prompt('Enter the color of the highlight:')
-							if (color !== null) {
-								editor.chain().focus().setHighlight({ color }).run()
+						}}
+					/>
+					<EdraToolBarIcon
+						command={colorCommands[1]}
+						{editor}
+						style={`background-color: ${editor.getAttributes('highlight').color};`}
+						onclick={() => {
+							const hasHightlight = editor.isActive('highlight')
+							if (hasHightlight) {
+								editor.chain().focus().unsetHighlight().run()
+							} else {
+								const color = prompt('Enter the color of the highlight:')
+								if (color !== null) {
+									editor.chain().focus().setHighlight({ color }).run()
+								}
 							}
-						}
-					}}
-				/>
+						}}
+					/>
+				{/if}
 			</div>
 		</div>
 	{/if}
+
 	{#if editor}
-		{#if false && showLinkBubbleMenu}
-			<LinkMenu {editor} />
-		{/if}
-		{#if showTableBubbleMenu}
+		<LinkMenu {editor} />
+		{#if features.tables}
 			<TableRowMenu {editor} />
 			<TableColMenu {editor} />
 		{/if}
 	{/if}
+
 	{#if !editor}
 		<div class="edra-loading">
 			<LoaderCircle class="animate-spin" /> Loading...
 		</div>
 	{/if}
+
 	<div
 		bind:this={element}
 		role="button"
@@ -666,11 +773,12 @@
 		}}
 		class="edra-editor"
 		class:with-toolbar={showToolbar}
+		style={`min-height: ${minHeight}px`}
 	></div>
 </div>
 
 <!-- Media Dropdown Portal -->
-{#if showMediaDropdown}
+{#if showMediaDropdown && features.mediaLibrary}
 	<div
 		class="media-dropdown-portal"
 		style="position: fixed; top: {mediaDropdownPosition.top}px; left: {mediaDropdownPosition.left}px; z-index: 10000;"
@@ -679,7 +787,25 @@
 			<button
 				class="dropdown-item"
 				onclick={() => {
-					editor?.chain().focus().insertImagePlaceholder().run()
+					if (editor) {
+						// Get current position before inserting placeholder
+						const pos = editor.state.selection.anchor
+
+						// Insert placeholder
+						editor.chain().focus().insertImagePlaceholder().run()
+
+						// Store the position for later deletion
+						editor.storage.imageModal = { placeholderPos: pos }
+
+						// Open the modal through the store
+						mediaSelectionStore.open({
+							mode: 'single',
+							fileType: 'image',
+							albumId,
+							onSelect: handleGlobalMediaSelect,
+							onClose: handleGlobalMediaClose
+						})
+					}
 					showMediaDropdown = false
 				}}
 			>
@@ -716,17 +842,28 @@
 			<button
 				class="dropdown-item"
 				onclick={() => {
-					editor?.chain().focus().insertUrlEmbedPlaceholder().run()
+					editor?.chain().focus().insertGeolocationPlaceholder().run()
 					showMediaDropdown = false
 				}}
 			>
-				Link
+				Location
 			</button>
+			{#if features.urlEmbed}
+				<button
+					class="dropdown-item"
+					onclick={() => {
+						editor?.chain().focus().insertUrlEmbedPlaceholder().run()
+						showMediaDropdown = false
+					}}
+				>
+					Link
+				</button>
+			{/if}
 		</div>
 	</div>
 {/if}
 
-<!-- Dropdown Menu Portal -->
+<!-- Text Style Dropdown Menu Portal -->
 {#if showTextStyleDropdown}
 	<div
 		class="dropdown-menu-portal"
@@ -798,16 +935,18 @@
 			>
 				Task List
 			</button>
-			<div class="dropdown-separator"></div>
-			<button
-				class="dropdown-item"
-				onclick={() => {
-					editor?.chain().focus().toggleCodeBlock().run()
-					showTextStyleDropdown = false
-				}}
-			>
-				Code Block
-			</button>
+			{#if features.codeBlocks}
+				<div class="dropdown-separator"></div>
+				<button
+					class="dropdown-item"
+					onclick={() => {
+						editor?.chain().focus().toggleCodeBlock().run()
+						showTextStyleDropdown = false
+					}}
+				>
+					Code Block
+				</button>
+			{/if}
 			<button
 				class="dropdown-item"
 				onclick={() => {
@@ -822,7 +961,7 @@
 {/if}
 
 <!-- URL Convert Dropdown -->
-{#if showUrlConvertDropdown}
+{#if showUrlConvertDropdown && features.urlEmbed}
 	<UrlConvertDropdown
 		x={urlConvertDropdownPosition.x}
 		y={urlConvertDropdownPosition.y}
@@ -840,7 +979,7 @@
 		x={linkContextMenuPosition.x}
 		y={linkContextMenuPosition.y}
 		url={linkContextUrl}
-		onConvertToCard={handleConvertLinkToEmbed}
+		onConvertToCard={features.urlEmbed ? handleConvertLinkToEmbed : undefined}
 		onEditLink={handleEditLink}
 		onCopyLink={handleCopyLink}
 		onRemoveLink={handleRemoveLink}
@@ -868,8 +1007,22 @@
 	/>
 {/if}
 
+<!-- Global Media Selection Modal -->
+{#if mediaSelectionState.isOpen}
+	<UnifiedMediaModal
+		bind:isOpen={mediaSelectionState.isOpen}
+		mode={mediaSelectionState.mode}
+		fileType={mediaSelectionState.fileType}
+		albumId={mediaSelectionState.albumId}
+		onSelect={mediaSelectionState.onSelect}
+		onClose={mediaSelectionState.onClose}
+	/>
+{/if}
+
 <style lang="scss">
-	.edra {
+	@import '$styles/variables.scss';
+
+	.composer {
 		width: 100%;
 		min-width: 0;
 		display: flex;
@@ -895,17 +1048,37 @@
 		background: rgba(255, 255, 255, 0.9);
 	}
 
+	.composer--full .editor-toolbar {
+		border-radius: 999px;
+		border: 1px solid rgba(0, 0, 0, 0.08);
+		box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+		background: $grey-95;
+	}
+
 	.edra-editor {
 		width: 100%;
 		flex: 1;
 		min-width: 0;
 		overflow: visible;
 		box-sizing: border-box;
+		padding: 0 $unit-4x;
+		overflow-y: auto;
 	}
 
-	// .edra-editor.with-toolbar {
-	// 	padding-top: 52px; /* Account for sticky toolbar height */
-	// }
+	.composer--full .edra-editor :global(.ProseMirror) {
+		min-height: 400px;
+		padding: $unit-4x 0;
+	}
+
+	.composer--inline .edra-editor :global(.ProseMirror) {
+		min-height: 80px;
+		padding: $unit-2x 0;
+	}
+
+	.composer--minimal .edra-editor :global(.ProseMirror) {
+		min-height: 60px;
+		padding: $unit-2x 0;
+	}
 
 	:global(.ProseMirror) {
 		width: 100%;
@@ -1016,5 +1189,27 @@
 	/* Thicker strokes for icons */
 	:global(.edra-toolbar svg) {
 		stroke-width: 2;
+	}
+
+	.edra-loading {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: $unit-4x;
+		gap: $unit;
+		color: $grey-30;
+	}
+
+	:global(.animate-spin) {
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 </style>

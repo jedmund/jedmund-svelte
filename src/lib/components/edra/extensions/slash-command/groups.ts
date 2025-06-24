@@ -41,6 +41,14 @@ export const GROUPS: Group[] = [
 			...commands.media.commands,
 			...commands.table.commands,
 			{
+				iconName: 'MapPin',
+				name: 'geolocation-placeholder',
+				label: 'Location',
+				action: (editor: Editor) => {
+					editor.chain().focus().insertGeolocationPlaceholder().run()
+				}
+			},
+			{
 				iconName: 'Minus',
 				name: 'horizontalRule',
 				label: 'Horizontal Rule',
