@@ -13,15 +13,7 @@
 		height?: number
 	}
 
-	let { 
-		src, 
-		alt = '', 
-		title, 
-		id, 
-		class: className = '',
-		width,
-		height
-	}: Props = $props()
+	let { src, alt = '', title, id, class: className = '', width, height }: Props = $props()
 
 	let imageRef = $state<HTMLImageElement>()
 	let isUltrawide = $state(false)
@@ -31,14 +23,19 @@
 	function checkIfUltrawide() {
 		if (width && height) {
 			isUltrawide = width / height > 2
-			console.log('Ultrawide check from props:', { width, height, ratio: width / height, isUltrawide })
+			console.log('Ultrawide check from props:', {
+				width,
+				height,
+				ratio: width / height,
+				isUltrawide
+			})
 		} else if (imageRef && imageLoaded) {
 			isUltrawide = imageRef.naturalWidth / imageRef.naturalHeight > 2
-			console.log('Ultrawide check from image:', { 
-				naturalWidth: imageRef.naturalWidth, 
-				naturalHeight: imageRef.naturalHeight, 
-				ratio: imageRef.naturalWidth / imageRef.naturalHeight, 
-				isUltrawide 
+			console.log('Ultrawide check from image:', {
+				naturalWidth: imageRef.naturalWidth,
+				naturalHeight: imageRef.naturalHeight,
+				ratio: imageRef.naturalWidth / imageRef.naturalHeight,
+				isUltrawide
 			})
 		}
 	}
@@ -64,7 +61,7 @@
 	// Enhance zoom behavior for ultrawide images
 	function enhanceZoomForUltrawide() {
 		if (!isUltrawide) return
-		
+
 		console.log('Setting up ultrawide zoom enhancement')
 
 		// Wait for zoom to be activated
@@ -72,53 +69,61 @@
 			mutations.forEach((mutation) => {
 				if (mutation.type === 'childList') {
 					// Check for zoom overlay - try multiple selectors
-					const zoomOverlay = document.querySelector('[data-smiz-overlay]') || 
-									   document.querySelector('.medium-image-zoom-overlay') ||
-									   document.querySelector('[data-rmiz-modal-overlay]')
-					const zoomedImage = document.querySelector('[data-smiz-modal] img') || 
-									   document.querySelector('.medium-image-zoom-image') ||
-									   document.querySelector('[data-rmiz-modal-img]') as HTMLImageElement
-					
-					console.log('Checking for zoom elements:', { 
-						zoomOverlay: !!zoomOverlay, 
+					const zoomOverlay =
+						document.querySelector('[data-smiz-overlay]') ||
+						document.querySelector('.medium-image-zoom-overlay') ||
+						document.querySelector('[data-rmiz-modal-overlay]')
+					const zoomedImage =
+						document.querySelector('[data-smiz-modal] img') ||
+						document.querySelector('.medium-image-zoom-image') ||
+						(document.querySelector('[data-rmiz-modal-img]') as HTMLImageElement)
+
+					console.log('Checking for zoom elements:', {
+						zoomOverlay: !!zoomOverlay,
 						zoomedImage: !!zoomedImage,
 						allDivs: document.querySelectorAll('div').length,
 						bodyChildren: document.body.children.length
 					})
-					
+
 					// Also check for any new elements with specific classes
 					const allNewElements = mutation.addedNodes
-					allNewElements.forEach(node => {
-						if (node.nodeType === 1) { // Element node
+					allNewElements.forEach((node) => {
+						if (node.nodeType === 1) {
+							// Element node
 							const element = node as HTMLElement
-							console.log('New element added:', element.tagName, element.className, element.getAttribute('data-rmiz-modal-overlay'))
+							console.log(
+								'New element added:',
+								element.tagName,
+								element.className,
+								element.getAttribute('data-rmiz-modal-overlay')
+							)
 						}
 					})
-					
+
 					if (zoomOverlay && zoomedImage) {
 						console.log('Zoom activated, applying ultrawide enhancements')
 						// Add custom class for ultrawide handling
 						zoomOverlay.classList.add('ultrawide-zoom')
-						
+
 						// Make the zoomed image scrollable horizontally
 						const modal = zoomedImage.closest('[data-smiz-modal]') as HTMLElement
 						if (modal) {
 							modal.style.overflow = 'auto'
 							modal.style.maxHeight = '90vh'
-							
+
 							// Adjust image height to fill more vertical space for ultrawide
 							zoomedImage.style.maxHeight = '85vh'
 							zoomedImage.style.height = 'auto'
 							zoomedImage.style.width = 'auto'
 							zoomedImage.style.maxWidth = 'none'
-							
+
 							// Center the scroll position initially
 							setTimeout(() => {
 								const scrollLeft = (modal.scrollWidth - modal.clientWidth) / 2
 								modal.scrollLeft = scrollLeft
 								updateScrollIndicators(modal)
 							}, 50)
-							
+
 							// Add scroll listener to update indicators
 							modal.addEventListener('scroll', () => updateScrollIndicators(modal))
 						}
@@ -156,10 +161,10 @@
 <div class="photo-view {className}" class:ultrawide={isUltrawide}>
 	{#key id || src}
 		<Zoom>
-			<img 
+			<img
 				bind:this={imageRef}
-				{src} 
-				alt={title || alt || 'Photo'} 
+				{src}
+				alt={title || alt || 'Photo'}
 				class="photo-image"
 				onload={handleImageLoad}
 			/>
@@ -203,7 +208,7 @@
 	:global(.ultrawide-zoom) {
 		:global([data-smiz-modal]) {
 			cursor: grab;
-			
+
 			&:active {
 				cursor: grabbing;
 			}

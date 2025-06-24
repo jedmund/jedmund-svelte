@@ -10,6 +10,7 @@
 		backHref?: string
 		backLabel?: string
 		showBackButton?: boolean
+		albums?: Array<{ id: number; title: string; slug: string }>
 		class?: string
 	}
 
@@ -22,6 +23,7 @@
 		backHref,
 		backLabel,
 		showBackButton = false,
+		albums = [],
 		class: className = ''
 	}: Props = $props()
 
@@ -113,6 +115,19 @@
 					<span class="metadata-value">{exifData.location}</span>
 				</div>
 			{/if}
+		</div>
+	{/if}
+
+	{#if albums && albums.length > 0}
+		<div class="albums-section">
+			<h3 class="albums-title">This photo appears in:</h3>
+			<div class="albums-list">
+				{#each albums as album}
+					<a href="/photos/{album.slug}" class="album-link">
+						{album.title}
+					</a>
+				{/each}
+			</div>
 		</div>
 	{/if}
 
@@ -216,6 +231,50 @@
 			color: $grey-10;
 			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
 				monospace;
+		}
+	}
+
+	.albums-section {
+		margin-bottom: $unit-4x;
+		padding-bottom: $unit-4x;
+		border-bottom: 1px solid $grey-90;
+
+		@include breakpoint('phone') {
+			margin-bottom: $unit-3x;
+			padding-bottom: $unit-3x;
+		}
+
+		.albums-title {
+			font-size: 0.875rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: $grey-40;
+			margin: 0 0 $unit-2x;
+		}
+
+		.albums-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: $unit $unit-2x;
+		}
+
+		.album-link {
+			font-size: 0.875rem;
+			color: $red-60;
+			text-decoration: none;
+			transition: color 0.2s ease;
+
+			&:hover {
+				color: $red-50;
+				text-decoration: underline;
+			}
+
+			&:not(:last-child)::after {
+				content: ',';
+				color: $grey-40;
+				margin-left: 2px;
+			}
 		}
 	}
 

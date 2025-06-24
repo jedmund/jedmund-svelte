@@ -26,7 +26,9 @@
 			} else {
 				// Navigate to individual photo page using the media ID
 				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
-				goto(`/photos/p/${mediaId}`)
+				// Include the album slug as a 'from' parameter if we're in an album context
+				const url = albumSlug ? `/photos/p/${mediaId}?from=${albumSlug}` : `/photos/p/${mediaId}`
+				goto(url)
 			}
 		}
 	}
@@ -37,16 +39,8 @@
 
 	const photo = $derived(isAlbum(item) ? item.coverPhoto : item)
 	const isAlbumItem = $derived(isAlbum(item))
-	const placeholderStyle = $derived(
-		photo.dominantColor 
-			? `background: ${photo.dominantColor}` 
-			: ''
-	)
-	const aspectRatioStyle = $derived(
-		photo.aspectRatio 
-			? `aspect-ratio: ${photo.aspectRatio}` 
-			: ''
-	)
+	const placeholderStyle = $derived(photo.dominantColor ? `background: ${photo.dominantColor}` : '')
+	const aspectRatioStyle = $derived(photo.aspectRatio ? `aspect-ratio: ${photo.aspectRatio}` : '')
 </script>
 
 <div class="photo-item" class:is-album={isAlbumItem}>
@@ -249,11 +243,9 @@
 		z-index: 1;
 		overflow: hidden;
 
-
 		&.loaded {
 			opacity: 0;
 			pointer-events: none;
 		}
 	}
-
 </style>

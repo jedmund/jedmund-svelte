@@ -33,7 +33,7 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: $unit-3x;
-		
+
 		@include breakpoint('phone') {
 			gap: $unit-2x;
 		}
@@ -43,7 +43,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit-3x;
-		
+
 		@include breakpoint('phone') {
 			gap: $unit-2x;
 		}

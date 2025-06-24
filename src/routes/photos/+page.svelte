@@ -28,7 +28,9 @@
 	// Initialize view mode from URL or default
 	const urlMode = $page.url.searchParams.get('view') as ViewMode
 	let viewMode = $state<ViewMode>(
-		urlMode && ['masonry', 'single', 'two-column', 'horizontal'].includes(urlMode) ? urlMode : 'two-column'
+		urlMode && ['masonry', 'single', 'two-column', 'horizontal'].includes(urlMode)
+			? urlMode
+			: 'two-column'
 	)
 
 	// Track loaded photo IDs to prevent duplicates

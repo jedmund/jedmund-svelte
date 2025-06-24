@@ -46,6 +46,7 @@
 	let defaultRightX = 0
 
 	const pageUrl = $derived($page.url.href)
+	const fromAlbum = $derived($page.url.searchParams.get('from'))
 
 	// Generate metadata
 	const metaTags = $derived(
@@ -355,10 +356,10 @@
 {:else if photo}
 	<div class="photo-page" onmousemove={handleMouseMove} onmouseleave={handleMouseLeave}>
 		<div class="photo-content-wrapper">
-			<PhotoViewEnhanced 
-				src={photo.url} 
-				alt={photo.caption} 
-				title={photo.title} 
+			<PhotoViewEnhanced
+				src={photo.url}
+				alt={photo.caption}
+				title={photo.title}
 				id={photo.id}
 				width={photo.width}
 				height={photo.height}
@@ -408,8 +409,19 @@
 			description={photo.description}
 			{exifData}
 			createdAt={photo.createdAt}
-			backHref={photo.album ? `/photos/${photo.album.slug}` : '/photos'}
-			backLabel={photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'}
+			albums={photo.albums}
+			backHref={fromAlbum
+				? `/photos/${fromAlbum}`
+				: photo.album
+					? `/photos/${photo.album.slug}`
+					: '/photos'}
+			backLabel={(() => {
+				if (fromAlbum && photo.albums) {
+					const album = photo.albums.find((a) => a.slug === fromAlbum)
+					return album ? `Back to ${album.title}` : 'Back to Photos'
+				}
+				return photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'
+			})()}
 			showBackButton={true}
 		/>
 	</div>

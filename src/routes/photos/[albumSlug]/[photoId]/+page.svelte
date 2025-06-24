@@ -333,10 +333,10 @@
 {:else}
 	<div class="photo-page" onmousemove={handleMouseMove} onmouseleave={handleMouseLeave}>
 		<div class="photo-content-wrapper">
-			<PhotoViewEnhanced 
-				src={photo.url} 
-				alt={photo.caption} 
-				title={photo.title} 
+			<PhotoViewEnhanced
+				src={photo.url}
+				alt={photo.caption}
+				title={photo.title}
 				id={photo.id}
 				width={photo.width}
 				height={photo.height}
@@ -386,6 +386,7 @@
 			description={photo.description}
 			{exifData}
 			createdAt={photo.createdAt}
+			albums={photo.albums}
 			backHref={`/photos/${album.slug}`}
 			backLabel={`Back to ${album.title}`}
 			showBackButton={true}

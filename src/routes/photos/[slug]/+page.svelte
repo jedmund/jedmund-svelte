@@ -2,6 +2,7 @@
 	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
 	import BackButton from '$components/BackButton.svelte'
 	import { generateMetaTags, generateImageGalleryJsonLd } from '$lib/utils/metadata'
+	import { renderEdraContent, getContentExcerpt } from '$lib/utils/content'
 	import { page } from '$app/stores'
 	import type { PageData } from './$types'
 
@@ -35,14 +36,23 @@
 
 	const pageUrl = $derived($page.url.href)
 
+	// Helper to get content preview using Edra content excerpt utility
+	const extractContentPreview = (content: any): string => {
+		if (!content) return ''
+		return getContentExcerpt(content, 155)
+	}
+
 	// Generate metadata
 	const metaTags = $derived(
 		type === 'album' && album
 			? generateMetaTags({
 					title: album.title,
-					description:
-						album.description ||
-						`Photo album: ${album.title}${album.location ? ` taken in ${album.location}` : ''}`,
+					description: album.content
+						? extractContentPreview(album.content) ||
+							album.description ||
+							`Photo story: ${album.title}`
+						: album.description ||
+							`Photo album: ${album.title}${album.location ? ` taken in ${album.location}` : ''}`,
 					url: pageUrl,
 					image: album.photos?.[0]?.url,
 					titleFormat: { type: 'by' }
@@ -63,19 +73,60 @@
 					})
 	)
 
+	// Generate enhanced JSON-LD for albums with content
+	const generateAlbumJsonLd = (album: any, pageUrl: string) => {
+		const baseJsonLd = generateImageGalleryJsonLd({
+			name: album.title,
+			description: album.description,
+			url: pageUrl,
+			images:
+				album.photos?.map((photo: any) => ({
+					url: photo.url,
+					caption: photo.caption
+				})) || []
+		})
+
+		// Enhance with Article schema if album has composed content
+		if (album.content) {
+			return {
+				'@context': 'https://schema.org',
+				'@graph': [
+					baseJsonLd,
+					{
+						'@type': 'Article',
+						'@id': `${pageUrl}#article`,
+						headline: album.title,
+						description: album.description,
+						url: pageUrl,
+						datePublished: album.date || album.createdAt,
+						dateModified: album.updatedAt || album.createdAt,
+						author: {
+							'@type': 'Person',
+							name: 'Justin Edmund',
+							url: 'https://jedmund.com'
+						},
+						publisher: {
+							'@type': 'Person',
+							name: 'Justin Edmund',
+							url: 'https://jedmund.com'
+						},
+						image: album.photos?.[0]?.url,
+						mainEntityOfPage: {
+							'@type': 'WebPage',
+							'@id': pageUrl
+						}
+					}
+				]
+			}
+		}
+
+		return baseJsonLd
+	}
+
 	// Generate image gallery JSON-LD
 	const galleryJsonLd = $derived(
 		type === 'album' && album
-			? generateImageGalleryJsonLd({
-					name: album.title,
-					description: album.description,
-					url: pageUrl,
-					images:
-						album.photos?.map((photo: any) => ({
-							url: photo.url,
-							caption: photo.caption
-						})) || []
-				})
+			? generateAlbumJsonLd(album, pageUrl)
 			: type === 'photo' && photo
 				? {
 						'@context': 'https://schema.org',
@@ -143,13 +194,22 @@
 			</div>
 		</div>
 
-		<!-- Photo Grid -->
-		{#if photoItems.length > 0}
-			<MasonryPhotoGrid {photoItems} albumSlug={album.slug} />
-		{:else}
-			<div class="empty-album">
-				<p>This album doesn't contain any photos yet.</p>
+		<!-- Album Content -->
+		{#if album.content}
+			<div class="album-content-wrapper">
+				<div class="edra-rendered-content">
+					{@html renderEdraContent(album.content)}
+				</div>
 			</div>
+		{:else}
+			<!-- Legacy Photo Grid (for albums without composed content) -->
+			{#if photoItems.length > 0}
+				<MasonryPhotoGrid {photoItems} albumSlug={album.slug} />
+			{:else}
+				<div class="empty-album">
+					<p>This album doesn't contain any photos yet.</p>
+				</div>
+			{/if}
 		{/if}
 	</div>
 {:else if type === 'photo' && photo}
@@ -284,6 +344,134 @@
 		text-align: center;
 		padding: $unit-6x $unit-3x;
 		color: $grey-40;
+	}
+
+	.album-content-wrapper {
+		margin-top: $unit-4x;
+
+		@include breakpoint('phone') {
+			margin-top: $unit-3x;
+		}
+	}
+
+	.edra-rendered-content {
+		max-width: 700px;
+		margin: 0 auto;
+
+		:global(p) {
+			margin: 0 0 $unit-3x;
+			line-height: 1.7;
+			color: $grey-20;
+		}
+
+		:global(h1),
+		:global(h2),
+		:global(h3),
+		:global(h4) {
+			margin: $unit-4x 0 $unit-2x;
+			color: $grey-10;
+			font-weight: 600;
+		}
+
+		:global(h1) {
+			font-size: 2rem;
+		}
+		:global(h2) {
+			font-size: 1.5rem;
+		}
+		:global(h3) {
+			font-size: 1.25rem;
+		}
+		:global(h4) {
+			font-size: 1.125rem;
+		}
+
+		:global(ul),
+		:global(ol) {
+			margin: 0 0 $unit-3x;
+			padding-left: $unit-3x;
+
+			li {
+				margin-bottom: $unit;
+				line-height: 1.7;
+			}
+		}
+
+		:global(blockquote) {
+			margin: $unit-4x 0;
+			padding: $unit-3x;
+			background: $grey-97;
+			border-left: 4px solid $grey-80;
+			border-radius: $unit;
+			color: $grey-30;
+			font-style: italic;
+		}
+
+		:global(a) {
+			color: $red-60;
+			text-decoration: underline;
+			transition: color 0.2s ease;
+
+			&:hover {
+				color: $red-50;
+			}
+		}
+
+		:global(code) {
+			background: $grey-95;
+			padding: 2px 6px;
+			border-radius: 3px;
+			font-family: 'SF Mono', Monaco, monospace;
+			font-size: 0.875em;
+		}
+
+		:global(pre) {
+			background: $grey-95;
+			padding: $unit-3x;
+			border-radius: $unit;
+			overflow-x: auto;
+			margin: 0 0 $unit-3x;
+		}
+
+		:global(hr) {
+			margin: $unit-4x 0;
+			border: none;
+			border-top: 1px solid $grey-90;
+		}
+
+		:global(figure) {
+			margin: $unit-4x 0;
+			text-align: center;
+
+			img {
+				max-width: 100%;
+				height: auto;
+				border-radius: $card-corner-radius;
+			}
+
+			figcaption {
+				margin-top: $unit;
+				font-size: 0.875rem;
+				color: $grey-40;
+				line-height: 1.5;
+			}
+		}
+
+		// Gallery styles
+		:global(.gallery-grid) {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			gap: $unit-2x;
+			margin: $unit-4x 0;
+		}
+
+		// Geolocation styles
+		:global(.geolocation-map) {
+			margin: $unit-4x 0;
+			border-radius: $card-corner-radius;
+			overflow: hidden;
+			height: 400px;
+		}
 	}
 
 	.photo-page {
