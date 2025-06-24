@@ -4,6 +4,7 @@
 	import Header from '$components/Header.svelte'
 	import Footer from '$components/Footer.svelte'
 	import { generatePersonJsonLd } from '$lib/utils/metadata'
+	import { Toaster } from 'svelte-sonner'
 
 	let { children } = $props()
 
@@ -44,6 +45,15 @@
 	{/if}
 </div>
 
+<!-- Toast notifications -->
+<Toaster
+	position={isAdminRoute ? 'top-right' : 'bottom-right'}
+	toastOptions={{
+		className: 'sonner-toast',
+		duration: 4000
+	}}
+/>
+
 <style lang="scss">
 	:global(html) {
 		background: var(--bg-color);
@@ -83,5 +93,115 @@
 		:global(html) {
 			font-size: 18px;
 		}
+	}
+
+	/* Toast styles */
+	:global(.sonner-toaster) {
+		font-family: $font-stack;
+	}
+
+	:global(.sonner-toast) {
+		background: var(--page-color) !important;
+		color: var(--text-color) !important;
+		border: 1px solid $grey-85 !important;
+		border-radius: $corner-radius-lg !important;
+		box-shadow: $card-shadow !important;
+		font-size: $font-size-small !important;
+		padding: $unit-2x !important;
+		gap: $unit !important;
+		max-width: 420px !important;
+
+		&[data-type='success'] {
+			background: $blue-10 !important;
+			border-color: $blue-40 !important;
+			color: $blue-40 !important;
+
+			[data-icon] {
+				color: $blue-50 !important;
+			}
+		}
+
+		&[data-type='error'] {
+			background: #fef2f2 !important;
+			border-color: $red-50 !important;
+			color: $red-40 !important;
+
+			[data-icon] {
+				color: $red-50 !important;
+			}
+		}
+
+		&[data-type='warning'] {
+			background: $yellow-90 !important;
+			border-color: $yellow-40 !important;
+			color: $yellow-20 !important;
+
+			[data-icon] {
+				color: $yellow-40 !important;
+			}
+		}
+
+		&[data-type='info'] {
+			background: var(--page-color) !important;
+			border-color: $grey-70 !important;
+			color: var(--text-color) !important;
+
+			[data-icon] {
+				color: $grey-40 !important;
+			}
+		}
+
+		&[data-type='loading'] {
+			background: var(--page-color) !important;
+			border-color: $primary-color !important;
+			color: var(--text-color) !important;
+
+			[data-icon] {
+				color: $primary-color !important;
+			}
+		}
+	}
+
+	:global(.sonner-toast-description) {
+		color: var(--text-color-subdued) !important;
+		font-size: $font-size-extra-small !important;
+		margin-top: $unit-half !important;
+	}
+
+	:global(.sonner-toast-action) {
+		background: $primary-color !important;
+		color: white !important;
+		border: none !important;
+		border-radius: $corner-radius-sm !important;
+		padding: $unit-half $unit-2x !important;
+		font-size: $font-size-extra-small !important;
+		font-weight: $font-weight-med !important;
+		transition: background-color 0.2s ease !important;
+
+		&:hover {
+			background: $blue-40 !important;
+		}
+	}
+
+	:global(.sonner-toast-cancel) {
+		background: transparent !important;
+		color: $grey-40 !important;
+		border: 1px solid $grey-70 !important;
+		border-radius: $corner-radius-sm !important;
+		padding: $unit-half $unit-2x !important;
+		font-size: $font-size-extra-small !important;
+		font-weight: $font-weight-med !important;
+		transition: all 0.2s ease !important;
+
+		&:hover {
+			background: $grey-95 !important;
+			color: $grey-20 !important;
+			border-color: $grey-60 !important;
+		}
+	}
+
+	/* Admin-specific toast positioning */
+	.admin-route ~ :global(.sonner-toaster) {
+		top: $unit-8x !important; // Account for admin navbar
 	}
 </style>
