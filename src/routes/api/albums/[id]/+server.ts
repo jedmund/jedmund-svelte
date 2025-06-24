@@ -19,14 +19,14 @@ export const GET: RequestHandler = async (event) => {
 		const album = await prisma.album.findUnique({
 			where: { id },
 			include: {
-				photos: {
+				media: {
 					orderBy: { displayOrder: 'asc' },
 					include: {
-						media: true // Include media relation for each photo
+						media: true // Include media relation for each AlbumMedia
 					}
 				},
 				_count: {
-					select: { photos: true }
+					select: { media: true }
 				}
 			}
 		})
@@ -35,27 +35,32 @@ export const GET: RequestHandler = async (event) => {
 			return errorResponse('Album not found', 404)
 		}
 
-		// Enrich photos with media information from the included relation
-		const photosWithMedia = album.photos.map((photo) => {
-			const media = photo.media
-
-			return {
-				...photo,
-				// Add media properties for backward compatibility
-				altText: media?.altText || '',
-				description: media?.description || photo.caption || '',
-				isPhotography: media?.isPhotography || false,
-				mimeType: media?.mimeType || 'image/jpeg',
-				size: media?.size || 0
-			}
-		})
-
-		const albumWithEnrichedPhotos = {
+		// Transform the media relation to maintain backward compatibility
+		// The frontend may expect a 'photos' array, so we'll provide both 'media' and 'photos'
+		const albumWithEnrichedData = {
 			...album,
-			photos: photosWithMedia
+			// Keep the media relation as is
+			media: album.media,
+			// Also provide a photos array for backward compatibility if needed
+			photos: album.media.map((albumMedia) => ({
+				id: albumMedia.media.id,
+				mediaId: albumMedia.media.id,
+				displayOrder: albumMedia.displayOrder,
+				filename: albumMedia.media.filename,
+				url: albumMedia.media.url,
+				thumbnailUrl: albumMedia.media.thumbnailUrl,
+				width: albumMedia.media.width,
+				height: albumMedia.media.height,
+				description: albumMedia.media.description || '',
+				isPhotography: albumMedia.media.isPhotography || false,
+				mimeType: albumMedia.media.mimeType || 'image/jpeg',
+				size: albumMedia.media.size || 0,
+				dominantColor: albumMedia.media.dominantColor,
+				aspectRatio: albumMedia.media.aspectRatio
+			}))
 		}
 
-		return jsonResponse(albumWithEnrichedPhotos)
+		return jsonResponse(albumWithEnrichedData)
 	} catch (error) {
 		logger.error('Failed to retrieve album', error as Error)
 		return errorResponse('Failed to retrieve album', 500)
@@ -82,9 +87,9 @@ export const PUT: RequestHandler = async (event) => {
 			date?: string
 			location?: string
 			coverPhotoId?: number
-			isPhotography?: boolean
 			status?: string
 			showInUniverse?: boolean
+			content?: any
 		}>(event.request)
 
 		if (!body) {
@@ -121,11 +126,10 @@ export const PUT: RequestHandler = async (event) => {
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				location: body.location !== undefined ? body.location : existing.location,
 				coverPhotoId: body.coverPhotoId !== undefined ? body.coverPhotoId : existing.coverPhotoId,
-				isPhotography:
-					body.isPhotography !== undefined ? body.isPhotography : existing.isPhotography,
 				status: body.status !== undefined ? body.status : existing.status,
 				showInUniverse:
-					body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse
+					body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse,
+				content: body.content !== undefined ? body.content : existing.content
 			}
 		})
 
@@ -156,7 +160,7 @@ export const DELETE: RequestHandler = async (event) => {
 			where: { id },
 			include: {
 				_count: {
-					select: { photos: true }
+					select: { media: true }
 				}
 			}
 		})
@@ -167,13 +171,12 @@ export const DELETE: RequestHandler = async (event) => {
 
 		// Use a transaction to ensure both operations succeed or fail together
 		await prisma.$transaction(async (tx) => {
-			// First, unlink all photos from this album (set albumId to null)
-			if (album._count.photos > 0) {
-				await tx.photo.updateMany({
-					where: { albumId: id },
-					data: { albumId: null }
+			// First, delete all AlbumMedia relationships for this album
+			if (album._count.media > 0) {
+				await tx.albumMedia.deleteMany({
+					where: { albumId: id }
 				})
-				logger.info('Unlinked photos from album', { albumId: id, photoCount: album._count.photos })
+				logger.info('Unlinked media from album', { albumId: id, mediaCount: album._count.media })
 			}
 
 			// Then delete the album
@@ -182,7 +185,7 @@ export const DELETE: RequestHandler = async (event) => {
 			})
 		})
 
-		logger.info('Album deleted', { id, slug: album.slug, photosUnlinked: album._count.photos })
+		logger.info('Album deleted', { id, slug: album.slug, mediaUnlinked: album._count.media })
 
 		return new Response(null, { status: 204 })
 	} catch (error) {

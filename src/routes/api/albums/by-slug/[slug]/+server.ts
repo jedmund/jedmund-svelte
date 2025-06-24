@@ -38,6 +38,9 @@ export const GET: RequestHandler = async (event) => {
 						}
 					}
 				},
+				geoLocations: {
+					orderBy: { order: 'asc' }
+				},
 				_count: {
 					select: {
 						media: true
