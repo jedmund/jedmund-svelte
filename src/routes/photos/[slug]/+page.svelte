@@ -390,11 +390,12 @@
 		:global(ol) {
 			margin: 0 0 $unit-3x;
 			padding-left: $unit-3x;
+		}
 
-			li {
-				margin-bottom: $unit;
-				line-height: 1.7;
-			}
+		:global(ul li),
+		:global(ol li) {
+			margin-bottom: $unit;
+			line-height: 1.7;
 		}
 
 		:global(blockquote) {
@@ -411,10 +412,10 @@
 			color: $red-60;
 			text-decoration: underline;
 			transition: color 0.2s ease;
+		}
 
-			&:hover {
-				color: $red-50;
-			}
+		:global(a:hover) {
+			color: $red-50;
 		}
 
 		:global(code) {
@@ -442,19 +443,19 @@
 		:global(figure) {
 			margin: $unit-4x 0;
 			text-align: center;
+		}
 
-			img {
-				max-width: 100%;
-				height: auto;
-				border-radius: $card-corner-radius;
-			}
+		:global(figure img) {
+			max-width: 100%;
+			height: auto;
+			border-radius: $card-corner-radius;
+		}
 
-			figcaption {
-				margin-top: $unit;
-				font-size: 0.875rem;
-				color: $grey-40;
-				line-height: 1.5;
-			}
+		:global(figure figcaption) {
+			margin-top: $unit;
+			font-size: 0.875rem;
+			color: $grey-40;
+			line-height: 1.5;
 		}
 
 		// Gallery styles
