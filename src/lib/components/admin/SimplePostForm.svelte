@@ -5,6 +5,7 @@
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import { toast } from '$lib/stores/toast'
 
 	interface Props {
 		postType: 'post'
@@ -23,7 +24,6 @@
 
 	// State
 	let isSaving = $state(false)
-	let error = $state('')
 	let status = $state<'draft' | 'published'>(initialData?.status || 'draft')
 
 	// Form data
@@ -53,19 +53,20 @@
 
 	async function handleSave(publishStatus: 'draft' | 'published') {
 		if (isOverLimit) {
-			error = 'Post is too long'
+			toast.error('Post is too long')
 			return
 		}
 
 		// For link posts, URL is required
 		if (linkUrl && !linkUrl.trim()) {
-			error = 'Link URL is required'
+			toast.error('Link URL is required')
 			return
 		}
 
+		const loadingToastId = toast.loading(`${publishStatus === 'published' ? 'Publishing' : 'Saving'} post...`)
+
 		try {
 			isSaving = true
-			error = ''
 
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
@@ -104,10 +105,14 @@
 
 			const savedPost = await response.json()
 
+			toast.dismiss(loadingToastId)
+			toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
+
 			// Redirect back to posts list after creation
 			goto('/admin/posts')
 		} catch (err) {
-			error = `Failed to ${mode === 'edit' ? 'save' : 'create'} post`
+			toast.dismiss(loadingToastId)
+			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} post`)
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -146,16 +151,12 @@
 				onclick={() => handleSave('published')}
 				disabled={isSaving || !hasContent() || (postType === 'microblog' && isOverLimit)}
 			>
-				{isSaving ? 'Posting...' : 'Post'}
+				Post
 			</Button>
 		</div>
 	</header>
 
 	<div class="composer-container">
-		{#if error}
-			<div class="error-message">{error}</div>
-		{/if}
-
 		<div class="composer">
 			{#if postType === 'microblog'}
 				<div class="post-composer">

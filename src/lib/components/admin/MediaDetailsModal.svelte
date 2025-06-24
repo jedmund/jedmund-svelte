@@ -7,6 +7,7 @@
 	import AlbumSelector from './AlbumSelector.svelte'
 	import AlbumIcon from '$icons/album.svg?component'
 	import { authenticatedFetch } from '$lib/admin-auth'
+	import { toast } from '$lib/stores/toast'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -22,8 +23,6 @@
 	let description = $state('')
 	let isPhotography = $state(false)
 	let isSaving = $state(false)
-	let error = $state('')
-	let successMessage = $state('')
 
 	// Usage tracking state
 	let usage = $state<
@@ -51,8 +50,6 @@
 		if (media) {
 			description = media.description || ''
 			isPhotography = media.isPhotography || false
-			error = ''
-			successMessage = ''
 			showExif = false
 			loadUsage()
 			// Only load albums for images
@@ -109,8 +106,6 @@
 	function handleClose() {
 		description = ''
 		isPhotography = false
-		error = ''
-		successMessage = ''
 		isOpen = false
 		onClose()
 	}
@@ -118,9 +113,10 @@
 	async function handleSave() {
 		if (!media) return
 
+		const loadingToastId = toast.loading('Saving changes...')
+
 		try {
 			isSaving = true
-			error = ''
 
 			const response = await authenticatedFetch(`/api/media/${media.id}`, {
 				method: 'PUT',
@@ -139,14 +135,17 @@
 
 			const updatedMedia = await response.json()
 			onUpdate(updatedMedia)
-			successMessage = 'Media updated successfully!'
+			
+			toast.dismiss(loadingToastId)
+			toast.success('Media updated successfully!')
 
 			// Auto-close after success
 			setTimeout(() => {
 				handleClose()
 			}, 1500)
 		} catch (err) {
-			error = 'Failed to update media. Please try again.'
+			toast.dismiss(loadingToastId)
+			toast.error('Failed to update media. Please try again.')
 			console.error('Failed to update media:', err)
 		} finally {
 			isSaving = false
@@ -161,9 +160,10 @@
 			return
 		}
 
+		const loadingToastId = toast.loading('Deleting media...')
+
 		try {
 			isSaving = true
-			error = ''
 
 			const response = await authenticatedFetch(`/api/media/${media.id}`, {
 				method: 'DELETE'
@@ -173,11 +173,15 @@
 				throw new Error('Failed to delete media')
 			}
 
+			toast.dismiss(loadingToastId)
+			toast.success('Media deleted successfully')
+
 			// Close modal and let parent handle the deletion
 			handleClose()
 			// Note: Parent component should refresh the media list
 		} catch (err) {
-			error = 'Failed to delete media. Please try again.'
+			toast.dismiss(loadingToastId)
+			toast.error('Failed to delete media. Please try again.')
 			console.error('Failed to delete media:', err)
 		} finally {
 			isSaving = false
@@ -189,16 +193,10 @@
 			navigator.clipboard
 				.writeText(media.url)
 				.then(() => {
-					successMessage = 'URL copied to clipboard!'
-					setTimeout(() => {
-						successMessage = ''
-					}, 2000)
+					toast.success('URL copied to clipboard!')
 				})
 				.catch(() => {
-					error = 'Failed to copy URL'
-					setTimeout(() => {
-						error = ''
-					}, 2000)
+					toast.error('Failed to copy URL')
 				})
 		}
 	}
@@ -548,15 +546,8 @@
 					</div>
 
 					<div class="footer-right">
-						{#if error}
-							<span class="error-text">{error}</span>
-						{/if}
-						{#if successMessage}
-							<span class="success-text">{successMessage}</span>
-						{/if}
-
 						<Button variant="primary" onclick={handleSave} disabled={isSaving}>
-							{isSaving ? 'Saving...' : 'Save Changes'}
+							Save Changes
 						</Button>
 					</div>
 				</div>
@@ -1035,16 +1026,6 @@
 			display: flex;
 			align-items: center;
 			gap: $unit-2x;
-
-			.error-text {
-				color: $red-60;
-				font-size: 0.875rem;
-			}
-
-			.success-text {
-				color: #16a34a; // green-600 equivalent
-				font-size: 0.875rem;
-			}
 		}
 	}
 

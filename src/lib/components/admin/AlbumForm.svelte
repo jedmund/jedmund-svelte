@@ -10,6 +10,7 @@
 	import SmartImage from '../SmartImage.svelte'
 	import EnhancedComposer from './EnhancedComposer.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
+	import { toast } from '$lib/stores/toast'
 	import type { Album } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
 
@@ -34,8 +35,6 @@
 	// State
 	let isLoading = $state(mode === 'edit')
 	let isSaving = $state(false)
-	let error = $state('')
-	let successMessage = $state('')
 	let validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<any[]>([])
@@ -132,14 +131,14 @@
 
 	async function handleSave() {
 		if (!validateForm()) {
-			error = 'Please fix the validation errors'
+			toast.error('Please fix the validation errors')
 			return
 		}
 
+		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} album...`)
+
 		try {
 			isSaving = true
-			error = ''
-			successMessage = ''
 
 			const payload = {
 				title: formData.title,
@@ -172,6 +171,9 @@
 
 			const savedAlbum = await response.json()
 
+			toast.dismiss(loadingToastId)
+			toast.success(`Album ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
+
 			if (mode === 'create') {
 				goto(`/admin/albums/${savedAlbum.id}/edit`)
 			} else if (mode === 'edit' && album) {
@@ -180,10 +182,12 @@
 				populateFormData(savedAlbum)
 			}
 		} catch (err) {
-			error =
+			toast.dismiss(loadingToastId)
+			toast.error(
 				err instanceof Error
 					? err.message
 					: `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
+			)
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -252,10 +256,6 @@
 		{#if isLoading}
 			<div class="loading">Loading album...</div>
 		{:else}
-			{#if error}
-				<div class="error-message">{error}</div>
-			{/if}
-
 			<div class="tab-panels">
 				<!-- Metadata Panel -->
 				<div class="panel content-wrapper" class:active={activeTab === 'metadata'}>
@@ -464,16 +464,6 @@
 		color: $grey-40;
 	}
 
-	.error-message {
-		background-color: #fee;
-		color: #d33;
-		padding: $unit-3x;
-		border-radius: $unit;
-		margin-bottom: $unit-4x;
-		max-width: 700px;
-		margin-left: auto;
-		margin-right: auto;
-	}
 
 	.form-section {
 		display: flex;

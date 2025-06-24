@@ -5,6 +5,7 @@
 	import Input from './Input.svelte'
 	import ImageUploader from './ImageUploader.svelte'
 	import Editor from './Editor.svelte'
+	import { toast } from '$lib/stores/toast'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
@@ -24,7 +25,6 @@
 
 	// State
 	let isSaving = $state(false)
-	let error = $state('')
 	let status = $state<'draft' | 'published'>(initialData?.status || 'draft')
 
 	// Form data
@@ -81,18 +81,19 @@
 	async function handleSave() {
 		// Validate required fields
 		if (!featuredImage) {
-			error = 'Please upload a photo for this post'
+			toast.error('Please upload a photo for this post')
 			return
 		}
 
 		if (!title.trim()) {
-			error = 'Please enter a title for this post'
+			toast.error('Please enter a title for this post')
 			return
 		}
 
+		const loadingToastId = toast.loading(`${status === 'published' ? 'Publishing' : 'Saving'} photo post...`)
+
 		try {
 			isSaving = true
-			error = ''
 
 			// Get editor content
 			let editorContent = content
@@ -145,6 +146,9 @@
 
 			const savedPost = await response.json()
 
+			toast.dismiss(loadingToastId)
+			toast.success(`Photo post ${status === 'published' ? 'published' : 'saved'} successfully!`)
+
 			// Redirect to posts list or edit page
 			if (mode === 'create') {
 				goto(`/admin/posts/${savedPost.id}/edit`)
@@ -152,7 +156,8 @@
 				goto('/admin/posts')
 			}
 		} catch (err) {
-			error = `Failed to ${mode === 'edit' ? 'update' : 'create'} photo post`
+			toast.dismiss(loadingToastId)
+			toast.error(`Failed to ${mode === 'edit' ? 'update' : 'create'} photo post`)
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -192,7 +197,7 @@
 					onclick={handlePublish}
 					disabled={!featuredImage || !title.trim()}
 				>
-					{isSaving ? 'Publishing...' : 'Publish'}
+					Publish
 				</Button>
 			{/if}
 		</div>

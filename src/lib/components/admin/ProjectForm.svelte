@@ -11,6 +11,7 @@
 	import Button from './Button.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
 	import { projectSchema } from '$lib/schemas/project'
+	import { toast } from '$lib/stores/toast'
 	import type { Project, ProjectFormData } from '$lib/types/project'
 	import { defaultProjectFormData } from '$lib/types/project'
 
@@ -24,8 +25,6 @@
 	// State
 	let isLoading = $state(mode === 'edit')
 	let isSaving = $state(false)
-	let error = $state('')
-	let successMessage = $state('')
 	let activeTab = $state('metadata')
 	let validationErrors = $state<Record<string, string>>({})
 
@@ -117,14 +116,14 @@
 		}
 
 		if (!validateForm()) {
-			error = 'Please fix the validation errors'
+			toast.error('Please fix the validation errors')
 			return
 		}
 
+		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} project...`)
+
 		try {
 			isSaving = true
-			error = ''
-			successMessage = ''
 
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
@@ -173,16 +172,16 @@
 			}
 
 			const savedProject = await response.json()
-			successMessage = `Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`
+			
+			toast.dismiss(loadingToastId)
+			toast.success(`Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 
-			setTimeout(() => {
-				successMessage = ''
-				if (mode === 'create') {
-					goto(`/admin/projects/${savedProject.id}/edit`)
-				}
-			}, 1500)
+			if (mode === 'create') {
+				goto(`/admin/projects/${savedProject.id}/edit`)
+			}
 		} catch (err) {
-			error = `Failed to ${mode === 'edit' ? 'save' : 'create'} project`
+			toast.dismiss(loadingToastId)
+			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
 			console.error(err)
 		} finally {
 			isSaving = false

@@ -76,7 +76,7 @@
 		onclick={handlePrimaryAction}
 		disabled={disabled || isLoading}
 	>
-		{isLoading ? `${primaryAction.label.replace(/e$/, 'ing')}...` : primaryAction.label}
+		{primaryAction.label}
 	</Button>
 
 	{#if hasDropdownContent}

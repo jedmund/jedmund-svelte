@@ -5,6 +5,7 @@
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import { toast } from '$lib/stores/toast'
 	import type { JSONContent } from '@tiptap/core'
 
 	interface Props {
@@ -24,8 +25,6 @@
 	// State
 	let isLoading = $state(false)
 	let isSaving = $state(false)
-	let error = $state('')
-	let successMessage = $state('')
 	let activeTab = $state('metadata')
 	let showPublishMenu = $state(false)
 
@@ -80,14 +79,14 @@
 		}
 
 		if (!title) {
-			error = 'Title is required'
+			toast.error('Title is required')
 			return
 		}
 
+		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} essay...`)
+
 		try {
 			isSaving = true
-			error = ''
-			successMessage = ''
 
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
@@ -121,16 +120,16 @@
 			}
 
 			const savedPost = await response.json()
-			successMessage = `Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`
+			
+			toast.dismiss(loadingToastId)
+			toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 
-			setTimeout(() => {
-				successMessage = ''
-				if (mode === 'create') {
-					goto(`/admin/posts/${savedPost.id}/edit`)
-				}
-			}, 1500)
+			if (mode === 'create') {
+				goto(`/admin/posts/${savedPost.id}/edit`)
+			}
 		} catch (err) {
-			error = `Failed to ${mode === 'edit' ? 'save' : 'create'} essay`
+			toast.dismiss(loadingToastId)
+			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} essay`)
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -196,7 +195,7 @@
 		<div class="header-actions">
 			<div class="save-actions">
 				<Button variant="primary" onclick={handleSave} disabled={isSaving} class="save-button">
-					{isSaving ? 'Saving...' : status === 'published' ? 'Save' : 'Save Draft'}
+					{status === 'published' ? 'Save' : 'Save Draft'}
 				</Button>
 				<Button
 					variant="primary"
