@@ -22,16 +22,19 @@ Personal portfolio website built with SvelteKit featuring a content management s
 ## Development
 
 Install dependencies:
+
 ```bash
 npm install
 ```
 
 Start development server:
+
 ```bash
 npm run dev
 ```
 
 Build for production:
+
 ```bash
 npm run build
 ```
@@ -39,10 +42,12 @@ npm run build
 ## Environment Variables
 
 Required environment variables:
+
 - `LASTFM_API_KEY` - Last.fm API key for music data
 - `REDIS_URL` - Redis connection URL for caching
 
 Optional environment variables:
+
 - `DEBUG` - Enable debug logging for specific categories (e.g., `DEBUG=music` for music-related logs)
 
 ## Commands
