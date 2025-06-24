@@ -16,12 +16,22 @@
 		text: string
 		href: string
 		variant: 'work' | 'universe' | 'labs' | 'photos' | 'about'
+		subItems?: { text: string; href: string }[]
 	}
 
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
-		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
+		{
+			icon: PhotosIcon,
+			text: 'Photography',
+			href: '/photos',
+			variant: 'photos',
+			subItems: [
+				{ text: 'Photos', href: '/photos' },
+				{ text: 'Albums', href: '/albums' }
+			]
+		},
 		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
 		{ icon: AboutIcon, text: 'About', href: '/about', variant: 'about' }
 	]
@@ -32,9 +42,11 @@
 			? navItems[0]
 			: currentPath === '/about'
 				? navItems[4]
-				: navItems.find((item) =>
-						currentPath.startsWith(item.href === '/' ? '/work' : item.href)
-					) || navItems[0]
+				: currentPath.startsWith('/albums') || currentPath.startsWith('/photos')
+					? navItems.find((item) => item.variant === 'photos')
+					: navItems.find((item) =>
+							currentPath.startsWith(item.href === '/' ? '/work' : item.href)
+						) || navItems[0]
 	)
 
 	// Get background color based on variant
@@ -120,15 +132,34 @@
 	{#if isOpen}
 		<div class="dropdown-menu">
 			{#each navItems as item}
-				<a
-					href={item.href}
-					class="dropdown-item"
-					class:active={item === activeItem}
-					onclick={() => (isOpen = false)}
-				>
-					<item.icon class="nav-icon" />
-					<span>{item.text}</span>
-				</a>
+				{#if item.subItems}
+					<div class="dropdown-section">
+						<div class="dropdown-item section-header">
+							<item.icon class="nav-icon" />
+							<span>{item.text}</span>
+						</div>
+						{#each item.subItems as subItem}
+							<a
+								href={subItem.href}
+								class="dropdown-item sub-item"
+								class:active={currentPath === subItem.href}
+								onclick={() => (isOpen = false)}
+							>
+								<span>{subItem.text}</span>
+							</a>
+						{/each}
+					</div>
+				{:else}
+					<a
+						href={item.href}
+						class="dropdown-item"
+						class:active={item === activeItem}
+						onclick={() => (isOpen = false)}
+					>
+						<item.icon class="nav-icon" />
+						<span>{item.text}</span>
+					</a>
+				{/if}
 			{/each}
 		</div>
 	{/if}
@@ -205,6 +236,15 @@
 		animation: dropdownOpen 0.2s ease;
 	}
 
+	.dropdown-section {
+		& + .dropdown-section,
+		& + .dropdown-item {
+			margin-top: $unit;
+			padding-top: $unit;
+			border-top: 1px solid $grey-95;
+		}
+	}
+
 	.dropdown-item {
 		display: flex;
 		align-items: center;
@@ -216,13 +256,28 @@
 		font-size: 1rem;
 		transition: background-color 0.2s ease;
 
-		&:hover {
+		&:hover:not(.section-header) {
 			background-color: $grey-97;
 		}
 
 		&.active {
 			background-color: $grey-95;
 			font-weight: 500;
+		}
+
+		&.section-header {
+			color: $grey-50;
+			font-size: 0.875rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			padding: $unit $unit-2x;
+			cursor: default;
+		}
+
+		&.sub-item {
+			padding-left: $unit-4x + $unit-2x;
+			font-size: 0.9375rem;
 		}
 
 		:global(svg.nav-icon) {

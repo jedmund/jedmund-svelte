@@ -55,6 +55,12 @@
 		{#if album.description}
 			<p class="album-description">{album.description}</p>
 		{/if}
+
+		{#if album.hasContent}
+			<div class="album-story-indicator">
+				<span class="story-badge">📖 Photo Story</span>
+			</div>
+		{/if}
 	</div>
 </UniverseCard>
 
@@ -90,5 +96,21 @@
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 3;
 		overflow: hidden;
+	}
+
+	.album-story-indicator {
+		margin-top: $unit-2x;
+	}
+
+	.story-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: $unit-half;
+		padding: $unit-half $unit-2x;
+		background: $blue-10;
+		color: $blue-50;
+		border-radius: $corner-radius-sm;
+		font-size: 0.8125rem;
+		font-weight: 500;
 	}
 </style>
