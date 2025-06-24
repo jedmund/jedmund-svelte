@@ -4,6 +4,8 @@
 	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import SmartImage from '../SmartImage.svelte'
+	import AlbumSelector from './AlbumSelector.svelte'
+	import AlbumIcon from '$icons/album.svg?component'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import type { Media } from '@prisma/client'
 
@@ -36,19 +38,27 @@
 	>([])
 	let loadingUsage = $state(false)
 
+	// Album management state
+	let albums = $state<Array<{ id: number; title: string; slug: string }>>([])
+	let loadingAlbums = $state(false)
+	let showAlbumSelector = $state(false)
+
 	// EXIF toggle state
 	let showExif = $state(false)
 
 	// Initialize form when media changes
 	$effect(() => {
 		if (media) {
-			// Use description if available, otherwise fall back to altText for backwards compatibility
-			description = media.description || media.altText || ''
+			description = media.description || ''
 			isPhotography = media.isPhotography || false
 			error = ''
 			successMessage = ''
 			showExif = false
 			loadUsage()
+			// Only load albums for images
+			if (media.mimeType?.startsWith('image/')) {
+				loadAlbums()
+			}
 		}
 	})
 
@@ -75,6 +85,27 @@
 		}
 	}
 
+	// Load albums the media belongs to
+	async function loadAlbums() {
+		if (!media) return
+
+		try {
+			loadingAlbums = true
+
+			// Load albums this media belongs to
+			const mediaResponse = await authenticatedFetch(`/api/media/${media.id}/albums`)
+			if (mediaResponse.ok) {
+				const data = await mediaResponse.json()
+				albums = data.albums || []
+			}
+		} catch (error) {
+			console.error('Error loading albums:', error)
+			albums = []
+		} finally {
+			loadingAlbums = false
+		}
+	}
+
 	function handleClose() {
 		description = ''
 		isPhotography = false
@@ -97,8 +128,6 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					// Use description for both altText and description fields
-					altText: description.trim() || null,
 					description: description.trim() || null,
 					isPhotography: isPhotography
 				})
@@ -205,11 +234,7 @@
 			<div class="image-pane">
 				{#if media.mimeType.startsWith('image/')}
 					<div class="image-container">
-						<SmartImage
-							{media}
-							alt={media.description || media.altText || media.filename}
-							class="preview-image"
-						/>
+						<SmartImage {media} alt={media.description || media.filename} class="preview-image" />
 					</div>
 				{:else}
 					<div class="file-placeholder">
@@ -303,103 +328,109 @@
 								<span class="label">Size</span>
 								<span class="value">{formatFileSize(media.size)}</span>
 							</div>
-							{#if media.width && media.height}
-								<div class="info-item">
-									<span class="label">Dimensions</span>
-									<span class="value">{media.width} × {media.height}px</span>
-								</div>
-							{/if}
-							{#if media.dominantColor}
-								<div class="info-item">
-									<span class="label">Dominant Color</span>
-									<span class="value color-value">
-										<span 
-											class="color-swatch" 
-											style="background-color: {media.dominantColor}"
-											title={media.dominantColor}
-										></span>
-										{media.dominantColor}
-									</span>
-								</div>
-							{:else}
-								<!-- Debug: dominantColor = {JSON.stringify(media.dominantColor)} -->
-							{/if}
-							<div class="info-item">
-								<span class="label">Uploaded</span>
-								<span class="value">{new Date(media.createdAt).toLocaleDateString()}</span>
-							</div>
 						</div>
 
-						{#if media.exifData && Object.keys(media.exifData).length > 0}
-							{#if showExif}
-								<div class="exif-data">
-									{#if media.exifData.camera}
+						{#if showExif}
+							<div class="details-data">
+								<!-- Media metadata -->
+								<div class="media-metadata">
+									{#if media.width && media.height}
 										<div class="info-item">
-											<span class="label">Camera</span>
-											<span class="value">{media.exifData.camera}</span>
+											<span class="label">Dimensions</span>
+											<span class="value">{media.width} × {media.height}px</span>
 										</div>
 									{/if}
-									{#if media.exifData.lens}
+									{#if media.dominantColor}
 										<div class="info-item">
-											<span class="label">Lens</span>
-											<span class="value">{media.exifData.lens}</span>
-										</div>
-									{/if}
-									{#if media.exifData.focalLength}
-										<div class="info-item">
-											<span class="label">Focal Length</span>
-											<span class="value">{media.exifData.focalLength}</span>
-										</div>
-									{/if}
-									{#if media.exifData.aperture}
-										<div class="info-item">
-											<span class="label">Aperture</span>
-											<span class="value">{media.exifData.aperture}</span>
-										</div>
-									{/if}
-									{#if media.exifData.shutterSpeed}
-										<div class="info-item">
-											<span class="label">Shutter Speed</span>
-											<span class="value">{media.exifData.shutterSpeed}</span>
-										</div>
-									{/if}
-									{#if media.exifData.iso}
-										<div class="info-item">
-											<span class="label">ISO</span>
-											<span class="value">{media.exifData.iso}</span>
-										</div>
-									{/if}
-									{#if media.exifData.dateTaken}
-										<div class="info-item">
-											<span class="label">Date Taken</span>
-											<span class="value"
-												>{new Date(media.exifData.dateTaken).toLocaleDateString()}</span
-											>
-										</div>
-									{/if}
-									{#if media.exifData.coordinates}
-										<div class="info-item">
-											<span class="label">GPS</span>
-											<span class="value">
-												{media.exifData.coordinates.latitude.toFixed(6)},
-												{media.exifData.coordinates.longitude.toFixed(6)}
+											<span class="label">Dominant Color</span>
+											<span class="value color-value">
+												<span
+													class="color-swatch"
+													style="background-color: {media.dominantColor}"
+													title={media.dominantColor}
+												></span>
+												{media.dominantColor}
 											</span>
 										</div>
 									{/if}
+									<div class="info-item">
+										<span class="label">Uploaded</span>
+										<span class="value">{new Date(media.createdAt).toLocaleDateString()}</span>
+									</div>
 								</div>
-							{/if}
 
-							<Button
-								variant="ghost"
-								onclick={() => (showExif = !showExif)}
-								buttonSize="small"
-								fullWidth
-								pill={false}
-								class="exif-toggle"
-							>
-								{showExif ? 'Hide EXIF' : 'Show EXIF'}
-							</Button>
+								<!-- EXIF metadata -->
+								{#if media.exifData && Object.keys(media.exifData).length > 0}
+									<div class="metadata-divider"></div>
+									<div class="exif-metadata">
+										{#if media.exifData.camera}
+											<div class="info-item">
+												<span class="label">Camera</span>
+												<span class="value">{media.exifData.camera}</span>
+											</div>
+										{/if}
+										{#if media.exifData.lens}
+											<div class="info-item">
+												<span class="label">Lens</span>
+												<span class="value">{media.exifData.lens}</span>
+											</div>
+										{/if}
+										{#if media.exifData.focalLength}
+											<div class="info-item">
+												<span class="label">Focal Length</span>
+												<span class="value">{media.exifData.focalLength}</span>
+											</div>
+										{/if}
+										{#if media.exifData.aperture}
+											<div class="info-item">
+												<span class="label">Aperture</span>
+												<span class="value">{media.exifData.aperture}</span>
+											</div>
+										{/if}
+										{#if media.exifData.shutterSpeed}
+											<div class="info-item">
+												<span class="label">Shutter Speed</span>
+												<span class="value">{media.exifData.shutterSpeed}</span>
+											</div>
+										{/if}
+										{#if media.exifData.iso}
+											<div class="info-item">
+												<span class="label">ISO</span>
+												<span class="value">{media.exifData.iso}</span>
+											</div>
+										{/if}
+										{#if media.exifData.dateTaken}
+											<div class="info-item">
+												<span class="label">Date Taken</span>
+												<span class="value"
+													>{new Date(media.exifData.dateTaken).toLocaleDateString()}</span
+												>
+											</div>
+										{/if}
+										{#if media.exifData.coordinates}
+											<div class="info-item">
+												<span class="label">GPS</span>
+												<span class="value">
+													{media.exifData.coordinates.latitude.toFixed(6)},
+													{media.exifData.coordinates.longitude.toFixed(6)}
+												</span>
+											</div>
+										{/if}
+									</div>
+								{/if}
+							</div>
 						{/if}
+
+						<Button
+							variant="ghost"
+							onclick={() => (showExif = !showExif)}
+							buttonSize="small"
+							fullWidth
+							pill={false}
+							class="exif-toggle"
+						>
+							{showExif ? 'Hide Details' : 'Show Details'}
+						</Button>
 					</div>
 
 					<div class="pane-body-content">
@@ -433,7 +464,19 @@
 
 							<!-- Usage Tracking -->
 							<div class="usage-section">
-								<h4>Used In</h4>
+								<div class="section-header">
+									<h4>Used In</h4>
+									{#if media.mimeType?.startsWith('image/')}
+										<button
+											class="add-album-button"
+											onclick={() => (showAlbumSelector = true)}
+											title="Manage albums"
+										>
+											<AlbumIcon />
+											<span>Albums</span>
+										</button>
+									{/if}
+								</div>
 								{#if loadingUsage}
 									<div class="usage-loading">
 										<div class="spinner"></div>
@@ -473,6 +516,20 @@
 									<p class="no-usage">This media file is not currently used in any content.</p>
 								{/if}
 							</div>
+
+							<!-- Albums list -->
+							{#if albums.length > 0}
+								<div class="albums-inline">
+									<h4>Albums</h4>
+									<div class="album-tags">
+										{#each albums as album}
+											<a href="/admin/albums/{album.id}/edit" class="album-tag">
+												{album.title}
+											</a>
+										{/each}
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</div>
@@ -506,6 +563,21 @@
 			</div>
 		</div>
 	</Modal>
+
+	<!-- Album Selector Modal -->
+	{#if showAlbumSelector && media}
+		<Modal isOpen={showAlbumSelector} onClose={() => (showAlbumSelector = false)} size="medium">
+			<AlbumSelector
+				mediaId={media.id}
+				currentAlbums={albums}
+				onUpdate={(updatedAlbums) => {
+					albums = updatedAlbums
+					showAlbumSelector = false
+				}}
+				onClose={() => (showAlbumSelector = false)}
+			/>
+		</Modal>
+	{/if}
 {/if}
 
 <style lang="scss">
@@ -640,7 +712,7 @@
 			font-size: 0.875rem;
 			color: $grey-10;
 			font-weight: 500;
-			
+
 			&.color-value {
 				display: flex;
 				align-items: center;
@@ -648,7 +720,7 @@
 			}
 		}
 	}
-	
+
 	.color-swatch {
 		display: inline-block;
 		width: 20px;
@@ -670,12 +742,18 @@
 		}
 	}
 
-	.exif-data {
+	.media-metadata,
+	.exif-metadata {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: $unit-3x;
-		padding-top: $unit-3x;
-		border-top: 1px solid $grey-90;
+	}
+
+	.metadata-divider {
+		border-radius: 1px;
+		height: 2px;
+		background: $grey-80;
+		margin: $unit-3x 0;
 	}
 
 	.edit-form {
@@ -763,6 +841,47 @@
 	}
 
 	.usage-section {
+		.section-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: $unit-2x;
+
+			h4 {
+				margin: 0;
+				font-size: 1rem;
+				font-weight: 600;
+				color: $grey-20;
+			}
+		}
+
+		.add-album-button {
+			display: flex;
+			align-items: center;
+			gap: $unit-half;
+			padding: $unit-half;
+			background: transparent;
+			border: none;
+			border-radius: 6px;
+			color: $grey-40;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			font-size: 0.875rem;
+			font-weight: 500;
+
+			&:hover {
+				background: $grey-95;
+				color: $grey-20;
+			}
+
+			svg,
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+				flex-shrink: 0;
+			}
+		}
+
 		.usage-list {
 			list-style: none;
 			padding: 0;
@@ -853,6 +972,44 @@
 			color: $grey-50;
 			font-style: italic;
 			margin: $unit-2x 0 0 0;
+		}
+	}
+
+	// Albums inline display
+	.albums-inline {
+		margin-top: $unit-4x;
+
+		h4 {
+			font-size: 1rem;
+			font-weight: 600;
+			color: $grey-20;
+			margin: 0 0 $unit-2x 0;
+		}
+	}
+
+	.album-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $unit;
+	}
+
+	.album-tag {
+		display: inline-flex;
+		align-items: center;
+		padding: $unit-half $unit-2x;
+		background: $grey-95;
+		border: 1px solid $grey-90;
+		border-radius: 20px;
+		color: $grey-20;
+		text-decoration: none;
+		font-size: 0.875rem;
+		font-weight: 500;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: $grey-90;
+			border-color: $grey-85;
+			color: $grey-10;
 		}
 	}
 

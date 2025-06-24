@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from './Button.svelte'
-	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -212,14 +212,15 @@
 	{/if}
 
 	<!-- Media Library Modal -->
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={showModal}
 		mode="single"
 		fileType="image"
 		{selectedIds}
 		title="Select Image"
 		confirmText="Select Image"
-		onselect={handleImageSelect}
+		onSelect={handleImageSelect}
+		onClose={() => (showModal = false)}
 	/>
 </div>
 

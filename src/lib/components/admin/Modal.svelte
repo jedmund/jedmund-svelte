@@ -77,12 +77,8 @@
 </script>
 
 {#if isOpen}
-	<div class="modal-backdrop" on:click={handleBackdropClick} transition:fade={{ duration: 200 }}>
-		<div
-			class="modal {modalClass}"
-			on:click|stopPropagation
-			transition:fade={{ duration: 200, delay: 50 }}
-		>
+	<div class="modal-backdrop" on:click={handleBackdropClick} transition:fade={{ duration: 150 }}>
+		<div class="modal {modalClass}" on:click|stopPropagation transition:fade={{ duration: 150 }}>
 			{#if showCloseButton}
 				<Button
 					variant="ghost"

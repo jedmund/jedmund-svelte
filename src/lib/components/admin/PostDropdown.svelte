@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import UniverseComposer from './UniverseComposer.svelte'
+	import InlineComposerModal from './InlineComposerModal.svelte'
 	import Button from './Button.svelte'
 	import ChevronDownIcon from '$icons/chevron-down.svg?raw'
 
@@ -115,7 +115,7 @@
 	{/if}
 </div>
 
-<UniverseComposer
+<InlineComposerModal
 	bind:isOpen={showComposer}
 	initialPostType={selectedType}
 	on:close={handleComposerClose}

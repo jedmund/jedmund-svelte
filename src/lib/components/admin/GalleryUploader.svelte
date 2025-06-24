@@ -3,7 +3,7 @@
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import SmartImage from '../SmartImage.svelte'
-	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 
@@ -369,7 +369,7 @@
 			thumbnailUrl: media.thumbnailUrl,
 			width: media.width,
 			height: media.height,
-			altText: media.altText || '',
+			// altText removed - using description only
 			description: media.description || '',
 			isPhotography: media.isPhotography || false,
 			createdAt: media.createdAt,
@@ -387,7 +387,7 @@
 		if (index !== -1) {
 			value[index] = {
 				...value[index],
-				altText: updatedMedia.altText,
+				// altText removed - using description only
 				description: updatedMedia.description,
 				isPhotography: updatedMedia.isPhotography,
 				updatedAt: updatedMedia.updatedAt
@@ -587,13 +587,13 @@
 									thumbnailUrl: media.thumbnailUrl,
 									width: media.width,
 									height: media.height,
-									altText: media.altText,
+									// altText removed - using description only
 									description: media.description,
 									isPhotography: media.isPhotography || false,
 									createdAt: media.createdAt,
 									updatedAt: media.updatedAt
 								}}
-								alt={media.altText || media.filename || 'Gallery image'}
+								alt={media.description || media.filename || 'Gallery image'}
 								containerWidth={300}
 								loading="lazy"
 								aspectRatio="1:1"
@@ -675,7 +675,7 @@
 </div>
 
 <!-- Media Library Modal -->
-<MediaLibraryModal
+<UnifiedMediaModal
 	bind:isOpen={isMediaLibraryOpen}
 	mode="multiple"
 	fileType="image"

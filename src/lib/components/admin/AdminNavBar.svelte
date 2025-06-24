@@ -4,7 +4,8 @@
 	import AvatarSimple from '$lib/components/AvatarSimple.svelte'
 	import WorkIcon from '$icons/work.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
-	import PhotosIcon from '$icons/photos.svg?component'
+	import MediaIcon from '$icons/media.svg?component'
+	import AlbumIcon from '$icons/album.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
 	let isScrolled = $state(false)
@@ -31,8 +32,8 @@
 	const navItems: NavItem[] = [
 		{ text: 'Projects', href: '/admin/projects', icon: WorkIcon },
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
-		{ text: 'Albums', href: '/admin/albums', icon: PhotosIcon },
-		{ text: 'Media', href: '/admin/media', icon: PhotosIcon }
+		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
+		{ text: 'Media', href: '/admin/media', icon: MediaIcon }
 	]
 
 	// Calculate active index based on current path
