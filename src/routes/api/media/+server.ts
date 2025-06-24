@@ -26,6 +26,7 @@ export const GET: RequestHandler = async (event) => {
 		const search = event.url.searchParams.get('search')
 		const publishedFilter = event.url.searchParams.get('publishedFilter')
 		const sort = event.url.searchParams.get('sort') || 'newest'
+		const albumId = event.url.searchParams.get('albumId')
 
 		// Build where clause
 		const whereConditions: any[] = []
@@ -47,10 +48,7 @@ export const GET: RequestHandler = async (event) => {
 				case 'video':
 					// MP4, MOV, GIF
 					whereConditions.push({
-						OR: [
-							{ mimeType: { startsWith: 'video/' } },
-							{ mimeType: { equals: 'image/gif' } }
-						]
+						OR: [{ mimeType: { startsWith: 'video/' } }, { mimeType: { equals: 'image/gif' } }]
 					})
 					break
 				case 'audio':
@@ -74,6 +72,17 @@ export const GET: RequestHandler = async (event) => {
 
 		if (search) {
 			whereConditions.push({ filename: { contains: search, mode: 'insensitive' } })
+		}
+
+		// Filter by album if specified
+		if (albumId) {
+			whereConditions.push({
+				albums: {
+					some: {
+						albumId: parseInt(albumId)
+					}
+				}
+			})
 		}
 
 		// Handle published filter
@@ -132,13 +141,16 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Combine all conditions with AND
-		const where = whereConditions.length > 0 
-			? (whereConditions.length === 1 ? whereConditions[0] : { AND: whereConditions })
-			: {}
+		const where =
+			whereConditions.length > 0
+				? whereConditions.length === 1
+					? whereConditions[0]
+					: { AND: whereConditions }
+				: {}
 
 		// Build orderBy clause based on sort parameter
 		let orderBy: any = { createdAt: 'desc' } // default to newest
-		
+
 		switch (sort) {
 			case 'oldest':
 				orderBy = { createdAt: 'asc' }

@@ -79,7 +79,8 @@ export const GET: RequestHandler = async (event) => {
 			slug: media.photoSlug,
 			publishedAt: media.photoPublishedAt,
 			createdAt: media.createdAt,
-			album: media.albums.length > 0 ? media.albums[0].album : null,
+			album: media.albums.length > 0 ? media.albums[0].album : null, // Legacy single album support
+			albums: media.albums.map((albumMedia) => albumMedia.album), // All albums this photo belongs to
 			media: media // Include full media object for compatibility
 		}
 

@@ -63,6 +63,26 @@ export const GET: RequestHandler = async (event) => {
 		const nextMedia =
 			albumMediaIndex < album.media.length - 1 ? album.media[albumMediaIndex + 1].media : null
 
+		// Fetch all albums this photo belongs to
+		const mediaWithAlbums = await prisma.media.findUnique({
+			where: { id: mediaId },
+			include: {
+				albums: {
+					include: {
+						album: {
+							select: { id: true, title: true, slug: true }
+						}
+					},
+					where: {
+						album: {
+							status: 'published',
+							isPhotography: true
+						}
+					}
+				}
+			}
+		})
+
 		// Transform to photo format for compatibility
 		const photo = {
 			id: media.id,
@@ -77,7 +97,8 @@ export const GET: RequestHandler = async (event) => {
 			displayOrder: albumMedia.displayOrder,
 			exifData: media.exifData,
 			createdAt: media.createdAt,
-			publishedAt: media.photoPublishedAt
+			publishedAt: media.photoPublishedAt,
+			albums: mediaWithAlbums?.albums.map((am) => am.album) || []
 		}
 
 		return jsonResponse({

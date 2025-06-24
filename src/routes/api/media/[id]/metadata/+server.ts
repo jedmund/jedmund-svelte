@@ -19,11 +19,11 @@ export const PATCH: RequestHandler = async (event) => {
 		}
 
 		const body = await event.request.json()
-		const { altText, description } = body
+		const { description } = body
 
 		// Validate input
-		if (typeof altText !== 'string' && typeof description !== 'string') {
-			return errorResponse('Either altText or description must be provided', 400)
+		if (typeof description !== 'string') {
+			return errorResponse('Description must be provided', 400)
 		}
 
 		// Check if media exists
@@ -39,21 +39,18 @@ export const PATCH: RequestHandler = async (event) => {
 		const updatedMedia = await prisma.media.update({
 			where: { id: mediaId },
 			data: {
-				...(typeof altText === 'string' && { altText: altText.trim() || null }),
-				...(typeof description === 'string' && { description: description.trim() || null })
+				description: description.trim() || null
 			}
 		})
 
 		logger.info('Media metadata updated', {
 			id: mediaId,
 			filename: updatedMedia.filename,
-			hasAltText: !!updatedMedia.altText,
 			hasDescription: !!updatedMedia.description
 		})
 
 		return jsonResponse({
 			id: updatedMedia.id,
-			altText: updatedMedia.altText,
 			description: updatedMedia.description,
 			updatedAt: updatedMedia.updatedAt
 		})
