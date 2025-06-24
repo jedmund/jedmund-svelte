@@ -18,15 +18,15 @@
 		date: string | null
 		location: string | null
 		coverPhotoId: number | null
-		isPhotography: boolean
 		status: string
 		showInUniverse: boolean
 		publishedAt: string | null
 		createdAt: string
 		updatedAt: string
 		photos: Photo[]
+		content?: any
 		_count: {
-			photos: number
+			media: number
 		}
 	}
 
@@ -105,7 +105,7 @@
 	}
 
 	function getPhotoCount(): number {
-		return album._count?.photos || 0
+		return album._count?.media || 0
 	}
 </script>
 
@@ -135,9 +135,10 @@
 		<h3 class="album-title">{album.title}</h3>
 		<AdminByline
 			sections={[
-				album.isPhotography ? 'Photography' : 'Album',
+				'Album',
 				album.status === 'published' ? 'Published' : 'Draft',
 				`${getPhotoCount()} ${getPhotoCount() === 1 ? 'photo' : 'photos'}`,
+				...(album.content ? ['📖 Story'] : []),
 				album.status === 'published' && album.publishedAt
 					? `Published ${formatRelativeTime(album.publishedAt)}`
 					: `Created ${formatRelativeTime(album.createdAt)}`
