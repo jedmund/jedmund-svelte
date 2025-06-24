@@ -77,7 +77,6 @@ async function findImageColors() {
 		if (!photo && !media) {
 			console.log('\nImage B0000295.jpg not found in either Photo or Media tables.')
 		}
-
 	} catch (error) {
 		console.error('Error searching for image:', error)
 	} finally {

@@ -60,6 +60,7 @@ You can also run the scripts directly:
 ## Backup Storage
 
 All backups are stored in the `./backups/` directory with timestamps:
+
 - Local backups: `local_YYYYMMDD_HHMMSS.sql.gz`
 - Remote backups: `remote_YYYYMMDD_HHMMSS.sql.gz`
 
@@ -115,6 +116,7 @@ DATABASE_URL_PRODUCTION="postgresql://user:password@remote-host:5432/dbname"
 ### "pg_dump: command not found"
 
 Install PostgreSQL client tools:
+
 ```bash
 # macOS
 brew install postgresql

@@ -85,11 +85,12 @@ export const POST: RequestHandler = async (event) => {
 				}
 
 				// Calculate aspect ratio
-				const aspectRatio = resource.width && resource.height 
-					? resource.width / resource.height 
-					: media.width && media.height 
-						? media.width / media.height 
-						: undefined
+				const aspectRatio =
+					resource.width && resource.height
+						? resource.width / resource.height
+						: media.width && media.height
+							? media.width / media.height
+							: undefined
 
 				// Update database
 				await prisma.media.update({
@@ -113,8 +114,7 @@ export const POST: RequestHandler = async (event) => {
 				}
 
 				// Add a small delay to avoid rate limiting
-				await new Promise(resolve => setTimeout(resolve, 100))
-
+				await new Promise((resolve) => setTimeout(resolve, 100))
 			} catch (error) {
 				results.failed++
 				results.processed++
@@ -168,7 +168,6 @@ export const POST: RequestHandler = async (event) => {
 			...results,
 			photosUpdated: photosWithoutColor.length
 		})
-
 	} catch (error) {
 		logger.error('Color extraction error', error as Error)
 		return errorResponse(
