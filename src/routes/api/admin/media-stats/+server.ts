@@ -56,7 +56,7 @@ export const GET: RequestHandler = async (event) => {
 		})
 
 		const greyDominantColors = mediaWithColors.filter(
-			media => media.dominantColor && isGreyColor(media.dominantColor)
+			(media) => media.dominantColor && isGreyColor(media.dominantColor)
 		).length
 
 		const stats = {

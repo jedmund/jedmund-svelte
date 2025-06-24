@@ -1,7 +1,11 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import { checkAdminAuth } from '$lib/server/api-utils'
-import { auditCloudinaryResources, deleteOrphanedFiles, cleanupBrokenReferences } from '$lib/server/cloudinary-audit'
+import {
+	auditCloudinaryResources,
+	deleteOrphanedFiles,
+	cleanupBrokenReferences
+} from '$lib/server/cloudinary-audit'
 import { formatBytes } from '$lib/utils/format'
 import { isCloudinaryConfigured } from '$lib/server/cloudinary'
 

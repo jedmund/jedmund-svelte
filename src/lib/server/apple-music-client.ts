@@ -51,11 +51,16 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 
 		if (!response.ok) {
 			const errorText = await response.text()
-			logger.error('Apple Music API error response:', undefined, {
-				status: response.status,
-				statusText: response.statusText,
-				body: errorText
-			}, 'music')
+			logger.error(
+				'Apple Music API error response:',
+				undefined,
+				{
+					status: response.status,
+					statusText: response.statusText,
+					body: errorText
+				},
+				'music'
+			)
 
 			// Record failure and handle rate limiting
 			if (identifier) {
@@ -232,7 +237,8 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		if (!result) {
 			const cleanedAlbum = removeLeadingPunctuation(album)
 			if (cleanedAlbum !== album && cleanedAlbum.length > 0) {
-				logger.music('debug', 
+				logger.music(
+					'debug',
 					`No match found for "${album}", trying without leading punctuation: "${cleanedAlbum}"`
 				)
 				result = await searchAndMatch(cleanedAlbum)
@@ -258,7 +264,12 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		// Return the match
 		return result.album
 	} catch (error) {
-		logger.error(`Failed to find album "${album}" by "${artist}":`, error as Error, undefined, 'music')
+		logger.error(
+			`Failed to find album "${album}" by "${artist}":`,
+			error as Error,
+			undefined,
+			'music'
+		)
 		// Don't cache as not found on error - might be temporary
 		return null
 	}
@@ -313,7 +324,8 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 
 				// Log track details
 				tracks.forEach((track, index) => {
-					logger.music('debug', 
+					logger.music(
+						'debug',
 						`Track ${index + 1}: ${track.name} - Preview: ${track.previewUrl ? 'Yes' : 'No'} - Duration: ${track.durationMs}ms`
 					)
 				})

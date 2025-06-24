@@ -96,9 +96,8 @@ export async function uploadFile(
 				}
 			}
 
-			const aspectRatio = localResult.width && localResult.height 
-				? localResult.width / localResult.height 
-				: undefined
+			const aspectRatio =
+				localResult.width && localResult.height ? localResult.width / localResult.height : undefined
 
 			return {
 				success: true,

@@ -82,7 +82,12 @@ export const GET: RequestHandler = async ({ request }) => {
 
 								return withAppleMusic
 							} catch (error) {
-								logger.error(`Error enriching album ${album.name}:`, error as Error, undefined, 'music')
+								logger.error(
+									`Error enriching album ${album.name}:`,
+									error as Error,
+									undefined,
+									'music'
+								)
 								return album
 							}
 						})
@@ -91,7 +96,8 @@ export const GET: RequestHandler = async ({ request }) => {
 					// Ensure only one album is marked as now playing in the enriched albums
 					const nowPlayingCount = enrichedAlbums.filter((a) => a.isNowPlaying).length
 					if (nowPlayingCount > 1) {
-						logger.music('debug',
+						logger.music(
+							'debug',
 							`Multiple enriched albums marked as now playing (${nowPlayingCount}), keeping only the most recent one`
 						)
 
@@ -101,11 +107,17 @@ export const GET: RequestHandler = async ({ request }) => {
 						enrichedAlbums.forEach((album, index) => {
 							if (album.isNowPlaying) {
 								if (foundFirst) {
-									logger.music('debug', `Marking album "${album.name}" at position ${index} as not playing`)
+									logger.music(
+										'debug',
+										`Marking album "${album.name}" at position ${index} as not playing`
+									)
 									album.isNowPlaying = false
 									album.nowPlayingTrack = undefined
 								} else {
-									logger.music('debug', `Keeping album "${album.name}" at position ${index} as now playing`)
+									logger.music(
+										'debug',
+										`Keeping album "${album.name}" at position ${index} as now playing`
+									)
 									foundFirst = true
 								}
 							}
@@ -184,7 +196,8 @@ export const GET: RequestHandler = async ({ request }) => {
 								(album.isNowPlaying && album.nowPlayingTrack !== lastTrack)
 							) {
 								updates.push(album)
-								logger.music('debug',
+								logger.music(
+									'debug',
 									`Now playing update for non-recent album ${album.albumName}: playing=${album.isNowPlaying}, track=${album.nowPlayingTrack}`
 								)
 							}
@@ -334,7 +347,8 @@ async function getNowPlayingAlbums(client: LastClient): Promise<NowPlayingUpdate
 	// Ensure only one album is marked as now playing - keep the most recent one
 	const nowPlayingAlbums = Array.from(albums.values()).filter((a) => a.isNowPlaying)
 	if (nowPlayingAlbums.length > 1) {
-		logger.music('debug',
+		logger.music(
+			'debug',
 			`Multiple albums marked as now playing (${nowPlayingAlbums.length}), keeping only the most recent one`
 		)
 
@@ -436,7 +450,8 @@ function checkWithTracks(
 			)
 
 			if (now < trackEndTime) {
-				logger.music('debug',
+				logger.music(
+					'debug',
 					`Track "${mostRecentTrack.trackName}" is still playing (ends at ${trackEndTime.toLocaleTimeString()})`
 				)
 				return {
