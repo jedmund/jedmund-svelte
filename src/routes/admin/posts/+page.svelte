@@ -7,7 +7,7 @@
 	import PostListItem from '$lib/components/admin/PostListItem.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
-	import UniverseComposer from '$lib/components/admin/UniverseComposer.svelte'
+	import InlineComposerModal from '$lib/components/admin/InlineComposerModal.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 
@@ -285,7 +285,7 @@
 		<!-- Inline Composer -->
 		{#if showInlineComposer}
 			<div class="composer-section">
-				<UniverseComposer
+				<InlineComposerModal
 					isOpen={true}
 					initialMode="page"
 					initialPostType="post"

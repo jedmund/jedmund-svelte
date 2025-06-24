@@ -11,6 +11,7 @@
 	import DropdownItem from '$lib/components/admin/DropdownItem.svelte'
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import MediaUploadModal from '$lib/components/admin/MediaUploadModal.svelte'
+	import AlbumSelectorModal from '$lib/components/admin/AlbumSelectorModal.svelte'
 	import ChevronDown from '$icons/chevron-down.svg'
 	import type { Media } from '@prisma/client'
 
@@ -58,12 +59,13 @@
 	let selectedMedia = $state<Media | null>(null)
 	let isDetailsModalOpen = $state(false)
 	let isUploadModalOpen = $state(false)
+	let showBulkAlbumModal = $state(false)
 
 	// Multiselect states
 	let selectedMediaIds = $state<Set<number>>(new Set())
 	let isMultiSelectMode = $state(false)
 	let isDeleting = $state(false)
-	
+
 	// Dropdown state
 	let isDropdownOpen = $state(false)
 
@@ -375,23 +377,16 @@
 		{#snippet actions()}
 			<div class="actions-dropdown">
 				<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload</Button>
-				<Button
-					variant="ghost"
-					iconOnly
-					buttonSize="large"
-					onclick={handleDropdownToggle}
-				>
+				<Button variant="ghost" iconOnly buttonSize="large" onclick={handleDropdownToggle}>
 					<ChevronDown slot="icon" />
 				</Button>
-				
+
 				{#if isDropdownOpen}
 					<DropdownMenuContainer>
 						<DropdownItem onclick={toggleMultiSelectMode}>
 							{isMultiSelectMode ? 'Exit Select' : 'Select Files'}
 						</DropdownItem>
-						<DropdownItem onclick={handleAuditStorage}>
-							Audit Storage
-						</DropdownItem>
+						<DropdownItem onclick={handleAuditStorage}>Audit Storage</DropdownItem>
 						<DropdownItem onclick={() => goto('/admin/media/regenerate')}>
 							Regenerate Cloudinary
 						</DropdownItem>
@@ -491,6 +486,13 @@
 							title="Remove photography status from selected items"
 						>
 							Remove Photography
+						</button>
+						<button
+							onclick={() => (showBulkAlbumModal = true)}
+							class="btn btn-secondary btn-small"
+							title="Add or remove selected items from albums"
+						>
+							Manage Albums
 						</button>
 						<button
 							onclick={handleBulkDelete}
@@ -611,6 +613,17 @@
 	onUploadComplete={handleUploadComplete}
 />
 
+<!-- Bulk Album Modal -->
+<AlbumSelectorModal
+	bind:isOpen={showBulkAlbumModal}
+	selectedMediaIds={Array.from(selectedMediaIds)}
+	onSave={() => {
+		// Optionally refresh the media list or show a success message
+		clearSelection()
+		isMultiSelectMode = false
+	}}
+/>
+
 <style lang="scss">
 	.btn {
 		padding: $unit-2x $unit-3x;
@@ -659,7 +672,7 @@
 
 	// Ensure search input matches filter dropdown sizing
 	:global(.admin-filters) {
-		:global(input[type="search"]) {
+		:global(input[type='search']) {
 			height: 36px; // Match Select component small size
 			font-size: 0.875rem; // Match Select component font size
 			min-width: 200px; // Wider to show full placeholder
@@ -1013,13 +1026,13 @@
 					&::after {
 						content: '';
 						position: absolute;
-						top: 2px;
-						left: 6px;
+						top: 50%;
+						left: 50%;
 						width: 4px;
 						height: 8px;
 						border: solid white;
 						border-width: 0 2px 2px 0;
-						transform: rotate(45deg);
+						transform: translate(-50%, -60%) rotate(45deg);
 						opacity: 0;
 						transition: opacity 0.2s ease;
 					}

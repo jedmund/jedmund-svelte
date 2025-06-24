@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import CaseStudyEditor from '$lib/components/admin/CaseStudyEditor.svelte'
+	import Composer from '$lib/components/admin/Composer.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
@@ -306,7 +306,9 @@
 </script>
 
 <svelte:head>
-	<title>{post && post.title ? `${post.title} - Admin @jedmund` : 'Edit Post - Admin @jedmund'}</title>
+	<title
+		>{post && post.title ? `${post.title} - Admin @jedmund` : 'Edit Post - Admin @jedmund'}</title
+	>
 </svelte:head>
 
 <AdminPage>
@@ -394,7 +396,7 @@
 
 				{#if config?.showContent && contentReady}
 					<div class="editor-wrapper">
-						<CaseStudyEditor bind:data={content} placeholder="Continue writing..." mode="default" />
+						<Composer bind:data={content} placeholder="Continue writing..." />
 					</div>
 				{/if}
 			</div>

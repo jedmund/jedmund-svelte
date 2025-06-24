@@ -95,7 +95,7 @@
 
 			colorExtractionResults = await response.json()
 			showResultsModal = true
-			
+
 			// Refresh stats
 			await fetchMediaStats()
 		} catch (err) {
@@ -130,7 +130,7 @@
 
 			thumbnailResults = await response.json()
 			showResultsModal = true
-			
+
 			// Refresh stats
 			await fetchMediaStats()
 		} catch (err) {
@@ -165,7 +165,7 @@
 
 			reanalysisResults = await response.json()
 			showResultsModal = true
-			
+
 			// Refresh stats
 			await fetchMediaStats()
 		} catch (err) {
@@ -227,7 +227,10 @@
 				<Palette size={24} />
 				<h2>Extract Dominant Colors</h2>
 			</div>
-			<p>Analyze images to extract dominant colors for better loading states. This process uses Cloudinary's color analysis API.</p>
+			<p>
+				Analyze images to extract dominant colors for better loading states. This process uses
+				Cloudinary's color analysis API.
+			</p>
 			<div class="action-details">
 				<ul>
 					<li>Extracts the primary color from each image</li>
@@ -252,7 +255,10 @@
 				<Image size={24} />
 				<h2>Regenerate Thumbnails</h2>
 			</div>
-			<p>Update thumbnails to maintain aspect ratio with 800px on the long edge instead of fixed 800x600 dimensions.</p>
+			<p>
+				Update thumbnails to maintain aspect ratio with 800px on the long edge instead of fixed
+				800x600 dimensions.
+			</p>
 			<div class="action-details">
 				<ul>
 					<li>Preserves original aspect ratios</li>
@@ -277,7 +283,9 @@
 				<Sparkles size={24} />
 				<h2>Smart Color Reanalysis</h2>
 			</div>
-			<p>Use advanced color detection to pick vibrant subject colors instead of background greys.</p>
+			<p>
+				Use advanced color detection to pick vibrant subject colors instead of background greys.
+			</p>
 			<div class="action-details">
 				<ul>
 					<li>Analyzes existing color data intelligently</li>
@@ -304,7 +312,11 @@
 	<div class="modal-content">
 		<div class="modal-header">
 			<h2>
-				{colorExtractionResults ? 'Color Extraction Results' : thumbnailResults ? 'Thumbnail Regeneration Results' : 'Color Reanalysis Results'}
+				{colorExtractionResults
+					? 'Color Extraction Results'
+					: thumbnailResults
+						? 'Thumbnail Regeneration Results'
+						: 'Color Reanalysis Results'}
 			</h2>
 		</div>
 
@@ -314,7 +326,7 @@
 				<p><strong>Succeeded:</strong> {colorExtractionResults.succeeded}</p>
 				<p><strong>Failed:</strong> {colorExtractionResults.failed}</p>
 				<p><strong>Photos Updated:</strong> {colorExtractionResults.photosUpdated}</p>
-				
+
 				{#if colorExtractionResults.errors.length > 0}
 					<div class="errors-section">
 						<h3>Errors:</h3>
@@ -336,7 +348,7 @@
 				<p><strong>Processed:</strong> {thumbnailResults.processed} media items</p>
 				<p><strong>Succeeded:</strong> {thumbnailResults.succeeded}</p>
 				<p><strong>Failed:</strong> {thumbnailResults.failed}</p>
-				
+
 				{#if thumbnailResults.errors.length > 0}
 					<div class="errors-section">
 						<h3>Errors:</h3>
@@ -358,7 +370,7 @@
 				<p><strong>Processed:</strong> {reanalysisResults.processed} media items</p>
 				<p><strong>Updated:</strong> {reanalysisResults.updated} (colors improved)</p>
 				<p><strong>Skipped:</strong> {reanalysisResults.skipped} (already optimal)</p>
-				
+
 				{#if reanalysisResults.errors.length > 0}
 					<div class="errors-section">
 						<h3>Errors:</h3>
@@ -376,12 +388,15 @@
 		{/if}
 
 		<div class="modal-actions">
-			<Button variant="primary" onclick={() => {
-				showResultsModal = false
-				colorExtractionResults = null
-				thumbnailResults = null
-				reanalysisResults = null
-			}}>Close</Button>
+			<Button
+				variant="primary"
+				onclick={() => {
+					showResultsModal = false
+					colorExtractionResults = null
+					thumbnailResults = null
+					reanalysisResults = null
+				}}>Close</Button
+			>
 		</div>
 	</div>
 </Modal>

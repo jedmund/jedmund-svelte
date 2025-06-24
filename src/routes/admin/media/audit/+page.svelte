@@ -40,7 +40,12 @@
 	let selectedFiles = new Set<string>()
 	let showDeleteModal = false
 	let deleteResults: { succeeded: number; failed: string[] } | null = null
-	let cleanupResults: { cleanedMedia: number; cleanedProjects: number; cleanedPosts: number; errors: string[] } | null = null
+	let cleanupResults: {
+		cleanedMedia: number
+		cleanedProjects: number
+		cleanedPosts: number
+		errors: string[]
+	} | null = null
 	let showCleanupModal = false
 	let cleaningUp = false
 
@@ -50,7 +55,6 @@
 		auditData?.orphanedFiles
 			.filter((f) => selectedFiles.has(f.publicId))
 			.reduce((sum, f) => sum + f.size, 0) || 0
-	
 
 	onMount(() => {
 		runAudit()
@@ -124,7 +128,7 @@
 
 			const response = await fetch('/api/admin/cloudinary-audit', {
 				method: 'DELETE',
-				headers: { 
+				headers: {
 					'Content-Type': 'application/json',
 					Authorization: `Basic ${auth}`
 				},
@@ -180,7 +184,7 @@
 
 			const response = await fetch('/api/admin/cloudinary-audit', {
 				method: 'PATCH',
-				headers: { 
+				headers: {
 					'Content-Type': 'application/json',
 					Authorization: `Basic ${auth}`
 				},
@@ -326,7 +330,7 @@
 					</thead>
 					<tbody>
 						{#each auditData.orphanedFiles as file}
-							<tr 
+							<tr
 								class:selected={selectedFiles.has(file.publicId)}
 								onclick={() => toggleFile(file.publicId)}
 								role="button"
@@ -394,7 +398,8 @@
 			<div class="broken-references-section">
 				<h2>Broken References</h2>
 				<p class="broken-references-info">
-					Found {auditData.missingReferences.length} files referenced in the database but missing from Cloudinary.
+					Found {auditData.missingReferences.length} files referenced in the database but missing from
+					Cloudinary.
 				</p>
 				<Button
 					variant="secondary"
@@ -408,7 +413,7 @@
 				>
 					Clean Up Broken References
 				</Button>
-				
+
 				{#if cleanupResults}
 					<div class="cleanup-results">
 						<h3>Cleanup Complete</h3>
@@ -437,12 +442,19 @@
 			<p class="warning">⚠️ This action cannot be undone.</p>
 		</div>
 		<div class="modal-actions">
-			<Button variant="secondary" onclick={() => {
-				showDeleteModal = false
-			}}>Cancel</Button>
-			<Button variant="danger" onclick={() => {
-				deleteSelected(false)
-			}} disabled={deleting}>
+			<Button
+				variant="secondary"
+				onclick={() => {
+					showDeleteModal = false
+				}}>Cancel</Button
+			>
+			<Button
+				variant="danger"
+				onclick={() => {
+					deleteSelected(false)
+				}}
+				disabled={deleting}
+			>
 				{deleting ? 'Deleting...' : 'Delete Files'}
 			</Button>
 		</div>
@@ -456,7 +468,9 @@
 			<h2>Clean Up Broken References</h2>
 		</div>
 		<div class="cleanup-confirmation">
-			<p>Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?</p>
+			<p>
+				Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?
+			</p>
 			<p class="warning">⚠️ This will:</p>
 			<ul class="cleanup-actions">
 				<li>Delete Media records where the main file no longer exists in Cloudinary</li>
@@ -467,12 +481,19 @@
 			<p class="warning">This action cannot be undone.</p>
 		</div>
 		<div class="modal-actions">
-			<Button variant="secondary" onclick={() => {
-				showCleanupModal = false
-			}}>Cancel</Button>
-			<Button variant="danger" onclick={() => {
-				cleanupBrokenReferences()
-			}} disabled={cleaningUp}>
+			<Button
+				variant="secondary"
+				onclick={() => {
+					showCleanupModal = false
+				}}>Cancel</Button
+			>
+			<Button
+				variant="danger"
+				onclick={() => {
+					cleanupBrokenReferences()
+				}}
+				disabled={cleaningUp}
+			>
 				{cleaningUp ? 'Cleaning Up...' : 'Clean Up References'}
 			</Button>
 		</div>

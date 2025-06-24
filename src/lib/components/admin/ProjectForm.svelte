@@ -4,7 +4,7 @@
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import FormFieldWrapper from './FormFieldWrapper.svelte'
-	import CaseStudyEditor from './CaseStudyEditor.svelte'
+	import EnhancedComposer from './EnhancedComposer.svelte'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
 	import ProjectImagesForm from './ProjectImagesForm.svelte'
@@ -273,14 +273,14 @@
 
 				<!-- Case Study Panel -->
 				<div class="panel panel-case-study" class:active={activeTab === 'case-study'}>
-					<CaseStudyEditor
+					<EnhancedComposer
 						bind:this={editorRef}
 						bind:data={formData.caseStudyContent}
 						onChange={handleEditorChange}
 						placeholder="Write your case study here..."
 						minHeight={400}
 						autofocus={false}
-						mode="default"
+						variant="full"
 					/>
 				</div>
 			</div>
