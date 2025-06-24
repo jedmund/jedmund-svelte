@@ -4,11 +4,9 @@
 	import type { PhotoItem as PhotoItemType } from '$lib/types/photos'
 
 	const {
-		photoItems,
-		albumSlug
+		photoItems
 	}: {
 		photoItems: PhotoItemType[]
-		albumSlug?: string
 	} = $props()
 
 	// Responsive column configuration
@@ -55,7 +53,7 @@
 		class="photo-masonry"
 	>
 		{#snippet children({ item })}
-			<PhotoItem {item} {albumSlug} />
+			<PhotoItem {item} />
 		{/snippet}
 	</Masonry>
 </div>

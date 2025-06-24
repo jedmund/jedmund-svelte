@@ -7,7 +7,7 @@
 	import FormFieldWrapper from './FormFieldWrapper.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
-	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import type { JSONContent } from '@tiptap/core'
@@ -596,7 +596,7 @@
 />
 
 <!-- Media Library Modal -->
-<MediaLibraryModal
+<UnifiedMediaModal
 	bind:isOpen={isMediaLibraryOpen}
 	mode="multiple"
 	fileType="image"

@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import Composer from '$lib/components/admin/Composer.svelte'
+	import EnhancedComposer from '$lib/components/admin/EnhancedComposer.svelte'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
@@ -396,7 +396,7 @@
 
 				{#if config?.showContent && contentReady}
 					<div class="editor-wrapper">
-						<Composer bind:data={content} placeholder="Continue writing..." />
+						<EnhancedComposer bind:data={content} placeholder="Continue writing..." />
 					</div>
 				{/if}
 			</div>

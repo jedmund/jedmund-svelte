@@ -4,11 +4,9 @@
 	import { goto } from '$app/navigation'
 
 	const {
-		item,
-		albumSlug // For when this is used within an album context
+		item
 	}: {
 		item: PhotoItem
-		albumSlug?: string
 	} = $props()
 
 	let imageLoaded = $state(false)
@@ -16,20 +14,11 @@
 	function handleClick() {
 		if (isAlbum(item)) {
 			// Navigate to album page using the slug
-			goto(`/photos/${item.slug}`)
+			goto(`/albums/${item.slug}`)
 		} else {
-			// For individual photos, check if we have album context
-			if (albumSlug) {
-				// Navigate to photo within album
-				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
-				goto(`/photos/${albumSlug}/${mediaId}`)
-			} else {
-				// Navigate to individual photo page using the media ID
-				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
-				// Include the album slug as a 'from' parameter if we're in an album context
-				const url = albumSlug ? `/photos/p/${mediaId}?from=${albumSlug}` : `/photos/p/${mediaId}`
-				goto(url)
-			}
+			// Navigate to individual photo page using the media ID
+			const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
+			goto(`/photos/${mediaId}`)
 		}
 	}
 

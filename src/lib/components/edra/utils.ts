@@ -93,7 +93,14 @@ export function getHandlePaste(editor: Editor, maxSize: number = 2) {
 		reader.readAsDataURL(file)
 		reader.onload = (e) => {
 			if (e.target?.result) {
-				editor.commands.setImage({ src: e.target.result as string })
+				editor.commands.insertContent({
+					type: 'image',
+					attrs: {
+						src: e.target.result as string,
+						alt: '',
+						mediaId: null // No media ID for pasted images
+					}
+				})
 			}
 		}
 	}

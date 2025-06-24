@@ -2,21 +2,23 @@
 	import BackButton from '$components/BackButton.svelte'
 	import PhotoViewEnhanced from '$components/PhotoViewEnhanced.svelte'
 	import PhotoMetadata from '$components/PhotoMetadata.svelte'
-	import { generateMetaTags, generateCreativeWorkJsonLd } from '$lib/utils/metadata'
+	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
+	import { onMount } from 'svelte'
 	import { spring } from 'svelte/motion'
 	import { getCurrentMousePosition } from '$lib/stores/mouse'
 	import type { PageData } from './$types'
+	import { isAlbum } from '$lib/types/photos'
 	import ArrowLeft from '$icons/arrow-left.svg'
 	import ArrowRight from '$icons/arrow-right.svg'
 
 	let { data }: { data: PageData } = $props()
 
 	const photo = $derived(data.photo)
-	const album = $derived(data.album)
-	const navigation = $derived(data.navigation)
 	const error = $derived(data.error)
+	const photoItems = $derived(data.photoItems || [])
+	const currentPhotoId = $derived(data.currentPhotoId)
 
 	// Hover tracking for arrow buttons
 	let isHoveringLeft = $state(false)
@@ -44,28 +46,17 @@
 	let defaultRightX = 0
 
 	const pageUrl = $derived($page.url.href)
-
-	// Parse EXIF data if available
-	const exifData = $derived(
-		photo?.exifData && typeof photo.exifData === 'object' ? photo.exifData : null
-	)
+	const fromAlbum = $derived($page.url.searchParams.get('from'))
 
 	// Generate metadata
-	const photoTitle = $derived(photo?.title || photo?.caption || `Photo ${navigation?.currentIndex}`)
-	const photoDescription = $derived(
-		photo?.description || photo?.caption || `Photo from ${album?.title || 'album'}`
-	)
 	const metaTags = $derived(
-		photo && album
+		photo
 			? generateMetaTags({
-					title: photoTitle,
-					description: photoDescription,
+					title: photo.title || 'Photo',
+					description: photo.description || photo.caption || 'A photograph',
 					url: pageUrl,
-					type: 'article',
 					image: photo.url,
-					publishedTime: exifData?.dateTaken,
-					author: 'Justin Edmund',
-					titleFormat: { type: 'snippet', snippet: photoDescription }
+					titleFormat: { type: 'by' }
 				})
 			: generateMetaTags({
 					title: 'Photo Not Found',
@@ -75,20 +66,62 @@
 				})
 	)
 
-	// Generate creative work JSON-LD
+	// Generate JSON-LD for photo
 	const photoJsonLd = $derived(
-		photo && album
-			? generateCreativeWorkJsonLd({
-					name: photoTitle,
-					description: photoDescription,
+		photo
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'ImageObject',
+					name: photo.title || 'Photo',
+					description: photo.description || photo.caption,
+					contentUrl: photo.url,
 					url: pageUrl,
-					image: photo.url,
-					creator: 'Justin Edmund',
-					dateCreated: exifData?.dateTaken,
-					keywords: ['photography', album.title, ...(exifData?.location ? [exifData.location] : [])]
-				})
+					dateCreated: photo.createdAt,
+					author: {
+						'@type': 'Person',
+						name: '@jedmund'
+					}
+				}
 			: null
 	)
+
+	// Parse EXIF data if available
+	const exifData = $derived(
+		photo?.exifData && typeof photo.exifData === 'object' ? photo.exifData : null
+	)
+
+	// Get previous and next photos (excluding albums)
+	const adjacentPhotos = $derived(() => {
+		if (!photoItems.length || !currentPhotoId) return { prev: null, next: null }
+
+		// Filter out albums - we only want photos
+		const photosOnly = photoItems.filter((item) => !isAlbum(item))
+		const currentIndex = photosOnly.findIndex((item) => item.id === currentPhotoId)
+
+		if (currentIndex === -1) return { prev: null, next: null }
+
+		return {
+			prev: currentIndex > 0 ? photosOnly[currentIndex - 1] : null,
+			next: currentIndex < photosOnly.length - 1 ? photosOnly[currentIndex + 1] : null
+		}
+	})
+
+	// Handle photo navigation
+	function navigateToPhoto(item: any) {
+		if (!item) return
+		// Extract media ID from item.id (could be 'media-123' or 'photo-123')
+		const mediaId = item.id.replace(/^(media|photo)-/, '')
+		goto(`/photos/${mediaId}`)
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		// Arrow key navigation for photos
+		if (e.key === 'ArrowLeft' && adjacentPhotos().prev) {
+			navigateToPhoto(adjacentPhotos().prev)
+		} else if (e.key === 'ArrowRight' && adjacentPhotos().next) {
+			navigateToPhoto(adjacentPhotos().next)
+		}
+	}
 
 	// Set default button positions when component mounts
 	$effect(() => {
@@ -179,6 +212,10 @@
 			rightButtonCoords.set({ x: mouseX, y: mouseY }, { hard: true })
 		}
 	}
+
+	// Track last known mouse position for scroll updates
+	let lastMouseX = 0
+	let lastMouseY = 0
 
 	// Store last mouse client position for scroll updates
 	let lastClientX = 0
@@ -273,15 +310,6 @@
 		}
 	}
 
-	// Keyboard navigation
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'ArrowLeft' && navigation?.prevPhoto) {
-			goto(`/photos/${album.slug}/${navigation.prevPhoto.id}`)
-		} else if (e.key === 'ArrowRight' && navigation?.nextPhoto) {
-			goto(`/photos/${album.slug}/${navigation.nextPhoto.id}`)
-		}
-	}
-
 	// Set up keyboard and scroll listeners
 	$effect(() => {
 		window.addEventListener('keydown', handleKeydown)
@@ -308,13 +336,8 @@
 		<meta name="twitter:{property}" {content} />
 	{/each}
 
-	<!-- Other meta tags -->
-	{#if metaTags.other.canonical}
-		<link rel="canonical" href={metaTags.other.canonical} />
-	{/if}
-	{#if metaTags.other.robots}
-		<meta name="robots" content={metaTags.other.robots} />
-	{/if}
+	<!-- Canonical URL -->
+	<link rel="canonical" href={metaTags.other.canonical} />
 
 	<!-- JSON-LD -->
 	{#if photoJsonLd}
@@ -322,15 +345,15 @@
 	{/if}
 </svelte:head>
 
-{#if error || !photo || !album}
+{#if error}
 	<div class="error-container">
 		<div class="error-message">
 			<h1>Photo Not Found</h1>
-			<p>{error || "The photo you're looking for doesn't exist."}</p>
+			<p>{error}</p>
 			<BackButton href="/photos" label="Back to Photos" />
 		</div>
 	</div>
-{:else}
+{:else if photo}
 	<div class="photo-page" onmousemove={handleMouseMove} onmouseleave={handleMouseLeave}>
 		<div class="photo-content-wrapper">
 			<PhotoViewEnhanced
@@ -345,7 +368,7 @@
 
 		<!-- Adjacent Photos Navigation -->
 		<div class="adjacent-navigation">
-			{#if navigation.prevPhoto}
+			{#if adjacentPhotos().prev}
 				<button
 					class="nav-button prev"
 					class:hovering={isHoveringLeft}
@@ -354,7 +377,7 @@
 						top: {$leftButtonCoords.y}px;
 						transform: translate(-50%, -50%);
 					"
-					onclick={() => goto(`/photos/${album.slug}/${navigation.prevPhoto.id}`)}
+					onclick={() => navigateToPhoto(adjacentPhotos().prev)}
 					type="button"
 					aria-label="Previous photo"
 				>
@@ -362,7 +385,7 @@
 				</button>
 			{/if}
 
-			{#if navigation.nextPhoto}
+			{#if adjacentPhotos().next}
 				<button
 					class="nav-button next"
 					class:hovering={isHoveringRight}
@@ -371,7 +394,7 @@
 						top: {$rightButtonCoords.y}px;
 						transform: translate(-50%, -50%);
 					"
-					onclick={() => goto(`/photos/${album.slug}/${navigation.nextPhoto.id}`)}
+					onclick={() => navigateToPhoto(adjacentPhotos().next)}
 					type="button"
 					aria-label="Next photo"
 				>
@@ -387,8 +410,18 @@
 			{exifData}
 			createdAt={photo.createdAt}
 			albums={photo.albums}
-			backHref={`/photos/${album.slug}`}
-			backLabel={`Back to ${album.title}`}
+			backHref={fromAlbum
+				? `/albums/${fromAlbum}`
+				: photo.album
+					? `/albums/${photo.album.slug}`
+					: '/photos'}
+			backLabel={(() => {
+				if (fromAlbum && photo.albums) {
+					const album = photo.albums.find((a) => a.slug === fromAlbum)
+					return album ? `Back to ${album.title}` : 'Back to Photos'
+				}
+				return photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'
+			})()}
 			showBackButton={true}
 		/>
 	</div>
@@ -397,7 +430,6 @@
 <style lang="scss">
 	@import '$styles/variables.scss';
 	@import '$styles/mixins.scss';
-
 	.error-container {
 		display: flex;
 		justify-content: center;

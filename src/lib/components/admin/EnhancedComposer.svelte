@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Editor } from '@tiptap/core'
 	import { onMount, setContext } from 'svelte'
-	import { initiateEditor } from '$lib/components/edra/editor.js'
+	import { initiateEditor } from '$lib/components/edra/editor.ts'
 	import { getEditorExtensions, EDITOR_PRESETS } from '$lib/components/edra/editor-extensions.js'
 	import { EdraToolbar, EdraBubbleMenu } from '$lib/components/edra/headless/index.js'
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle'
@@ -370,13 +370,17 @@
 			editor
 				.chain()
 				.focus()
-				.setImage({
-					src: selectedMedia.url,
-					alt: selectedMedia.altText || '',
-					title: selectedMedia.description || '',
-					width: displayWidth,
-					height: selectedMedia.height,
-					align: 'center'
+				.insertContent({
+					type: 'image',
+					attrs: {
+						src: selectedMedia.url,
+						alt: selectedMedia.altText || '',
+						title: selectedMedia.description || '',
+						width: displayWidth,
+						height: selectedMedia.height,
+						align: 'center',
+						mediaId: selectedMedia.id?.toString()
+					}
 				})
 				.run()
 		}
@@ -470,7 +474,15 @@
 
 		// Create a placeholder while uploading
 		const placeholderSrc = URL.createObjectURL(file)
-		editor.commands.setImage({ src: placeholderSrc })
+		editor.commands.insertContent({
+			type: 'image',
+			attrs: {
+				src: placeholderSrc,
+				alt: '',
+				title: '',
+				mediaId: null
+			}
+		})
 
 		try {
 			const auth = localStorage.getItem('admin_auth')
@@ -508,9 +520,11 @@
 				attrs: {
 					src: media.url,
 					alt: media.filename || '',
+					title: media.description || '',
 					width: displayWidth,
 					height: media.height,
-					align: 'center'
+					align: 'center',
+					mediaId: media.id?.toString()
 				}
 			})
 

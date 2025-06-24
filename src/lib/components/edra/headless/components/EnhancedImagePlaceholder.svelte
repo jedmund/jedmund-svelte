@@ -53,16 +53,22 @@
 			const displayWidth =
 				selectedMedia.width && selectedMedia.width > 600 ? 600 : selectedMedia.width
 
+			const imageAttrs = {
+				src: selectedMedia.url,
+				alt: selectedMedia.altText || '',
+				title: selectedMedia.description || '',
+				width: displayWidth,
+				height: selectedMedia.height,
+				align: 'center',
+				mediaId: selectedMedia.id?.toString()
+			}
+
 			editor
 				.chain()
 				.focus()
-				.setImage({
-					src: selectedMedia.url,
-					alt: selectedMedia.altText || '',
-					title: selectedMedia.description || '',
-					width: displayWidth,
-					height: selectedMedia.height,
-					align: 'center'
+				.insertContent({
+					type: 'image',
+					attrs: imageAttrs
 				})
 				.run()
 		}
@@ -131,16 +137,23 @@
 				// Set a reasonable default width (max 600px)
 				const displayWidth = media.width && media.width > 600 ? 600 : media.width
 
+				
+				const imageAttrs = {
+					src: media.url,
+					alt: media.altText || '',
+					title: media.description || '',
+					width: displayWidth,
+					height: media.height,
+					align: 'center',
+					mediaId: media.id?.toString()
+				}
+				
 				editor
 					.chain()
 					.focus()
-					.setImage({
-						src: media.url,
-						alt: media.altText || '',
-						title: media.description || '',
-						width: displayWidth,
-						height: media.height,
-						align: 'center'
+					.insertContent({
+						type: 'image',
+						attrs: imageAttrs
 					})
 					.run()
 			} else {

@@ -4,11 +4,9 @@
 	import { goto } from '$app/navigation'
 
 	const {
-		photoItems,
-		albumSlug
+		photoItems
 	}: {
 		photoItems: PhotoItemType[]
-		albumSlug?: string
 	} = $props()
 
 	// Function to determine if an image is ultrawide (aspect ratio > 2:1)
@@ -98,18 +96,12 @@
 	function handleClick(item: PhotoItemType) {
 		if (isAlbum(item)) {
 			// Navigate to album page using the slug
-			goto(`/photos/${item.slug}`)
+			goto(`/albums/${item.slug}`)
 		} else {
 			// For individual photos, check if we have album context
-			if (albumSlug) {
-				// Navigate to photo within album
-				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
-				goto(`/photos/${albumSlug}/${mediaId}`)
-			} else {
-				// Navigate to individual photo page using the media ID
-				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
-				goto(`/photos/p/${mediaId}`)
-			}
+			// Always navigate to individual photo page using the media ID
+			const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
+			goto(`/photos/${mediaId}`)
 		}
 	}
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import MediaLibraryModal from '$lib/components/admin/MediaLibraryModal.svelte'
+	import UnifiedMediaModal from '$lib/components/admin/UnifiedMediaModal.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import type { Media } from '@prisma/client'
 
@@ -36,7 +36,7 @@
 	}
 </script>
 
-<AdminPage title="Media Library Test" subtitle="Test the MediaLibraryModal component">
+<AdminPage title="Media Library Test" subtitle="Test the UnifiedMediaModal component">
 	<div class="test-container">
 		<section class="test-section">
 			<h2>Single Selection Mode</h2>
@@ -110,22 +110,22 @@
 	</div>
 
 	<!-- Modals -->
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={showSingleModal}
 		mode="single"
 		fileType="all"
 		title="Select a Media File"
 		confirmText="Select File"
-		onselect={handleSingleSelect}
+		onSelect={handleSingleSelect}
 	/>
 
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={showMultipleModal}
 		mode="multiple"
 		fileType="all"
 		title="Select Media Files"
 		confirmText="Select Files"
-		onselect={handleMultipleSelect}
+		onSelect={handleMultipleSelect}
 	/>
 </AdminPage>
 

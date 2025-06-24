@@ -246,7 +246,7 @@
 					dropdownActions={[
 						{ label: 'Save as Draft', status: 'draft', show: formData.status !== 'draft' }
 					]}
-					viewUrl={album?.slug ? `/photos/${album.slug}` : undefined}
+					viewUrl={album?.slug ? `/albums/${album.slug}` : undefined}
 				/>
 			{/if}
 		</div>

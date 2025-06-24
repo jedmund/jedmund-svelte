@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import Composer from '$lib/components/admin/Composer.svelte'
+	import EnhancedComposer from '$lib/components/admin/EnhancedComposer.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
@@ -199,7 +199,7 @@
 
 			{#if config?.showContent}
 				<div class="editor-wrapper">
-					<Composer bind:data={content} placeholder="Start writing..." />
+					<EnhancedComposer bind:data={content} placeholder="Start writing..." />
 				</div>
 			{/if}
 		</div>

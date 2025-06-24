@@ -37,7 +37,7 @@
 				showThumbnails={slideshowItems.length > 1}
 				maxThumbnails={6}
 				totalCount={album.photosCount}
-				showMoreLink="/photos/{album.slug}"
+				showMoreLink="/albums/{album.slug}"
 			/>
 		</div>
 	{/if}
@@ -45,7 +45,7 @@
 	<div class="album-info">
 		<h2 class="card-title">
 			<a
-				href="/photos/{album.slug}"
+				href="/albums/{album.slug}"
 				class="card-title-link"
 				onclick={(e) => e.preventDefault()}
 				tabindex="-1">{album.title}</a

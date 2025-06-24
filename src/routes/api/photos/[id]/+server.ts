@@ -54,10 +54,9 @@ export const GET: RequestHandler = async (event) => {
 				})
 				logger.info('Album check', {
 					albumId: album.id,
-					status: fullAlbum?.status,
-					isPhotography: fullAlbum?.isPhotography
+					status: fullAlbum?.status
 				})
-				if (!fullAlbum || fullAlbum.status !== 'published' || !fullAlbum.isPhotography) {
+				if (!fullAlbum || fullAlbum.status !== 'published') {
 					logger.warn('Album not valid for public access', { albumId: album.id })
 					return errorResponse('Photo not found', 404)
 				}

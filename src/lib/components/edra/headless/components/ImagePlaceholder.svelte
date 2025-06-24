@@ -31,10 +31,14 @@
 			editor
 				.chain()
 				.focus()
-				.setImage({
-					src: selectedMedia.url,
-					alt: selectedMedia.altText || '',
-					title: selectedMedia.description || ''
+				.insertContent({
+					type: 'image',
+					attrs: {
+						src: selectedMedia.url,
+						alt: selectedMedia.altText || '',
+						title: selectedMedia.description || '',
+						mediaId: selectedMedia.id?.toString()
+					}
 				})
 				.run()
 		}
@@ -81,10 +85,14 @@
 				editor
 					.chain()
 					.focus()
-					.setImage({
-						src: media.url,
-						alt: media.altText || '',
-						title: media.description || ''
+					.insertContent({
+						type: 'image',
+						attrs: {
+							src: media.url,
+							alt: media.altText || '',
+							title: media.description || '',
+							mediaId: media.id?.toString()
+						}
 					})
 					.run()
 			} else {

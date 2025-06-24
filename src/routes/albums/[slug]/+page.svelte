@@ -9,9 +9,7 @@
 
 	let { data }: { data: PageData } = $props()
 
-	const type = $derived(data.type)
 	const album = $derived(data.album)
-	const photo = $derived(data.photo)
 	const error = $derived(data.error)
 
 	// Transform album data to PhotoItem format for MasonryPhotoGrid
@@ -45,7 +43,7 @@
 
 	// Generate metadata
 	const metaTags = $derived(
-		type === 'album' && album
+		album
 			? generateMetaTags({
 					title: album.title,
 					description: album.content
@@ -58,20 +56,12 @@
 					image: album.photos?.[0]?.url,
 					titleFormat: { type: 'by' }
 				})
-			: type === 'photo' && photo
-				? generateMetaTags({
-						title: photo.title || 'Photo',
-						description: photo.description || photo.caption || 'A photograph',
-						url: pageUrl,
-						image: photo.url,
-						titleFormat: { type: 'by' }
-					})
-				: generateMetaTags({
-						title: 'Not Found',
-						description: 'The content you are looking for could not be found.',
-						url: pageUrl,
-						noindex: true
-					})
+			: generateMetaTags({
+					title: 'Not Found',
+					description: 'The album you are looking for could not be found.',
+					url: pageUrl,
+					noindex: true
+				})
 	)
 
 	// Generate enhanced JSON-LD for albums with content
@@ -125,20 +115,7 @@
 	}
 
 	// Generate image gallery JSON-LD
-	const galleryJsonLd = $derived(
-		type === 'album' && album
-			? generateAlbumJsonLd(album, pageUrl)
-			: type === 'photo' && photo
-				? {
-						'@context': 'https://schema.org',
-						'@type': 'ImageObject',
-						name: photo.title || 'Photo',
-						description: photo.description || photo.caption,
-						contentUrl: photo.url,
-						url: pageUrl
-					}
-				: null
-	)
+	const galleryJsonLd = $derived(album ? generateAlbumJsonLd(album, pageUrl) : null)
 </script>
 
 <svelte:head>
@@ -174,7 +151,7 @@
 			</div>
 		</Page>
 	</div>
-{:else if type === 'album' && album}
+{:else if album}
 	<div class="album-wrapper">
 		<Page>
 			{#snippet header()}
@@ -210,7 +187,7 @@
 				<!-- Legacy Photo Grid (for albums without composed content) -->
 				{#if photoItems.length > 0}
 					<div class="legacy-photos">
-						<MasonryPhotoGrid {photoItems} albumSlug={album.slug} />
+						<MasonryPhotoGrid {photoItems} />
 					</div>
 				{:else}
 					<div class="empty-album">
@@ -434,9 +411,30 @@
 		}
 
 		:global(figure img) {
-			max-width: 100%;
+			width: 100%;
 			height: auto;
 			border-radius: $card-corner-radius;
+			display: block;
+		}
+
+		:global(figure.interactive-figure .photo-link) {
+			display: block;
+			text-decoration: none;
+			color: inherit;
+			outline: none;
+			cursor: pointer;
+			transition: transform 0.2s ease;
+			border-radius: $card-corner-radius;
+			overflow: hidden;
+		}
+
+		:global(figure.interactive-figure .photo-link:hover) {
+			transform: translateY(-2px);
+		}
+
+		:global(figure.interactive-figure .photo-link:focus-visible) {
+			outline: 2px solid $red-60;
+			outline-offset: 4px;
 		}
 
 		:global(figure figcaption) {
