@@ -6,7 +6,7 @@
 	import Trash from 'lucide-svelte/icons/trash'
 	import Edit from 'lucide-svelte/icons/edit'
 	import Plus from 'lucide-svelte/icons/plus'
-	import MediaLibraryModal from '../../../admin/MediaLibraryModal.svelte'
+	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 
 	const { node, editor, selected, deleteNode, updateAttributes }: NodeViewProps = $props()
@@ -155,7 +155,7 @@
 	</div>
 
 	<!-- Media Library Modal -->
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={isMediaLibraryOpen}
 		mode="multiple"
 		fileType="image"

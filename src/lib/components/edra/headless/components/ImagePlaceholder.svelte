@@ -4,7 +4,7 @@
 	import Image from 'lucide-svelte/icons/image'
 	import Upload from 'lucide-svelte/icons/upload'
 	import { NodeViewWrapper } from 'svelte-tiptap'
-	import MediaLibraryModal from '../../../admin/MediaLibraryModal.svelte'
+	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte'
 	import { onMount } from 'svelte'
 
 	const { editor, deleteNode }: NodeViewProps = $props()
@@ -156,7 +156,7 @@
 	/>
 
 	<!-- Media Library Modal -->
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={isMediaLibraryOpen}
 		mode="single"
 		fileType="image"
