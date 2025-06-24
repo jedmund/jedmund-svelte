@@ -1,6 +1,6 @@
 <script lang="ts">
 	import UniverseCard from './UniverseCard.svelte'
-	import { getContentExcerpt } from '$lib/utils/content'
+	import { getContentExcerpt, renderEdraContent } from '$lib/utils/content'
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
@@ -36,12 +36,6 @@
 		<h2 class="card-title">
 			<a href="/universe/{post.slug}" class="card-title-link" tabindex="-1">{post.title}</a>
 		</h2>
-	{/if}
-
-	{#if post.content}
-		<div class="post-excerpt">
-			<p>{getContentExcerpt(post.content, 150)}</p>
-		</div>
 	{/if}
 
 	{#if firstEmbed}
@@ -84,7 +78,17 @@
 		</div>
 	{/if}
 
-	{#if post.postType === 'essay' && isContentTruncated}
+	{#if post.content}
+		<div class="post-excerpt">
+			{#if post.postType === 'essay'}
+				<p>{getContentExcerpt(post.content, 300)}</p>
+			{:else}
+				{@html renderEdraContent(post.content)}
+			{/if}
+		</div>
+	{/if}
+
+	{#if post.postType === 'essay' && isContentTruncated()}
 		<p>
 			<a href="/universe/{post.slug}" class="read-more" tabindex="-1">Continue reading</a>
 		</p>
@@ -146,10 +150,49 @@
 			color: $grey-10;
 			font-size: 1rem;
 			line-height: 1.5;
+		}
+
+		// Only apply truncation for essay excerpts
+		p:only-child {
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 2;
 			overflow: hidden;
+		}
+
+		// Styles for full content (non-essays)
+		:global(p) {
+			margin: 0 0 $unit-2x;
+			color: $grey-10;
+			font-size: 1rem;
+			line-height: 1.5;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		:global(a) {
+			color: $red-60;
+			text-decoration: none;
+			transition: all 0.2s ease;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+
+		:global(strong) {
+			font-weight: 600;
+		}
+
+		:global(em) {
+			font-style: italic;
+		}
+
+		// Hide embeds in the rendered content since we show them separately
+		:global(.url-embed-rendered) {
+			display: none;
 		}
 	}
 
