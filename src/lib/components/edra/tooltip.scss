@@ -1,0 +1,28 @@
+// Import Tippy.js base styles
+@import 'tippy.js/dist/tippy.css';
+@import 'tippy.js/animations/scale.css';
+
+// Link tooltip styles - only apply to tooltips with the link-tooltip theme
+:global(.tippy-box[data-theme~='link-tooltip']) {
+	background-color: $grey-00;
+	color: $grey-100;
+	font-size: $font-size-extra-small;
+	font-family: $font-stack;
+	font-weight: $font-weight;
+	letter-spacing: $letter-spacing;
+	line-height: 1.4;
+	padding: $unit-half $unit;
+	border-radius: $corner-radius-sm;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	z-index: 9999;
+}
+
+:global(.tippy-box[data-theme~='link-tooltip'] .tippy-arrow) {
+	color: $grey-00;
+}
+
+// Animation adjustments for link tooltips
+:global(.tippy-box[data-theme~='link-tooltip'][data-animation='scale'][data-state='hidden']) {
+	opacity: 0;
+	transform: scale(0.5);
+}

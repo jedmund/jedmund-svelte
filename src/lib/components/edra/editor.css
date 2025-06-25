@@ -1,5 +1,8 @@
 /* Base TipTap Editor Styles with Light/Dark Theme Support */
 
+/* Import Tippy.js animation styles */
+@import 'tippy.js/animations/scale.css';
+
 .tiptap :first-child {
 	margin-top: 0;
 }
@@ -79,6 +82,7 @@
 	padding: 0.25rem;
 	font-family: 'JetBrains Mono', monospace, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono';
 }
+
 
 /* List Styling */
 .tiptap ul li p,
@@ -180,16 +184,34 @@ input[type='checkbox'] {
 	width: 1.5rem;
 	height: 1.5rem;
 	display: flex;
-	padding-right: 0.5rem;
-	flex-direction: column;
-	justify-content: center;
+	flex-direction: row;
 	align-items: center;
-	cursor: grab;
+	justify-content: center;
 	opacity: 100;
-	transition-property: opacity;
+	transition-property: opacity, background-color;
 	transition-duration: 200ms;
 	transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 	color: var(--border-color-hover);
+	cursor: grab;
+	padding: 0.25rem;
+	border-radius: 6px; /* $corner-radius-sm */
+}
+
+/* Invisible hover zone to bridge the gap */
+.drag-handle::after {
+	content: '';
+	position: absolute;
+	left: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 12px; /* Slightly larger than the 8px gap */
+	height: 100%;
+	pointer-events: auto;
+}
+
+.drag-handle:hover {
+	opacity: 100 !important;
+	background-color: #e8e8e8; /* $grey-80 */
 }
 
 .drag-handle:active {
@@ -199,6 +221,11 @@ input[type='checkbox'] {
 .drag-handle.hide {
 	opacity: 0;
 	pointer-events: none;
+}
+
+.drag-handle.hide.menu-open {
+	opacity: 100;
+	pointer-events: auto;
 }
 
 @media screen and (max-width: 600px) {
