@@ -73,19 +73,21 @@ npm run db:backup:sync
 ### Prerequisites
 
 1. PostgreSQL client tools must be installed (`pg_dump`, `psql`)
+
    ```bash
    # macOS
    brew install postgresql
-   
+
    # Ubuntu/Debian
    sudo apt-get install postgresql-client
    ```
 
 2. Set environment variables in `.env` or `.env.local`:
+
    ```bash
    # Required for local database operations
    DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
-   
+
    # Required for remote database operations (use one of these)
    REMOTE_DATABASE_URL="postgresql://user:password@remote-host:5432/dbname"
    DATABASE_URL_PRODUCTION="postgresql://user:password@remote-host:5432/dbname"
@@ -123,18 +125,23 @@ npm run db:restore ./backups/backup_file.sql.gz remote
 ### Common Workflows
 
 #### Daily Development
+
 Start your day by syncing the production database to local:
+
 ```bash
 npm run db:backup:sync
 ```
 
 #### Before Deploying Schema Changes
+
 Always backup the remote database:
+
 ```bash
 npm run db:backup:remote
 ```
 
 #### Recover from Mistakes
+
 ```bash
 # See available backups
 npm run db:backups
@@ -146,6 +153,7 @@ npm run db:restore ./backups/local_20240615_143022.sql.gz
 ### Backup Storage
 
 All backups are stored in `./backups/` with timestamps:
+
 - Local: `local_YYYYMMDD_HHMMSS.sql.gz`
 - Remote: `remote_YYYYMMDD_HHMMSS.sql.gz`
 

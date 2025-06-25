@@ -25,6 +25,7 @@
 	import LinkContextMenuComponent from '$lib/components/edra/headless/components/LinkContextMenu.svelte'
 	import LinkEditDialog from '$lib/components/edra/headless/components/LinkEditDialog.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
+	import DragHandle from '$lib/components/edra/drag-handle.svelte'
 	import { mediaSelectionStore } from '$lib/stores/media-selection'
 	import type { Media } from '@prisma/client'
 
@@ -629,7 +630,6 @@
 		return () => editor?.destroy()
 	})
 
-
 	// Public API
 	export function save(): JSONContent | null {
 		return editor?.getJSON() || null
@@ -789,6 +789,10 @@
 		class:with-toolbar={showToolbar}
 		style={`min-height: ${minHeight}px`}
 	></div>
+	
+	{#if editor}
+		<DragHandle {editor} />
+	{/if}
 </div>
 
 <!-- Media Dropdown Portal -->
@@ -1108,6 +1112,91 @@
 		}
 	}
 
+	/* Block spacing for visual separation in composer */
+	:global(.ProseMirror p) {
+		margin-top: $unit;
+		margin-bottom: $unit;
+	}
+
+	:global(.ProseMirror h1),
+	:global(.ProseMirror h2),
+	:global(.ProseMirror h3),
+	:global(.ProseMirror h4),
+	:global(.ProseMirror h5),
+	:global(.ProseMirror h6) {
+		padding-top: $unit;
+		padding-bottom: $unit;
+	}
+
+	:global(.ProseMirror ul),
+	:global(.ProseMirror ol) {
+		padding-top: $unit;
+		padding-bottom: $unit;
+	}
+
+	:global(.ProseMirror blockquote) {
+		margin-top: $unit;
+		margin-bottom: $unit;
+	}
+
+	:global(.ProseMirror pre),
+	:global(.ProseMirror .code-wrapper) {
+		margin-top: $unit;
+		margin-bottom: $unit;
+	}
+
+	:global(.ProseMirror hr) {
+		margin-top: $unit;
+		margin-bottom: $unit;
+	}
+
+	:global(.ProseMirror .tableWrapper) {
+		margin-top: $unit;
+		margin-bottom: $unit;
+	}
+
+	:global(.ProseMirror img),
+	:global(.ProseMirror video),
+	:global(.ProseMirror audio),
+	:global(.ProseMirror iframe) {
+		margin-top: $unit;
+		margin-bottom: $unit;
+	}
+
+	:global(.ProseMirror .image-placeholder),
+	:global(.ProseMirror .video-placeholder),
+	:global(.ProseMirror .audio-placeholder),
+	:global(.ProseMirror .gallery-placeholder),
+	:global(.ProseMirror .url-embed-placeholder),
+	:global(.ProseMirror .geolocation-placeholder) {
+		margin-top: $unit;
+		margin-bottom: $unit;
+	}
+
+	:global(.ProseMirror .node-urlEmbed) {
+		padding-top: $unit;
+		padding-bottom: $unit;
+	}
+
+	/* Link styling */
+	:global(.ProseMirror a) {
+		color: $accent-color;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	
+	:global(.ProseMirror a span) {
+		color: inherit !important;
+	}
+
+	:global(.ProseMirror a:hover) {
+		color: $red-40;
+	}
+	
+	:global(.ProseMirror a:hover span) {
+		color: inherit !important;
+	}
+
 	/* Text Style Dropdown Styles */
 	.text-style-dropdown {
 		position: relative;
@@ -1226,4 +1315,33 @@
 			transform: rotate(360deg);
 		}
 	}
+
+	/* Drag handle styles */
+	:global(.drag-handle) {
+		position: fixed;
+		width: 20px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: grab;
+		opacity: 0;
+		transition: opacity 0.2s;
+		color: $grey-40;
+		z-index: 50;
+	}
+
+	:global(.drag-handle.hide) {
+		opacity: 0 !important;
+		pointer-events: none;
+	}
+
+	:global(.drag-handle:not(.hide)) {
+		opacity: 1;
+	}
+
+	:global(.drag-handle:active) {
+		cursor: grabbing;
+	}
+
 </style>

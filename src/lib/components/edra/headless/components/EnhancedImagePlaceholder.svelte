@@ -137,7 +137,6 @@
 				// Set a reasonable default width (max 600px)
 				const displayWidth = media.width && media.width > 600 ? 600 : media.width
 
-				
 				const imageAttrs = {
 					src: media.url,
 					alt: media.altText || '',
@@ -147,7 +146,7 @@
 					align: 'center',
 					mediaId: media.id?.toString()
 				}
-				
+
 				editor
 					.chain()
 					.focus()

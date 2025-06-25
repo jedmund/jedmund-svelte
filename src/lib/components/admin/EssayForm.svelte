@@ -120,7 +120,7 @@
 			}
 
 			const savedPost = await response.json()
-			
+
 			toast.dismiss(loadingToastId)
 			toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 

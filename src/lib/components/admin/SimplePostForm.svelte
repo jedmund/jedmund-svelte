@@ -63,7 +63,9 @@
 			return
 		}
 
-		const loadingToastId = toast.loading(`${publishStatus === 'published' ? 'Publishing' : 'Saving'} post...`)
+		const loadingToastId = toast.loading(
+			`${publishStatus === 'published' ? 'Publishing' : 'Saving'} post...`
+		)
 
 		try {
 			isSaving = true

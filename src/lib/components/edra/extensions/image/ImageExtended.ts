@@ -27,8 +27,8 @@ export const ImageExtended = (component: Component<NodeViewProps>): Node<ImageOp
 				},
 				mediaId: {
 					default: null,
-					parseHTML: element => element.getAttribute('data-media-id'),
-					renderHTML: attributes => {
+					parseHTML: (element) => element.getAttribute('data-media-id'),
+					renderHTML: (attributes) => {
 						if (!attributes.mediaId) {
 							return {}
 						}

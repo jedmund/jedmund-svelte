@@ -464,7 +464,6 @@
 		color: $grey-40;
 	}
 
-
 	.form-section {
 		display: flex;
 		flex-direction: column;

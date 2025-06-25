@@ -63,7 +63,7 @@ export const renderEdraContent = (content: any): string => {
 				const src = block.attrs?.src || block.src || ''
 				const alt = block.attrs?.alt || block.alt || ''
 				const caption = block.attrs?.caption || block.caption || ''
-				
+
 				// Check if we have a media ID stored in attributes first
 				const mediaId = block.attrs?.mediaId || block.mediaId || extractMediaIdFromUrl(src)
 
@@ -158,7 +158,7 @@ function renderTiptapContent(doc: any): string {
 				const height = node.attrs?.height
 				const widthAttr = width ? ` width="${width}"` : ''
 				const heightAttr = height ? ` height="${height}"` : ''
-				
+
 				// Check if we have a media ID stored in attributes first
 				const mediaId = node.attrs?.mediaId || extractMediaIdFromUrl(src)
 

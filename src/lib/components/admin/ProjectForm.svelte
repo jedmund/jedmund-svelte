@@ -172,7 +172,7 @@
 			}
 
 			const savedProject = await response.json()
-			
+
 			toast.dismiss(loadingToastId)
 			toast.success(`Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 

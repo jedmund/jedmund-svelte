@@ -170,7 +170,9 @@
 							<span class="meta-item">📍 {album.location}</span>
 						{/if}
 						<span class="meta-item"
-							>📷 {album.photos?.length || 0} photo{(album.photos?.length || 0) !== 1 ? 's' : ''}</span
+							>📷 {album.photos?.length || 0} photo{(album.photos?.length || 0) !== 1
+								? 's'
+								: ''}</span
 						>
 					</div>
 				</div>

@@ -2,7 +2,13 @@ import { toast as sonnerToast } from 'svelte-sonner'
 
 export interface ToastOptions {
 	duration?: number
-	position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+	position?:
+		| 'top-left'
+		| 'top-center'
+		| 'top-right'
+		| 'bottom-left'
+		| 'bottom-center'
+		| 'bottom-right'
 	description?: string
 	action?: {
 		label: string

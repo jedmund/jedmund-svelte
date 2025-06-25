@@ -135,7 +135,7 @@
 
 			const updatedMedia = await response.json()
 			onUpdate(updatedMedia)
-			
+
 			toast.dismiss(loadingToastId)
 			toast.success('Media updated successfully!')
 
@@ -546,9 +546,7 @@
 					</div>
 
 					<div class="footer-right">
-						<Button variant="primary" onclick={handleSave} disabled={isSaving}>
-							Save Changes
-						</Button>
+						<Button variant="primary" onclick={handleSave} disabled={isSaving}>Save Changes</Button>
 					</div>
 				</div>
 			</div>
