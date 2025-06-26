@@ -15,16 +15,73 @@
 	}
 </script>
 
-<NodeViewWrapper class="edra-media-placeholder-wrapper" contenteditable="false">
+<NodeViewWrapper class="edra-video-placeholder-wrapper" contenteditable="false">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<span
-		class="edra-media-placeholder-content"
-		onclick={handleClick}
-		tabindex="0"
-		role="button"
-		aria-label="Insert A Video"
-	>
-		<Video class="edra-media-placeholder-icon" />
-		<span class="edra-media-placeholder-text">Insert A Video</span>
-	</span>
+	<div class="edra-video-placeholder-container">
+		<button
+			class="edra-video-placeholder-content"
+			onclick={handleClick}
+			tabindex="0"
+			aria-label="Insert A Video"
+		>
+			<Video class="edra-video-placeholder-icon" />
+			<span class="edra-video-placeholder-text">Insert A Video</span>
+		</button>
+	</div>
 </NodeViewWrapper>
+
+<style lang="scss">
+	@import '$styles/variables';
+
+	.edra-video-placeholder-wrapper {
+		width: 100%;
+		margin-bottom: 1rem;
+	}
+
+	.edra-video-placeholder-container {
+		margin-left: 2.25rem;
+		margin-right: 2.25rem;
+
+		@media (max-width: 768px) {
+			margin-left: 2rem;
+			margin-right: 2rem;
+		}
+	}
+
+	.edra-video-placeholder-content {
+		width: 100%;
+		padding: $unit-3x;
+		background-color: $gray-95;
+		border: 2px dashed $gray-85;
+		border-radius: $corner-radius;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: $unit-2x;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		color: $gray-50;
+
+		&:hover {
+			background-color: $gray-90;
+			border-color: $gray-70;
+			color: $gray-40;
+		}
+
+		&:focus {
+			outline: none;
+			border-color: $primary-color;
+			box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+		}
+	}
+
+	:global(.edra-video-placeholder-icon) {
+		width: $unit-3x;
+		height: $unit-3x;
+	}
+
+	.edra-video-placeholder-text {
+		font-size: $font-size-small;
+		font-weight: 500;
+	}
+</style>

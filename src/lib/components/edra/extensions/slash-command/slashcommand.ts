@@ -219,8 +219,8 @@ export default (menuList: Component<any, any, ''>): Extension =>
 
 								if (props.event.key === 'Enter') return true
 
-								// return component.ref?.onKeyDown(props);
-								return false
+								return component.ref?.onKeyDown(props);
+								// return false
 							},
 
 							onExit(props) {

@@ -224,64 +224,78 @@
 	/>
 </NodeViewWrapper>
 
-<style>
+<style lang="scss">
+	@import '$styles/variables';
+
+	.edra-media-placeholder-wrapper {
+		width: 100%;
+		margin-bottom: 1rem;
+		margin-left: 2.25rem;
+		margin-right: 2.25rem;
+
+		@media (max-width: 768px) {
+			margin-left: 2rem;
+			margin-right: 2rem;
+		}
+	}
+
 	.edra-media-placeholder-container {
 		display: flex;
-		gap: 12px;
-		padding: 24px;
-		border: 2px dashed #e5e7eb;
-		border-radius: 8px;
-		background: #f9fafb;
+		gap: $unit-2x;
+		padding: $unit-3x;
+		border: 2px dashed $gray-85;
+		border-radius: $corner-radius;
+		background: $gray-95;
 		transition: all 0.2s ease;
 		justify-content: center;
 		align-items: center;
 		min-height: 80px;
-	}
 
-	.edra-media-placeholder-container:hover {
-		border-color: #d1d5db;
-		background: #f3f4f6;
+		&:hover {
+			border-color: $gray-70;
+			background: $gray-90;
+		}
 	}
 
 	.edra-media-placeholder-option {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 8px;
-		padding: 16px 20px;
-		border: 1px solid #e5e7eb;
-		border-radius: 6px;
-		background: white;
+		gap: $unit;
+		padding: $unit-2x $unit-3x;
+		border: 1px solid $gray-85;
+		border-radius: $corner-radius-sm;
+		background: $white;
 		cursor: pointer;
 		transition: all 0.2s ease;
 		min-width: 140px;
-	}
 
-	.edra-media-placeholder-option:hover {
-		border-color: #d1d5db;
-		background: #f9fafb;
-		transform: translateY(-1px);
-	}
+		&:hover {
+			border-color: $gray-70;
+			background: $gray-95;
+			transform: translateY(-1px);
+		}
 
-	.edra-media-placeholder-option:focus {
-		outline: none;
-		border-color: #3b82f6;
-		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+		&:focus {
+			outline: none;
+			border-color: $primary-color;
+			box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+		}
 	}
 
 	.edra-media-placeholder-uploading {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		padding: 20px;
-		color: #6b7280;
+		gap: $unit;
+		padding: $unit-3x;
+		color: $gray-50;
 	}
 
 	.spinner {
-		width: 16px;
-		height: 16px;
-		border: 2px solid #f3f4f6;
-		border-top: 2px solid #3b82f6;
+		width: $unit-2x;
+		height: $unit-2x;
+		border: 2px solid $gray-90;
+		border-top: 2px solid $primary-color;
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
 	}
@@ -296,14 +310,14 @@
 	}
 
 	:global(.edra-media-placeholder-icon) {
-		width: 28px;
-		height: 28px;
-		color: #6b7280;
+		width: $unit-3x + $unit-half;
+		height: $unit-3x + $unit-half;
+		color: $gray-50;
 	}
 
 	.edra-media-placeholder-text {
-		font-size: 14px;
-		color: #6b7280;
+		font-size: $font-size-small;
+		color: $gray-50;
 		font-weight: 500;
 	}
 </style>

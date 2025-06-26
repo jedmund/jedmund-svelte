@@ -117,49 +117,61 @@
 </NodeViewWrapper>
 
 <style lang="scss">
+	@import '$styles/variables';
+
+	:global(.node-geolocationPlaceholder) {
+		margin-bottom: 1rem;
+		margin-left: 2.25rem;
+		margin-right: 2.25rem;
+
+		@media (max-width: 768px) {
+			margin-left: 2rem;
+			margin-right: 2rem;
+		}
+	}
+
 	.geolocation-placeholder {
-		background: #f8f9fa;
-		border: 2px dashed #e0e0e0;
-		border-radius: 8px;
-		padding: 24px;
-		margin: 16px 0;
+		background: $gray-95;
+		border: 2px dashed $gray-85;
+		border-radius: $corner-radius;
+		padding: $unit-3x;
 		text-align: center;
 	}
 
 	.icon {
 		display: flex;
 		justify-content: center;
-		margin-bottom: 16px;
-		color: #6b7280;
+		margin-bottom: $unit-2x;
+		color: $gray-50;
 	}
 
 	.content {
 		h3 {
-			margin: 0 0 8px;
-			font-size: 18px;
+			margin: 0 0 $unit;
+			font-size: $font-size-large;
 			font-weight: 600;
-			color: #1f2937;
+			color: $gray-10;
 		}
 
 		p {
-			margin: 0 0 16px;
-			color: #6b7280;
+			margin: 0 0 $unit-2x;
+			color: $gray-50;
 		}
 	}
 
 	.configure-btn {
-		background: #3b82f6;
-		color: white;
+		background: $primary-color;
+		color: $white;
 		border: none;
-		border-radius: 6px;
-		padding: 8px 16px;
-		font-size: 14px;
+		border-radius: $corner-radius-sm;
+		padding: $unit $unit-2x;
+		font-size: $font-size-small;
 		font-weight: 500;
 		cursor: pointer;
 		transition: background-color 0.2s;
 
 		&:hover {
-			background: #2563eb;
+			background: darken($primary-color, 10%);
 		}
 	}
 

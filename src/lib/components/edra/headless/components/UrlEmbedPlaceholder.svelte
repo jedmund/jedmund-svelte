@@ -150,46 +150,55 @@
 </NodeViewWrapper>
 
 <style lang="scss">
+	@import '$styles/variables';
+
 	.edra-url-embed-placeholder-wrapper {
-		margin: 1rem 0;
+		margin-bottom: 1rem;
+		margin-left: 2.25rem;
+		margin-right: 2.25rem;
+
+		@media (max-width: 768px) {
+			margin-left: 2rem;
+			margin-right: 2rem;
+		}
 	}
 
 	.url-input-container {
 		display: flex;
-		gap: 0.5rem;
-		padding: 1rem;
-		background: var(--grey-95, #f8f9fa);
-		border: 2px solid var(--grey-85, #e9ecef);
-		border-radius: 8px;
+		gap: $unit-half;
+		padding: $unit-2x;
+		background: $gray-95;
+		border: 2px solid $gray-85;
+		border-radius: $corner-radius;
 	}
 
 	.url-input {
 		flex: 1;
-		padding: 0.5rem 1rem;
-		border: 1px solid var(--grey-80, #dee2e6);
-		border-radius: 6px;
-		font-size: 0.875rem;
-		background: white;
+		padding: $unit $unit-2x;
+		border: 1px solid $gray-80;
+		border-radius: $corner-radius-sm;
+		font-size: $font-size-small;
+		background: $white;
 
 		&:focus {
 			outline: none;
-			border-color: var(--primary-color, #3b82f6);
+			border-color: $primary-color;
 		}
 	}
 
 	.submit-button {
-		padding: 0.5rem 1rem;
-		background: var(--primary-color, #3b82f6);
-		color: white;
+		padding: $unit $unit-2x;
+		background: $primary-color;
+		color: $white;
 		border: none;
-		border-radius: 6px;
-		font-size: 0.875rem;
+		border-radius: $corner-radius-sm;
+		font-size: $font-size-small;
 		font-weight: 500;
 		cursor: pointer;
 		transition: background-color 0.2s;
 
 		&:hover:not(:disabled) {
-			background: var(--primary-hover, #2563eb);
+			background: darken($primary-color, 10%);
 		}
 
 		&:disabled {
@@ -203,17 +212,17 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 0.5rem;
-		padding: 2rem;
-		border: 2px dashed var(--grey-80, #dee2e6);
-		border-radius: 8px;
-		background: var(--grey-95, #f8f9fa);
+		gap: $unit-half;
+		padding: $unit-3x;
+		border: 2px dashed $gray-85;
+		border-radius: $corner-radius;
+		background: $gray-95;
 		cursor: pointer;
 		transition: all 0.2s ease;
 
 		&:hover:not(.loading):not(.error) {
-			border-color: var(--grey-60, #adb5bd);
-			background: var(--grey-90, #e9ecef);
+			border-color: $gray-70;
+			background: $gray-90;
 		}
 
 		&.loading {
@@ -221,47 +230,47 @@
 		}
 
 		&.error {
-			border-color: var(--red-60, #dc3545);
+			border-color: $red-60;
 			background: #fee;
 			cursor: default;
 		}
 	}
 
 	.placeholder-icon {
-		width: 32px;
-		height: 32px;
-		color: var(--grey-50, #6c757d);
+		width: $unit-4x;
+		height: $unit-4x;
+		color: $gray-50;
 	}
 
 	.error .placeholder-icon {
-		color: var(--red-60, #dc3545);
+		color: $red-60;
 	}
 
 	.placeholder-text {
-		font-size: 0.875rem;
-		color: var(--grey-30, #495057);
+		font-size: $font-size-small;
+		color: $gray-30;
 	}
 
 	.error-content {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.5rem;
+		gap: $unit-half;
 	}
 
 	.retry-button {
-		padding: 0.25rem 0.75rem;
+		padding: $unit-half $unit-2x;
 		background: transparent;
-		color: var(--red-60, #dc3545);
-		border: 1px solid var(--red-60, #dc3545);
-		border-radius: 4px;
-		font-size: 0.75rem;
+		color: $red-60;
+		border: 1px solid $red-60;
+		border-radius: $corner-radius-xs;
+		font-size: $font-size-extra-small;
 		cursor: pointer;
 		transition: all 0.2s;
 
 		&:hover {
-			background: var(--red-60, #dc3545);
-			color: white;
+			background: $red-60;
+			color: $white;
 		}
 	}
 
