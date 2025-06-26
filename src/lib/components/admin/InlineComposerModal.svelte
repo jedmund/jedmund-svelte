@@ -4,7 +4,7 @@
 	import Modal from './Modal.svelte'
 	import EnhancedComposer from './EnhancedComposer.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
-	import FormFieldWrapper from './FormFieldWrapper.svelte'
+	import FormField from './FormField.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
