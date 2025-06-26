@@ -27,6 +27,8 @@
 	let isSaving = $state(false)
 	let activeTab = $state('metadata')
 	let validationErrors = $state<Record<string, string>>({})
+	let error = $state<string | null>(null)
+	let successMessage = $state<string | null>(null)
 
 	// Form data
 	let formData = $state<ProjectFormData>({ ...defaultProjectFormData })

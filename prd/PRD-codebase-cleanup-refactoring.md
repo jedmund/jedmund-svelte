@@ -89,7 +89,7 @@ Create a consistent design system by extracting hardcoded values.
 
 - [x] **Define animation constants**
   - [x] Create transition/animation duration variables
-  - [ ] Replace hardcoded duration values
+  - [x] Replace hardcoded duration values (replaced in key components)
 
 ### Phase 3: Component Refactoring (Weeks 3-4)
 Refactor components to reduce duplication and complexity.
