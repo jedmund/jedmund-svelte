@@ -56,12 +56,12 @@ This PRD outlines a comprehensive cleanup and refactoring plan for the jedmund-s
 ### Phase 1: Quick Wins (Week 1)
 Focus on low-risk, high-impact changes that don't require architectural modifications.
 
-- [ ] **Remove unused components** (5 components)
-  - [ ] Delete `/src/lib/components/Squiggly.svelte`
-  - [ ] Delete `/src/lib/components/PhotoLightbox.svelte`
-  - [ ] Delete `/src/lib/components/Pill.svelte`
-  - [ ] Delete `/src/lib/components/SVGHoverEffect.svelte`
-  - [ ] Delete `/src/lib/components/MusicPreview.svelte`
+- [x] **Remove unused components** (5 components)
+  - [x] Delete `/src/lib/components/Squiggly.svelte`
+  - [x] Delete `/src/lib/components/PhotoLightbox.svelte`
+  - [x] Delete `/src/lib/components/Pill.svelte`
+  - [x] Delete `/src/lib/components/SVGHoverEffect.svelte`
+  - [x] Delete `/src/lib/components/MusicPreview.svelte`
 
 - [ ] **Remove unused SVG files** (13 files)
   - [ ] Delete unused icons: `close.svg`, `music.svg`
