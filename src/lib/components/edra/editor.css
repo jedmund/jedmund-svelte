@@ -582,6 +582,8 @@ input[type='checkbox'] {
 .tiptap .node-audio,
 .tiptap .node-geolocation {
 	margin-bottom: 1rem;
+	margin-left: 2.25rem;
+	margin-right: 2.25rem;
 }
 
 /* YouTube embeds within urlEmbed */
@@ -598,4 +600,17 @@ input[type='checkbox'] {
 .tiptap .edra-url-embed-wrapper + *,
 .tiptap .edra-youtube-embed-wrapper + * {
 	margin-top: 0;
+}
+
+@media (max-width: 768px) {
+	.tiptap .node-urlEmbed,
+	.tiptap .node-iframe,
+	.tiptap .node-video,
+	.tiptap .node-image,
+	.tiptap .node-gallery,
+	.tiptap .node-audio,
+	.tiptap .node-geolocation {
+		margin-left: 2rem;
+		margin-right: 2rem;
+	}
 }
