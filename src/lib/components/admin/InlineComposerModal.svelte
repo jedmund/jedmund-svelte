@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte'
 	import { goto } from '$app/navigation'
 	import Modal from './Modal.svelte'
-	import EnhancedComposer from './EnhancedComposer.svelte'
+	import Composer from './composer'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import FormField from './FormField.svelte'
 	import Button from './Button.svelte'
@@ -270,7 +270,7 @@
 			</div>
 
 			<div class="composer-body">
-				<EnhancedComposer
+				<Composer
 					bind:this={editorInstance}
 					bind:data={content}
 					onChange={(newContent) => {
@@ -423,7 +423,7 @@
 					</div>
 				{:else}
 					<div class="content-section">
-						<EnhancedComposer
+						<Composer
 							bind:this={editorInstance}
 							bind:data={content}
 							onChange={(newContent) => {
@@ -471,7 +471,7 @@
 				</Button>
 			{/if}
 			<div class="composer-body">
-				<EnhancedComposer
+				<Composer
 					bind:this={editorInstance}
 					bind:data={content}
 					onChange={(newContent) => {

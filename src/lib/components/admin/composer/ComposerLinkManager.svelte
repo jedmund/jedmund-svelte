@@ -76,7 +76,18 @@
 
 	function handleSaveLink(newUrl: string) {
 		if (!editor || linkEditPos === null) return
-		editor.commands.updateLinkUrl(linkEditPos, newUrl)
+		// Update link by setting selection and re-applying link mark
+		const { state } = editor
+		const { doc } = state
+		const node = doc.nodeAt(linkEditPos)
+		if (node) {
+			editor
+				.chain()
+				.focus()
+				.setTextSelection({ from: linkEditPos, to: linkEditPos + node.nodeSize })
+				.setLink({ href: newUrl })
+				.run()
+		}
 		showLinkEditDialog = false
 		linkEditPos = null
 		linkEditUrl = ''
@@ -92,7 +103,8 @@
 
 	function handleRemoveLink() {
 		if (!editor || linkContextPos === null) return
-		editor.commands.removeLink(linkContextPos)
+		// Remove link by unset link command
+		editor.chain().focus().unsetLink().run()
 		showLinkContextMenu = false
 		linkContextPos = null
 		linkContextUrl = null

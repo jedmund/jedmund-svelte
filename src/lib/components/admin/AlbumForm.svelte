@@ -8,7 +8,7 @@
 	import StatusDropdown from './StatusDropdown.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
-	import EnhancedComposer from './EnhancedComposer.svelte'
+	import Composer from './composer'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
 	import type { Album } from '@prisma/client'
@@ -350,7 +350,7 @@
 
 				<!-- Content Panel -->
 				<div class="panel panel-content" class:active={activeTab === 'content'}>
-					<EnhancedComposer
+					<Composer
 						bind:this={editorInstance}
 						bind:data={formData.content}
 						placeholder="Add album content..."

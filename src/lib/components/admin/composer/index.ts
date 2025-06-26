@@ -1,5 +1,6 @@
-// Export ComposerCore as EnhancedComposer for backward compatibility
-export { default as EnhancedComposer } from './ComposerCore.svelte'
+// Export the main composer component
+export { default } from './ComposerCore.svelte'
+export { default as Composer } from './ComposerCore.svelte'
 
 // Export types
 export type { ComposerVariant, ComposerFeatures, ComposerProps } from './types'

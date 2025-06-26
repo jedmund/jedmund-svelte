@@ -92,19 +92,23 @@
 	let showMediaDropdown = $state(false)
 
 	// Text style dropdown
-	const textStyleDropdown = useDropdown({
-		triggerRef: toolbarRef?.getDropdownRefs().textStyle,
-		isOpen: showTextStyleDropdown,
-		onClose: () => (showTextStyleDropdown = false),
-		portalClass: 'dropdown-menu-portal'
+	const textStyleDropdown = $derived.by(() => {
+		return useDropdown({
+			triggerRef: toolbarRef?.getDropdownRefs()?.textStyle,
+			isOpen: showTextStyleDropdown,
+			onClose: () => (showTextStyleDropdown = false),
+			portalClass: 'dropdown-menu-portal'
+		})
 	})
 
 	// Media dropdown
-	const mediaDropdown = useDropdown({
-		triggerRef: toolbarRef?.getDropdownRefs().media,
-		isOpen: showMediaDropdown,
-		onClose: () => (showMediaDropdown = false),
-		portalClass: 'media-dropdown-portal'
+	const mediaDropdown = $derived.by(() => {
+		return useDropdown({
+			triggerRef: toolbarRef?.getDropdownRefs()?.media,
+			isOpen: showMediaDropdown,
+			onClose: () => (showMediaDropdown = false),
+			portalClass: 'media-dropdown-portal'
+		})
 	})
 
 	// Event handlers
@@ -242,11 +246,11 @@
 			showMediaLibrary={!!features.mediaLibrary}
 			onTextStyleDropdownToggle={() => {
 				showTextStyleDropdown = !showTextStyleDropdown
-				textStyleDropdown.toggle()
+				textStyleDropdown?.toggle()
 			}}
 			onMediaDropdownToggle={() => {
 				showMediaDropdown = !showMediaDropdown
-				mediaDropdown.toggle()
+				mediaDropdown?.toggle()
 			}}
 		/>
 	{/if}
@@ -286,7 +290,7 @@
 {#if showTextStyleDropdown && editor}
 	<TextStyleDropdown
 		{editor}
-		position={textStyleDropdown.position()}
+		position={textStyleDropdown?.position() || { top: 0, left: 0 }}
 		{features}
 		onDismiss={() => (showTextStyleDropdown = false)}
 	/>
@@ -296,7 +300,7 @@
 {#if showMediaDropdown && editor && features.mediaLibrary}
 	<MediaInsertDropdown
 		{editor}
-		position={mediaDropdown.position()}
+		position={mediaDropdown?.position() || { top: 0, left: 0 }}
 		{features}
 		{albumId}
 		onDismiss={() => (showMediaDropdown = false)}
