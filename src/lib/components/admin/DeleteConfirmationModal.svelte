@@ -1,4 +1,5 @@
 <script lang="ts">
+	import BaseModal from './BaseModal.svelte'
 	import Button from './Button.svelte'
 
 	interface Props {
@@ -23,75 +24,58 @@
 
 	function handleConfirm() {
 		onConfirm()
+		isOpen = false
 	}
 
 	function handleCancel() {
 		isOpen = false
 		onCancel?.()
 	}
-
-	function handleBackdropClick() {
-		isOpen = false
-		onCancel?.()
-	}
 </script>
 
-{#if isOpen}
-	<div class="modal-backdrop" onclick={handleBackdropClick}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
-			<h2>{title}</h2>
-			<p>{message}</p>
-			<div class="modal-actions">
-				<Button variant="secondary" onclick={handleCancel}>
-					{cancelText}
-				</Button>
-				<Button variant="danger" onclick={handleConfirm}>
-					{confirmText}
-				</Button>
-			</div>
+<BaseModal 
+	bind:isOpen 
+	size="small" 
+	onClose={handleCancel}
+	class="delete-confirmation-modal"
+>
+	<div class="modal-body">
+		<h2>{title}</h2>
+		<p>{message}</p>
+		<div class="modal-actions">
+			<Button variant="secondary" onclick={handleCancel}>
+				{cancelText}
+			</Button>
+			<Button variant="danger" onclick={handleConfirm}>
+				{confirmText}
+			</Button>
 		</div>
 	</div>
-{/if}
+</BaseModal>
 
 <style lang="scss">
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: $z-index-modal;
-	}
+	:global(.delete-confirmation-modal) {
+		.modal-body {
+			padding: $unit-4x;
 
-	.modal {
-		background: white;
-		border-radius: $unit-2x;
-		padding: $unit-4x;
-		max-width: 400px;
-		width: 90%;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+			h2 {
+				margin: 0 0 $unit-2x;
+				font-size: 1.25rem;
+				font-weight: 700;
+				color: $gray-10;
+			}
 
-		h2 {
-			margin: 0 0 $unit-2x;
-			font-size: 1.25rem;
-			font-weight: 700;
-			color: $gray-10;
+			p {
+				margin: 0 0 $unit-4x;
+				color: $gray-20;
+				line-height: 1.5;
+			}
 		}
 
-		p {
-			margin: 0 0 $unit-4x;
-			color: $gray-20;
-			line-height: 1.5;
+		.modal-actions {
+			display: flex;
+			gap: $unit-2x;
+			justify-content: flex-end;
 		}
-	}
-
-	.modal-actions {
-		display: flex;
-		gap: $unit-2x;
-		justify-content: flex-end;
 	}
 </style>

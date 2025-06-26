@@ -94,8 +94,8 @@ Create a consistent design system by extracting hardcoded values.
 ### Phase 3: Component Refactoring (Weeks 3-4)
 Refactor components to reduce duplication and complexity.
 
-- [ ] **Create base components**
-  - [ ] Extract `BaseModal` component for shared modal logic
+- [-] **Create base components**
+  - [x] Extract `BaseModal` component for shared modal logic
   - [ ] Create `BaseDropdown` for dropdown patterns
   - [ ] Merge `FormField` and `FormFieldWrapper`
   - [ ] Create `BaseSegmentedController` for shared logic
