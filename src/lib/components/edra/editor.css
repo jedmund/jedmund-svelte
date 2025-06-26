@@ -12,10 +12,19 @@
 	margin-top: 0;
 	margin-bottom: 1rem;
 	line-height: 1.6;
+	padding-left: 3rem;
+	padding-right: 3rem;
 }
 
 .tiptap p:last-child {
 	margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+	.tiptap p {
+		padding-left: 2rem;
+		padding-right: 2rem;
+	}
 }
 
 /* For Placeholder */
@@ -38,6 +47,8 @@
 	margin-top: 1.5rem;
 	margin-bottom: 0.75rem;
 	text-wrap: pretty;
+	padding-left: 3rem;
+	padding-right: 3rem;
 }
 
 .tiptap h1,
@@ -54,6 +65,18 @@
 .tiptap p + h5,
 .tiptap p + h6 {
 	margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+	.tiptap h1,
+	.tiptap h2,
+	.tiptap h3,
+	.tiptap h4,
+	.tiptap h5,
+	.tiptap h6 {
+		padding-left: 2rem;
+		padding-right: 2rem;
+	}
 }
 
 .tiptap h1 {
@@ -79,13 +102,20 @@
 	border-left: 0.5rem solid var(--blockquote-border);
 	border-radius: 0.5rem;
 	background-color: var(--code-bg);
-	margin: 1rem 0;
-	padding: 0.5rem 0;
-	padding-left: 1rem;
+	margin: 1rem 3rem;
+	padding: 0.5rem 1rem;
+}
+
+@media (max-width: 768px) {
+	.tiptap blockquote {
+		margin: 1rem 2rem;
+	}
 }
 
 .tiptap blockquote p {
 	margin: 0;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .tiptap blockquote p:not(:last-child) {
@@ -96,7 +126,13 @@
 .tiptap hr {
 	border: none;
 	border-top: 1px solid var(--border-color);
-	margin: 1rem 0;
+	margin: 1rem 3rem;
+}
+
+@media (max-width: 768px) {
+	.tiptap hr {
+		margin: 1rem 2rem;
+	}
 }
 
 /* Inline Code */
@@ -115,7 +151,17 @@
 .tiptap ol {
 	margin-top: 0;
 	margin-bottom: 1rem;
+	margin-left: 3rem;
+	margin-right: 3rem;
 	padding-left: 1.5rem;
+}
+
+@media (max-width: 768px) {
+	.tiptap ul,
+	.tiptap ol {
+		margin-left: 2rem;
+		margin-right: 2rem;
+	}
 }
 
 .tiptap ul li,
@@ -127,6 +173,8 @@
 .tiptap ol li p {
 	margin-top: 0;
 	margin-bottom: 0.25rem;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .tiptap ul li:last-child,
@@ -295,9 +343,15 @@ input[type='checkbox'] {
 
 /* Table Styling */
 .ProseMirror .tableWrapper {
-	margin: 0;
+	margin: 0 3rem 1rem 3rem;
 	overflow: auto;
 	padding: 1rem;
+}
+
+@media (max-width: 768px) {
+	.ProseMirror .tableWrapper {
+		margin: 0 2rem 1rem 2rem;
+	}
 }
 
 .ProseMirror table {
@@ -328,6 +382,8 @@ input[type='checkbox'] {
 .ProseMirror table td p,
 .ProseMirror table th p {
 	margin: 0;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .ProseMirror table td p + p,
@@ -474,8 +530,13 @@ input[type='checkbox'] {
 	padding: 1.5rem;
 	position: relative;
 	height: fit-content;
-	margin-top: 0;
-	margin-bottom: 1rem;
+	margin: 0 3rem 1rem 3rem;
+}
+
+@media (max-width: 768px) {
+	.code-wrapper {
+		margin: 0 2rem 1rem 2rem;
+	}
 }
 
 .code-wrapper-tile {
