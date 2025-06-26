@@ -11,7 +11,7 @@
 			caption: 'Beautiful mountain view',
 			width: 1600,
 			height: 900,
-			aspectRatio: 16/9
+			aspectRatio: 16 / 9
 		},
 		{
 			id: 'photo-2',
@@ -20,16 +20,16 @@
 			caption: 'Green valley',
 			width: 1200,
 			height: 800,
-			aspectRatio: 3/2
+			aspectRatio: 3 / 2
 		},
 		{
-			id: 'photo-3', 
+			id: 'photo-3',
 			src: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e',
 			alt: 'Forest path',
 			caption: 'Winding forest trail',
 			width: 2400,
 			height: 800,
-			aspectRatio: 3/1 // Ultrawide
+			aspectRatio: 3 / 1 // Ultrawide
 		},
 		{
 			id: 'photo-4',
@@ -38,7 +38,7 @@
 			caption: 'Cascading waterfall',
 			width: 800,
 			height: 1200,
-			aspectRatio: 2/3
+			aspectRatio: 2 / 3
 		},
 		{
 			id: 'photo-5',
@@ -56,7 +56,7 @@
 			caption: 'Sandy desert landscape',
 			width: 1000,
 			height: 1500,
-			aspectRatio: 2/3
+			aspectRatio: 2 / 3
 		},
 		{
 			id: 'photo-7',
@@ -65,7 +65,7 @@
 			caption: 'Snow-capped mountains',
 			width: 1800,
 			height: 1200,
-			aspectRatio: 3/2
+			aspectRatio: 3 / 2
 		},
 		{
 			id: 'photo-8',
@@ -74,7 +74,7 @@
 			caption: 'Crashing waves',
 			width: 1600,
 			height: 900,
-			aspectRatio: 16/9
+			aspectRatio: 16 / 9
 		}
 	]
 
@@ -87,7 +87,7 @@
 
 <div class="test-container">
 	<h1>PhotoGrid Component Test</h1>
-	
+
 	<div class="controls">
 		<div class="control-group">
 			<label>
@@ -128,17 +128,13 @@
 	</div>
 
 	<div class="config-display">
-		<code>{`<PhotoGrid photos={photos} columns={${columns}} gap="${gap}" masonry={${masonry}} showCaptions={${showCaptions}} />`}</code>
+		<code
+			>{`<PhotoGrid photos={photos} columns={${columns}} gap="${gap}" masonry={${masonry}} showCaptions={${showCaptions}} />`}</code
+		>
 	</div>
 
 	<div class="grid-preview">
-		<PhotoGrid 
-			photos={samplePhotos} 
-			{columns} 
-			{gap} 
-			{masonry} 
-			{showCaptions} 
-		/>
+		<PhotoGrid photos={samplePhotos} {columns} {gap} {masonry} {showCaptions} />
 	</div>
 </div>
 
@@ -187,7 +183,7 @@
 		cursor: pointer;
 	}
 
-	input[type="checkbox"] {
+	input[type='checkbox'] {
 		width: 18px;
 		height: 18px;
 		cursor: pointer;

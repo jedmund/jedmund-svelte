@@ -33,12 +33,7 @@
 	}
 </script>
 
-<BaseModal 
-	bind:isOpen 
-	size="small" 
-	onClose={handleCancel}
-	class="delete-confirmation-modal"
->
+<BaseModal bind:isOpen size="small" onClose={handleCancel} class="delete-confirmation-modal">
 	<div class="modal-body">
 		<h2>{title}</h2>
 		<p>{message}</p>

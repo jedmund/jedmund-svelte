@@ -27,13 +27,7 @@
 	}
 </script>
 
-<BaseModal 
-	bind:isOpen 
-	{size} 
-	{closeOnBackdrop} 
-	{closeOnEscape} 
-	{onClose}
->
+<BaseModal bind:isOpen {size} {closeOnBackdrop} {closeOnEscape} {onClose}>
 	{#if showCloseButton}
 		<Button
 			variant="ghost"

@@ -53,7 +53,7 @@
 <div class="dropdown-container {className}">
 	<div class="dropdown-trigger">
 		{@render trigger()}
-		
+
 		{#if dropdown}
 			<Button
 				variant="ghost"

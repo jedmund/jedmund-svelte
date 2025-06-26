@@ -46,7 +46,7 @@
 	let itemElements: HTMLElement[] = []
 	let pillStyle = ''
 	let hoveredIndex = $state(-1)
-	let internalValue = $state(defaultValue ?? value ?? (items[0]?.value ?? ''))
+	let internalValue = $state(defaultValue ?? value ?? items[0]?.value ?? '')
 
 	// Derived state
 	const currentValue = $derived(value ?? internalValue)

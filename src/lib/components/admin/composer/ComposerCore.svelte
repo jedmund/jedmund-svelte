@@ -12,7 +12,7 @@
 	import UnifiedMediaModal from '../UnifiedMediaModal.svelte'
 	import { mediaSelectionStore } from '$lib/stores/media-selection'
 	import type { Media } from '@prisma/client'
-	
+
 	// Import new components
 	import ComposerToolbar from './ComposerToolbar.svelte'
 	import TextStyleDropdown from './TextStyleDropdown.svelte'
@@ -162,26 +162,34 @@
 	}
 
 	// Simple effect to load content once when editor is ready
-	let contentLoaded = false;
+	let contentLoaded = false
 	$effect(() => {
 		if (editor && data && !contentLoaded) {
 			// Check if the data has actual content (not just empty doc)
-			const hasContent = data.content && data.content.length > 0 && 
-				!(data.content.length === 1 && data.content[0].type === 'paragraph' && !data.content[0].content);
-			
+			const hasContent =
+				data.content &&
+				data.content.length > 0 &&
+				!(
+					data.content.length === 1 &&
+					data.content[0].type === 'paragraph' &&
+					!data.content[0].content
+				)
+
 			if (hasContent) {
 				// Set the content once
-				editor.commands.setContent(data);
-				contentLoaded = true;
+				editor.commands.setContent(data)
+				contentLoaded = true
 			}
 		}
-	});
+	})
 
 	onMount(() => {
 		// Get extensions with custom options
 		const extensions = getEditorExtensions({
 			showSlashCommands,
-			onShowUrlConvertDropdown: features.urlEmbed ? linkManagerRef?.handleShowUrlConvertDropdown : undefined,
+			onShowUrlConvertDropdown: features.urlEmbed
+				? linkManagerRef?.handleShowUrlConvertDropdown
+				: undefined,
 			onShowLinkContextMenu: linkManagerRef?.handleShowLinkContextMenu,
 			imagePlaceholderComponent: EnhancedImagePlaceholder
 		})
@@ -365,7 +373,7 @@
 		// More generous padding for full variant
 		.composer--full & {
 			padding: $unit-4x 0;
-			
+
 			@include breakpoint('phone') {
 				padding: $unit-3x 0;
 			}

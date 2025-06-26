@@ -49,12 +49,7 @@
 	const hasDropdownContent = $derived(availableActions.length > 0 || showViewInDropdown)
 </script>
 
-<BaseDropdown
-	bind:isOpen={isDropdownOpen}
-	{disabled}
-	{isLoading}
-	class="status-dropdown"
->
+<BaseDropdown bind:isOpen={isDropdownOpen} {disabled} {isLoading} class="status-dropdown">
 	{#snippet trigger()}
 		<Button
 			variant="primary"
@@ -79,12 +74,7 @@
 				{#if availableActions.length > 0}
 					<div class="dropdown-divider"></div>
 				{/if}
-				<a
-					href={viewUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="dropdown-item view-link"
-				>
+				<a href={viewUrl} target="_blank" rel="noopener noreferrer" class="dropdown-item view-link">
 					View on site
 				</a>
 			{/if}

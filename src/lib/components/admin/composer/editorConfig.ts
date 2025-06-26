@@ -24,7 +24,10 @@ export function getCurrentTextStyle(editor: Editor): string {
 }
 
 // Get filtered commands based on variant and features
-export function getFilteredCommands(variant: ComposerVariant, features: ComposerFeatures): FilteredCommands {
+export function getFilteredCommands(
+	variant: ComposerVariant,
+	features: ComposerFeatures
+): FilteredCommands {
 	const filtered = { ...commands }
 
 	// Remove groups based on variant

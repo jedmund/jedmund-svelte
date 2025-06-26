@@ -37,12 +37,7 @@
 	}
 </script>
 
-<BaseDropdown
-	bind:isOpen={isDropdownOpen}
-	{disabled}
-	{isLoading}
-	class="publish-dropdown"
->
+<BaseDropdown bind:isOpen={isDropdownOpen} {disabled} {isLoading} class="publish-dropdown">
 	<Button
 		slot="trigger"
 		variant="primary"

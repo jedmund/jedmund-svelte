@@ -6,10 +6,7 @@
 		showCaptions?: boolean
 	}
 
-	let { 
-		photos = [],
-		showCaptions = true
-	}: Props = $props()
+	let { photos = [], showCaptions = true }: Props = $props()
 </script>
 
 <div class="horizontal-scroll">

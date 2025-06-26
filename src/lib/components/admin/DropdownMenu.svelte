@@ -27,7 +27,7 @@
 	let dropdownElement: HTMLDivElement
 	let cleanup: (() => void) | null = null
 	const dispatch = createEventDispatcher()
-	
+
 	// Track which submenu is open
 	let openSubmenuId = $state<string | null>(null)
 	let submenuElements = $state<Map<string, HTMLElement>>(new Map())
@@ -36,13 +36,16 @@
 	// Position state
 	let x = $state(0)
 	let y = $state(0)
-	
+
 	// Action to set submenu references
-	function submenuRef(node: HTMLElement, params: { item: DropdownItem; submenuElements: Map<string, HTMLElement> }) {
+	function submenuRef(
+		node: HTMLElement,
+		params: { item: DropdownItem; submenuElements: Map<string, HTMLElement> }
+	) {
 		if (params.item.children) {
 			params.submenuElements.set(params.item.id, node)
 		}
-		
+
 		return {
 			destroy() {
 				if (params.item.children) {
@@ -58,11 +61,7 @@
 
 		const { x: newX, y: newY } = await computePosition(triggerElement, dropdownElement, {
 			placement: isSubmenu ? 'right-start' : 'bottom-end',
-			middleware: [
-				offset(isSubmenu ? 0 : 4),
-				flip(),
-				shift({ padding: 8 })
-			]
+			middleware: [offset(isSubmenu ? 0 : 4), flip(), shift({ padding: 8 })]
 		})
 
 		x = newX
@@ -74,7 +73,7 @@
 		if (item.action && !item.children) {
 			item.action()
 			isOpen = false
-			openSubmenuId = null  // Reset submenu state
+			openSubmenuId = null // Reset submenu state
 			onClose?.()
 		}
 	}
@@ -84,28 +83,32 @@
 
 		const target = event.target as HTMLElement
 		// Check if click is inside any submenu
-		const clickedInSubmenu = Array.from(submenuElements.values()).some(el => el.contains(target))
-		
-		if (!dropdownElement.contains(target) && !triggerElement?.contains(target) && !clickedInSubmenu) {
+		const clickedInSubmenu = Array.from(submenuElements.values()).some((el) => el.contains(target))
+
+		if (
+			!dropdownElement.contains(target) &&
+			!triggerElement?.contains(target) &&
+			!clickedInSubmenu
+		) {
 			isOpen = false
-			openSubmenuId = null  // Reset submenu state
+			openSubmenuId = null // Reset submenu state
 			onClose?.()
 		}
 	}
-	
+
 	function handleItemMouseEnter(item: DropdownItem) {
 		if (submenuCloseTimeout) {
 			clearTimeout(submenuCloseTimeout)
 			submenuCloseTimeout = null
 		}
-		
+
 		if (item.children) {
 			openSubmenuId = item.id
 		} else {
 			openSubmenuId = null
 		}
 	}
-	
+
 	function handleItemMouseLeave(item: DropdownItem) {
 		if (item.children) {
 			// Add delay before closing submenu
@@ -116,14 +119,14 @@
 			}, 300)
 		}
 	}
-	
+
 	function handleSubmenuMouseEnter() {
 		if (submenuCloseTimeout) {
 			clearTimeout(submenuCloseTimeout)
 			submenuCloseTimeout = null
 		}
 	}
-	
+
 	function handleSubmenuMouseLeave(itemId: string) {
 		submenuCloseTimeout = window.setTimeout(() => {
 			if (openSubmenuId === itemId) {
@@ -137,13 +140,13 @@
 		if (browser && isOpen && triggerElement && dropdownElement) {
 			// Initial position update
 			updatePosition()
-			
+
 			// Set up auto-update
 			cleanup = autoUpdate(triggerElement, dropdownElement, updatePosition)
-			
+
 			// Add outside click listener
 			document.addEventListener('click', handleOutsideClick)
-			
+
 			return () => {
 				cleanup?.()
 				cleanup = null
@@ -151,7 +154,7 @@
 			}
 		}
 	})
-	
+
 	// Reset submenu state when dropdown closes
 	$effect(() => {
 		if (!isOpen) {
@@ -187,7 +190,7 @@
 						</span>
 					{/if}
 				</button>
-				
+
 				{#if item.children && openSubmenuId === item.id}
 					<div
 						onmouseenter={handleSubmenuMouseEnter}
@@ -197,7 +200,7 @@
 							isOpen={true}
 							triggerElement={submenuElements.get(item.id)}
 							items={item.children}
-							onClose={onClose}
+							{onClose}
 							isSubmenu={true}
 						/>
 					</div>
@@ -243,16 +246,16 @@
 		&.danger {
 			color: $red-60;
 		}
-		
+
 		&.has-children {
 			padding-right: $unit-2x;
 		}
 	}
-	
+
 	.item-label {
 		flex: 1;
 	}
-	
+
 	.submenu-icon {
 		width: 16px;
 		height: 16px;
@@ -261,13 +264,13 @@
 		flex-shrink: 0;
 		display: inline-flex;
 		align-items: center;
-		
+
 		:global(svg) {
 			width: 100%;
 			height: 100%;
 			fill: none;
 		}
-		
+
 		:global(path) {
 			fill: none;
 			stroke: currentColor;

@@ -9,6 +9,7 @@ This analysis examines SVG usage patterns in the Svelte 5 codebase to identify o
 ### 1. Inline SVGs vs. Imported SVGs
 
 **Inline SVGs Found:**
+
 - **Close/X buttons**: Found in 7+ components with identical SVG code
   - `admin/Modal.svelte`
   - `admin/UnifiedMediaModal.svelte`
@@ -17,8 +18,8 @@ This analysis examines SVG usage patterns in the Svelte 5 codebase to identify o
   - `admin/GalleryManager.svelte`
   - `admin/MediaDetailsModal.svelte`
   - `Lightbox.svelte`
-  
 - **Loading spinners**: Found in 2+ components
+
   - `admin/Button.svelte`
   - `admin/ImageUploader.svelte`
   - `admin/GalleryUploader.svelte`
@@ -30,26 +31,23 @@ This analysis examines SVG usage patterns in the Svelte 5 codebase to identify o
 ### 2. SVG Import Patterns
 
 **Consistent patterns using aliases:**
+
 ```svelte
-// Good - using $icons alias
-import ArrowLeft from '$icons/arrow-left.svg'
-import ChevronDownIcon from '$icons/chevron-down.svg'
-
-// Component imports with ?component
-import PhotosIcon from '$icons/photos.svg?component'
-import ViewSingleIcon from '$icons/view-single.svg?component'
-
-// Raw imports
-import ChevronDownIcon from '$icons/chevron-down.svg?raw'
+// Good - using $icons alias import ArrowLeft from '$icons/arrow-left.svg' import ChevronDownIcon
+from '$icons/chevron-down.svg' // Component imports with ?component import PhotosIcon from
+'$icons/photos.svg?component' import ViewSingleIcon from '$icons/view-single.svg?component' // Raw
+imports import ChevronDownIcon from '$icons/chevron-down.svg?raw'
 ```
 
 ### 3. Unused SVG Files
 
 **Unused icons in `/src/assets/icons/`:**
+
 - `dashboard.svg`
 - `metadata.svg`
 
 **Unused illustrations in `/src/assets/illos/`:**
+
 - `jedmund-blink.svg`
 - `jedmund-headphones.svg`
 - `jedmund-listening-downbeat.svg`
@@ -65,11 +63,13 @@ import ChevronDownIcon from '$icons/chevron-down.svg?raw'
 ### 4. Duplicate SVG Definitions
 
 **Close/X Button SVG** (appears 7+ times):
+
 ```svg
 <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 ```
 
 **Loading Spinner SVG** (appears 3+ times):
+
 ```svg
 <svg class="spinner" width="24" height="24" viewBox="0 0 24 24">
   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="25" stroke-dashoffset="25" stroke-linecap="round">
@@ -90,44 +90,47 @@ import ChevronDownIcon from '$icons/chevron-down.svg?raw'
 ### 1. Create Reusable Icon Components
 
 **Option A: Create individual icon components**
+
 ```svelte
 <!-- $lib/components/icons/CloseIcon.svelte -->
 <script>
-  let { size = 24, class: className = '' } = $props()
+	let { size = 24, class: className = '' } = $props()
 </script>
 
 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" class={className}>
-  <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+	<path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
 </svg>
 ```
 
 **Option B: Create an Icon component with name prop**
+
 ```svelte
 <!-- $lib/components/Icon.svelte -->
 <script>
-  import CloseIcon from '$icons/close.svg'
-  import LoadingIcon from '$icons/loading.svg'
-  // ... other imports
-  
-  let { name, size = 24, class: className = '' } = $props()
-  
-  const icons = {
-    close: CloseIcon,
-    loading: LoadingIcon,
-    // ... other icons
-  }
-  
-  const IconComponent = $derived(icons[name])
+	import CloseIcon from '$icons/close.svg'
+	import LoadingIcon from '$icons/loading.svg'
+	// ... other imports
+
+	let { name, size = 24, class: className = '' } = $props()
+
+	const icons = {
+		close: CloseIcon,
+		loading: LoadingIcon
+		// ... other icons
+	}
+
+	const IconComponent = $derived(icons[name])
 </script>
 
 {#if IconComponent}
-  <IconComponent {size} class={className} />
+	<IconComponent {size} class={className} />
 {/if}
 ```
 
 ### 2. Extract Inline SVGs to Files
 
 Create new SVG files for commonly used inline SVGs:
+
 - `/src/assets/icons/close.svg`
 - `/src/assets/icons/loading.svg`
 - `/src/assets/icons/external-link.svg`
@@ -137,12 +140,14 @@ Create new SVG files for commonly used inline SVGs:
 ### 3. Clean Up Unused Assets
 
 Remove the following unused files to reduce bundle size:
+
 - All unused illustration files (11 files)
 - Unused icon files (2 files)
 
 ### 4. Standardize Import Methods
 
 Establish a consistent pattern:
+
 - Use `?component` for SVGs used as Svelte components
 - Use direct imports for SVGs used as images
 - Avoid `?raw` imports unless necessary
@@ -152,21 +157,36 @@ Establish a consistent pattern:
 ```svelte
 <!-- $lib/components/LoadingSpinner.svelte -->
 <script>
-  let { size = 24, class: className = '' } = $props()
+	let { size = 24, class: className = '' } = $props()
 </script>
 
 <svg class="loading-spinner {className}" width={size} height={size} viewBox="0 0 24 24">
-  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" 
-          stroke-dasharray="25" stroke-dashoffset="25" stroke-linecap="round">
-    <animateTransform attributeName="transform" type="rotate" 
-                      from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
-  </circle>
+	<circle
+		cx="12"
+		cy="12"
+		r="10"
+		stroke="currentColor"
+		stroke-width="2"
+		fill="none"
+		stroke-dasharray="25"
+		stroke-dashoffset="25"
+		stroke-linecap="round"
+	>
+		<animateTransform
+			attributeName="transform"
+			type="rotate"
+			from="0 12 12"
+			to="360 12 12"
+			dur="1s"
+			repeatCount="indefinite"
+		/>
+	</circle>
 </svg>
 
 <style>
-  .loading-spinner {
-    color: currentColor;
-  }
+	.loading-spinner {
+		color: currentColor;
+	}
 </style>
 ```
 

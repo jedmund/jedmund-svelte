@@ -21,22 +21,21 @@
 		class: className = ''
 	}: Props = $props()
 
-
-
 	// Split photos into columns for column-based layouts
 	function splitIntoColumns(photos: Photo[], numColumns: number): Photo[][] {
 		const columns: Photo[][] = Array.from({ length: numColumns }, () => [])
-		
+
 		photos.forEach((photo, index) => {
 			columns[index % numColumns].push(photo)
 		})
-		
+
 		return columns
 	}
 
-
 	const columnPhotos = $derived(
-		(columns === 1 || columns === 2 || columns === 3) && !masonry ? splitIntoColumns(photos, columns) : []
+		(columns === 1 || columns === 2 || columns === 3) && !masonry
+			? splitIntoColumns(photos, columns)
+			: []
 	)
 
 	// Window width for responsive masonry
@@ -45,9 +44,9 @@
 	// Calculate masonry column widths based on columns prop
 	const masonryConfig = $derived(() => {
 		if (!masonry) return null
-		
+
 		const gapSize = gap === 'small' ? 8 : gap === 'large' ? 32 : 16
-		
+
 		if (columns === 1) {
 			const width = windowWidth - 64 // Account for padding
 			return { minColWidth: width, maxColWidth: width, gap: gapSize }
@@ -55,7 +54,7 @@
 			const width = Math.floor((windowWidth - 64 - gapSize) / 2)
 			return { minColWidth: width - 10, maxColWidth: width + 10, gap: gapSize }
 		} else if (columns === 3) {
-			const width = Math.floor((windowWidth - 64 - (gapSize * 2)) / 3)
+			const width = Math.floor((windowWidth - 64 - gapSize * 2) / 3)
 			return { minColWidth: width - 10, maxColWidth: width + 10, gap: gapSize }
 		} else {
 			// Auto columns
@@ -90,7 +89,7 @@
 		>
 			{#snippet children({ item })}
 				<div class="photo-grid__item">
-					<PhotoItem item={item} />
+					<PhotoItem {item} />
 					{#if showCaptions}
 						<p class="photo-caption">{item.caption || ''}</p>
 					{/if}
@@ -147,7 +146,7 @@
 		&--3-column {
 			display: flex;
 			gap: var(--grid-gap);
-			
+
 			@include breakpoint('mobile') {
 				flex-direction: column;
 			}

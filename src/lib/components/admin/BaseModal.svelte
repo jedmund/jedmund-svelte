@@ -79,14 +79,14 @@
 </script>
 
 {#if isOpen}
-	<div 
-		class="modal-backdrop" 
-		on:click={handleBackdropClick} 
+	<div
+		class="modal-backdrop"
+		on:click={handleBackdropClick}
 		transition:fade={{ duration: TRANSITION_FAST_MS }}
 	>
-		<div 
-			class={modalClass} 
-			on:click|stopPropagation 
+		<div
+			class={modalClass}
+			on:click|stopPropagation
 			transition:fade={{ duration: TRANSITION_FAST_MS }}
 			role="dialog"
 			aria-modal="true"

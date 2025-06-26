@@ -3,7 +3,7 @@
 **Date**: December 26, 2025  
 **Author**: Claude Code  
 **Status**: Draft  
-**Priority**: High  
+**Priority**: High
 
 ## Executive Summary
 
@@ -20,18 +20,21 @@ This PRD outlines a comprehensive cleanup and refactoring plan for the jedmund-s
 ## Key Findings
 
 ### 1. Overengineered Components
+
 - **EnhancedComposer** (1,347 lines) - Handles too many responsibilities
 - **LastFM Stream Server** (625 lines) - Complex data transformations that could be simplified
 - **Multiple Media Modals** - Overlapping functionality across 3+ modal components
 - **Complex State Management** - Components with 10-20 state variables
 
 ### 2. Unused Code
+
 - 5 unused components (Squiggly, PhotoLightbox, Pill, SVGHoverEffect, MusicPreview)
 - 13 unused SVG files (2 icons, 11 illustrations)
 - Minimal commented-out code (good!)
 - 1 potentially unused API endpoint (/api/health)
 
 ### 3. DRY Violations
+
 - **Photo Grid Components** - 3 nearly identical components
 - **Modal Components** - Duplicate backdrop and positioning logic
 - **Dropdown Components** - Repeated dropdown patterns
@@ -39,6 +42,7 @@ This PRD outlines a comprehensive cleanup and refactoring plan for the jedmund-s
 - **Segmented Controllers** - Duplicate animation and positioning logic
 
 ### 4. Hardcoded Values
+
 - **Colors**: 200+ hardcoded hex/rgba values instead of using existing variables
 - **Spacing**: 1,000+ hardcoded pixel values instead of using `$unit` system
 - **Z-indexes**: 60+ hardcoded z-index values without consistent scale
@@ -46,6 +50,7 @@ This PRD outlines a comprehensive cleanup and refactoring plan for the jedmund-s
 - **Border radius**: Not using existing `$corner-radius-*` variables
 
 ### 5. SVG Issues
+
 - 7+ duplicate inline close button SVGs
 - 3+ duplicate loading spinner SVGs
 - Inconsistent import patterns
@@ -54,9 +59,11 @@ This PRD outlines a comprehensive cleanup and refactoring plan for the jedmund-s
 ## Implementation Timeline
 
 ### Phase 1: Quick Wins (Week 1)
+
 Focus on low-risk, high-impact changes that don't require architectural modifications.
 
 - [x] **Remove unused components** (5 components)
+
   - [x] Delete `/src/lib/components/Squiggly.svelte`
   - [x] Delete `/src/lib/components/PhotoLightbox.svelte`
   - [x] Delete `/src/lib/components/Pill.svelte`
@@ -64,6 +71,7 @@ Focus on low-risk, high-impact changes that don't require architectural modifica
   - [x] Delete `/src/lib/components/MusicPreview.svelte`
 
 - [x] **Remove unused SVG files** (13 files)
+
   - [x] Delete unused icons: `dashboard.svg`, `metadata.svg`
   - [x] Delete unused illustrations (11 files - see SVG analysis report)
 
@@ -72,18 +80,22 @@ Focus on low-risk, high-impact changes that don't require architectural modifica
   - [x] Address TODO in `/src/lib/server/api-utils.ts` about authentication (noted for future work)
 
 ### Phase 2: CSS Variable Standardization (Week 2)
+
 Create a consistent design system by extracting hardcoded values.
 
 - [x] **Create z-index system**
+
   - [x] Create `src/assets/styles/_z-index.scss` with constants
   - [x] Replace 60+ hardcoded z-index values
 
 - [x] **Extract color variables**
+
   - [x] Add missing color variables for frequently used colors
   - [x] Replace 200+ hardcoded hex/rgba values (replaced most common colors)
   - [x] Create shadow/overlay variables for rgba values
 
 - [x] **Standardize spacing**
+
   - [x] Add missing unit multipliers (added `$unit-7x` through `$unit-19x` and common pixel values)
   - [x] Replace 1,000+ hardcoded pixel values with unit variables (replaced in key components)
 
@@ -92,15 +104,18 @@ Create a consistent design system by extracting hardcoded values.
   - [x] Replace hardcoded duration values (replaced in key components)
 
 ### Phase 3: Component Refactoring (Weeks 3-4)
+
 Refactor components to reduce duplication and complexity.
 
 - [x] **Create base components**
+
   - [x] Extract `BaseModal` component for shared modal logic
   - [x] Create `BaseDropdown` for dropdown patterns
   - [x] Merge `FormField` and `FormFieldWrapper`
   - [x] Create `BaseSegmentedController` for shared logic
 
 - [x] **Refactor photo grids**
+
   - [x] Create unified `PhotoGrid` component with `columns` prop
   - [x] Remove 3 duplicate grid components
   - [x] Use composition for layout variations
@@ -112,9 +127,11 @@ Refactor components to reduce duplication and complexity.
   - [x] Extract other repeated inline SVGs (FileIcon, CopyIcon)
 
 ### Phase 4: Complex Refactoring (Weeks 5-6)
+
 Tackle the most complex components and patterns.
 
 - [x] **Refactor EnhancedComposer**
+
   - [x] Split into focused sub-components
   - [x] Extract toolbar component
   - [x] Separate media management
@@ -122,6 +139,7 @@ Tackle the most complex components and patterns.
   - [x] Reduce state variables from 20+ to <10
 
 - [ ] **Simplify LastFM Stream Server**
+
   - [ ] Extract data transformation utilities
   - [ ] Simplify "now playing" detection algorithm
   - [ ] Reduce state tracking duplication
@@ -133,9 +151,11 @@ Tackle the most complex components and patterns.
   - [ ] Eliminate prop drilling with stores
 
 ### Phase 5: Architecture & Utilities (Week 7)
+
 Improve overall architecture and create shared utilities.
 
 - [ ] **Create shared utilities**
+
   - [ ] API client with consistent error handling
   - [ ] CSS mixins for common patterns
   - [ ] Media handling utilities
@@ -148,9 +168,11 @@ Improve overall architecture and create shared utilities.
   - [ ] Create shared animation definitions
 
 ### Phase 6: Testing & Documentation (Week 8)
+
 Ensure changes don't break functionality and document new patterns.
 
 - [ ] **Testing**
+
   - [ ] Run full build and type checking
   - [ ] Test all refactored components
   - [ ] Verify no regressions in functionality
@@ -165,19 +187,23 @@ Ensure changes don't break functionality and document new patterns.
 ## Success Metrics
 
 1. **Code Reduction**
+
    - Target: 20-30% reduction in total lines of code
    - Eliminate 1,000+ instances of code duplication
 
 2. **Component Simplification**
+
    - No component larger than 500 lines
    - Average component size under 200 lines
 
 3. **Design System Consistency**
+
    - Zero hardcoded colors in components
    - All spacing using design tokens
    - Consistent z-index scale
 
 4. **Bundle Size**
+
    - 10-15% reduction in JavaScript bundle size
    - Removal of unused assets
 
@@ -189,11 +215,13 @@ Ensure changes don't break functionality and document new patterns.
 ## Risk Mitigation
 
 1. **Regression Testing**
+
    - Test each phase thoroughly before moving to next
    - Keep backups of original components during refactoring
    - Use feature flags for gradual rollout if needed
 
 2. **Performance Impact**
+
    - Monitor bundle size after each phase
    - Profile component render performance
    - Ensure no performance regressions

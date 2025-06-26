@@ -8,7 +8,7 @@
 	interface Props {
 		editor: Editor
 	}
-	
+
 	interface DropdownItem {
 		id: string
 		label?: string
@@ -22,23 +22,26 @@
 	const { editor }: Props = $props()
 
 	const pluginKey = 'globalDragHandle'
-	
+
 	// State
 	let isMenuOpen = $state(false)
 	let currentNode = $state<{ node: Node; pos: number } | null>(null)
+	let menuNode = $state<{ node: Node; pos: number } | null>(null) // Node when menu was opened
 	let dragHandleContainer = $state<HTMLElement>()
 
 	// Generate menu items based on current node
 	const menuItems = $derived(() => {
-		if (!currentNode) return []
-		
+		// Use menuNode when menu is open, otherwise currentNode
+		const activeNode = isMenuOpen && menuNode ? menuNode : currentNode
+		if (!activeNode) return []
+
 		const items: DropdownItem[] = []
-		const nodeType = currentNode.node.type.name
-		
+		const nodeType = activeNode.node.type.name
+
 		// Block type conversion options
 		if (nodeType === 'paragraph' || nodeType === 'heading') {
 			const turnIntoChildren = []
-			
+
 			turnIntoChildren.push({
 				id: 'convert-paragraph',
 				label: 'Paragraph',
@@ -64,7 +67,7 @@
 				label: 'Quote',
 				action: () => convertBlockType('blockquote')
 			})
-			
+
 			items.push({
 				id: 'turn-into',
 				label: 'Turn into',
@@ -75,11 +78,11 @@
 				divider: true
 			})
 		}
-		
+
 		// List-specific actions
 		if (nodeType === 'listItem') {
 			const turnIntoChildren = []
-			
+
 			turnIntoChildren.push({
 				id: 'convert-bullet',
 				label: 'Bullet List',
@@ -95,7 +98,7 @@
 				label: 'Task List',
 				action: () => convertToList('taskList')
 			})
-			
+
 			items.push({
 				id: 'turn-into',
 				label: 'Turn into',
@@ -106,7 +109,7 @@
 				divider: true
 			})
 		}
-		
+
 		// URL embed specific actions
 		if (nodeType === 'urlEmbed') {
 			items.push({
@@ -119,9 +122,9 @@
 				divider: true
 			})
 		}
-		
+
 		// Check if block contains links that could have cards added
-		if ((nodeType === 'paragraph' || nodeType === 'heading') && hasLinks(currentNode.node)) {
+		if ((nodeType === 'paragraph' || nodeType === 'heading') && hasLinks(activeNode.node)) {
 			items.push({
 				id: 'add-link-cards',
 				label: 'Add cards for links',
@@ -132,20 +135,20 @@
 				divider: true
 			})
 		}
-		
+
 		// Common actions
 		items.push({
 			id: 'duplicate',
 			label: 'Duplicate',
 			action: () => duplicateBlock()
 		})
-		
+
 		items.push({
 			id: 'copy',
 			label: 'Copy',
 			action: () => copyBlock()
 		})
-		
+
 		// Text formatting removal
 		if (nodeType === 'paragraph' || nodeType === 'heading') {
 			items.push({
@@ -154,19 +157,19 @@
 				action: () => removeFormatting()
 			})
 		}
-		
+
 		items.push({
 			id: 'divider-2',
 			divider: true
 		})
-		
+
 		items.push({
 			id: 'delete',
 			label: 'Delete',
 			action: () => deleteBlock(),
 			variant: 'danger' as const
 		})
-		
+
 		return items
 	})
 
@@ -174,7 +177,10 @@
 	function hasLinks(node: Node): boolean {
 		let hasLink = false
 		node.descendants((child) => {
-			if (child.type.name === 'link' || (child.isText && child.marks.some(mark => mark.type.name === 'link'))) {
+			if (
+				child.type.name === 'link' ||
+				(child.isText && child.marks.some((mark) => mark.type.name === 'link'))
+			) {
 				hasLink = true
 			}
 		})
@@ -184,17 +190,23 @@
 	// Block manipulation functions
 	function convertBlockType(type: string, attrs?: any) {
 		console.log('convertBlockType called:', type, attrs)
-		if (!currentNode) {
-			console.log('No current node')
+		// Use menuNode which was captured when menu was opened
+		const nodeToConvert = menuNode || currentNode
+		if (!nodeToConvert) {
+			console.log('No node to convert')
 			return
 		}
-		
-		const { pos } = currentNode
-		console.log('Current node:', currentNode.node.type.name, 'at pos:', pos)
-		
-		// Focus the editor first
-		editor.commands.focus()
-		
+
+		const { pos, node } = nodeToConvert
+		console.log('Converting node:', node.type.name, 'at pos:', pos)
+
+		// Calculate the actual position of the node
+		const nodeStart = pos
+		const nodeEnd = pos + node.nodeSize
+
+		// Set selection to the specific node we want to convert
+		editor.chain().focus().setTextSelection({ from: nodeStart, to: nodeEnd }).run()
+
 		// Convert the block type using chain commands
 		if (type === 'paragraph') {
 			editor.chain().focus().setParagraph().run()
@@ -203,25 +215,26 @@
 		} else if (type === 'blockquote') {
 			editor.chain().focus().setBlockquote().run()
 		}
-		
+
 		isMenuOpen = false
 	}
 
 	function convertToList(listType: string) {
-		if (!currentNode) return
-		
-		const { pos } = currentNode
+		const nodeToConvert = menuNode || currentNode
+		if (!nodeToConvert) return
+
+		const { pos } = nodeToConvert
 		const resolvedPos = editor.state.doc.resolve(pos)
-		
+
 		// Get the position of the list item
 		let nodePos = pos
 		if (resolvedPos.parent.type.name === 'listItem') {
 			nodePos = resolvedPos.before(resolvedPos.depth)
 		}
-		
+
 		// Set selection to the list item
 		editor.commands.setNodeSelection(nodePos)
-		
+
 		// Convert to the appropriate list type
 		if (listType === 'bulletList') {
 			editor.commands.toggleBulletList()
@@ -230,54 +243,61 @@
 		} else if (listType === 'taskList') {
 			editor.commands.toggleTaskList()
 		}
-		
+
 		isMenuOpen = false
 	}
 
 	function convertEmbedToLink() {
-		if (!currentNode) return
-		
-		const { node, pos } = currentNode
+		const nodeToConvert = menuNode || currentNode
+		if (!nodeToConvert) return
+
+		const { node, pos } = nodeToConvert
 		const url = node.attrs.url
 		const title = node.attrs.title || url
-		
+
 		// Get the actual position of the urlEmbed node
 		const nodePos = pos
 		const nodeSize = node.nodeSize
-		
+
 		// Replace embed with a paragraph containing a link
-		editor.chain()
+		editor
+			.chain()
 			.focus()
 			.deleteRange({ from: nodePos, to: nodePos + nodeSize })
 			.insertContentAt(nodePos, {
 				type: 'paragraph',
-				content: [{
-					type: 'text',
-					text: title,
-					marks: [{
-						type: 'link',
-						attrs: {
-							href: url,
-							target: '_blank'
-						}
-					}]
-				}]
+				content: [
+					{
+						type: 'text',
+						text: title,
+						marks: [
+							{
+								type: 'link',
+								attrs: {
+									href: url,
+									target: '_blank'
+								}
+							}
+						]
+					}
+				]
 			})
 			.run()
-		
+
 		isMenuOpen = false
 	}
 
 	function addCardsForLinks() {
-		if (!currentNode) return
-		
-		const { node, pos } = currentNode
+		const nodeToUse = menuNode || currentNode
+		if (!nodeToUse) return
+
+		const { node, pos } = nodeToUse
 		const links: { url: string; text: string }[] = []
-		
+
 		// Collect all links in the current block
 		node.descendants((child) => {
-			if (child.isText && child.marks.some(mark => mark.type.name === 'link')) {
-				const linkMark = child.marks.find(mark => mark.type.name === 'link')
+			if (child.isText && child.marks.some((mark) => mark.type.name === 'link')) {
+				const linkMark = child.marks.find((mark) => mark.type.name === 'link')
 				if (linkMark && linkMark.attrs.href) {
 					links.push({
 						url: linkMark.attrs.href,
@@ -286,97 +306,87 @@
 				}
 			}
 		})
-		
+
 		// Insert embeds after the current block
 		if (links.length > 0) {
 			const nodeEnd = pos + node.nodeSize
-			const embeds = links.map(link => ({
+			const embeds = links.map((link) => ({
 				type: 'urlEmbed',
 				attrs: {
 					url: link.url,
 					title: link.text
 				}
 			}))
-			
-			editor.chain()
-				.focus()
-				.insertContentAt(nodeEnd, embeds)
-				.run()
+
+			editor.chain().focus().insertContentAt(nodeEnd, embeds).run()
 		}
-		
+
 		isMenuOpen = false
 	}
 
 	function removeFormatting() {
-		if (!currentNode) return
-		
-		const { pos } = currentNode
+		const nodeToUse = menuNode || currentNode
+		if (!nodeToUse) return
+
+		const { pos } = nodeToUse
 		const resolvedPos = editor.state.doc.resolve(pos)
 		const nodeStart = resolvedPos.before(resolvedPos.depth)
 		const nodeEnd = nodeStart + resolvedPos.node(resolvedPos.depth).nodeSize
-		
-		editor.chain()
+
+		editor
+			.chain()
 			.focus()
 			.setTextSelection({ from: nodeStart, to: nodeEnd })
 			.clearNodes()
 			.unsetAllMarks()
 			.run()
-		
+
 		isMenuOpen = false
 	}
 
 	function duplicateBlock() {
-		if (!currentNode) return
-		
-		const { node, pos } = currentNode
+		const nodeToUse = menuNode || currentNode
+		if (!nodeToUse) return
+
+		const { node, pos } = nodeToUse
 		const resolvedPos = editor.state.doc.resolve(pos)
 		const nodeEnd = resolvedPos.after(resolvedPos.depth)
-		
-		editor.chain()
-			.focus()
-			.insertContentAt(nodeEnd, node.toJSON())
-			.run()
-		
+
+		editor.chain().focus().insertContentAt(nodeEnd, node.toJSON()).run()
+
 		isMenuOpen = false
 	}
 
 	function copyBlock() {
-		if (!currentNode) return
-		
-		const { pos } = currentNode
+		const nodeToUse = menuNode || currentNode
+		if (!nodeToUse) return
+
+		const { pos } = nodeToUse
 		const resolvedPos = editor.state.doc.resolve(pos)
 		const nodeStart = resolvedPos.before(resolvedPos.depth)
 		const nodeEnd = nodeStart + resolvedPos.node(resolvedPos.depth).nodeSize
-		
-		editor.chain()
-			.focus()
-			.setTextSelection({ from: nodeStart, to: nodeEnd })
-			.run()
-		
+
+		editor.chain().focus().setTextSelection({ from: nodeStart, to: nodeEnd }).run()
+
 		document.execCommand('copy')
-		
+
 		// Clear selection after copy
-		editor.chain()
-			.focus()
-			.setTextSelection(nodeEnd)
-			.run()
-		
+		editor.chain().focus().setTextSelection(nodeEnd).run()
+
 		isMenuOpen = false
 	}
 
 	function deleteBlock() {
-		if (!currentNode) return
-		
-		const { pos } = currentNode
+		const nodeToUse = menuNode || currentNode
+		if (!nodeToUse) return
+
+		const { pos } = nodeToUse
 		const resolvedPos = editor.state.doc.resolve(pos)
 		const nodeStart = resolvedPos.before(resolvedPos.depth)
 		const nodeEnd = nodeStart + resolvedPos.node(resolvedPos.depth).nodeSize
-		
-		editor.chain()
-			.focus()
-			.deleteRange({ from: nodeStart, to: nodeEnd })
-			.run()
-		
+
+		editor.chain().focus().deleteRange({ from: nodeStart, to: nodeEnd }).run()
+
 		isMenuOpen = false
 	}
 
@@ -386,9 +396,14 @@
 		console.log('Menu items:', menuItems())
 		e.preventDefault()
 		e.stopPropagation()
-		
-		// Only toggle if we're clicking on the same node
-		// If clicking on a different node while menu is open, just update the menu
+
+		// Capture the current node when opening the menu
+		if (!isMenuOpen) {
+			menuNode = currentNode
+		} else {
+			menuNode = null
+		}
+
 		isMenuOpen = !isMenuOpen
 		console.log('Menu open state:', isMenuOpen)
 	}
@@ -416,7 +431,7 @@
 			}
 		})
 		editor.registerPlugin(plugin)
-		
+
 		// Find the existing drag handle created by the plugin and add click listener
 		const checkForDragHandle = setInterval(() => {
 			const existingDragHandle = document.querySelector('.drag-handle')
@@ -424,13 +439,13 @@
 				console.log('Found drag handle, adding click listener')
 				existingDragHandle.addEventListener('click', handleMenuClick)
 				;(existingDragHandle as any).__menuListener = true
-				
+
 				// Update our reference to use the existing drag handle
 				dragHandleContainer = existingDragHandle as HTMLElement
 				clearInterval(checkForDragHandle)
 			}
 		}, 100)
-		
+
 		return () => {
 			editor.unregisterPlugin(pluginKey)
 			clearInterval(checkForDragHandle)

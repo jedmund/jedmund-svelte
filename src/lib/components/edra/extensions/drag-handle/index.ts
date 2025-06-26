@@ -217,7 +217,7 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 			dragHandleElement.draggable = true
 			dragHandleElement.dataset.dragHandle = ''
 			dragHandleElement.classList.add('drag-handle')
-			
+
 			// Add custom drag handle SVG if element was created (not selected)
 			if (!handleBySelector) {
 				dragHandleElement.innerHTML = DragHandleIcon
@@ -273,7 +273,7 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 						// Keep the handle visible when hovering over it or the dropdown
 						return
 					}
-					
+
 					// Don't move the drag handle if the menu is open
 					if (dragHandleElement?.classList.contains('menu-open')) {
 						return
@@ -314,7 +314,9 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 					const rect = absoluteRect(node)
 
 					// For custom nodes like embeds, position at the top of the element
-					const isCustomNode = node.matches('[data-drag-handle], .edra-url-embed-wrapper, .edra-youtube-embed-card, [data-type]')
+					const isCustomNode = node.matches(
+						'[data-drag-handle], .edra-url-embed-wrapper, .edra-youtube-embed-card, [data-type]'
+					)
 					if (isCustomNode) {
 						// For NodeView components, position handle at top with small offset
 						rect.top += 8
@@ -337,11 +339,11 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 
 					// Get the computed padding of the element to position handle correctly
 					const paddingLeft = parseInt(compStyle.paddingLeft, 10) || 0
-					
+
 					// Add 12px gap between drag handle and content
 					// Position the handle inside the padding area, close to the text
 					dragHandleElement.style.left = `${rect.left + paddingLeft - rect.width - 12}px`
-					dragHandleElement.style.top = `${rect.top - 2}px`
+					dragHandleElement.style.top = `${rect.top - 1}px`
 					showDragHandle()
 				},
 				keydown: () => {
