@@ -119,16 +119,6 @@
 <style lang="scss">
 	@import '$styles/variables';
 
-	:global(.node-geolocationPlaceholder) {
-		margin-bottom: 1rem;
-		margin-left: 2.25rem;
-		margin-right: 2.25rem;
-
-		@media (max-width: 768px) {
-			margin-left: 2rem;
-			margin-right: 2rem;
-		}
-	}
 
 	.geolocation-placeholder {
 		background: $gray-95;

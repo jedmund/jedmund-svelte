@@ -17,36 +17,19 @@
 
 <NodeViewWrapper class="edra-video-placeholder-wrapper" contenteditable="false">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div class="edra-video-placeholder-container">
-		<button
-			class="edra-video-placeholder-content"
-			onclick={handleClick}
-			tabindex="0"
-			aria-label="Insert A Video"
-		>
-			<Video class="edra-video-placeholder-icon" />
-			<span class="edra-video-placeholder-text">Insert A Video</span>
-		</button>
-	</div>
+	<button
+		class="edra-video-placeholder-content"
+		onclick={handleClick}
+		tabindex="0"
+		aria-label="Insert A Video"
+	>
+		<Video class="edra-video-placeholder-icon" />
+		<span class="edra-video-placeholder-text">Insert A Video</span>
+	</button>
 </NodeViewWrapper>
 
 <style lang="scss">
 	@import '$styles/variables';
-
-	.edra-video-placeholder-wrapper {
-		width: 100%;
-		margin-bottom: 1rem;
-	}
-
-	.edra-video-placeholder-container {
-		margin-left: 2.25rem;
-		margin-right: 2.25rem;
-
-		@media (max-width: 768px) {
-			margin-left: 2rem;
-			margin-right: 2rem;
-		}
-	}
 
 	.edra-video-placeholder-content {
 		width: 100%;

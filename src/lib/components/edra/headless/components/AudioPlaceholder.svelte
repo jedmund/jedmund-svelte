@@ -17,36 +17,19 @@
 
 <NodeViewWrapper class="edra-audio-placeholder-wrapper" contenteditable="false">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div class="edra-audio-placeholder-container">
-		<button
-			class="edra-audio-placeholder-content"
-			onclick={handleClick}
-			tabindex="0"
-			aria-label="Insert An Audio"
-		>
-			<AudioLines class="edra-audio-placeholder-icon" />
-			<span class="edra-audio-placeholder-text">Insert An Audio</span>
-		</button>
-	</div>
+	<button
+		class="edra-audio-placeholder-content"
+		onclick={handleClick}
+		tabindex="0"
+		aria-label="Insert An Audio"
+	>
+		<AudioLines class="edra-audio-placeholder-icon" />
+		<span class="edra-audio-placeholder-text">Insert An Audio</span>
+	</button>
 </NodeViewWrapper>
 
 <style lang="scss">
 	@import '$styles/variables';
-
-	.edra-audio-placeholder-wrapper {
-		width: 100%;
-		margin-bottom: 1rem;
-	}
-
-	.edra-audio-placeholder-container {
-		margin-left: 2.25rem;
-		margin-right: 2.25rem;
-
-		@media (max-width: 768px) {
-			margin-left: 2rem;
-			margin-right: 2rem;
-		}
-	}
 
 	.edra-audio-placeholder-content {
 		width: 100%;

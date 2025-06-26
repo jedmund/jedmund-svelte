@@ -227,18 +227,6 @@
 <style lang="scss">
 	@import '$styles/variables';
 
-	.edra-media-placeholder-wrapper {
-		width: 100%;
-		margin-bottom: 1rem;
-		margin-left: 2.25rem;
-		margin-right: 2.25rem;
-
-		@media (max-width: 768px) {
-			margin-left: 2rem;
-			margin-right: 2rem;
-		}
-	}
-
 	.edra-media-placeholder-container {
 		display: flex;
 		gap: $unit-2x;

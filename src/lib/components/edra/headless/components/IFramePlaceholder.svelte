@@ -17,36 +17,19 @@
 
 <NodeViewWrapper class="edra-iframe-placeholder-wrapper" contenteditable={false} spellcheck={false}>
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div class="edra-iframe-placeholder-container">
-		<button
-			class="edra-iframe-placeholder-content"
-			onclick={handleClick}
-			tabindex="0"
-			aria-label="Insert An IFrame"
-		>
-			<CodeXML class="edra-iframe-placeholder-icon" />
-			<span class="edra-iframe-placeholder-text">Insert An IFrame</span>
-		</button>
-	</div>
+	<button
+		class="edra-iframe-placeholder-content"
+		onclick={handleClick}
+		tabindex="0"
+		aria-label="Insert An IFrame"
+	>
+		<CodeXML class="edra-iframe-placeholder-icon" />
+		<span class="edra-iframe-placeholder-text">Insert An IFrame</span>
+	</button>
 </NodeViewWrapper>
 
 <style lang="scss">
 	@import '$styles/variables';
-
-	.edra-iframe-placeholder-wrapper {
-		width: 100%;
-		margin-bottom: 1rem;
-	}
-
-	.edra-iframe-placeholder-container {
-		margin-left: 2.25rem;
-		margin-right: 2.25rem;
-
-		@media (max-width: 768px) {
-			margin-left: 2rem;
-			margin-right: 2rem;
-		}
-	}
 
 	.edra-iframe-placeholder-content {
 		width: 100%;

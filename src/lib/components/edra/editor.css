@@ -580,7 +580,14 @@ input[type='checkbox'] {
 .tiptap .node-image,
 .tiptap .node-gallery,
 .tiptap .node-audio,
-.tiptap .node-geolocation {
+.tiptap .node-geolocation,
+.tiptap .node-audio-placeholder,
+.tiptap .node-gallery-placeholder,
+.tiptap .node-iframe-placeholder,
+.tiptap .node-video-placeholder,
+.tiptap .node-geolocation-placeholder,
+.tiptap .node-image-placeholder,
+.tiptap .node-urlEmbedPlaceholder {
 	margin-bottom: 1rem;
 	margin-left: 2.25rem;
 	margin-right: 2.25rem;
@@ -609,7 +616,14 @@ input[type='checkbox'] {
 	.tiptap .node-image,
 	.tiptap .node-gallery,
 	.tiptap .node-audio,
-	.tiptap .node-geolocation {
+	.tiptap .node-geolocation,
+	.tiptap .node-audio-placeholder,
+	.tiptap .node-gallery-placeholder,
+	.tiptap .node-iframe-placeholder,
+	.tiptap .node-video-placeholder,
+	.tiptap .node-geolocation-placeholder,
+	.tiptap .node-image-placeholder,
+	.tiptap .node-urlEmbedPlaceholder {
 		margin-left: 2rem;
 		margin-right: 2rem;
 	}

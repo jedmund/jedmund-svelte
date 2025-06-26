@@ -152,16 +152,6 @@
 <style lang="scss">
 	@import '$styles/variables';
 
-	.edra-url-embed-placeholder-wrapper {
-		margin-bottom: 1rem;
-		margin-left: 2.25rem;
-		margin-right: 2.25rem;
-
-		@media (max-width: 768px) {
-			margin-left: 2rem;
-			margin-right: 2rem;
-		}
-	}
 
 	.url-input-container {
 		display: flex;
