@@ -30,6 +30,7 @@ $unit-17x: $unit * 17;
 $unit-18x: $unit * 18;
 $unit-19x: $unit * 19;
 $unit-20x: $unit * 20;
+$unit-22x: $unit * 22;
 
 // Common pixel values
 $unit-1px: 1px;
@@ -309,3 +310,5 @@ $screen-lg-min: 1200px;
 
 // Map old color variables to new scale
 $orange-red: $red-70;
+$salmon-pink: $red-95; // Desaturated salmon pink for hover states
+$gray-5: $gray-97; // Was an old variable between 95 and 100
