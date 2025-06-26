@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import Input from './Input.svelte'
-	import FormFieldWrapper from './FormFieldWrapper.svelte'
+	import FormField from './FormField.svelte'
 	import Button from './Button.svelte'
 
 	export interface MetadataField {

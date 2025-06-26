@@ -1,7 +1,7 @@
 <script lang="ts">
 	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
-	import SingleColumnPhotoGrid from '$components/SingleColumnPhotoGrid.svelte'
-	import TwoColumnPhotoGrid from '$components/TwoColumnPhotoGrid.svelte'
+	import SingleColumnPhotoGrid from '$components/SingleColumnPhotoGrid.new.svelte'
+	import TwoColumnPhotoGrid from '$components/TwoColumnPhotoGrid.new.svelte'
 	import HorizontalScrollPhotoGrid from '$components/HorizontalScrollPhotoGrid.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import ViewModeSelector from '$components/ViewModeSelector.svelte'

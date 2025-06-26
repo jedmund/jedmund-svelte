@@ -3,7 +3,7 @@
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
-	import FormFieldWrapper from './FormFieldWrapper.svelte'
+	import FormField from './FormField.svelte'
 	import EnhancedComposer from './EnhancedComposer.svelte'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
