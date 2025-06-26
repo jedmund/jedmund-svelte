@@ -406,7 +406,7 @@
 		// Register the plugin with onMouseMove callback
 		const plugin = DragHandlePlugin({
 			pluginKey: pluginKey,
-			dragHandleWidth: 24,
+			dragHandleWidth: 20,
 			scrollTreshold: 100,
 			excludedTags: ['pre', 'code', 'table p'],
 			customNodes: ['urlEmbed', 'image', 'video', 'audio', 'gallery', 'iframe', 'geolocation'],
