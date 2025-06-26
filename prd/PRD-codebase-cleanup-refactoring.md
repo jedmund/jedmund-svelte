@@ -96,7 +96,7 @@ Refactor components to reduce duplication and complexity.
 
 - [-] **Create base components**
   - [x] Extract `BaseModal` component for shared modal logic
-  - [ ] Create `BaseDropdown` for dropdown patterns
+  - [x] Create `BaseDropdown` for dropdown patterns
   - [ ] Merge `FormField` and `FormFieldWrapper`
   - [ ] Create `BaseSegmentedController` for shared logic
 
