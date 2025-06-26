@@ -63,9 +63,9 @@ Focus on low-risk, high-impact changes that don't require architectural modifica
   - [x] Delete `/src/lib/components/SVGHoverEffect.svelte`
   - [x] Delete `/src/lib/components/MusicPreview.svelte`
 
-- [ ] **Remove unused SVG files** (13 files)
-  - [ ] Delete unused icons: `close.svg`, `music.svg`
-  - [ ] Delete unused illustrations (11 files - see SVG analysis report)
+- [x] **Remove unused SVG files** (13 files)
+  - [x] Delete unused icons: `dashboard.svg`, `metadata.svg`
+  - [x] Delete unused illustrations (11 files - see SVG analysis report)
 
 - [ ] **Clean up dead code**
   - [ ] Remove commented `getWeeklyAlbumChart` line in `/src/routes/api/lastfm/+server.ts`
