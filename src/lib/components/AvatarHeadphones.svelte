@@ -85,7 +85,7 @@
 		svg {
 			width: 100%;
 			height: auto;
-			animation: fadeIn 0.3s ease-out;
+			animation: fadeIn $transition-medium ease-out;
 		}
 	}
 

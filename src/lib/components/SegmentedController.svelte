@@ -146,7 +146,7 @@
 		left: $unit;
 		height: calc(100% - #{$unit * 2});
 		border-radius: 100px;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: all $transition-medium cubic-bezier(0.4, 0, 0.2, 1);
 		z-index: $z-index-base;
 	}
 

@@ -252,7 +252,7 @@
 		border: 1px solid rgba(0, 0, 0, 0.1);
 		z-index: 1;
 		cursor: pointer;
-		transition: border-color 0.15s ease;
+		transition: border-color $transition-fast ease;
 
 		&:hover {
 			border-color: rgba(0, 0, 0, 0.2);
@@ -265,7 +265,7 @@
 		border: 1px solid transparent;
 		color: $input-text-color;
 		background-color: $input-background-color;
-		transition: all 0.15s ease;
+		transition: all $transition-fast ease;
 
 		&:hover {
 			background-color: $input-background-color-hover;

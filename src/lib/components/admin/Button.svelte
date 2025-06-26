@@ -174,7 +174,7 @@
 		font-weight: 400;
 		border: none;
 		cursor: pointer;
-		transition: all 0.15s ease;
+		transition: all $transition-fast ease;
 		outline: none;
 		position: relative;
 		white-space: nowrap;

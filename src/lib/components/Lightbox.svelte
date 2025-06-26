@@ -2,6 +2,9 @@
 	import { onMount } from 'svelte'
 	import { fade, scale } from 'svelte/transition'
 
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
+
 	let {
 		images = [],
 		selectedIndex = $bindable(0),
@@ -76,7 +79,7 @@
 	<div
 		class="lightbox-backdrop"
 		onclick={handleBackgroundClick}
-		transition:fade={{ duration: 200 }}
+		transition:fade={{ duration: TRANSITION_NORMAL_MS }}
 		role="button"
 		tabindex="-1"
 	>
@@ -85,7 +88,7 @@
 				<img
 					src={images[selectedIndex]}
 					alt="{alt} {selectedIndex + 1}"
-					transition:scale={{ duration: 200, start: 0.9 }}
+					transition:scale={{ duration: TRANSITION_NORMAL_MS, start: 0.9 }}
 				/>
 			</div>
 

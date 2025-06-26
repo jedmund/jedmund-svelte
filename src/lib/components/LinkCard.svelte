@@ -202,7 +202,7 @@
 	.skeleton {
 		background: $gray-80;
 		border-radius: 4px;
-		animation: pulse 1.5s ease-in-out infinite;
+		animation: pulse $animation-slow ease-in-out infinite;
 	}
 
 	.skeleton-meta {

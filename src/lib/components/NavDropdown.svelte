@@ -185,7 +185,7 @@
 		font-size: $font-size;
 		font-weight: 400;
 		cursor: pointer;
-		transition: all 0.2s ease;
+		transition: all $transition-normal ease;
 		box-shadow: 0 $unit-1px $unit-3px $shadow-light;
 
 		&:hover {
@@ -209,7 +209,7 @@
 			height: $unit-2x;
 			margin-left: auto;
 			flex-shrink: 0;
-			transition: transform 0.2s ease;
+			transition: transform $transition-normal ease;
 			fill: none;
 			stroke: currentColor;
 			stroke-width: $unit-2px;
@@ -233,7 +233,7 @@
 		box-shadow: 0 $unit-half $unit-12px $shadow-medium;
 		padding: $unit;
 		z-index: 10;
-		animation: dropdownOpen 0.2s ease;
+		animation: dropdownOpen $transition-normal ease;
 	}
 
 	.dropdown-section {
@@ -254,7 +254,7 @@
 		text-decoration: none;
 		color: $gray-20;
 		font-size: $font-size;
-		transition: background-color 0.2s ease;
+		transition: background-color $transition-normal ease;
 
 		&:hover:not(.section-header) {
 			background-color: $gray-97;

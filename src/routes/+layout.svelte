@@ -176,7 +176,7 @@
 		padding: $unit-half $unit-2x !important;
 		font-size: $font-size-extra-small !important;
 		font-weight: $font-weight-med !important;
-		transition: background-color 0.2s ease !important;
+		transition: background-color $transition-normal ease !important;
 
 		&:hover {
 			background: $blue-40 !important;
@@ -191,7 +191,7 @@
 		padding: $unit-half $unit-2x !important;
 		font-size: $font-size-extra-small !important;
 		font-weight: $font-weight-med !important;
-		transition: all 0.2s ease !important;
+		transition: all $transition-normal ease !important;
 
 		&:hover {
 			background: $gray-95 !important;

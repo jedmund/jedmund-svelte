@@ -4,6 +4,9 @@
 	import Check from 'lucide-svelte/icons/check'
 	import X from 'lucide-svelte/icons/x'
 
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
+
 	interface Props {
 		x: number
 		y: number
@@ -66,7 +69,7 @@
 	bind:this={dialogElement}
 	class="link-edit-dialog"
 	style="left: {x}px; top: {y}px;"
-	transition:fly={{ y: -10, duration: 200 }}
+	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
 	onkeydown={handleKeydown}
 >
 	<div class="dialog-content">

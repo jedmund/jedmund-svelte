@@ -79,7 +79,7 @@
 		background: $gray-100;
 		border-radius: $card-corner-radius;
 		border: $unit-1px solid $gray-95;
-		transition: all 0.2s ease;
+		transition: all $transition-normal ease;
 		cursor: pointer;
 		outline: none;
 
@@ -111,14 +111,14 @@
 		color: $gray-40;
 		font-size: $font-size-small;
 		font-weight: 400;
-		transition: color 0.2s ease;
+		transition: color $transition-normal ease;
 	}
 
 	:global(.card-icon) {
 		width: $unit-2x;
 		height: $unit-2x;
 		fill: $gray-40;
-		transition: all 0.2s ease;
+		transition: all $transition-normal ease;
 	}
 
 	.universe-card--post {
@@ -140,7 +140,7 @@
 		:global(.card-title-link) {
 			color: $gray-10;
 			text-decoration: none;
-			transition: all 0.2s ease;
+			transition: all $transition-normal ease;
 		}
 	}
 
@@ -155,25 +155,25 @@
 			}
 
 			:global(.card-icon rect:nth-child(1)) {
-				transition: all 0.3s ease;
+				transition: all $transition-medium ease;
 				height: $unit-6px;
 				y: $unit-2px;
 			}
 
 			:global(.card-icon rect:nth-child(2)) {
-				transition: all 0.3s ease;
+				transition: all $transition-medium ease;
 				height: $unit-10px;
 				y: $unit-2px;
 			}
 
 			:global(.card-icon rect:nth-child(3)) {
-				transition: all 0.3s ease;
+				transition: all $transition-medium ease;
 				height: $unit;
 				y: $unit-10px;
 			}
 
 			:global(.card-icon rect:nth-child(4)) {
-				transition: all 0.3s ease;
+				transition: all $transition-medium ease;
 				height: $unit-half;
 				y: $unit-14px;
 			}
@@ -191,7 +191,7 @@
 		:global(.card-title-link) {
 			color: $gray-10;
 			text-decoration: none;
-			transition: all 0.2s ease;
+			transition: all $transition-normal ease;
 		}
 	}
 </style>

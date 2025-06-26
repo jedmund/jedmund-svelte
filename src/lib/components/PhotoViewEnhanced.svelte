@@ -224,7 +224,7 @@
 				height: 100px;
 				pointer-events: none;
 				z-index: 10;
-				transition: opacity 0.3s ease;
+				transition: opacity $transition-medium ease;
 			}
 
 			&::before {

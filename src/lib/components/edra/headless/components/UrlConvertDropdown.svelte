@@ -2,6 +2,9 @@
 	import { onMount, onDestroy } from 'svelte'
 	import { fly } from 'svelte/transition'
 
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
+
 	interface Props {
 		x: number
 		y: number
@@ -50,7 +53,7 @@
 	bind:this={dropdown}
 	class="url-convert-dropdown"
 	style="left: {x}px; top: {y}px;"
-	transition:fly={{ y: -10, duration: 200 }}
+	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
 	tabindex="-1"
 >
 	<button class="convert-button" onclick={handleConvert}> Convert to card </button>

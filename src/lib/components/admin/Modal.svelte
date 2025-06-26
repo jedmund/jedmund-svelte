@@ -3,6 +3,9 @@
 	import { fade } from 'svelte/transition'
 	import Button from './Button.svelte'
 
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_FAST_MS = 150 // $transition-fast: 0.15s
+
 	interface Props {
 		isOpen: boolean
 		size?: 'small' | 'medium' | 'large' | 'jumbo' | 'full'
@@ -77,8 +80,8 @@
 </script>
 
 {#if isOpen}
-	<div class="modal-backdrop" on:click={handleBackdropClick} transition:fade={{ duration: 150 }}>
-		<div class="modal {modalClass}" on:click|stopPropagation transition:fade={{ duration: 150 }}>
+	<div class="modal-backdrop" on:click={handleBackdropClick} transition:fade={{ duration: TRANSITION_FAST_MS }}>
+		<div class="modal {modalClass}" on:click|stopPropagation transition:fade={{ duration: TRANSITION_FAST_MS }}>
 			{#if showCloseButton}
 				<Button
 					variant="ghost"

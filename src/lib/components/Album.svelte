@@ -205,7 +205,7 @@
 			flex-direction: column;
 			gap: $unit * 1.5;
 			text-decoration: none;
-			transition: gap 0.125s ease-in-out;
+			transition: gap $transition-fast ease-in-out;
 			width: 100%;
 			height: 100%;
 
@@ -243,7 +243,7 @@
 				align-items: center;
 				justify-content: center;
 				font-size: 24px;
-				transition: all 0.3s ease;
+				transition: all $transition-medium ease;
 				backdrop-filter: blur(10px);
 
 				&.corner {

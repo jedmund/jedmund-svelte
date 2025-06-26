@@ -60,7 +60,7 @@
 		padding: calc($unit-5x - ($unit-5x - $unit-2x) * var(--padding-progress)) $unit-2x;
 		pointer-events: none;
 		// Add a very subtle transition to smooth out any remaining jitter
-		transition: padding 0.1s ease-out;
+		transition: padding $transition-instant ease-out;
 
 		@include breakpoint('phone') {
 			padding: calc($unit-3x - ($unit-3x - $unit-2x) * var(--padding-progress)) $unit-2x;
@@ -82,7 +82,7 @@
 			z-index: -1;
 			opacity: var(--gradient-opacity);
 			// Add a very subtle transition to smooth out any remaining jitter
-			transition: opacity 0.1s ease-out;
+			transition: opacity $transition-instant ease-out;
 		}
 	}
 
