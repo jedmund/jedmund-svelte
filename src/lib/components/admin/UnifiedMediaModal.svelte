@@ -6,7 +6,7 @@
 	import Button from './Button.svelte'
 	import CloseButton from '../icons/CloseButton.svelte'
 	import LoadingSpinner from './LoadingSpinner.svelte'
-	import SmartImage from '../SmartImage.svelte'
+	import MediaGrid from './MediaGrid.svelte'
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import type { Media } from '@prisma/client'
 
@@ -39,13 +39,22 @@
 	}: Props = $props()
 
 	// State
-	let selectedMedia = $state<Media[]>([])
 	let media = $state<Media[]>([])
 	let isSaving = $state(false)
 	let error = $state('')
 	let currentPage = $state(1)
 	let totalPages = $state(1)
 	let total = $state(0)
+	
+	// Media selection state
+	let selectedMediaIds = $state<Set<number>>(new Set(selectedIds))
+	
+	// Derived selection values
+	const selectedMedia = $derived(
+		media.filter(m => selectedMediaIds.has(m.id))
+	)
+	const hasSelection = $derived(selectedMediaIds.size > 0)
+	const selectionCount = $derived(selectedMediaIds.size)
 
 	// Filter states
 	let filterType = $state<string>(fileType === 'all' ? 'all' : fileType)
@@ -83,8 +92,37 @@
 		confirmText || (showInAlbumMode ? 'Add Photos' : mode === 'single' ? 'Select' : 'Select Files')
 	)
 
-	const canConfirm = $derived(selectedMedia.length > 0 && (!showInAlbumMode || albumId))
-	const mediaCount = $derived(selectedMedia.length)
+	const canConfirm = $derived(hasSelection && (!showInAlbumMode || albumId))
+	const mediaCount = $derived(selectionCount)
+
+	// Selection methods
+	function toggleSelection(item: Media) {
+		if (mode === 'single') {
+			// Single selection mode - replace selection
+			selectedMediaIds = new Set([item.id])
+		} else {
+			// Multiple selection mode - toggle
+			if (selectedMediaIds.has(item.id)) {
+				selectedMediaIds.delete(item.id)
+			} else {
+				selectedMediaIds.add(item.id)
+			}
+			// Trigger reactivity
+			selectedMediaIds = new Set(selectedMediaIds)
+		}
+	}
+	
+	function clearSelection() {
+		selectedMediaIds = new Set()
+	}
+	
+	function getSelectedIds(): number[] {
+		return Array.from(selectedMediaIds)
+	}
+	
+	function getSelected(): Media[] {
+		return selectedMedia
+	}
 
 	const footerText = $derived(
 		showInAlbumMode && canConfirm
@@ -102,17 +140,13 @@
 	// Reset state when modal opens
 	$effect(() => {
 		if (isOpen) {
-			selectedMedia = []
+			selectedMediaIds.clear()
+			selectedMediaIds = new Set() // Trigger reactivity
 			// Don't clear media immediately - let new data replace old
 			currentPage = 1
 			isInitialLoad = true
 			loaderState.reset()
 			loadMedia(1)
-
-			// Initialize selected media from IDs if provided
-			if (selectedIds.length > 0) {
-				// Will be populated when media loads
-			}
 		}
 	})
 
@@ -150,10 +184,9 @@
 	// Initialize selected media from IDs when media loads
 	$effect(() => {
 		if (selectedIds.length > 0 && media.length > 0) {
-			const preselected = media.filter((item) => selectedIds.includes(item.id))
-			if (preselected.length > 0) {
-				selectedMedia = [...selectedMedia, ...preselected]
-			}
+			// Re-select items that are in the current media list
+			const availableIds = new Set(media.map(m => m.id))
+			selectedMediaIds = new Set(selectedIds.filter(id => availableIds.has(id)))
 		}
 	})
 
@@ -226,21 +259,7 @@
 	}
 
 	function handleMediaClick(item: Media) {
-		if (mode === 'single') {
-			selectedMedia = [item]
-		} else {
-			const isSelected = selectedMedia.some((m) => m.id === item.id)
-
-			if (isSelected) {
-				selectedMedia = selectedMedia.filter((m) => m.id !== item.id)
-			} else {
-				selectedMedia = [...selectedMedia, item]
-			}
-		}
-	}
-
-	function isSelected(item: Media): boolean {
-		return selectedMedia.some((m) => m.id === item.id)
+		toggleSelection(item)
 	}
 
 	async function handleConfirm() {
@@ -254,7 +273,7 @@
 				const auth = localStorage.getItem('admin_auth')
 				if (!auth) return
 
-				const mediaIds = selectedMedia.map((m) => m.id)
+				const mediaIds = getSelectedIds()
 
 				const response = await fetch(`/api/albums/${albumId}/media`, {
 					method: 'POST',
@@ -279,10 +298,11 @@
 			}
 		} else {
 			// Regular selection mode
+			const selected = getSelected()
 			if (mode === 'single') {
-				onSelect?.(selectedMedia[0])
+				onSelect?.(selected[0])
 			} else {
-				onSelect?.(selectedMedia)
+				onSelect?.(selected)
 			}
 
 			handleClose()
@@ -290,7 +310,7 @@
 	}
 
 	function handleClose() {
-		selectedMedia = []
+		clearSelection()
 		error = ''
 		isOpen = false
 		onClose?.()
@@ -364,126 +384,16 @@
 
 		<!-- Media Grid -->
 		<div class="media-grid-container">
-			{#if isInitialLoad && media.length === 0}
-				<!-- Loading skeleton -->
-				<div class="media-grid">
-					{#each Array(12) as _, i}
-						<div class="media-item skeleton" aria-hidden="true">
-							<div class="media-thumbnail skeleton-bg"></div>
-						</div>
-					{/each}
-				</div>
-			{:else if media.length === 0 && currentPage === 1}
-				<div class="empty-state">
-					<svg
-						width="64"
-						height="64"
-						viewBox="0 0 24 24"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<rect
-							x="3"
-							y="5"
-							width="18"
-							height="14"
-							rx="2"
-							stroke="currentColor"
-							stroke-width="2"
-						/>
-						<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
-						<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none" />
-					</svg>
-					<h3>No media found</h3>
-					<p>
-						{#if fileType !== 'all'}
-							Try adjusting your filters or search
-						{:else}
-							Try adjusting your search or filters
-						{/if}
-					</p>
-				</div>
-			{:else}
-				<div class="media-grid">
-					{#each media as item, i (item.id)}
-						<button
-							type="button"
-							class="media-item"
-							class:selected={isSelected(item)}
-							onclick={() => handleMediaClick(item)}
-						>
-							<!-- Thumbnail -->
-							<div
-								class="media-thumbnail"
-								class:is-svg={item.mimeType === 'image/svg+xml'}
-								style="background-color: {item.mimeType === 'image/svg+xml'
-									? 'transparent'
-									: item.dominantColor || '#f5f5f5'}"
-							>
-								{#if item.mimeType?.startsWith('image/')}
-									<SmartImage
-										media={item}
-										alt={item.filename}
-										loading={i < 8 ? 'eager' : 'lazy'}
-										class="media-image {item.mimeType === 'image/svg+xml' ? 'svg-image' : ''}"
-										containerWidth={150}
-									/>
-								{:else}
-									<div class="media-placeholder">
-										<svg
-											width="32"
-											height="32"
-											viewBox="0 0 24 24"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<rect
-												x="5"
-												y="3"
-												width="14"
-												height="18"
-												rx="2"
-												stroke="currentColor"
-												stroke-width="2"
-												fill="none"
-											/>
-											<path
-												d="M9 7H15M9 11H15M9 15H13"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-											/>
-										</svg>
-									</div>
-								{/if}
-
-								<!-- Hover Overlay -->
-								<div class="hover-overlay"></div>
-
-								<!-- Selected Indicator -->
-								{#if isSelected(item)}
-									<div class="selected-indicator">
-										<svg
-											width="18"
-											height="18"
-											viewBox="0 0 24 24"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<path
-												d="M7 13l3 3 7-7"
-												stroke="white"
-												stroke-width="3"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-											/>
-										</svg>
-									</div>
-								{/if}
-							</div>
-						</button>
-					{/each}
-				</div>
+			<MediaGrid
+				{media}
+				selectedIds={selectedMediaIds}
+				onItemClick={handleMediaClick}
+				isLoading={isInitialLoad && media.length === 0}
+				emptyMessage={fileType !== 'all' 
+					? 'No media found. Try adjusting your filters or search' 
+					: 'No media found. Try adjusting your search or filters'}
+				mode="select"
+			/>
 
 				<!-- Infinite Loader -->
 				<InfiniteLoader
@@ -517,8 +427,7 @@
 					{#snippet noData()}
 						<!-- Empty snippet to hide "No more data" text -->
 					{/snippet}
-				</InfiniteLoader>
-			{/if}
+			</InfiniteLoader>
 		</div>
 
 		<!-- Footer -->
@@ -622,117 +531,6 @@
 		padding: 0 $unit-3x;
 	}
 
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: $unit-6x;
-		text-align: center;
-		color: $gray-40;
-		min-height: 400px;
-
-		svg {
-			color: $gray-70;
-			margin-bottom: $unit-2x;
-		}
-
-		h3 {
-			margin: 0 0 $unit 0;
-			font-size: 1.25rem;
-			font-weight: 600;
-			color: $gray-30;
-		}
-
-		p {
-			margin: 0;
-			color: $gray-50;
-		}
-	}
-
-	.media-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		gap: $unit-2x;
-		padding: $unit-3x 0;
-	}
-
-	.media-item {
-		position: relative;
-		aspect-ratio: 1;
-		background: $gray-95;
-		border: none;
-		border-radius: $unit-2x;
-		overflow: hidden;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		padding: 0;
-
-		&:hover .hover-overlay {
-			opacity: 1;
-		}
-	}
-
-	.media-thumbnail {
-		position: relative;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		transition: background-color 0.3s ease;
-
-		:global(.media-image) {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			animation: fadeIn 0.3s ease-in-out;
-		}
-
-		&.is-svg {
-			padding: $unit-2x;
-			box-sizing: border-box;
-			background-color: $gray-95 !important;
-
-			:global(.svg-image) {
-				object-fit: contain !important;
-			}
-		}
-	}
-
-	.media-placeholder {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: $gray-60;
-	}
-
-	.hover-overlay {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(255, 255, 255, 0.1);
-		opacity: 0;
-		transition: opacity 0.2s ease;
-		pointer-events: none;
-	}
-
-	.selected-indicator {
-		position: absolute;
-		top: $unit;
-		right: $unit;
-		width: 28px;
-		height: 28px;
-		background: $blue-50;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-	}
-
 	.loading-container {
 		display: flex;
 		justify-content: center;
@@ -799,48 +597,6 @@
 		font-size: 13px !important;
 	}
 
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
-	// Skeleton loader styles
-	.skeleton {
-		pointer-events: none;
-		cursor: default;
-	}
-
-	.skeleton-bg {
-		background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-		background-size: 200% 100%;
-		animation: shimmer 1.5s infinite;
-	}
-
-	@keyframes shimmer {
-		0% {
-			background-position: 200% 0;
-		}
-		100% {
-			background-position: -200% 0;
-		}
-	}
-
-	.media-image-placeholder {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: $unit;
-		text-align: center;
-		font-size: 0.75rem;
-		color: $gray-50;
-		word-break: break-word;
-	}
 
 	// Hide the infinite scroll intersection target
 	:global(.infinite-intersection-target) {

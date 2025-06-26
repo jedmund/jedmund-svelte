@@ -9,8 +9,11 @@
 	import CloseButton from '$components/icons/CloseButton.svelte'
 	import FileIcon from '$components/icons/FileIcon.svelte'
 	import CopyIcon from '$components/icons/CopyIcon.svelte'
+	import MediaMetadataPanel from './MediaMetadataPanel.svelte'
+	import MediaUsageList from './MediaUsageList.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
+	import { formatFileSize, getFileType } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -45,15 +48,11 @@
 	let loadingAlbums = $state(false)
 	let showAlbumSelector = $state(false)
 
-	// EXIF toggle state
-	let showExif = $state(false)
-
 	// Initialize form when media changes
 	$effect(() => {
 		if (media) {
 			description = media.description || ''
 			isPhotography = media.isPhotography || false
-			showExif = false
 			loadUsage()
 			// Only load albums for images
 			if (media.mimeType?.startsWith('image/')) {
@@ -204,21 +203,6 @@
 		}
 	}
 
-	function formatFileSize(bytes: number): string {
-		if (bytes === 0) return '0 Bytes'
-		const k = 1024
-		const sizes = ['Bytes', 'KB', 'MB', 'GB']
-		const i = Math.floor(Math.log(bytes) / Math.log(k))
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-	}
-
-	function getFileType(mimeType: string): string {
-		if (mimeType.startsWith('image/')) return 'Image'
-		if (mimeType.startsWith('video/')) return 'Video'
-		if (mimeType.startsWith('audio/')) return 'Audio'
-		if (mimeType.includes('pdf')) return 'PDF'
-		return 'File'
-	}
 </script>
 
 {#if media}
@@ -262,120 +246,8 @@
 					</div>
 				</div>
 				<div class="pane-body">
-					<div class="file-info">
-						<div class="info-grid">
-							<div class="info-item">
-								<span class="label">Type</span>
-								<span class="value">{getFileType(media.mimeType)}</span>
-							</div>
-							<div class="info-item">
-								<span class="label">Size</span>
-								<span class="value">{formatFileSize(media.size)}</span>
-							</div>
-						</div>
-
-						{#if showExif}
-							<div class="details-data">
-								<!-- Media metadata -->
-								<div class="media-metadata">
-									{#if media.width && media.height}
-										<div class="info-item">
-											<span class="label">Dimensions</span>
-											<span class="value">{media.width} × {media.height}px</span>
-										</div>
-									{/if}
-									{#if media.dominantColor}
-										<div class="info-item">
-											<span class="label">Dominant Color</span>
-											<span class="value color-value">
-												<span
-													class="color-swatch"
-													style="background-color: {media.dominantColor}"
-													title={media.dominantColor}
-												></span>
-												{media.dominantColor}
-											</span>
-										</div>
-									{/if}
-									<div class="info-item">
-										<span class="label">Uploaded</span>
-										<span class="value">{new Date(media.createdAt).toLocaleDateString()}</span>
-									</div>
-								</div>
-
-								<!-- EXIF metadata -->
-								{#if media.exifData && Object.keys(media.exifData).length > 0}
-									<div class="metadata-divider"></div>
-									<div class="exif-metadata">
-										{#if media.exifData.camera}
-											<div class="info-item">
-												<span class="label">Camera</span>
-												<span class="value">{media.exifData.camera}</span>
-											</div>
-										{/if}
-										{#if media.exifData.lens}
-											<div class="info-item">
-												<span class="label">Lens</span>
-												<span class="value">{media.exifData.lens}</span>
-											</div>
-										{/if}
-										{#if media.exifData.focalLength}
-											<div class="info-item">
-												<span class="label">Focal Length</span>
-												<span class="value">{media.exifData.focalLength}</span>
-											</div>
-										{/if}
-										{#if media.exifData.aperture}
-											<div class="info-item">
-												<span class="label">Aperture</span>
-												<span class="value">{media.exifData.aperture}</span>
-											</div>
-										{/if}
-										{#if media.exifData.shutterSpeed}
-											<div class="info-item">
-												<span class="label">Shutter Speed</span>
-												<span class="value">{media.exifData.shutterSpeed}</span>
-											</div>
-										{/if}
-										{#if media.exifData.iso}
-											<div class="info-item">
-												<span class="label">ISO</span>
-												<span class="value">{media.exifData.iso}</span>
-											</div>
-										{/if}
-										{#if media.exifData.dateTaken}
-											<div class="info-item">
-												<span class="label">Date Taken</span>
-												<span class="value"
-													>{new Date(media.exifData.dateTaken).toLocaleDateString()}</span
-												>
-											</div>
-										{/if}
-										{#if media.exifData.coordinates}
-											<div class="info-item">
-												<span class="label">GPS</span>
-												<span class="value">
-													{media.exifData.coordinates.latitude.toFixed(6)},
-													{media.exifData.coordinates.longitude.toFixed(6)}
-												</span>
-											</div>
-										{/if}
-									</div>
-								{/if}
-							</div>
-						{/if}
-
-						<Button
-							variant="ghost"
-							onclick={() => (showExif = !showExif)}
-							buttonSize="small"
-							fullWidth
-							pill={false}
-							class="exif-toggle"
-						>
-							{showExif ? 'Hide Details' : 'Show Details'}
-						</Button>
-					</div>
+					<!-- Media Metadata Panel -->
+					<MediaMetadataPanel {media} showExifToggle={true} />
 
 					<div class="pane-body-content">
 						<!-- Photography Toggle -->
@@ -421,45 +293,7 @@
 										</button>
 									{/if}
 								</div>
-								{#if loadingUsage}
-									<div class="usage-loading">
-										<div class="spinner"></div>
-										<span>Loading usage information...</span>
-									</div>
-								{:else if usage.length > 0}
-									<ul class="usage-list">
-										{#each usage as usageItem}
-											<li class="usage-item">
-												<div class="usage-content">
-													<div class="usage-header">
-														{#if usageItem.contentUrl}
-															<a
-																href={usageItem.contentUrl}
-																class="usage-title"
-																target="_blank"
-																rel="noopener"
-															>
-																{usageItem.contentTitle}
-															</a>
-														{:else}
-															<span class="usage-title">{usageItem.contentTitle}</span>
-														{/if}
-														<span class="usage-type">{usageItem.contentType}</span>
-													</div>
-													<div class="usage-details">
-														<span class="usage-field">{usageItem.fieldDisplayName}</span>
-														<span class="usage-date"
-															>Added {new Date(usageItem.createdAt).toLocaleDateString()}</span
-														>
-													</div>
-												</div>
-											</li>
-										{/each}
-									</ul>
-								{:else}
-									<p class="no-usage">This media file is not currently used in any content.</p>
-								{/if}
-							</div>
+								<MediaUsageList {usage} loading={loadingUsage} />
 
 							<!-- Albums list -->
 							{#if albums.length > 0}
@@ -611,86 +445,6 @@
 		gap: $unit-6x;
 	}
 
-	.file-info {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-3x;
-		padding: $unit-3x;
-		background-color: $gray-90;
-		border-bottom: $unit-1px solid rgba(0, 0, 0, 0.08);
-	}
-
-	.info-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: $unit-3x;
-	}
-
-	.info-item {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-
-		&.vertical {
-			grid-column: 1 / -1;
-		}
-
-		.label {
-			font-size: 0.75rem;
-			font-weight: 500;
-			color: $gray-50;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-		}
-
-		.value {
-			font-size: 0.875rem;
-			color: $gray-10;
-			font-weight: 500;
-
-			&.color-value {
-				display: flex;
-				align-items: center;
-				gap: $unit-2x;
-			}
-		}
-	}
-
-	.color-swatch {
-		display: inline-block;
-		width: $unit-20px;
-		height: $unit-20px;
-		border-radius: $corner-radius-xs;
-		border: $unit-1px solid rgba(0, 0, 0, 0.1);
-		box-shadow: inset 0 0 0 $unit-1px rgba(255, 255, 255, 0.1);
-	}
-
-	:global(.btn.btn-ghost.exif-toggle) {
-		margin-top: $unit-2x;
-		justify-content: center;
-		background: transparent;
-		border: $unit-1px solid $gray-70;
-
-		&:hover {
-			background: rgba(0, 0, 0, 0.02);
-			border-color: $gray-70;
-		}
-	}
-
-	.media-metadata,
-	.exif-metadata {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: $unit-3x;
-	}
-
-	.metadata-divider {
-		border-radius: $unit-1px;
-		height: $unit-2px;
-		background: $gray-80;
-		margin: $unit-3x 0;
-	}
-
 	.edit-form {
 		display: flex;
 		flex-direction: column;
@@ -816,98 +570,6 @@
 				flex-shrink: 0;
 			}
 		}
-
-		.usage-list {
-			list-style: none;
-			padding: 0;
-			margin: $unit-2x 0 0 0;
-			display: flex;
-			flex-direction: column;
-			gap: $unit;
-		}
-
-		.usage-loading {
-			display: flex;
-			align-items: center;
-			gap: $unit-2x;
-			padding: $unit-2x;
-			color: $gray-50;
-
-			.spinner {
-				width: $unit-2x;
-				height: $unit-2x;
-				border: $unit-2px solid $gray-90;
-				border-top: $unit-2px solid $gray-50;
-				border-radius: 50%;
-				animation: spin 1s linear infinite;
-			}
-		}
-
-		.usage-item {
-			padding: $unit-3x;
-			background: $gray-95;
-			border-radius: $corner-radius-xl;
-			border: $unit-1px solid $gray-90;
-
-			.usage-content {
-				display: flex;
-				flex-direction: column;
-				gap: $unit;
-			}
-
-			.usage-header {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: $unit-2x;
-
-				.usage-title {
-					font-weight: 600;
-					color: $gray-10;
-					text-decoration: none;
-					transition: color 0.2s ease;
-
-					&:hover {
-						color: $blue-60;
-					}
-				}
-
-				.usage-type {
-					background: $gray-85;
-					color: $gray-30;
-					padding: $unit-half $unit;
-					border-radius: $corner-radius-sm;
-					font-size: 0.75rem;
-					font-weight: 500;
-					text-transform: uppercase;
-					letter-spacing: 0.5px;
-					flex-shrink: 0;
-				}
-			}
-
-			.usage-details {
-				display: flex;
-				align-items: center;
-				gap: $unit-3x;
-
-				.usage-field {
-					color: $gray-40;
-					font-size: 0.875rem;
-					font-weight: 500;
-				}
-
-				.usage-date {
-					color: $gray-50;
-					font-size: 0.75rem;
-				}
-			}
-		}
-
-		.no-usage {
-			color: $gray-50;
-			font-style: italic;
-			margin: $unit-2x 0 0 0;
-		}
 	}
 
 	// Albums inline display
@@ -973,14 +635,6 @@
 		}
 	}
 
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
 
 	// Responsive adjustments
 	@media (max-width: 768px) {
