@@ -341,7 +341,7 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 					// Add 12px gap between drag handle and content
 					// Position the handle inside the padding area, close to the text
 					dragHandleElement.style.left = `${rect.left + paddingLeft - rect.width - 12}px`
-					dragHandleElement.style.top = `${rect.top}px`
+					dragHandleElement.style.top = `${rect.top - 2}px`
 					showDragHandle()
 				},
 				keydown: () => {
