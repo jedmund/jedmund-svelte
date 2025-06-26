@@ -1,267 +1,91 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
-	import type { Media } from '@prisma/client'
 	import Image from 'lucide-svelte/icons/image'
-	import Upload from 'lucide-svelte/icons/upload'
 	import { NodeViewWrapper } from 'svelte-tiptap'
-	import { getContext, onMount } from 'svelte'
-	import { mediaSelectionStore } from '$lib/stores/media-selection'
+	import { getContext } from 'svelte'
+	import ContentInsertionPane from './ContentInsertionPane.svelte'
 
-	const { editor, deleteNode }: NodeViewProps = $props()
+	const { editor, deleteNode, getPos }: NodeViewProps = $props()
 
 	// Get album context if available
 	const editorContext = getContext<any>('editorContext') || {}
 	const albumId = $derived(editorContext.albumId)
 
-	let fileInput: HTMLInputElement
-	let isUploading = $state(false)
-	let autoOpenModal = $state(false)
+	let showPane = $state(false)
+	let panePosition = $state({ x: 0, y: 0 })
 
-	// If configured to auto-open modal, do it on mount
-	onMount(() => {
-		// Check if we should auto-open from editor storage
-		if (editor.storage.imageModal?.placeholderPos !== undefined) {
-			autoOpenModal = true
-			// Modal is already open from the composer level
-		}
-	})
-
-	function handleBrowseLibrary(e: MouseEvent) {
+	function handleClick(e: MouseEvent) {
 		if (!editor.isEditable) return
 		e.preventDefault()
-
-		// Open modal through the store
-		mediaSelectionStore.open({
-			mode: 'single',
-			fileType: 'image',
-			albumId,
-			onSelect: handleMediaSelect,
-			onClose: handleMediaLibraryClose
-		})
-	}
-
-	function handleDirectUpload(e: MouseEvent) {
-		if (!editor.isEditable) return
-		e.preventDefault()
-		fileInput.click()
-	}
-
-	function handleMediaSelect(media: Media | Media[]) {
-		const selectedMedia = Array.isArray(media) ? media[0] : media
-		if (selectedMedia) {
-			// Set a reasonable default width (max 600px)
-			const displayWidth =
-				selectedMedia.width && selectedMedia.width > 600 ? 600 : selectedMedia.width
-
-			const imageAttrs = {
-				src: selectedMedia.url,
-				alt: selectedMedia.altText || '',
-				title: selectedMedia.description || '',
-				width: displayWidth,
-				height: selectedMedia.height,
-				align: 'center',
-				mediaId: selectedMedia.id?.toString()
-			}
-
-			editor
-				.chain()
-				.focus()
-				.insertContent({
-					type: 'image',
-					attrs: imageAttrs
-				})
-				.run()
+		
+		// Get position for pane
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+		panePosition = {
+			x: rect.left,
+			y: rect.bottom + 8
 		}
-
-		// Close the store
-		mediaSelectionStore.close()
-
-		// Delete the placeholder node
-		deleteNode()
-	}
-
-	function handleMediaLibraryClose() {
-		// Close the store
-		mediaSelectionStore.close()
-
-		// Delete placeholder if user cancelled
-		deleteNode()
-	}
-
-	async function handleFileUpload(event: Event) {
-		const input = event.target as HTMLInputElement
-		const files = input.files
-		if (!files || files.length === 0) return
-
-		const file = files[0]
-		if (!file.type.startsWith('image/')) {
-			alert('Please select an image file.')
-			return
-		}
-
-		// Check file size (2MB max)
-		const filesize = file.size / 1024 / 1024
-		if (filesize > 2) {
-			alert(`Image too large! File size: ${filesize.toFixed(2)} MB (max 2MB)`)
-			return
-		}
-
-		isUploading = true
-
-		try {
-			const formData = new FormData()
-			formData.append('file', file)
-			formData.append('type', 'image')
-
-			// If we have an albumId, add it to the upload
-			if (albumId) {
-				formData.append('albumId', albumId.toString())
-			}
-
-			// Add auth header if needed
-			const auth = localStorage.getItem('admin_auth')
-			const headers: Record<string, string> = {}
-			if (auth) {
-				headers.Authorization = `Basic ${auth}`
-			}
-
-			const response = await fetch('/api/media/upload', {
-				method: 'POST',
-				headers,
-				body: formData
-			})
-
-			if (response.ok) {
-				const media = await response.json()
-
-				// Set a reasonable default width (max 600px)
-				const displayWidth = media.width && media.width > 600 ? 600 : media.width
-
-				const imageAttrs = {
-					src: media.url,
-					alt: media.altText || '',
-					title: media.description || '',
-					width: displayWidth,
-					height: media.height,
-					align: 'center',
-					mediaId: media.id?.toString()
-				}
-
-				editor
-					.chain()
-					.focus()
-					.insertContent({
-						type: 'image',
-						attrs: imageAttrs
-					})
-					.run()
-			} else {
-				console.error('Failed to upload image:', response.status)
-				alert('Failed to upload image. Please try again.')
-			}
-		} catch (error) {
-			console.error('Error uploading image:', error)
-			alert('Failed to upload image. Please try again.')
-		} finally {
-			isUploading = false
-			// Clear the input
-			input.value = ''
-		}
+		showPane = true
 	}
 
 	// Handle keyboard navigation
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault()
-			handleBrowseLibrary(e as any)
+			handleClick(e as any)
 		} else if (e.key === 'Escape') {
-			deleteNode()
+			if (showPane) {
+				showPane = false
+			} else {
+				deleteNode()
+			}
 		}
 	}
 </script>
 
 <NodeViewWrapper class="edra-media-placeholder-wrapper" contenteditable="false">
-	<div class="edra-media-placeholder-container">
-		{#if isUploading}
-			<div class="edra-media-placeholder-uploading">
-				<div class="spinner"></div>
-				<span>Uploading...</span>
-			</div>
-		{:else if !autoOpenModal}
-			<button
-				class="edra-media-placeholder-option"
-				onclick={handleDirectUpload}
-				onkeydown={handleKeyDown}
-				tabindex="0"
-				aria-label="Upload Image"
-				title="Upload from device"
-			>
-				<Upload class="edra-media-placeholder-icon" />
-				<span class="edra-media-placeholder-text">Upload Image</span>
-			</button>
-
-			<button
-				class="edra-media-placeholder-option"
-				onclick={handleBrowseLibrary}
-				onkeydown={handleKeyDown}
-				tabindex="0"
-				aria-label="Browse Media Library"
-				title="Choose from library"
-			>
-				<Image class="edra-media-placeholder-icon" />
-				<span class="edra-media-placeholder-text">Browse Library</span>
-			</button>
-		{/if}
-	</div>
-
-	<!-- Hidden file input -->
-	<input
-		bind:this={fileInput}
-		type="file"
-		accept="image/*"
-		onchange={handleFileUpload}
-		style="display: none;"
-	/>
+	<button
+		class="edra-media-placeholder-content"
+		onclick={handleClick}
+		onkeydown={handleKeyDown}
+		tabindex="0"
+		aria-label="Insert an image"
+	>
+		<Image class="edra-media-placeholder-icon" />
+		<span class="edra-media-placeholder-text">Insert an image</span>
+	</button>
+	
+	{#if showPane}
+		<ContentInsertionPane
+			{editor}
+			position={panePosition}
+			onClose={() => showPane = false}
+			{deleteNode}
+			{albumId}
+		/>
+	{/if}
 </NodeViewWrapper>
 
 <style lang="scss">
 	@import '$styles/variables';
 
-	.edra-media-placeholder-container {
-		display: flex;
-		gap: $unit-2x;
+	.edra-media-placeholder-content {
+		width: 100%;
 		padding: $unit-3x;
+		background-color: $gray-95;
 		border: 2px dashed $gray-85;
 		border-radius: $corner-radius;
-		background: $gray-95;
-		transition: all 0.2s ease;
-		justify-content: center;
-		align-items: center;
-		min-height: 80px;
-
-		&:hover {
-			border-color: $gray-70;
-			background: $gray-90;
-		}
-	}
-
-	.edra-media-placeholder-option {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: $unit;
-		padding: $unit-2x $unit-3x;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-sm;
-		background: $white;
+		justify-content: center;
+		gap: $unit-2x;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		min-width: 140px;
+		color: $gray-50;
 
 		&:hover {
+			background-color: $gray-90;
 			border-color: $gray-70;
-			background: $gray-95;
-			transform: translateY(-1px);
+			color: $gray-40;
 		}
 
 		&:focus {
@@ -271,41 +95,13 @@
 		}
 	}
 
-	.edra-media-placeholder-uploading {
-		display: flex;
-		align-items: center;
-		gap: $unit;
-		padding: $unit-3x;
-		color: $gray-50;
-	}
-
-	.spinner {
-		width: $unit-2x;
-		height: $unit-2x;
-		border: 2px solid $gray-90;
-		border-top: 2px solid $primary-color;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-
 	:global(.edra-media-placeholder-icon) {
-		width: $unit-3x + $unit-half;
-		height: $unit-3x + $unit-half;
-		color: $gray-50;
+		width: $unit-3x;
+		height: $unit-3x;
 	}
 
 	.edra-media-placeholder-text {
 		font-size: $font-size-small;
-		color: $gray-50;
 		font-weight: 500;
 	}
 </style>
