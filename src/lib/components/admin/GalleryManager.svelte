@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from './Button.svelte'
+	import CloseButton from '../icons/CloseButton.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 
@@ -221,20 +222,7 @@
 						onclick={() => removeImage(index)}
 						aria-label="Remove image"
 					>
-						<svg
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M6 6L18 18M6 18L18 6"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-							/>
-						</svg>
+						<CloseButton size={14} color="currentColor" />
 					</button>
 
 					<!-- Order Indicator -->

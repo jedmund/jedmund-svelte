@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BaseModal from './BaseModal.svelte'
 	import Button from './Button.svelte'
+	import CloseButton from '$components/icons/CloseButton.svelte'
 
 	interface Props {
 		isOpen: boolean
@@ -41,21 +42,7 @@
 			aria-label="Close modal"
 			class="close-button"
 		>
-			<svg
-				slot="icon"
-				width="24"
-				height="24"
-				viewBox="0 0 24 24"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<path
-					d="M6 6L18 18M6 18L18 6"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-				/>
-			</svg>
+			<CloseButton slot="icon" />
 		</Button>
 	{/if}
 

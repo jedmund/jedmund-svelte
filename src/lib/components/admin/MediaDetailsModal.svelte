@@ -6,6 +6,7 @@
 	import SmartImage from '../SmartImage.svelte'
 	import AlbumSelector from './AlbumSelector.svelte'
 	import AlbumIcon from '$icons/album.svg?component'
+	import CloseButton from '$components/icons/CloseButton.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
 	import type { Media } from '@prisma/client'
@@ -296,21 +297,7 @@
 								</svg>
 							</Button>
 							<Button variant="ghost" onclick={handleClose} iconOnly aria-label="Close modal">
-								<svg
-									slot="icon"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										d="M6 6L18 18M6 18L18 6"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-									/>
-								</svg>
+								<CloseButton slot="icon" />
 							</Button>
 						{/if}
 					</div>

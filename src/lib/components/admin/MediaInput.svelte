@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from './Button.svelte'
+	import CloseButton from '../icons/CloseButton.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 
@@ -209,21 +210,7 @@
 			<Button variant="ghost" onclick={openModal}>Browse</Button>
 			{#if hasValue}
 				<Button variant="ghost" onclick={handleClear} aria-label="Clear selection">
-					<svg
-						slot="icon"
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M6 6L18 18M6 18L18 6"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-						/>
-					</svg>
+					<CloseButton slot="icon" size={16} />
 				</Button>
 			{/if}
 		</div>

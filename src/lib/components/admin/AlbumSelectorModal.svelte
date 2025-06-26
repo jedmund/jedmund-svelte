@@ -2,6 +2,7 @@
 	import Modal from './Modal.svelte'
 	import AlbumSelector from './AlbumSelector.svelte'
 	import Button from './Button.svelte'
+	import CloseButton from '../icons/CloseButton.svelte'
 	import LoadingSpinner from './LoadingSpinner.svelte'
 	import type { Album } from '@prisma/client'
 
@@ -86,20 +87,7 @@
 			<div class="header-top">
 				<h2>Add to Album</h2>
 				<button class="close-button" onclick={handleClose} aria-label="Close modal">
-					<svg
-						width="20"
-						height="20"
-						viewBox="0 0 24 24"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M6 6L18 18M6 18L18 6"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-						/>
-					</svg>
+					<CloseButton size={20} />
 				</button>
 			</div>
 			<p class="modal-subtitle">
