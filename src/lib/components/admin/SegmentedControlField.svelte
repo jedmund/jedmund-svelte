@@ -1,5 +1,5 @@
 <script lang="ts">
-	import FormFieldWrapper from './FormFieldWrapper.svelte'
+	import FormField from './FormField.svelte'
 
 	interface Option {
 		value: string
@@ -31,7 +31,7 @@
 	}
 </script>
 
-<FormFieldWrapper {label} {required} {helpText} {error}>
+<FormField {label} {required} {helpText} {error}>
 	{#snippet children()}
 		<div class="segmented-control-wrapper" class:full-width={fullWidth}>
 			<div class="segmented-control">
@@ -48,7 +48,7 @@
 			</div>
 		</div>
 	{/snippet}
-</FormFieldWrapper>
+</FormField>
 
 <style lang="scss">
 	.segmented-control-wrapper {
