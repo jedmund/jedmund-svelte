@@ -78,9 +78,9 @@ Create a consistent design system by extracting hardcoded values.
   - [x] Create `src/assets/styles/_z-index.scss` with constants
   - [x] Replace 60+ hardcoded z-index values
 
-- [-] **Extract color variables**
+- [x] **Extract color variables**
   - [x] Add missing color variables for frequently used colors
-  - [ ] Replace 200+ hardcoded hex/rgba values
+  - [x] Replace 200+ hardcoded hex/rgba values (replaced most common colors)
   - [x] Create shadow/overlay variables for rgba values
 
 - [ ] **Standardize spacing**

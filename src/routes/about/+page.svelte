@@ -150,7 +150,7 @@
 	.bio {
 		font-size: 1rem;
 		line-height: 1.5;
-		color: #333;
+		color: $grey-00;
 		background: $grey-100;
 		border-radius: $card-corner-radius;
 

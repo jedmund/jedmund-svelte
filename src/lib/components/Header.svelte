@@ -73,7 +73,7 @@
 			left: 0;
 			right: 0;
 			height: 120px;
-			background: linear-gradient(to bottom, rgba(0, 0, 0, 0.15), transparent);
+			background: linear-gradient(to bottom, $shadow-medium, transparent);
 			backdrop-filter: blur(6px);
 			-webkit-backdrop-filter: blur(6px);
 			mask-image: linear-gradient(to bottom, black 0%, black 15%, transparent 90%);

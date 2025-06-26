@@ -99,7 +99,7 @@
 
 		&:hover {
 			transform: translateY(-2px);
-			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+			box-shadow: 0 8px 25px $shadow-medium;
 		}
 
 		&:active {
@@ -141,7 +141,7 @@
 			left: 6px;
 			right: -6px;
 			height: 100%;
-			background: rgba(0, 0, 0, 0.1);
+			background: $shadow-light;
 			z-index: $z-index-base;
 			transform: rotate(2deg);
 		}
@@ -152,7 +152,7 @@
 			left: 3px;
 			right: -3px;
 			height: 100%;
-			background: rgba(0, 0, 0, 0.2);
+			background: $shadow-dark;
 			z-index: $z-index-above;
 			transform: rotate(-1deg);
 		}

@@ -218,9 +218,9 @@
 			}
 
 			img {
-				border: 1px solid rgba(0, 0, 0, 0.1);
+				border: 1px solid $shadow-light;
 				border-radius: $unit;
-				box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+				box-shadow: 0 0 8px $shadow-light;
 				width: 100%;
 				height: 100%;
 				object-fit: cover;
@@ -257,7 +257,7 @@
 				}
 
 				&:hover {
-					background: rgba(0, 0, 0, 0.5);
+					background: $overlay-medium;
 					transform: translate(-50%, -50%) scale(1.1);
 
 					&.corner {

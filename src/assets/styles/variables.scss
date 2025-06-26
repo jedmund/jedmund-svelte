@@ -94,76 +94,127 @@ $line-height: 1.3;
 
 $letter-spacing: -0.02em;
 
-/* Colors
+/* Color Scales
  * -------------------------------------------------------------------------- */
-$grey-100: #ffffff;
-$grey-97: #fafafa;
-$grey-95: #f5f5f5;
-$grey-90: #f7f7f7;
-$grey-85: #ebebeb;
-$grey-80: #e8e8e8;
-$grey-70: #dfdfdf;
-$grey-60: #cccccc;
-$grey-5: #f9f9f9;
-$grey-50: #b2b2b2;
-$grey-40: #999999;
-$grey-30: #808080;
-$grey-20: #666666;
-$grey-10: #4d4d4d;
-$grey-00: #333333;
 
-$red-90: #ff9d8f;
-$red-80: #ff6a54;
-$red-60: #e33d3d;
-$red-50: #d33;
-$red-40: #d31919;
+// Gray scale - from darkest to lightest
+$gray-00: #333333;
+$gray-10: #4d4d4d;
+$gray-20: #666666;
+$gray-30: #808080;
+$gray-40: #999999;
+$gray-50: #b2b2b2;
+$gray-60: #cccccc;
+$gray-70: #dfdfdf;
+$gray-80: #e8e8e8;
+$gray-85: #ebebeb;
+$gray-90: #f0f0f0;
+$gray-95: #f5f5f5;
+$gray-97: #fafafa;
+$gray-100: #ffffff;
+
+// Red scale - from darkest to lightest
 $red-00: #3d0c0c;
+$red-10: #7d1919;
+$red-20: #a31919;
+$red-30: #c31919;
+$red-40: #d31919;
+$red-50: #dd3333;
+$red-60: #e33d3d;
+$red-70: #e86a58;
+$red-80: #ff6a54;
+$red-90: #ff9d8f;
+$red-95: #ffcdc5;
+$red-100: #ffe5e0;
 
-$blue-60: #2e8bc0;
-$blue-50: #1482c1;
-$blue-40: #126fa8;
-$blue-20: #0f5d8f;
-$blue-10: #e6f3ff;
+// Blue scale - from darkest to lightest
+$blue-00: #0a2540;
+$blue-10: #0f5d8f;
+$blue-20: #126fa8;
+$blue-30: #1279b5;
+$blue-40: #1482c1;
+$blue-50: #2e8bc0;
+$blue-60: #4d9fd0;
+$blue-70: #70b5de;
+$blue-80: #9ccde9;
+$blue-90: #c5eaff;
+$blue-95: #dff4ff;
+$blue-100: #f0f9ff;
 
-$yellow-90: #fff9e6;
-$yellow-80: #ffeb99;
-$yellow-70: #ffdd4d;
-$yellow-60: #ffcc00;
-$yellow-50: #f5c500;
-$yellow-40: #e6b800;
-$yellow-30: #cc9900;
-$yellow-20: #996600;
+// Yellow scale - from darkest to lightest
+$yellow-00: #3d2600;
 $yellow-10: #664400;
+$yellow-20: #996600;
+$yellow-30: #cc9900;
+$yellow-40: #e6b800;
+$yellow-50: #f5c500;
+$yellow-60: #ffcc00;
+$yellow-70: #ffdd4d;
+$yellow-80: #ffeb99;
+$yellow-90: #fff9e6;
+$yellow-95: #fffcf0;
+$yellow-100: #fffef9;
 
-$salmon-pink: #ffd5cf; // Desaturated salmon pink for hover states
+// Green scale - from darkest to lightest
+$green-00: #0a3d28;
+$green-10: #065f46;
+$green-20: #047857;
+$green-30: #059669;
+$green-40: #10b981;
+$green-50: #34d399;
+$green-60: #6ee7b7;
+$green-70: #a7f3d0;
+$green-80: #d1fae5;
+$green-90: #ecfdf5;
+$green-95: #f0fdf9;
+$green-100: #f9fffc;
 
-$bg-color: #e8e8e8;
-$page-color: #ffffff;
-$card-color: #f7f7f7;
-$card-color-hover: #f0f0f0;
+// Orange scale - from darkest to lightest
+$orange-00: #3d1a0c;
+$orange-10: #7c2d12;
+$orange-20: #c2410c;
+$orange-30: #ea580c;
+$orange-40: #f97316;
+$orange-50: #fb923c;
+$orange-60: #fdba74;
+$orange-70: #fed7aa;
+$orange-80: #ffedd5;
+$orange-90: #fff7ed;
+$orange-95: #fffbf7;
+$orange-100: #fffdfa;
 
-$text-color: #4d4d4d;
-$text-color-subdued: #666666;
-$text-color-light: #b2b2b2;
+// Special colors
+$black: #000000;
+$white: #ffffff;
+$dark-blue: #070610; // Brand specific dark color
 
-$accent-color: #e33d3d;
-$grey-color: #f0f0f0;
-$primary-color: #1482c1; // Using labs color as primary
+/* Semantic Color Assignments
+ * -------------------------------------------------------------------------- */
 
+// Backgrounds
+$bg-color: $gray-80;
+$page-color: $white;
+$card-color: $gray-90;
+$card-color-hover: $gray-85;
+
+// Text colors
+$text-color: $gray-10;
+$text-color-subdued: $gray-20;
+$text-color-light: $gray-50;
+
+// Brand colors
+$accent-color: $red-60;
+$primary-color: $blue-40;
+
+// Status colors
+$success-color: $green-40;
+$error-color: $red-60;
+$warning-color: $yellow-50;
+$info-color: $blue-50;
+
+// Component specific
 $image-border-color: rgba(0, 0, 0, 0.03);
 
-/* Additional Colors (frequently used hardcoded values)
- * -------------------------------------------------------------------------- */
-$black: #000000;
-$dark-blue: #070610;
-$orange-red: #E86A58;
-$green-success: #10b981;
-$red-error: #dc2626;
-$gray-muted: #6b7280;
-$gray-light-bg: #f3f4f6;
-$gray-light-border: #e5e7eb;
-$gray-lighter-bg: #f9fafb;
-$gray-medium-border: #d1d5db;
 
 /* Shadows and Overlays
  * -------------------------------------------------------------------------- */
@@ -190,12 +241,12 @@ $border-dark: rgba(0, 0, 0, 0.2);
 
 /* Pill colors
  * -------------------------------------------------------------------------- */
-$work-bg: #ffcdc5;
-$work-color: #d0290d;
-$universe-bg: #ffebc5;
-$universe-color: #b97d14;
-$labs-bg: #c5eaff;
-$labs-color: #1482c1;
+$work-bg: $red-95;
+$work-color: $red-30;
+$universe-bg: $orange-80;
+$universe-color: $orange-20;
+$labs-bg: $blue-90;
+$labs-color: $blue-40;
 
 $facebook-color: #3b5998;
 $twitter-color: #55acee;
@@ -216,10 +267,10 @@ $mobile-corner-radius: $unit-2x;
 /* Inputs
  * -------------------------------------------------------------------------- */
 
-$input-background-color: #f7f7f7;
-$input-background-color-hover: #f0f0f0;
-$input-text-color: #666666;
-$input-text-color-hover: #4d4d4d;
+$input-background-color: $gray-90;
+$input-background-color-hover: $gray-85;
+$input-text-color: $gray-20;
+$input-text-color-hover: $gray-10;
 
 /* Avatar header
  * -------------------------------------------------------------------------- */
@@ -246,3 +297,27 @@ $animation-very-slow: 3s;
 $screen-sm-min: 768px;
 $screen-md-min: 992px;
 $screen-lg-min: 1200px;
+
+/* Legacy color aliases for backward compatibility
+ * TODO: Replace these throughout the codebase
+ * -------------------------------------------------------------------------- */
+$grey-100: $gray-100;
+$grey-97: $gray-97;
+$grey-95: $gray-95;
+$grey-90: $gray-90;
+$grey-85: $gray-85;
+$grey-80: $gray-80;
+$grey-70: $gray-70;
+$grey-60: $gray-60;
+$grey-50: $gray-50;
+$grey-40: $gray-40;
+$grey-30: $gray-30;
+$grey-20: $gray-20;
+$grey-10: $gray-10;
+$grey-00: $gray-00;
+$grey-color: $gray-90;
+
+// Map old color variables to new scale
+$orange-red: $red-70;
+$green-success: $success-color;
+$red-error: $error-color;

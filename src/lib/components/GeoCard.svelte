@@ -189,7 +189,7 @@
 		width: 100%;
 		border-radius: $image-corner-radius;
 		overflow: hidden;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 8px $shadow-light;
 	}
 
 	.map-container {
@@ -217,7 +217,7 @@
 
 		:global(.leaflet-popup-content-wrapper) {
 			border-radius: $corner-radius-md;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+			box-shadow: 0 2px 8px $shadow-medium;
 		}
 
 		:global(.leaflet-popup-content) {
@@ -268,6 +268,6 @@
 	/* Global styles for Leaflet */
 	:global(.leaflet-control-attribution) {
 		font-size: 0.75rem;
-		background: rgba(255, 255, 255, 0.9) !important;
+		background: $overlay-light !important;
 	}
 </style>

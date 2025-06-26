@@ -186,11 +186,11 @@
 		font-weight: 400;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 1px 3px $shadow-light;
 
 		&:hover {
 			transform: translateY(-1px);
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+			box-shadow: 0 2px 6px $shadow-medium;
 		}
 
 		&:active {
@@ -230,7 +230,7 @@
 		min-width: 180px;
 		background: white;
 		border-radius: $unit-2x;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		box-shadow: 0 4px 12px $shadow-medium;
 		padding: $unit;
 		z-index: $z-index-overlay;
 		animation: dropdownOpen 0.2s ease;

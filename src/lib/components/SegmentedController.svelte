@@ -115,7 +115,7 @@
 			class="nav-item"
 			class:active={index === activeIndex}
 			bind:this={itemElements[index]}
-			style="color: {index === activeIndex ? getTextColor(item.variant) : '#666'};"
+			style="color: {index === activeIndex ? getTextColor(item.variant) : '$text-color-subdued'};"
 			onmouseenter={() => (hoveredIndex = index)}
 			onmouseleave={() => (hoveredIndex = null)}
 		>
@@ -135,7 +135,7 @@
 		background: $grey-100;
 		padding: $unit;
 		border-radius: 100px;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 1px 3px $shadow-light;
 		position: relative;
 		overflow: hidden;
 	}
@@ -166,7 +166,7 @@
 			background-color 0.2s ease;
 
 		&:hover:not(.active) {
-			background-color: rgba(0, 0, 0, 0.05);
+			background-color: $border-light;
 		}
 
 		:global(svg.nav-icon) {
