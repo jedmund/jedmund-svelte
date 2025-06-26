@@ -18,6 +18,7 @@
 	import TextStyleDropdown from './TextStyleDropdown.svelte'
 	import MediaInsertDropdown from './MediaInsertDropdown.svelte'
 	import ComposerLinkManager from './ComposerLinkManager.svelte'
+	import ComposerBubbleMenu from './ComposerBubbleMenu.svelte'
 	import { ComposerMediaHandler } from './ComposerMediaHandler.svelte'
 	import { useComposerEvents } from './useComposerEvents.svelte'
 	import { useDropdown } from './useDropdown.svelte'
@@ -259,7 +260,7 @@
 </script>
 
 <div class={`composer composer--${variant} ${className}`}>
-	{#if showToolbar && editor && !isLoading}
+	{#if showToolbar && editor && !isLoading && features.toolbar !== false}
 		<ComposerToolbar
 			bind:this={toolbarRef}
 			{editor}
@@ -285,6 +286,9 @@
 		{#if features.tables}
 			<TableRowMenu {editor} />
 			<TableColMenu {editor} />
+		{/if}
+		{#if features.bubbleMenu}
+			<ComposerBubbleMenu {editor} {features} />
 		{/if}
 		<ComposerLinkManager bind:this={linkManagerRef} {editor} {features} />
 	{/if}
@@ -368,6 +372,7 @@
 
 		&.with-toolbar {
 			border-top: none;
+			margin-top: $unit-2x;
 		}
 
 		// More generous padding for full variant

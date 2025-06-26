@@ -8,6 +8,8 @@ export interface ComposerFeatures {
 	urlEmbed?: boolean
 	tables?: boolean
 	codeBlocks?: boolean
+	bubbleMenu?: boolean
+	toolbar?: boolean
 }
 
 export interface ComposerProps {

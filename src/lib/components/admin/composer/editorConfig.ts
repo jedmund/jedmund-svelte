@@ -115,6 +115,15 @@ export function getColorCommands(): any[] {
 	return commands.colors?.commands || []
 }
 
+// Get commands for bubble menu
+export function getBubbleMenuCommands(): any[] {
+	const textFormattingCommands = commands['text-formatting']?.commands || []
+	// Return only the essential formatting commands for bubble menu
+	return textFormattingCommands.filter((cmd) =>
+		['bold', 'italic', 'underline', 'strike', 'link'].includes(cmd.name)
+	)
+}
+
 // Commands to exclude from toolbar
 export const excludedCommands = ['colors', 'fonts']
 
@@ -138,6 +147,11 @@ export function shouldShowSlashCommands(variant: ComposerVariant): boolean {
 	return variant !== 'minimal'
 }
 
+// Whether to show bubble menu
+export function shouldShowBubbleMenu(variant: ComposerVariant): boolean {
+	return variant !== 'minimal'
+}
+
 // Default features by variant
 export function getDefaultFeatures(variant: ComposerVariant): ComposerFeatures {
 	if (variant === 'minimal') {
@@ -146,7 +160,9 @@ export function getDefaultFeatures(variant: ComposerVariant): ComposerFeatures {
 			mediaLibrary: false,
 			urlEmbed: false,
 			tables: false,
-			codeBlocks: false
+			codeBlocks: false,
+			bubbleMenu: false,
+			toolbar: true
 		}
 	}
 
@@ -156,7 +172,9 @@ export function getDefaultFeatures(variant: ComposerVariant): ComposerFeatures {
 			mediaLibrary: true,
 			urlEmbed: false,
 			tables: false,
-			codeBlocks: false
+			codeBlocks: false,
+			bubbleMenu: true,
+			toolbar: false
 		}
 	}
 
@@ -166,6 +184,8 @@ export function getDefaultFeatures(variant: ComposerVariant): ComposerFeatures {
 		mediaLibrary: true,
 		urlEmbed: true,
 		tables: true,
-		codeBlocks: true
+		codeBlocks: true,
+		bubbleMenu: true,
+		toolbar: false
 	}
 }
