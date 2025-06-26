@@ -25,37 +25,15 @@
 		padding-left: 2rem;
 		padding-right: 2rem;
 	}
-	
-	.tiptap p.is-empty::before {
-		padding-left: 2rem;
-		margin-left: -2rem;
-	}
 }
 
 /* For Placeholder */
-.tiptap p.is-empty::before {
+.tiptap .is-empty::before {
 	pointer-events: none;
 	float: left;
 	height: 0;
 	color: var(--border-color-hover);
 	content: attr(data-placeholder);
-	padding-left: 2.25rem;
-	margin-left: -2.25rem;
-}
-
-.tiptap h1.is-empty::before,
-.tiptap h2.is-empty::before,
-.tiptap h3.is-empty::before,
-.tiptap h4.is-empty::before,
-.tiptap h5.is-empty::before,
-.tiptap h6.is-empty::before {
-	pointer-events: none;
-	float: left;
-	height: 0;
-	color: var(--border-color-hover);
-	content: attr(data-placeholder);
-	padding-left: 2.25rem;
-	margin-left: -2.25rem;
 }
 
 /* Heading Styles */
@@ -98,16 +76,6 @@
 	.tiptap h6 {
 		padding-left: 2rem;
 		padding-right: 2rem;
-	}
-	
-	.tiptap h1.is-empty::before,
-	.tiptap h2.is-empty::before,
-	.tiptap h3.is-empty::before,
-	.tiptap h4.is-empty::before,
-	.tiptap h5.is-empty::before,
-	.tiptap h6.is-empty::before {
-		padding-left: 2rem;
-		margin-left: -2rem;
 	}
 }
 
