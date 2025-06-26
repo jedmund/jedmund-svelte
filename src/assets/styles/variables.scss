@@ -16,13 +16,31 @@ $unit-3x: $unit * 3;
 $unit-4x: $unit * 4;
 $unit-5x: $unit * 5;
 $unit-6x: $unit * 6;
+$unit-7x: $unit * 7;
 $unit-8x: $unit * 8;
+$unit-9x: $unit * 9;
 $unit-10x: $unit * 10;
+$unit-11x: $unit * 11;
 $unit-12x: $unit * 12;
+$unit-13x: $unit * 13;
 $unit-14x: $unit * 14;
+$unit-15x: $unit * 15;
 $unit-16x: $unit * 16;
+$unit-17x: $unit * 17;
 $unit-18x: $unit * 18;
+$unit-19x: $unit * 19;
 $unit-20x: $unit * 20;
+
+// Common pixel values
+$unit-1px: 1px;
+$unit-2px: 2px;
+$unit-3px: 3px;
+$unit-5px: 5px;
+$unit-6px: 6px;
+$unit-10px: 10px;
+$unit-12px: 12px;
+$unit-14px: 14px;
+$unit-20px: 20px;
 
 /* Corner Radius
  * -------------------------------------------------------------------------- */
@@ -134,10 +152,41 @@ $primary-color: #1482c1; // Using labs color as primary
 
 $image-border-color: rgba(0, 0, 0, 0.03);
 
-/* Shadows
+/* Additional Colors (frequently used hardcoded values)
+ * -------------------------------------------------------------------------- */
+$black: #000000;
+$dark-blue: #070610;
+$orange-red: #E86A58;
+$green-success: #10b981;
+$red-error: #dc2626;
+$gray-muted: #6b7280;
+$gray-light-bg: #f3f4f6;
+$gray-light-border: #e5e7eb;
+$gray-lighter-bg: #f9fafb;
+$gray-medium-border: #d1d5db;
+
+/* Shadows and Overlays
  * -------------------------------------------------------------------------- */
 $card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 $card-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+// Shadow utilities
+$shadow-subtle: rgba(0, 0, 0, 0.08);
+$shadow-light: rgba(0, 0, 0, 0.1);
+$shadow-medium: rgba(0, 0, 0, 0.15);
+$shadow-dark: rgba(0, 0, 0, 0.2);
+$shadow-heavy: rgba(0, 0, 0, 0.25);
+
+// Overlay utilities
+$overlay-light: rgba(255, 255, 255, 0.9);
+$overlay-white-subtle: rgba(255, 255, 255, 0.95);
+$overlay-medium: rgba(0, 0, 0, 0.5);
+$overlay-dark: rgba(0, 0, 0, 0.7);
+
+// Border utilities
+$border-light: rgba(0, 0, 0, 0.05);
+$border-medium: rgba(0, 0, 0, 0.1);
+$border-dark: rgba(0, 0, 0, 0.2);
 
 /* Pill colors
  * -------------------------------------------------------------------------- */
@@ -176,6 +225,19 @@ $input-text-color-hover: #4d4d4d;
  * -------------------------------------------------------------------------- */
 $avatar-radius: 2rem;
 $avatar-url: url('images/header.png');
+
+/* Animation and Transitions
+ * -------------------------------------------------------------------------- */
+$transition-instant: 0.1s;
+$transition-fast: 0.15s;
+$transition-normal: 0.2s;
+$transition-medium: 0.3s;
+$transition-slow: 0.5s;
+
+$animation-fast: 0.5s;
+$animation-normal: 1s;
+$animation-slow: 2s;
+$animation-very-slow: 3s;
 
 /* Media queries breakpoints
  * These needs to be revisited

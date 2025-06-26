@@ -78,17 +78,17 @@ Create a consistent design system by extracting hardcoded values.
   - [x] Create `src/assets/styles/_z-index.scss` with constants
   - [x] Replace 60+ hardcoded z-index values
 
-- [ ] **Extract color variables**
-  - [ ] Add missing color variables for frequently used colors
+- [-] **Extract color variables**
+  - [x] Add missing color variables for frequently used colors
   - [ ] Replace 200+ hardcoded hex/rgba values
-  - [ ] Create shadow/overlay variables for rgba values
+  - [x] Create shadow/overlay variables for rgba values
 
 - [ ] **Standardize spacing**
-  - [ ] Add missing unit multipliers (`$unit-1.75x`, etc.)
+  - [x] Add missing unit multipliers (added `$unit-7x` through `$unit-19x` and common pixel values)
   - [ ] Replace 1,000+ hardcoded pixel values with unit variables
 
-- [ ] **Define animation constants**
-  - [ ] Create transition/animation duration variables
+- [x] **Define animation constants**
+  - [x] Create transition/animation duration variables
   - [ ] Replace hardcoded duration values
 
 ### Phase 3: Component Refactoring (Weeks 3-4)
