@@ -51,6 +51,9 @@
 	})
 
 	function populateFormData(data: Project) {
+		console.log('ProjectForm - populateFormData called with:', data);
+		console.log('ProjectForm - caseStudyContent:', data.caseStudyContent);
+		
 		formData = {
 			title: data.title || '',
 			subtitle: data.subtitle || '',
@@ -72,6 +75,8 @@
 				content: [{ type: 'paragraph' }]
 			}
 		}
+		
+		console.log('ProjectForm - formData.caseStudyContent after populate:', formData.caseStudyContent);
 		isLoading = false
 	}
 

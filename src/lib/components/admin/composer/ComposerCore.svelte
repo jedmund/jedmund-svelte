@@ -71,7 +71,6 @@
 	let element = $state<HTMLElement>()
 	let isLoading = $state(true)
 	let initialized = false
-	let contentLoaded = false
 	const mediaSelectionState = $derived($mediaSelectionStore)
 
 	// Toolbar component ref
@@ -163,20 +162,39 @@
 	}
 
 	// Watch for external data changes and update editor
+	let lastDataString = '';
 	$effect(() => {
-		if (editor && data && !contentLoaded) {
-			// Only update if the data has actual content (not just empty doc)
+		if (editor && data) {
+			console.log('ComposerCore effect - data received:', data);
+			
+			// Check if the data has actual content (not just empty doc)
 			const hasContent = data.content && data.content.length > 0 && 
 				!(data.content.length === 1 && data.content[0].type === 'paragraph' && !data.content[0].content);
 			
+			console.log('ComposerCore effect - hasContent:', hasContent);
+			
 			if (hasContent) {
-				editor.commands.setContent(data);
-				contentLoaded = true;
+				// Compare with last known data to avoid unnecessary updates
+				const currentDataString = JSON.stringify(data);
+				
+				if (currentDataString !== lastDataString) {
+					console.log('ComposerCore effect - updating editor with:', data);
+					// Update the editor with new content
+					try {
+						editor.commands.setContent(data);
+						lastDataString = currentDataString;
+						console.log('ComposerCore effect - editor updated successfully');
+					} catch (error) {
+						console.error('ComposerCore effect - error updating editor:', error);
+					}
+				}
 			}
 		}
 	});
 
 	onMount(() => {
+		console.log('ComposerCore onMount - initial data:', data);
+		
 		// Get extensions with custom options
 		const extensions = getEditorExtensions({
 			showSlashCommands,
@@ -188,11 +206,13 @@
 		// Initialize editor
 		const newEditor = initiateEditor(
 			element,
+			data, // content
+			undefined, // limit
+			extensions,
 			{
-				initialContent: data,
-				extensions,
 				onCreate: () => {
 					isLoading = false
+					console.log('ComposerCore - editor created');
 				},
 				onUpdate: handleUpdate,
 				editable,
