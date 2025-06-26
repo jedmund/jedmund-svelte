@@ -94,22 +94,22 @@ Create a consistent design system by extracting hardcoded values.
 ### Phase 3: Component Refactoring (Weeks 3-4)
 Refactor components to reduce duplication and complexity.
 
-- [-] **Create base components**
+- [x] **Create base components**
   - [x] Extract `BaseModal` component for shared modal logic
   - [x] Create `BaseDropdown` for dropdown patterns
   - [x] Merge `FormField` and `FormFieldWrapper`
-  - [ ] Create `BaseSegmentedController` for shared logic
+  - [x] Create `BaseSegmentedController` for shared logic
 
-- [ ] **Refactor photo grids**
-  - [ ] Create unified `PhotoGrid` component with `columns` prop
-  - [ ] Remove 3 duplicate grid components
-  - [ ] Use composition for layout variations
+- [x] **Refactor photo grids**
+  - [x] Create unified `PhotoGrid` component with `columns` prop
+  - [x] Remove 3 duplicate grid components
+  - [x] Use composition for layout variations
 
-- [ ] **Componentize inline SVGs**
-  - [ ] Create `CloseButton` icon component
-  - [ ] Create `LoadingSpinner` component
-  - [ ] Create `NavigationArrow` components
-  - [ ] Extract other repeated inline SVGs
+- [x] **Componentize inline SVGs**
+  - [x] Create `CloseButton` icon component
+  - [x] Create `LoadingSpinner` component (already existed)
+  - [x] Create `NavigationArrow` components (using existing arrow SVGs)
+  - [x] Extract other repeated inline SVGs (FileIcon, CopyIcon)
 
 ### Phase 4: Complex Refactoring (Weeks 5-6)
 Tackle the most complex components and patterns.
