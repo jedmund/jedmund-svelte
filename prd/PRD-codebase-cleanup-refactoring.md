@@ -67,9 +67,9 @@ Focus on low-risk, high-impact changes that don't require architectural modifica
   - [x] Delete unused icons: `dashboard.svg`, `metadata.svg`
   - [x] Delete unused illustrations (11 files - see SVG analysis report)
 
-- [ ] **Clean up dead code**
-  - [ ] Remove commented `getWeeklyAlbumChart` line in `/src/routes/api/lastfm/+server.ts`
-  - [ ] Address TODO in `/src/lib/server/api-utils.ts` about authentication
+- [x] **Clean up dead code**
+  - [x] Remove commented `getWeeklyAlbumChart` line in `/src/routes/api/lastfm/+server.ts`
+  - [x] Address TODO in `/src/lib/server/api-utils.ts` about authentication (noted for future work)
 
 ### Phase 2: CSS Variable Standardization (Week 2)
 Create a consistent design system by extracting hardcoded values.
