@@ -232,7 +232,7 @@
 		border-radius: $unit-2x;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		padding: $unit;
-		z-index: 1000;
+		z-index: $z-index-overlay;
 		animation: dropdownOpen 0.2s ease;
 	}
 

@@ -80,7 +80,7 @@
 		left: 65%;
 		top: 30.6%;
 		pointer-events: none;
-		z-index: 10;
+		z-index: $z-index-dropdown;
 
 		svg {
 			width: 100%;

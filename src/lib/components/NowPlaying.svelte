@@ -54,7 +54,7 @@
 		border-radius: $unit * 2;
 		font-size: $font-size-small;
 		backdrop-filter: blur(10px);
-		z-index: 10;
+		z-index: $z-index-dropdown;
 		animation: fadeIn 0.3s ease-out;
 		width: fit-content;
 	}

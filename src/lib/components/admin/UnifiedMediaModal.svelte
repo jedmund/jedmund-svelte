@@ -569,7 +569,7 @@
 		gap: $unit;
 		top: 0;
 		background: white;
-		z-index: 10;
+		z-index: $z-index-dropdown;
 		padding: $unit-3x $unit-3x 0 $unit-3x;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
@@ -791,7 +791,7 @@
 		padding: $unit-3x $unit-4x $unit-4x;
 		border-top: 1px solid $grey-85;
 		background: white;
-		z-index: 10;
+		z-index: $z-index-dropdown;
 		box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 	}
 

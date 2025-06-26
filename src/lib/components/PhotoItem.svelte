@@ -119,7 +119,7 @@
 			opacity: 0;
 			transition: opacity 0.4s ease;
 			position: relative;
-			z-index: 2;
+			z-index: $z-index-above;
 
 			&.loaded {
 				opacity: 1;
@@ -142,7 +142,7 @@
 			right: -6px;
 			height: 100%;
 			background: rgba(0, 0, 0, 0.1);
-			z-index: 1;
+			z-index: $z-index-base;
 			transform: rotate(2deg);
 		}
 
@@ -153,13 +153,13 @@
 			right: -3px;
 			height: 100%;
 			background: rgba(0, 0, 0, 0.2);
-			z-index: 2;
+			z-index: $z-index-above;
 			transform: rotate(-1deg);
 		}
 
 		&.stack-front {
 			position: relative;
-			z-index: 3;
+			z-index: $z-index-hover;
 
 			img {
 				width: 100%;
@@ -169,7 +169,7 @@
 				opacity: 0;
 				transition: opacity 0.4s ease;
 				position: relative;
-				z-index: 2;
+				z-index: $z-index-above;
 
 				&.loaded {
 					opacity: 1;
@@ -186,7 +186,7 @@
 		background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
 		color: white;
 		padding: $unit-2x;
-		z-index: 4;
+		z-index: calc($z-index-hover + 1);
 		border-radius: 0 0 $corner-radius $corner-radius;
 	}
 
@@ -229,7 +229,7 @@
 		border-radius: $corner-radius;
 		opacity: 1;
 		transition: opacity 0.4s ease;
-		z-index: 1;
+		z-index: $z-index-base;
 		overflow: hidden;
 
 		&.loaded {

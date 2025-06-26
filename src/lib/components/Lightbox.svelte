@@ -131,7 +131,7 @@
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.9);
-		z-index: 1400;
+		z-index: $z-index-lightbox;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -208,7 +208,7 @@
 			inset: 0;
 			border-radius: $unit-2x;
 			border: 2px solid transparent;
-			z-index: 2;
+			z-index: $z-index-above;
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
@@ -219,7 +219,7 @@
 			inset: 2px;
 			border-radius: calc($unit-2x - 2px);
 			border: 2px solid transparent;
-			z-index: 3;
+			z-index: $z-index-hover;
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
@@ -246,7 +246,7 @@
 			height: 100%;
 			object-fit: cover;
 			position: relative;
-			z-index: 1;
+			z-index: $z-index-base;
 			user-select: none;
 			-webkit-user-drag: none;
 		}

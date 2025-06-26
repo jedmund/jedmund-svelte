@@ -123,7 +123,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		z-index: 1400;
+		z-index: $z-index-modal-backdrop;
 		padding: $unit-2x;
 	}
 
@@ -169,7 +169,7 @@
 		position: absolute !important;
 		top: $unit-2x;
 		right: $unit-2x;
-		z-index: 1;
+		z-index: $z-index-base;
 	}
 
 	.modal-content {

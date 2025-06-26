@@ -53,7 +53,7 @@
 	.site-header {
 		position: sticky;
 		top: 0;
-		z-index: 100;
+		z-index: $z-index-header;
 		display: flex;
 		justify-content: center;
 		// Smooth padding transition based on scroll

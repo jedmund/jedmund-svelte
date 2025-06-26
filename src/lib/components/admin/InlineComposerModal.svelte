@@ -744,7 +744,7 @@
 		position: absolute !important;
 		top: $unit-2x;
 		right: $unit-2x;
-		z-index: 10;
+		z-index: $z-index-dropdown;
 		background-color: rgba(255, 255, 255, 0.9) !important;
 		backdrop-filter: blur(8px);
 		border: 1px solid $grey-80 !important;

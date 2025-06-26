@@ -84,7 +84,7 @@
 	.admin-nav-bar {
 		position: sticky;
 		top: 0;
-		z-index: 100;
+		z-index: $z-index-admin-nav;
 		width: 100%;
 		background: $bg-color;
 		border-bottom: 1px solid transparent;

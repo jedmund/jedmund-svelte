@@ -74,9 +74,9 @@ Focus on low-risk, high-impact changes that don't require architectural modifica
 ### Phase 2: CSS Variable Standardization (Week 2)
 Create a consistent design system by extracting hardcoded values.
 
-- [ ] **Create z-index system**
-  - [ ] Create `src/assets/styles/_z-index.scss` with constants
-  - [ ] Replace 60+ hardcoded z-index values
+- [x] **Create z-index system**
+  - [x] Create `src/assets/styles/_z-index.scss` with constants
+  - [x] Replace 60+ hardcoded z-index values
 
 - [ ] **Extract color variables**
   - [ ] Add missing color variables for frequently used colors

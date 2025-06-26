@@ -195,7 +195,7 @@
 		background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
 		color: white;
 		padding: $unit-2x;
-		z-index: 1;
+		z-index: $z-index-base;
 	}
 
 	.album-info {

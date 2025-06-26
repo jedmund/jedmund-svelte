@@ -147,7 +147,7 @@
 		height: calc(100% - #{$unit * 2});
 		border-radius: 100px;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		z-index: 1;
+		z-index: $z-index-base;
 	}
 
 	.nav-item {
@@ -160,7 +160,7 @@
 		font-size: 1rem;
 		font-weight: 400;
 		position: relative;
-		z-index: 2;
+		z-index: $z-index-above;
 		transition:
 			color 0.2s ease,
 			background-color 0.2s ease;
