@@ -103,7 +103,7 @@ Create a consistent design system by extracting hardcoded values.
   - [x] Create transition/animation duration variables
   - [x] Replace hardcoded duration values (replaced in key components)
 
-### Phase 3: Component Refactoring (Weeks 3-4)
+### Phase 3: Component Refactoring (Weeks 3-4) ✅
 
 Refactor components to reduce duplication and complexity.
 
@@ -126,6 +126,16 @@ Refactor components to reduce duplication and complexity.
   - [x] Create `NavigationArrow` components (using existing arrow SVGs)
   - [x] Extract other repeated inline SVGs (FileIcon, CopyIcon)
 
+- [x] **Additional refactoring completed**
+  - [x] Convert slot syntax to Svelte 5 snippets
+  - [x] Fix editor content loading issues
+  - [x] Improve editor design and spacing
+  - [x] Fix drag handle positioning and functionality
+  - [x] Create floating toolbar with glassmorphism
+  - [x] Implement enhanced bubble menu with formatting tools
+  - [x] Add text style dropdown and color pickers
+  - [x] Disable toolbar in favor of bubble menu
+
 ### Phase 4: Complex Refactoring (Weeks 5-6)
 
 Tackle the most complex components and patterns.
@@ -138,17 +148,29 @@ Tackle the most complex components and patterns.
   - [x] Create dedicated link editor
   - [x] Reduce state variables from 20+ to <10
 
-- [ ] **Simplify LastFM Stream Server**
+- [x] **Simplify LastFM Stream Server** ✅
+  - [x] Extract data transformation utilities
+    - [x] Created `lastfmTransformers.ts` for image and data transformations
+  - [x] Simplify "now playing" detection algorithm
+    - [x] Created `nowPlayingDetector.ts` with cleaner detection logic
+  - [x] Reduce state tracking duplication
+    - [x] Created `lastfmStreamManager.ts` to centralize state management
+  - [x] Create separate modules for complex logic
+    - [x] Created `albumEnricher.ts` for album data enrichment
+  - [x] Reduced stream server from 625 lines to 115 lines (81% reduction)
 
-  - [ ] Extract data transformation utilities
-  - [ ] Simplify "now playing" detection algorithm
-  - [ ] Reduce state tracking duplication
-  - [ ] Create separate modules for complex logic
-
-- [ ] **Consolidate media modals**
-  - [ ] Create single flexible MediaModal component
-  - [ ] Use composition for different modes
-  - [ ] Eliminate prop drilling with stores
+- [x] **Consolidate media modals** ✅
+  - [x] Extract reusable components from existing modals:
+    - [x] Create MediaGrid component (~150 lines)
+    - [x] Create FileUploadZone component (~120 lines)
+    - [x] Create FilePreviewList component (~100 lines)
+    - [x] Create MediaMetadataPanel component (~150 lines)
+    - [x] Create MediaUsageList component (~80 lines)
+  - [x] Create shared utilities:
+    - [x] mediaHelpers.ts (formatFileSize, getFileType, etc.)
+    - [x] useMediaSelection composable
+  - [x] Update existing modals to use new components
+  - [x] Eliminate ~750-800 lines of duplicate code
 
 ### Phase 5: Architecture & Utilities (Week 7)
 
