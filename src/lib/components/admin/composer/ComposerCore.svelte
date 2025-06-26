@@ -354,7 +354,6 @@
 
 		&.with-toolbar {
 			border-top: none;
-			margin-top: $unit-2x;
 		}
 
 		// More generous padding for full variant
