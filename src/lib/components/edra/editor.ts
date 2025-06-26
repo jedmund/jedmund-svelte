@@ -32,6 +32,16 @@ export const initiateEditor = (
 	options?: Partial<EditorOptions>,
 	placeholder?: string
 ): Editor => {
+	console.log('initiateEditor called with:', {
+		element,
+		content,
+		contentType: typeof content,
+		limit,
+		hasExtensions: !!extensions,
+		hasOptions: !!options,
+		placeholder
+	});
+	
 	const editor = new Editor({
 		element: element,
 		content: content,

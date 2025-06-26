@@ -164,11 +164,18 @@
 	// Watch for external data changes and update editor
 	let lastDataString = '';
 	$effect(() => {
-		if (editor && data) {
+		if (editor && data && data.content) {
 			console.log('ComposerCore effect - data received:', data);
 			
+			// Validate content structure
+			const isValidContent = data.type === 'doc' && Array.isArray(data.content);
+			if (!isValidContent) {
+				console.error('ComposerCore effect - invalid content structure:', data);
+				return;
+			}
+			
 			// Check if the data has actual content (not just empty doc)
-			const hasContent = data.content && data.content.length > 0 && 
+			const hasContent = data.content.length > 0 && 
 				!(data.content.length === 1 && data.content[0].type === 'paragraph' && !data.content[0].content);
 			
 			console.log('ComposerCore effect - hasContent:', hasContent);
