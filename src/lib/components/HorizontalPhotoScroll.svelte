@@ -1,32 +1,26 @@
 <script lang="ts">
-	import type { PhotoItem as PhotoItemType } from '$lib/types/photos'
-	import { isAlbum } from '$lib/types/photos'
+	import type { Photo } from '$lib/types/photos'
 
-	const {
-		photoItems,
-		albumSlug
-	}: {
-		photoItems: PhotoItemType[]
-		albumSlug?: string
-	} = $props()
+	interface Props {
+		photos: Photo[]
+		showCaptions?: boolean
+	}
+
+	let { 
+		photos = [],
+		showCaptions = true
+	}: Props = $props()
 </script>
 
 <div class="horizontal-scroll">
-	{#each photoItems as item}
-		{#if isAlbum(item)}
-			<a href="/photos/{item.slug}" class="photo-link">
-				<img src={item.coverPhoto.src} alt={item.title} />
-				<p class="caption">{item.title}</p>
-			</a>
-		{:else}
-			{@const mediaId = item.id.replace(/^(media|photo)-/, '')}
-			<a href="/photos/{albumSlug ? `${albumSlug}/${mediaId}` : `p/${mediaId}`}" class="photo-link">
-				<img src={item.src} alt={item.alt} />
-				{#if item.caption}
-					<p class="caption">{item.caption}</p>
-				{/if}
-			</a>
-		{/if}
+	{#each photos as photo}
+		{@const mediaId = photo.id.replace(/^(media|photo)-/, '')}
+		<a href="/photos/{mediaId}" class="photo-link">
+			<img src={photo.src} alt={photo.alt} />
+			{#if showCaptions && photo.caption}
+				<p class="caption">{photo.caption}</p>
+			{/if}
+		</a>
 	{/each}
 </div>
 

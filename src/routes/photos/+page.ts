@@ -9,7 +9,7 @@ export const load: PageLoad = async ({ fetch }) => {
 
 		const data = await response.json()
 		return {
-			photoItems: data.photoItems || [],
+			photos: data.photoItems || [], // API still returns photoItems but contains only photos
 			pagination: data.pagination || null
 		}
 	} catch (error) {
@@ -17,7 +17,7 @@ export const load: PageLoad = async ({ fetch }) => {
 
 		// Fallback to empty array if API fails
 		return {
-			photoItems: [],
+			photos: [],
 			pagination: null,
 			error: 'Failed to load photos'
 		}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
-	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
+	import PhotoGrid from '$components/PhotoGrid.svelte'
 	import BackButton from '$components/BackButton.svelte'
 	import { generateMetaTags, generateImageGalleryJsonLd } from '$lib/utils/metadata'
 	import { renderEdraContent, getContentExcerpt } from '$lib/utils/content'
@@ -189,7 +189,7 @@
 				<!-- Legacy Photo Grid (for albums without composed content) -->
 				{#if photoItems.length > 0}
 					<div class="legacy-photos">
-						<MasonryPhotoGrid {photoItems} />
+						<PhotoGrid photos={photoItems} columns="auto" masonry={true} gap="medium" />
 					</div>
 				{:else}
 					<div class="empty-album">
