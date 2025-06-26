@@ -71,7 +71,6 @@
 	let editor = $state<Editor | undefined>()
 	let element = $state<HTMLElement>()
 	let isLoading = $state(true)
-	let initialized = false
 	const mediaSelectionState = $derived($mediaSelectionStore)
 
 	// Toolbar component ref
@@ -142,12 +141,6 @@
 
 	// Update content when editor changes
 	function handleUpdate({ editor: updatedEditor, transaction }: any) {
-		// Skip the first update to avoid circular updates
-		if (!initialized) {
-			initialized = true
-			return
-		}
-
 		// Dismiss link menus on typing
 		linkManagerRef?.dismissOnTyping(transaction)
 
@@ -162,25 +155,14 @@
 		}
 	}
 
-	// Simple effect to load content once when editor is ready
-	let contentLoaded = false
+	// Effect to set initial content when editor is first created
+	let isEditorInitialized = false
 	$effect(() => {
-		if (editor && data && !contentLoaded) {
-			// Check if the data has actual content (not just empty doc)
-			const hasContent =
-				data.content &&
-				data.content.length > 0 &&
-				!(
-					data.content.length === 1 &&
-					data.content[0].type === 'paragraph' &&
-					!data.content[0].content
-				)
-
-			if (hasContent) {
-				// Set the content once
-				editor.commands.setContent(data)
-				contentLoaded = true
-			}
+		if (editor && !isEditorInitialized) {
+			// Set initial content to ensure proper initialization
+			// This ensures the editor has at least an empty paragraph for placeholder
+			editor.commands.setContent(data)
+			isEditorInitialized = true
 		}
 	})
 
