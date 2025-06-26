@@ -572,3 +572,30 @@ input[type='checkbox'] {
 .tiptap iframe {
 	aspect-ratio: 16 / 9;
 }
+
+/* Content Embeds - Consistent spacing with text blocks */
+.tiptap .node-urlEmbed,
+.tiptap .node-iframe,
+.tiptap .node-video,
+.tiptap .node-image,
+.tiptap .node-gallery,
+.tiptap .node-audio,
+.tiptap .node-geolocation {
+	margin-bottom: 1rem;
+}
+
+/* YouTube embeds within urlEmbed */
+.tiptap .edra-youtube-embed-wrapper {
+	margin-bottom: 1rem;
+}
+
+/* URL embed cards */
+.tiptap .edra-url-embed-wrapper {
+	margin-bottom: 1rem;
+}
+
+/* Remove double margins if wrapper already has margin */
+.tiptap .edra-url-embed-wrapper + *,
+.tiptap .edra-youtube-embed-wrapper + * {
+	margin-top: 0;
+}
