@@ -335,8 +335,12 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 
 					if (!dragHandleElement) return
 
+					// Get the computed padding of the element to position handle correctly
+					const paddingLeft = parseInt(compStyle.paddingLeft, 10) || 0
+					
 					// Add 8px gap between drag handle and content
-					dragHandleElement.style.left = `${rect.left - rect.width - 8}px`
+					// Position the handle inside the padding area, close to the text
+					dragHandleElement.style.left = `${rect.left + paddingLeft - rect.width - 8}px`
 					dragHandleElement.style.top = `${rect.top - 4}px` // Offset for padding
 					showDragHandle()
 				},
