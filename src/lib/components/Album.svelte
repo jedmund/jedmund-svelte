@@ -165,9 +165,9 @@
 							class:playing={isPlaying}
 						>
 							{#if isPlaying}
-								<PauseIcon />
+								<svelte:component this={PauseIcon} />
 							{:else}
-								<PlayIcon />
+								<svelte:component this={PlayIcon} />
 							{/if}
 						</button>
 					{/if}

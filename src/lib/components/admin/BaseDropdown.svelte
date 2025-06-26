@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
 	import Button from './Button.svelte'
 	import DropdownMenuContainer from './DropdownMenuContainer.svelte'
 
@@ -9,6 +10,8 @@
 		dropdownTriggerSize?: 'small' | 'medium' | 'large'
 		class?: string
 		onToggle?: (isOpen: boolean) => void
+		trigger: Snippet
+		dropdown?: Snippet
 	}
 
 	let {
@@ -17,7 +20,9 @@
 		isLoading = false,
 		dropdownTriggerSize = 'large',
 		class: className = '',
-		onToggle
+		onToggle,
+		trigger,
+		dropdown
 	}: Props = $props()
 
 	function handleDropdownToggle(e: MouseEvent) {
@@ -47,9 +52,9 @@
 
 <div class="dropdown-container {className}">
 	<div class="dropdown-trigger">
-		<slot name="trigger" />
+		{@render trigger()}
 		
-		{#if $$slots.dropdown}
+		{#if dropdown}
 			<Button
 				variant="ghost"
 				iconOnly
@@ -59,22 +64,24 @@
 				{isLoading}
 				class="dropdown-toggle"
 			>
-				<svg slot="icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
-					<path
-						d="M3 4.5L6 7.5L9 4.5"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
+				{#snippet icon()}
+					<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+						<path
+							d="M3 4.5L6 7.5L9 4.5"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				{/snippet}
 			</Button>
 		{/if}
 	</div>
 
-	{#if isOpen && $$slots.dropdown}
+	{#if isOpen && dropdown}
 		<DropdownMenuContainer>
-			<slot name="dropdown" />
+			{@render dropdown()}
 		</DropdownMenuContainer>
 	{/if}
 </div>

@@ -55,18 +55,21 @@
 	{isLoading}
 	class="status-dropdown"
 >
-	<Button
-		slot="trigger"
-		variant="primary"
-		buttonSize="large"
-		onclick={handlePrimaryAction}
-		disabled={disabled || isLoading}
-	>
-		{primaryAction.label}
-	</Button>
+	{#snippet trigger()}
+		<Button
+			variant="primary"
+			buttonSize="large"
+			onclick={handlePrimaryAction}
+			disabled={disabled || isLoading}
+		>
+			{#snippet children()}
+				{primaryAction.label}
+			{/snippet}
+		</Button>
+	{/snippet}
 
-	{#if hasDropdownContent}
-		<div slot="dropdown">
+	{#snippet dropdown()}
+		{#if hasDropdownContent}
 			{#each availableActions as action}
 				<DropdownItem onclick={() => handleDropdownAction(action.status)}>
 					{action.label}
@@ -85,8 +88,8 @@
 					View on site
 				</a>
 			{/if}
-		</div>
-	{/if}
+		{/if}
+	{/snippet}
 </BaseDropdown>
 
 <style lang="scss">

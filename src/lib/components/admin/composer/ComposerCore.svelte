@@ -71,6 +71,7 @@
 	let element = $state<HTMLElement>()
 	let isLoading = $state(true)
 	let initialized = false
+	let contentLoaded = false
 	const mediaSelectionState = $derived($mediaSelectionStore)
 
 	// Toolbar component ref
@@ -160,6 +161,20 @@
 			onCharacterCount(text.length)
 		}
 	}
+
+	// Watch for external data changes and update editor
+	$effect(() => {
+		if (editor && data && !contentLoaded) {
+			// Only update if the data has actual content (not just empty doc)
+			const hasContent = data.content && data.content.length > 0 && 
+				!(data.content.length === 1 && data.content[0].type === 'paragraph' && !data.content[0].content);
+			
+			if (hasContent) {
+				editor.commands.setContent(data);
+				contentLoaded = true;
+			}
+		}
+	});
 
 	onMount(() => {
 		// Get extensions with custom options

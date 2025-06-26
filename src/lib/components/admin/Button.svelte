@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { HTMLButtonAttributes } from 'svelte/elements'
+	import type { Snippet } from 'svelte'
 
 	interface Props extends HTMLButtonAttributes {
 		variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'text' | 'overlay' | 'danger-text'
@@ -12,6 +13,8 @@
 		active?: boolean
 		href?: string
 		class?: string
+		icon?: Snippet
+		children?: Snippet
 	}
 
 	let {
@@ -27,6 +30,7 @@
 		type = 'button',
 		href,
 		class: className = '',
+		icon,
 		children,
 		onclick,
 		...restProps
@@ -60,8 +64,8 @@
 	})
 
 	// Handle icon slot positioning
-	const hasIcon = $derived(!!$$slots.icon)
-	const hasDefaultSlot = $derived(!!$$slots.default)
+	const hasIcon = $derived(!!icon)
+	const hasDefaultSlot = $derived(!!children)
 	const showSpinner = $derived(loading && !iconOnly)
 </script>
 
@@ -94,21 +98,21 @@
 
 		{#if hasIcon && iconPosition === 'left' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 
 		{#if hasDefaultSlot && !iconOnly}
 			<span class="btn-label">
-				<slot />
+				{@render children()}
 			</span>
 		{:else if iconOnly && hasIcon}
-			<slot name="icon" />
+			{@render icon()}
 		{/if}
 
 		{#if hasIcon && iconPosition === 'right' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 	</a>
@@ -141,21 +145,21 @@
 
 		{#if hasIcon && iconPosition === 'left' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 
 		{#if hasDefaultSlot && !iconOnly}
 			<span class="btn-label">
-				<slot />
+				{@render children()}
 			</span>
 		{:else if iconOnly && hasIcon}
-			<slot name="icon" />
+			{@render icon()}
 		{/if}
 
 		{#if hasIcon && iconPosition === 'right' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 	</button>
