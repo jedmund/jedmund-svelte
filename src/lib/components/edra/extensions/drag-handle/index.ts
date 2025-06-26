@@ -324,7 +324,7 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 						const lineHeight = isNaN(parsedLineHeight)
 							? parseInt(compStyle.fontSize) * 1.2
 							: parsedLineHeight
-						rect.top += (lineHeight - 24) / 2
+						rect.top += (lineHeight - 20) / 2
 						rect.top += paddingTop
 					}
 					// Li markers
@@ -341,7 +341,7 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 					// Add 12px gap between drag handle and content
 					// Position the handle inside the padding area, close to the text
 					dragHandleElement.style.left = `${rect.left + paddingLeft - rect.width - 12}px`
-					dragHandleElement.style.top = `${rect.top - 4}px` // Offset for padding
+					dragHandleElement.style.top = `${rect.top}px`
 					showDragHandle()
 				},
 				keydown: () => {
