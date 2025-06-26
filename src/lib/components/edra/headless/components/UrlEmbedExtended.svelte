@@ -299,21 +299,21 @@
 		position: relative;
 		width: 100%;
 		max-width: 600px;
-		border: 1px solid transparent;
+		border: $unit-1px solid transparent;
 		border-radius: $corner-radius;
 		transition: all 0.2s ease;
 	}
 
 	.edra-url-embed-actions {
 		position: absolute;
-		top: 0.5rem;
-		right: 0.5rem;
+		top: $unit;
+		right: $unit;
 		display: flex;
-		gap: 0.25rem;
+		gap: $unit-half;
 		background: white;
-		padding: 0.25rem;
-		border-radius: 6px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		padding: $unit-half;
+		border-radius: $corner-radius-sm;
+		box-shadow: 0 $unit-2px $unit rgba(0, 0, 0, 0.15);
 		z-index: 10;
 	}
 
@@ -321,12 +321,12 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 32px;
-		height: 32px;
+		width: $unit-4x;
+		height: $unit-4x;
 		padding: 0;
 		background: transparent;
 		border: none;
-		border-radius: 4px;
+		border-radius: $corner-radius-xs;
 		cursor: pointer;
 		transition: all 0.2s;
 		color: $gray-40;
@@ -347,8 +347,8 @@
 		}
 
 		svg {
-			width: 16px;
-			height: 16px;
+			width: $unit-2x;
+			height: $unit-2x;
 		}
 	}
 
@@ -358,7 +358,7 @@
 		background: $gray-95;
 		border-radius: $corner-radius;
 		overflow: hidden;
-		border: 1px solid $gray-85;
+		border: $unit-1px solid $gray-85;
 		padding: 0;
 		text-align: left;
 		cursor: pointer;
@@ -373,8 +373,8 @@
 
 		&:hover {
 			border-color: $gray-60;
-			transform: translateY(-1px);
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			transform: translateY(-$unit-1px);
+			box-shadow: 0 $unit-2px $unit rgba(0, 0, 0, 0.1);
 		}
 
 		&:focus {
@@ -384,8 +384,8 @@
 
 	.edra-url-embed-image {
 		flex-shrink: 0;
-		width: 200px;
-		height: 150px;
+		width: $unit-20x + $unit;
+		height: $unit-18x + $unit-6px;
 		overflow: hidden;
 		background: $gray-80;
 
@@ -398,24 +398,24 @@
 
 	.edra-url-embed-text {
 		flex: 1;
-		padding: 1rem;
+		padding: $unit-2x;
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: $unit;
 		min-width: 0;
 	}
 
 	.edra-url-embed-meta {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.75rem;
+		gap: $unit;
+		font-size: $font-size-extra-small;
 		color: $gray-40;
 	}
 
 	.edra-url-embed-favicon {
-		width: 16px;
-		height: 16px;
+		width: $unit-2x;
+		height: $unit-2x;
 		flex-shrink: 0;
 	}
 
@@ -427,7 +427,7 @@
 
 	.edra-url-embed-title {
 		margin: 0;
-		font-size: 1rem;
+		font-size: $font-size;
 		font-weight: 600;
 		color: $gray-10;
 		line-height: 1.3;
@@ -439,7 +439,7 @@
 
 	.edra-url-embed-description {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: $font-size-small;
 		color: $gray-30;
 		line-height: 1.4;
 		display: -webkit-box;
@@ -470,14 +470,14 @@
 
 	.edra-youtube-embed-actions {
 		position: absolute;
-		top: 0.5rem;
-		right: 0.5rem;
+		top: $unit;
+		right: $unit;
 		display: flex;
-		gap: 0.25rem;
+		gap: $unit-half;
 		background: white;
-		padding: 0.25rem;
-		border-radius: 6px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		padding: $unit-half;
+		border-radius: $corner-radius-sm;
+		box-shadow: 0 $unit-2px $unit rgba(0, 0, 0, 0.15);
 		z-index: 10;
 	}
 
@@ -485,12 +485,12 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 32px;
-		height: 32px;
+		width: $unit-4x;
+		height: $unit-4x;
 		padding: 0;
 		background: transparent;
 		border: none;
-		border-radius: 4px;
+		border-radius: $corner-radius-xs;
 		cursor: pointer;
 		transition: all 0.2s;
 		color: $gray-40;
@@ -501,8 +501,8 @@
 		}
 
 		svg {
-			width: 16px;
-			height: 16px;
+			width: $unit-2x;
+			height: $unit-2x;
 		}
 	}
 
@@ -513,7 +513,7 @@
 		overflow: hidden;
 		background: $gray-95;
 		border-radius: $corner-radius;
-		border: 1px solid $gray-85;
+		border: $unit-1px solid $gray-85;
 
 		iframe {
 			position: absolute;
@@ -527,10 +527,10 @@
 	}
 
 	.edra-youtube-embed-error {
-		padding: 3rem;
+		padding: $unit-6x;
 		text-align: center;
 		background: $gray-95;
-		border: 1px solid $gray-85;
+		border: $unit-1px solid $gray-85;
 		border-radius: $corner-radius;
 		color: $gray-40;
 	}
@@ -539,7 +539,7 @@
 		.edra-youtube-embed-player,
 		.edra-youtube-embed-error {
 			border-color: $primary-color;
-			box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+			box-shadow: 0 0 0 $unit-3px rgba($primary-color, 0.1);
 		}
 	}
 
@@ -551,7 +551,7 @@
 
 		.edra-url-embed-image {
 			width: 100%;
-			height: 200px;
+			height: $unit-20x + $unit;
 		}
 	}
 </style>

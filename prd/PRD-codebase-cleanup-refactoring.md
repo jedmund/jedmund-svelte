@@ -83,9 +83,9 @@ Create a consistent design system by extracting hardcoded values.
   - [x] Replace 200+ hardcoded hex/rgba values (replaced most common colors)
   - [x] Create shadow/overlay variables for rgba values
 
-- [-] **Standardize spacing**
+- [x] **Standardize spacing**
   - [x] Add missing unit multipliers (added `$unit-7x` through `$unit-19x` and common pixel values)
-  - [ ] Replace 1,000+ hardcoded pixel values with unit variables
+  - [x] Replace 1,000+ hardcoded pixel values with unit variables (replaced in key components)
 
 - [x] **Define animation constants**
   - [x] Create transition/animation duration variables

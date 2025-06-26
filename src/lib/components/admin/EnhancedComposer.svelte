@@ -1054,7 +1054,7 @@
 		padding: $unit ($unit-2x + $unit);
 		position: sticky;
 		box-sizing: border-box;
-		top: 75px;
+		top: $unit-9x + $unit-3px;
 		z-index: 10;
 		overflow-x: auto;
 		overflow-y: hidden;
@@ -1068,8 +1068,8 @@
 
 	.composer--full .editor-toolbar {
 		border-radius: 999px;
-		border: 1px solid rgba(0, 0, 0, 0.08);
-		box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+		border: $unit-1px solid rgba(0, 0, 0, 0.08);
+		box-shadow: 0 0 $unit-2x rgba(0, 0, 0, 0.12);
 		background: $gray-95;
 	}
 
@@ -1084,17 +1084,17 @@
 	}
 
 	.composer--full .edra-editor :global(.ProseMirror) {
-		min-height: 400px;
+		min-height: $unit-20x * 2;
 		padding: $unit-4x 0;
 	}
 
 	.composer--inline .edra-editor :global(.ProseMirror) {
-		min-height: 80px;
+		min-height: $unit-10x;
 		padding: $unit-2x 0;
 	}
 
 	.composer--minimal .edra-editor :global(.ProseMirror) {
-		min-height: 60px;
+		min-height: $unit-7x + $unit-half;
 		padding: $unit-2x 0;
 	}
 
@@ -1206,19 +1206,19 @@
 	.dropdown-trigger {
 		display: flex;
 		align-items: center;
-		gap: 4px;
-		padding: 6px 12px;
+		gap: $unit-half;
+		padding: $unit-6px $unit-12px;
 		background: transparent;
-		border: 1px solid transparent;
-		border-radius: 8px;
-		font-size: 14px;
+		border: $unit-1px solid transparent;
+		border-radius: $corner-radius-md;
+		font-size: $unit-14px;
 		font-family: inherit;
 		color: var(--edra-text-color);
 		cursor: pointer;
 		transition: all 0.2s ease;
-		min-width: 120px;
+		min-width: $unit-15x;
 		justify-content: space-between;
-		height: 36px;
+		height: $unit-4x + $unit-half;
 	}
 
 	.dropdown-trigger:hover {
@@ -1228,21 +1228,21 @@
 
 	.dropdown-menu {
 		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-		min-width: 160px;
+		border: $unit-1px solid #e0e0e0;
+		border-radius: $corner-radius-md;
+		box-shadow: 0 $unit-2px $unit rgba(0, 0, 0, 0.15);
+		min-width: $unit-20x;
 		overflow: hidden;
 	}
 
 	.dropdown-item {
 		display: block;
 		width: 100%;
-		padding: 8px 16px;
+		padding: $unit $unit-2x;
 		text-align: left;
 		background: none;
 		border: none;
-		font-size: 14px;
+		font-size: $unit-14px;
 		font-family: inherit;
 		color: var(--edra-text-color);
 		cursor: pointer;
@@ -1254,27 +1254,27 @@
 	}
 
 	.dropdown-separator {
-		height: 1px;
+		height: $unit-1px;
 		background-color: #e0e0e0;
-		margin: 4px 0;
+		margin: $unit-half 0;
 	}
 
 	/* Separator in toolbar */
 	:global(.edra-toolbar .separator) {
 		display: inline-block;
-		width: 2px;
-		height: 24px;
+		width: $unit-2px;
+		height: $unit-3x;
 		background-color: #e0e0e0;
-		border-radius: 1px;
-		margin: 0 4px;
+		border-radius: $unit-1px;
+		margin: 0 $unit-half;
 		vertical-align: middle;
 	}
 
 	/* Remove default button backgrounds */
 	:global(.edra-toolbar button) {
 		background: transparent;
-		border: 1px solid transparent;
-		border-radius: 6px;
+		border: $unit-1px solid transparent;
+		border-radius: $corner-radius-sm;
 		transition: all 0.2s ease;
 	}
 
@@ -1291,7 +1291,7 @@
 
 	/* Thicker strokes for icons */
 	:global(.edra-toolbar svg) {
-		stroke-width: 2;
+		stroke-width: $unit-2px;
 	}
 
 	.edra-loading {
@@ -1319,8 +1319,8 @@
 	/* Drag handle styles */
 	:global(.drag-handle) {
 		position: fixed;
-		width: 20px;
-		height: 24px;
+		width: $unit-20px;
+		height: $unit-3x;
 		display: flex;
 		align-items: center;
 		justify-content: center;

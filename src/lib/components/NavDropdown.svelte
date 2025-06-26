@@ -168,8 +168,8 @@
 <style lang="scss">
 	.nav-dropdown {
 		position: relative;
-		height: 52px; // Match avatar height
-		min-width: 180px; // Wider to better match dropdown menu
+		height: $unit-6x + $unit-half; // Match avatar height
+		min-width: $unit-22x + $unit-half; // Wider to better match dropdown menu
 	}
 
 	.dropdown-trigger {
@@ -180,17 +180,17 @@
 		height: 100%;
 		padding: 0 $unit-2x;
 		border: none;
-		border-radius: 100px;
+		border-radius: $corner-radius-full;
 		background: white;
-		font-size: 1rem;
+		font-size: $font-size;
 		font-weight: 400;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		box-shadow: 0 1px 3px $shadow-light;
+		box-shadow: 0 $unit-1px $unit-3px $shadow-light;
 
 		&:hover {
-			transform: translateY(-1px);
-			box-shadow: 0 2px 6px $shadow-medium;
+			transform: translateY(-$unit-1px);
+			box-shadow: 0 $unit-2px $unit-6px $shadow-medium;
 		}
 
 		&:active {
@@ -198,21 +198,21 @@
 		}
 
 		:global(svg.nav-icon) {
-			width: 20px;
-			height: 20px;
+			width: $unit-20px;
+			height: $unit-20px;
 			flex-shrink: 0;
 			fill: currentColor;
 		}
 
 		:global(svg.chevron) {
-			width: 16px;
-			height: 16px;
+			width: $unit-2x;
+			height: $unit-2x;
 			margin-left: auto;
 			flex-shrink: 0;
 			transition: transform 0.2s ease;
 			fill: none;
 			stroke: currentColor;
-			stroke-width: 2px;
+			stroke-width: $unit-2px;
 			stroke-linecap: round;
 			stroke-linejoin: round;
 
@@ -227,12 +227,12 @@
 		top: calc(100% + $unit);
 		left: 50%;
 		transform: translateX(-50%);
-		min-width: 180px;
+		min-width: $unit-22x + $unit-half;
 		background: white;
 		border-radius: $unit-2x;
-		box-shadow: 0 4px 12px $shadow-medium;
+		box-shadow: 0 $unit-half $unit-12px $shadow-medium;
 		padding: $unit;
-		z-index: $z-index-overlay;
+		z-index: 10;
 		animation: dropdownOpen 0.2s ease;
 	}
 
@@ -241,7 +241,7 @@
 		& + .dropdown-item {
 			margin-top: $unit;
 			padding-top: $unit;
-			border-top: 1px solid $gray-95;
+			border-top: $unit-1px solid $gray-95;
 		}
 	}
 
@@ -253,7 +253,7 @@
 		border-radius: $unit;
 		text-decoration: none;
 		color: $gray-20;
-		font-size: 1rem;
+		font-size: $font-size;
 		transition: background-color 0.2s ease;
 
 		&:hover:not(.section-header) {
@@ -267,7 +267,7 @@
 
 		&.section-header {
 			color: $gray-50;
-			font-size: 0.875rem;
+			font-size: $font-size-small;
 			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
@@ -277,12 +277,12 @@
 
 		&.sub-item {
 			padding-left: $unit-4x + $unit-2x;
-			font-size: 0.9375rem;
+			font-size: 0.9375rem; // 15px
 		}
 
 		:global(svg.nav-icon) {
-			width: 20px;
-			height: 20px;
+			width: $unit-20px;
+			height: $unit-20px;
 			flex-shrink: 0;
 			fill: currentColor;
 		}
@@ -291,7 +291,7 @@
 	@keyframes dropdownOpen {
 		from {
 			opacity: 0;
-			transform: translateX(-50%) translateY(-8px);
+			transform: translateX(-50%) translateY(-$unit);
 		}
 		to {
 			opacity: 1;
