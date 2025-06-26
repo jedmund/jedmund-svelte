@@ -413,12 +413,13 @@
 	}
 
 	.panel-case-study {
-		background: white;
+		background: transparent;
 		padding: 0;
 		min-height: 80vh;
-		margin: 0 auto;
+		margin: 0;
 		display: flex;
 		flex-direction: column;
+		width: 100%;
 
 		@include breakpoint('phone') {
 			min-height: 600px;

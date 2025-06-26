@@ -162,8 +162,12 @@
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		padding: 0 $unit-2x;
+		padding: 0 $unit-6x;
 		flex-wrap: wrap;
+		
+		@include breakpoint('phone') {
+			padding: 0 $unit-4x;
+		}
 	}
 
 	.text-style-dropdown {

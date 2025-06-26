@@ -353,13 +353,22 @@
 	.edra-editor {
 		flex: 1;
 		width: 100%;
-		padding: $unit-2x;
+		padding: $unit-4x;
 		min-height: 100px;
 		outline: none;
 		overflow-y: auto;
 
 		&.with-toolbar {
 			border-top: none;
+		}
+
+		// More generous padding for full variant
+		.composer--full & {
+			padding: $unit-4x $unit-6x;
+			
+			@include breakpoint('phone') {
+				padding: $unit-3x $unit-4x;
+			}
 		}
 	}
 
@@ -390,9 +399,7 @@
 	}
 
 	.composer--full {
-		background: $white;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius;
+		background: transparent;
 		overflow: hidden;
 	}
 </style>
