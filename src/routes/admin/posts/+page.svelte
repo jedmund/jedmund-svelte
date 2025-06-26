@@ -391,7 +391,7 @@
 	.empty-state {
 		text-align: center;
 		padding: $unit-8x $unit-4x;
-		color: $grey-40;
+		color: $gray-40;
 
 		.empty-icon {
 			font-size: 3rem;
@@ -402,7 +402,7 @@
 			font-size: 1.25rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		p {

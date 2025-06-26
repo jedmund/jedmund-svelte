@@ -149,7 +149,7 @@
 			font-size: 1.25rem;
 			font-weight: 600;
 			margin: 0 0 $unit-3x;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -166,7 +166,7 @@
 			font-size: 0.875rem;
 			font-weight: 600;
 			margin: 0;
-			color: $grey-20;
+			color: $gray-20;
 		}
 	}
 

@@ -76,15 +76,15 @@
 
 	.card-content {
 		padding: $unit-3x;
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $card-corner-radius;
-		border: 1px solid $grey-95;
+		border: 1px solid $gray-95;
 		transition: all 0.2s ease;
 		cursor: pointer;
 		outline: none;
 
 		&:hover {
-			border-color: $grey-85;
+			border-color: $gray-85;
 			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 		}
 
@@ -108,7 +108,7 @@
 	}
 
 	.card-date {
-		color: $grey-40;
+		color: $gray-40;
 		font-size: 0.875rem;
 		font-weight: 400;
 		transition: color 0.2s ease;
@@ -117,7 +117,7 @@
 	:global(.card-icon) {
 		width: 16px;
 		height: 16px;
-		fill: $grey-40;
+		fill: $gray-40;
 		transition: all 0.2s ease;
 	}
 
@@ -138,7 +138,7 @@
 		}
 
 		:global(.card-title-link) {
-			color: $grey-10;
+			color: $gray-10;
 			text-decoration: none;
 			transition: all 0.2s ease;
 		}
@@ -189,7 +189,7 @@
 		}
 
 		:global(.card-title-link) {
-			color: $grey-10;
+			color: $gray-10;
 			text-decoration: none;
 			transition: all 0.2s ease;
 		}

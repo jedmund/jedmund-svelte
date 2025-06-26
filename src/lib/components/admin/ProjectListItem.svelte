@@ -156,7 +156,7 @@
 		text-align: left;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 	}
 
@@ -189,7 +189,7 @@
 	.project-title {
 		font-size: 1rem;
 		font-weight: 600;
-		color: $grey-10;
+		color: $gray-10;
 		margin: 0;
 		white-space: nowrap;
 		overflow: hidden;
@@ -212,7 +212,7 @@
 		border: none;
 		border-radius: $unit;
 		cursor: pointer;
-		color: $grey-30;
+		color: $gray-30;
 		transition: all 0.2s ease;
 
 		&:hover {
@@ -226,7 +226,7 @@
 		right: 0;
 		margin-top: $unit-half;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		overflow: hidden;
@@ -241,12 +241,12 @@
 		border: none;
 		text-align: left;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 
 		&.danger {
@@ -256,7 +256,7 @@
 
 	.dropdown-divider {
 		height: 1px;
-		background-color: $grey-80;
+		background-color: $gray-80;
 		margin: $unit-half 0;
 	}
 </style>

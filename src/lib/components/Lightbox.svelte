@@ -237,7 +237,7 @@
 			}
 
 			&::after {
-				border-color: $grey-00; // Black inner border
+				border-color: $gray-00; // Black inner border
 			}
 		}
 
@@ -261,7 +261,7 @@
 		border-radius: 50%;
 		border: none;
 		background: rgba(255, 255, 255, 0.1);
-		color: $grey-100;
+		color: $gray-100;
 		cursor: pointer;
 		display: flex;
 		align-items: center;

@@ -134,7 +134,7 @@
 
 	.dropdown-divider {
 		height: 1px;
-		background-color: $grey-80;
+		background-color: $gray-80;
 		margin: $unit-half 0;
 	}
 
@@ -146,13 +146,13 @@
 		border: none;
 		text-align: left;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
 		text-decoration: none;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 	}
 </style>

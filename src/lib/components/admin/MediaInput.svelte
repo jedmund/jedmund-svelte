@@ -256,7 +256,7 @@
 	.input-label {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: $red-60;
@@ -266,9 +266,9 @@
 
 	.selected-media {
 		padding: $unit-2x;
-		background-color: $grey-95;
+		background-color: $gray-95;
 		border-radius: $card-corner-radius;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 	}
 
 	.media-preview {
@@ -290,7 +290,7 @@
 		height: 60px;
 		border-radius: calc($card-corner-radius - 2px);
 		overflow: hidden;
-		background-color: $grey-90;
+		background-color: $gray-90;
 		flex-shrink: 0;
 		position: relative;
 
@@ -304,8 +304,8 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			background-color: $grey-80;
-			color: $grey-30;
+			background-color: $gray-80;
+			color: $gray-30;
 			font-size: 0.75rem;
 			font-weight: 600;
 		}
@@ -317,7 +317,7 @@
 		justify-content: center;
 		width: 100%;
 		height: 100%;
-		color: $grey-60;
+		color: $gray-60;
 	}
 
 	.media-info {
@@ -328,7 +328,7 @@
 			margin: 0 0 $unit-half 0;
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: $grey-10;
+			color: $gray-10;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -337,7 +337,7 @@
 		.file-meta {
 			margin: 0;
 			font-size: 0.75rem;
-			color: $grey-40;
+			color: $gray-40;
 		}
 	}
 
@@ -350,7 +350,7 @@
 	.selection-summary {
 		margin: 0;
 		font-size: 0.875rem;
-		color: $grey-30;
+		color: $gray-30;
 		font-weight: 500;
 	}
 
@@ -358,7 +358,7 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		border-radius: $card-corner-radius;
 		background-color: white;
 		transition: border-color 0.2s ease;
@@ -384,14 +384,14 @@
 		border: none;
 		background: transparent;
 		font-size: 0.875rem;
-		color: $grey-10;
+		color: $gray-10;
 
 		&:focus {
 			outline: none;
 		}
 
 		&.placeholder {
-			color: $grey-50;
+			color: $gray-50;
 		}
 
 		&[readonly] {

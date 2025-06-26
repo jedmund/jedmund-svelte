@@ -255,7 +255,7 @@
 			font-size: 2.5rem;
 			font-weight: 700;
 			margin: 0 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 
 			@include breakpoint('phone') {
 				font-size: 2rem;
@@ -264,7 +264,7 @@
 
 		.page-description {
 			font-size: 1.125rem;
-			color: $grey-40;
+			color: $gray-40;
 			margin: 0;
 			max-width: 600px;
 			margin-left: auto;
@@ -297,7 +297,7 @@
 		display: block;
 		text-decoration: none;
 		color: inherit;
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $card-corner-radius;
 		overflow: hidden;
 		transition: all 0.3s ease;
@@ -319,7 +319,7 @@
 		position: relative;
 		aspect-ratio: 4 / 3;
 		overflow: hidden;
-		background: $grey-95;
+		background: $gray-95;
 
 		:global(img) {
 			width: 100%;
@@ -332,7 +332,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			background: $grey-95;
+			background: $gray-95;
 
 			.empty-icon {
 				font-size: 3rem;
@@ -353,7 +353,7 @@
 		font-size: 1.25rem;
 		font-weight: 600;
 		margin: 0 0 $unit;
-		color: $grey-10;
+		color: $gray-10;
 
 		@include breakpoint('phone') {
 			font-size: 1.125rem;
@@ -362,7 +362,7 @@
 
 	.album-description {
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 		margin: 0 0 $unit-2x;
 		line-height: 1.5;
 		display: -webkit-box;
@@ -376,7 +376,7 @@
 		flex-wrap: wrap;
 		gap: $unit-2x;
 		font-size: 0.8125rem;
-		color: $grey-50;
+		color: $gray-50;
 
 		.meta-item {
 			display: flex;
@@ -407,12 +407,12 @@
 			font-size: 1.5rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 	}
@@ -437,7 +437,7 @@
 
 		p {
 			margin: 0;
-			color: $grey-50;
+			color: $gray-50;
 			font-size: 1rem;
 		}
 	}

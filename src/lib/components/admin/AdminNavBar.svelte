@@ -91,7 +91,7 @@
 		transition: border-bottom 0.2s ease;
 
 		&.scrolled {
-			border-bottom: 1px solid $grey-60;
+			border-bottom: 1px solid $gray-60;
 		}
 	}
 
@@ -144,13 +144,13 @@
 		align-items: center;
 		gap: $unit;
 		text-decoration: none;
-		color: $grey-30;
+		color: $gray-30;
 		font-weight: 400;
 		font-size: 0.925rem;
 		transition: color 0.2s ease;
 
 		&:hover {
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		.brand-logo {
@@ -203,7 +203,7 @@
 		text-decoration: none;
 		font-size: 0.925rem;
 		font-weight: 500;
-		color: $grey-30;
+		color: $gray-30;
 		transition: all 0.2s ease;
 		position: relative;
 
@@ -212,7 +212,7 @@
 		}
 
 		&:hover {
-			background-color: $grey-70;
+			background-color: $gray-70;
 		}
 
 		&.active {

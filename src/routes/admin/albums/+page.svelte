@@ -361,13 +361,13 @@
 	.loading {
 		padding: $unit-8x;
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 
 		.spinner {
 			width: 32px;
 			height: 32px;
-			border: 3px solid $grey-80;
-			border-top-color: $grey-40;
+			border: 3px solid $gray-80;
+			border-top-color: $gray-40;
 			border-radius: 50%;
 			margin: 0 auto $unit-2x;
 			animation: spin 0.8s linear infinite;
@@ -387,7 +387,7 @@
 	.empty-state {
 		padding: $unit-8x;
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 
 		p {
 			margin: 0;

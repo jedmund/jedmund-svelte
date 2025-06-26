@@ -125,7 +125,7 @@
 			font-size: 1.25rem;
 			font-weight: 600;
 			margin: 0;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 

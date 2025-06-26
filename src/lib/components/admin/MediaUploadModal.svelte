@@ -409,7 +409,7 @@
 			margin: 0;
 			font-size: 1.5rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -424,17 +424,17 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: $unit-3x;
-		border-top: 1px solid $grey-85;
-		background: $grey-95;
+		border-top: 1px solid $gray-85;
+		background: $gray-95;
 	}
 
 	.drop-zone {
-		border: 2px dashed $grey-80;
+		border: 2px dashed $gray-80;
 		border-radius: $unit-2x;
 		padding: $unit-6x $unit-4x;
 		text-align: center;
 		position: relative;
-		background: $grey-95;
+		background: $gray-95;
 		transition: all 0.2s ease;
 
 		&.active {
@@ -456,19 +456,19 @@
 					align-items: center;
 					justify-content: center;
 					gap: $unit-2x;
-					color: $grey-40;
+					color: $gray-40;
 					font-size: 0.875rem;
 
 					.add-icon {
-						color: $grey-50;
+						color: $gray-50;
 					}
 				}
 			}
 		}
 
 		&:hover {
-			border-color: $grey-60;
-			background: $grey-90;
+			border-color: $gray-60;
+			background: $gray-90;
 		}
 
 		&.uploading {
@@ -483,29 +483,29 @@
 		pointer-events: none;
 
 		.upload-icon {
-			color: $grey-50;
+			color: $gray-50;
 			margin-bottom: $unit-2x;
 		}
 
 		h3 {
 			font-size: 1.25rem;
-			color: $grey-20;
+			color: $gray-20;
 			margin-bottom: $unit;
 		}
 
 		p {
-			color: $grey-40;
+			color: $gray-40;
 			margin-bottom: $unit-half;
 		}
 
 		.upload-hint {
 			font-size: 0.875rem;
-			color: $grey-50;
+			color: $gray-50;
 		}
 
 		.file-count {
 			strong {
-				color: $grey-20;
+				color: $gray-20;
 				font-size: 1.1rem;
 			}
 		}
@@ -542,9 +542,9 @@
 		align-items: center;
 		gap: $unit-2x;
 		padding: $unit;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: $image-corner-radius;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 	}
 
 	.file-preview {
@@ -552,7 +552,7 @@
 		height: 60px;
 		border-radius: $unit;
 		overflow: hidden;
-		background: $grey-90;
+		background: $gray-90;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -574,13 +574,13 @@
 
 		.file-name {
 			font-weight: 500;
-			color: $grey-20;
+			color: $gray-20;
 			margin-bottom: $unit-half;
 		}
 
 		.file-size {
 			font-size: 0.875rem;
-			color: $grey-50;
+			color: $gray-50;
 			margin-bottom: $unit-half;
 		}
 	}
@@ -595,10 +595,10 @@
 	.progress-bar {
 		flex-grow: 1;
 		height: $unit-2x;
-		background: $grey-100;
+		background: $gray-100;
 		padding: $unit-half;
 		border-radius: $corner-radius-full;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		overflow: hidden;
 
 		.progress-fill {
@@ -648,14 +648,14 @@
 		}
 
 		.status-waiting {
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
 	.remove-button {
 		background: none;
 		border: none;
-		color: $grey-50;
+		color: $gray-50;
 		cursor: pointer;
 		padding: $unit;
 		border-radius: 50%;
@@ -669,7 +669,7 @@
 
 	.upload-results {
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit-2x;
 		padding: $unit-3x;
 
@@ -678,7 +678,7 @@
 			margin-bottom: $unit-2x;
 
 			small {
-				color: $grey-50;
+				color: $gray-50;
 			}
 		}
 

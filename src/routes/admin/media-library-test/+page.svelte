@@ -141,32 +141,32 @@
 		padding: $unit-4x;
 		background-color: white;
 		border-radius: $card-corner-radius;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 
 		h2 {
 			margin: 0 0 $unit 0;
 			font-size: 1.25rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0 0 $unit-3x 0;
-			color: $grey-30;
+			color: $gray-30;
 		}
 	}
 
 	.selected-media {
 		margin-top: $unit-4x;
 		padding: $unit-3x;
-		background-color: $grey-95;
+		background-color: $gray-95;
 		border-radius: $card-corner-radius;
 
 		h3 {
 			margin: 0 0 $unit-2x 0;
 			font-size: 1.125rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -180,7 +180,7 @@
 			height: 120px;
 			object-fit: cover;
 			border-radius: $card-corner-radius;
-			border: 1px solid $grey-80;
+			border: 1px solid $gray-80;
 		}
 
 		.media-details {
@@ -189,11 +189,11 @@
 			p {
 				margin: 0 0 $unit-half 0;
 				font-size: 0.875rem;
-				color: $grey-20;
+				color: $gray-20;
 
 				strong {
 					font-weight: 600;
-					color: $grey-10;
+					color: $gray-10;
 				}
 			}
 		}
@@ -215,7 +215,7 @@
 			height: 80px;
 			object-fit: cover;
 			border-radius: $card-corner-radius;
-			border: 1px solid $grey-80;
+			border: 1px solid $gray-80;
 		}
 
 		.media-info {
@@ -223,7 +223,7 @@
 				margin: 0;
 				font-size: 0.75rem;
 				font-weight: 500;
-				color: $grey-10;
+				color: $gray-10;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -232,7 +232,7 @@
 			.size {
 				margin: 0;
 				font-size: 0.625rem;
-				color: $grey-40;
+				color: $gray-40;
 			}
 		}
 	}

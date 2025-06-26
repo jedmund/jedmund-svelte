@@ -21,7 +21,7 @@
 		align-items: center;
 		gap: $unit;
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 		flex-wrap: wrap;
 
 		.byline-section {
@@ -29,7 +29,7 @@
 		}
 
 		.separator {
-			color: $grey-40;
+			color: $gray-40;
 		}
 	}
 

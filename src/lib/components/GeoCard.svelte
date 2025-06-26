@@ -195,7 +195,7 @@
 	.map-container {
 		width: 100%;
 		position: relative;
-		background: $grey-95;
+		background: $gray-95;
 
 		:global(.leaflet-container) {
 			font-family: inherit;
@@ -205,13 +205,13 @@
 			margin: 0 0 $unit-half;
 			font-size: 1rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		:global(.location-popup p) {
 			margin: 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 			line-height: 1.4;
 		}
 
@@ -230,7 +230,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: $grey-95;
+		background: $gray-95;
 		padding: $unit-3x;
 		text-align: center;
 	}
@@ -239,19 +239,19 @@
 		h3 {
 			margin: 0 0 $unit;
 			font-size: 1.25rem;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0 0 $unit;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 
 		.coordinates {
 			font-family: 'SF Mono', Monaco, monospace;
 			font-size: 0.875rem;
-			color: $grey-60;
+			color: $gray-60;
 			margin-bottom: $unit-2x;
 		}
 

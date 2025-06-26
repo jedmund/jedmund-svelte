@@ -70,7 +70,7 @@
 		margin: 0;
 		font-size: 0.875rem;
 		line-height: 1.4;
-		color: $grey-20;
+		color: $gray-20;
 		padding: $unit 0;
 	}
 </style>

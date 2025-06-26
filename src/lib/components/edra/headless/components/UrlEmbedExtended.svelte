@@ -329,11 +329,11 @@
 		border-radius: 4px;
 		cursor: pointer;
 		transition: all 0.2s;
-		color: $grey-40;
+		color: $gray-40;
 
 		&:hover:not(:disabled) {
-			background: $grey-95;
-			color: $grey-20;
+			background: $gray-95;
+			color: $gray-20;
 		}
 
 		&.delete:hover {
@@ -355,10 +355,10 @@
 	.edra-url-embed-content {
 		display: flex;
 		width: 100%;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: $corner-radius;
 		overflow: hidden;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		padding: 0;
 		text-align: left;
 		cursor: pointer;
@@ -372,7 +372,7 @@
 		appearance: none;
 
 		&:hover {
-			border-color: $grey-60;
+			border-color: $gray-60;
 			transform: translateY(-1px);
 			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 		}
@@ -387,7 +387,7 @@
 		width: 200px;
 		height: 150px;
 		overflow: hidden;
-		background: $grey-80;
+		background: $gray-80;
 
 		img {
 			width: 100%;
@@ -410,7 +410,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		font-size: 0.75rem;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.edra-url-embed-favicon {
@@ -429,7 +429,7 @@
 		margin: 0;
 		font-size: 1rem;
 		font-weight: 600;
-		color: $grey-10;
+		color: $gray-10;
 		line-height: 1.3;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
@@ -440,7 +440,7 @@
 	.edra-url-embed-description {
 		margin: 0;
 		font-size: 0.875rem;
-		color: $grey-30;
+		color: $gray-30;
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
@@ -493,11 +493,11 @@
 		border-radius: 4px;
 		cursor: pointer;
 		transition: all 0.2s;
-		color: $grey-40;
+		color: $gray-40;
 
 		&:hover {
-			background: $grey-95;
-			color: $grey-20;
+			background: $gray-95;
+			color: $gray-20;
 		}
 
 		svg {
@@ -511,9 +511,9 @@
 		padding-bottom: 56.25%; // 16:9 aspect ratio
 		height: 0;
 		overflow: hidden;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: $corner-radius;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 
 		iframe {
 			position: absolute;
@@ -529,10 +529,10 @@
 	.edra-youtube-embed-error {
 		padding: 3rem;
 		text-align: center;
-		background: $grey-95;
-		border: 1px solid $grey-85;
+		background: $gray-95;
+		border: 1px solid $gray-85;
 		border-radius: $corner-radius;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.edra-url-embed-wrapper.selected {

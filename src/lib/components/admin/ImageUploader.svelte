@@ -540,7 +540,7 @@
 	.uploader-label {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: $red-60;
@@ -551,7 +551,7 @@
 	.help-text {
 		margin: 0;
 		font-size: 0.8rem;
-		color: $grey-40;
+		color: $gray-40;
 		line-height: 1.4;
 	}
 
@@ -561,9 +561,9 @@
 
 	// Drop Zone Styles
 	.drop-zone {
-		border: 2px dashed $grey-80;
+		border: 2px dashed $gray-80;
 		border-radius: $card-corner-radius;
-		background-color: $grey-97;
+		background-color: $gray-97;
 		cursor: pointer;
 		transition: all 0.2s ease;
 		min-height: 200px;
@@ -600,21 +600,21 @@
 		padding: $unit-4x;
 
 		.upload-icon {
-			color: $grey-50;
+			color: $gray-50;
 			margin-bottom: $unit-2x;
 		}
 
 		.upload-main-text {
 			margin: 0 0 $unit 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 			font-weight: 500;
 		}
 
 		.upload-sub-text {
 			margin: 0;
 			font-size: 0.75rem;
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
@@ -630,14 +630,14 @@
 		.upload-text {
 			margin: 0 0 $unit-2x 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 			font-weight: 500;
 		}
 
 		.progress-bar {
 			width: 200px;
 			height: 4px;
-			background-color: $grey-90;
+			background-color: $gray-90;
 			border-radius: 2px;
 			overflow: hidden;
 			margin: 0 auto;
@@ -655,7 +655,7 @@
 		position: relative;
 		border-radius: $card-corner-radius;
 		overflow: hidden;
-		background-color: $grey-95;
+		background-color: $gray-95;
 		min-height: 200px;
 
 		:global(.preview-image) {
@@ -696,13 +696,13 @@
 			margin: 0 0 $unit-half 0;
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		.file-meta {
 			margin: 0;
 			font-size: 0.75rem;
-			color: $grey-40;
+			color: $gray-40;
 		}
 	}
 
@@ -717,9 +717,9 @@
 		flex-direction: column;
 		gap: $unit-2x;
 		padding: $unit-3x;
-		background-color: $grey-97;
+		background-color: $gray-97;
 		border-radius: $card-corner-radius;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 	}
 
 	.error-message {
@@ -746,8 +746,8 @@
 		flex-shrink: 0;
 		border-radius: $card-corner-radius;
 		overflow: hidden;
-		background-color: $grey-95;
-		border: 1px solid $grey-90;
+		background-color: $gray-95;
+		border: 1px solid $gray-90;
 
 		:global(.preview-image) {
 			width: 100%;

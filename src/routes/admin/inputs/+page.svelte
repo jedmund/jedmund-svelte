@@ -228,7 +228,7 @@
 		h2 {
 			font-size: 18px;
 			font-weight: 600;
-			color: $grey-20;
+			color: $gray-20;
 			margin: 0;
 		}
 	}
@@ -244,7 +244,7 @@
 		flex-direction: column;
 		gap: $unit-3x;
 		padding: $unit-3x;
-		background-color: $grey-97;
+		background-color: $gray-97;
 		border-radius: 8px;
 	}
 

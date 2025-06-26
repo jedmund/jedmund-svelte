@@ -61,7 +61,7 @@
 		justify-content: center;
 		height: 100vh;
 		font-size: 1.125rem;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.admin-container {
@@ -77,7 +77,7 @@
 
 	.admin-card-layout {
 		flex: 1;
-		background: $grey-90;
+		background: $gray-90;
 		display: flex;
 		justify-content: center;
 		align-items: flex-start;

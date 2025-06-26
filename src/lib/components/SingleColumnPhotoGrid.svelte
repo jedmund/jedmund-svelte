@@ -45,7 +45,7 @@
 		margin: 0;
 		font-size: 0.9rem;
 		line-height: 1.6;
-		color: $grey-20;
+		color: $gray-20;
 	}
 
 	@include breakpoint('phone') {

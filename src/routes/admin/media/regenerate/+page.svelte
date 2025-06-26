@@ -418,7 +418,7 @@
 			margin: 0;
 			font-size: 1.5rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -430,16 +430,16 @@
 		height: 36px;
 		padding: 0;
 		background: transparent;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: 8px;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		color: $grey-30;
+		color: $gray-30;
 
 		&:hover {
-			background: $grey-95;
-			border-color: $grey-70;
-			color: $grey-10;
+			background: $gray-95;
+			border-color: $gray-70;
+			color: $gray-10;
 		}
 
 		:global(svg) {
@@ -469,8 +469,8 @@
 	}
 
 	.stat-card {
-		background: $grey-97;
-		border: 1px solid $grey-90;
+		background: $gray-97;
+		border: 1px solid $gray-90;
 		border-radius: 8px;
 		padding: 1.5rem;
 
@@ -478,7 +478,7 @@
 			margin: 0 0 0.5rem;
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: $grey-30;
+			color: $gray-30;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 		}
@@ -487,7 +487,7 @@
 			margin: 0;
 			font-size: 2rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -499,8 +499,8 @@
 	}
 
 	.action-card {
-		background: $grey-100;
-		border: 1px solid $grey-90;
+		background: $gray-100;
+		border: 1px solid $gray-90;
 		border-radius: 12px;
 		padding: 2rem;
 		display: flex;
@@ -520,18 +520,18 @@
 				margin: 0;
 				font-size: 1.25rem;
 				font-weight: 600;
-				color: $grey-10;
+				color: $gray-10;
 			}
 		}
 
 		p {
 			margin: 0;
-			color: $grey-30;
+			color: $gray-30;
 			line-height: 1.6;
 		}
 
 		.action-details {
-			background: $grey-97;
+			background: $gray-97;
 			border-radius: 8px;
 			padding: 1rem;
 
@@ -543,7 +543,7 @@
 				li {
 					margin: 0.25rem 0;
 					font-size: 0.875rem;
-					color: $grey-30;
+					color: $gray-30;
 				}
 			}
 		}
@@ -564,7 +564,7 @@
 			margin: 0;
 			font-size: 1.25rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -576,10 +576,10 @@
 		p {
 			margin: 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 
 			strong {
-				color: $grey-10;
+				color: $gray-10;
 			}
 		}
 	}
@@ -604,7 +604,7 @@
 
 			li {
 				font-size: 0.75rem;
-				color: $grey-30;
+				color: $gray-30;
 				margin: 0.25rem 0;
 			}
 		}
@@ -615,6 +615,6 @@
 		justify-content: flex-end;
 		margin-top: 1.5rem;
 		padding-top: 1.5rem;
-		border-top: 1px solid $grey-90;
+		border-top: 1px solid $gray-90;
 	}
 </style>

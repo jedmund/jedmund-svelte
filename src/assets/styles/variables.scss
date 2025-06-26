@@ -298,26 +298,5 @@ $screen-sm-min: 768px;
 $screen-md-min: 992px;
 $screen-lg-min: 1200px;
 
-/* Legacy color aliases for backward compatibility
- * TODO: Replace these throughout the codebase
- * -------------------------------------------------------------------------- */
-$grey-100: $gray-100;
-$grey-97: $gray-97;
-$grey-95: $gray-95;
-$grey-90: $gray-90;
-$grey-85: $gray-85;
-$grey-80: $gray-80;
-$grey-70: $gray-70;
-$grey-60: $gray-60;
-$grey-50: $gray-50;
-$grey-40: $gray-40;
-$grey-30: $gray-30;
-$grey-20: $gray-20;
-$grey-10: $gray-10;
-$grey-00: $gray-00;
-$grey-color: $gray-90;
-
 // Map old color variables to new scale
 $orange-red: $red-70;
-$green-success: $success-color;
-$red-error: $error-color;

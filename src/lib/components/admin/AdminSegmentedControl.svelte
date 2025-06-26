@@ -23,7 +23,7 @@
 <style lang="scss">
 	.segmented-control {
 		display: inline-flex;
-		background-color: $grey-95;
+		background-color: $gray-95;
 		border-radius: 50px;
 		padding: $unit-half;
 		gap: $unit-half;
@@ -35,17 +35,17 @@
 		border: none;
 		border-radius: 50px;
 		font-size: 0.925rem;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		transition: all 0.2s ease;
 
 		&:hover:not(.active) {
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		&.active {
 			background-color: white;
-			color: $grey-10;
+			color: $gray-10;
 			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 		}
 	}

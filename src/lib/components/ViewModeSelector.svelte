@@ -82,7 +82,7 @@
 <style lang="scss">
 	.view-mode-selector {
 		width: 100%;
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $corner-radius-lg;
 		box-sizing: border-box;
 		padding: $unit;
@@ -119,10 +119,10 @@
 		border-radius: $corner-radius-sm;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		color: $grey-60;
+		color: $gray-60;
 
 		&:hover {
-			background: $grey-95;
+			background: $gray-95;
 		}
 
 		&.selected {

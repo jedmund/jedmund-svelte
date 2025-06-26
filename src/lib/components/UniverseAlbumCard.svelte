@@ -89,7 +89,7 @@
 
 	.album-description {
 		margin: 0;
-		color: $grey-10;
+		color: $gray-10;
 		font-size: 1rem;
 		line-height: 1.5;
 		display: -webkit-box;

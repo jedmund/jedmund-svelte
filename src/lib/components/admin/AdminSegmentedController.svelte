@@ -139,7 +139,7 @@
 		display: flex;
 		align-items: center;
 		gap: $unit;
-		background: $grey-100;
+		background: $gray-100;
 		padding: $unit;
 		border-radius: 100px;
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -160,7 +160,7 @@
 		top: 0;
 		left: 0;
 		height: 100%;
-		background-color: $grey-85;
+		background-color: $gray-85;
 		border-radius: 100px;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		z-index: 1;
@@ -175,7 +175,7 @@
 		text-decoration: none;
 		font-size: 1rem;
 		font-weight: 400;
-		color: $grey-20;
+		color: $gray-20;
 		position: relative;
 		z-index: 2;
 		transition:
@@ -187,7 +187,7 @@
 		}
 
 		&.active {
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		.icon {
@@ -211,13 +211,13 @@
 		border-radius: 50%;
 		background: transparent;
 		border: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		transition: all 0.2s ease;
 
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.05);
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		svg {
@@ -250,12 +250,12 @@
 		border: none;
 		text-align: left;
 		font-size: 0.925rem;
-		color: $grey-20;
+		color: $gray-20;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 	}
 

@@ -276,7 +276,7 @@
 			}
 
 			&::after {
-				border-color: $grey-100;
+				border-color: $gray-100;
 			}
 		}
 
@@ -286,12 +286,12 @@
 			}
 
 			&::after {
-				border-color: $grey-100;
+				border-color: $gray-100;
 			}
 		}
 
 		&.placeholder {
-			background: $grey-90;
+			background: $gray-90;
 			cursor: default;
 
 			&:hover {

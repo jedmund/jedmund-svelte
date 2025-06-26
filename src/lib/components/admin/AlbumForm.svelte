@@ -409,7 +409,7 @@
 		height: 40px;
 		border: none;
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -418,8 +418,8 @@
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: $grey-90;
-			color: $grey-10;
+			background: $gray-90;
+			color: $gray-10;
 		}
 	}
 
@@ -461,7 +461,7 @@
 	.loading {
 		text-align: center;
 		padding: $unit-6x;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.form-section {
@@ -477,7 +477,7 @@
 	.section-title {
 		font-size: 1.125rem;
 		font-weight: 600;
-		color: $grey-10;
+		color: $gray-10;
 		margin: 0;
 	}
 
@@ -511,7 +511,7 @@
 		aspect-ratio: 1;
 		overflow: hidden;
 		border-radius: $unit;
-		background: $grey-95;
+		background: $gray-95;
 
 		:global(img) {
 			width: 100%;
@@ -566,7 +566,7 @@
 		position: relative;
 		width: 44px;
 		height: 24px;
-		background-color: $grey-80;
+		background-color: $gray-80;
 		border-radius: 12px;
 		transition: background-color 0.2s ease;
 		flex-shrink: 0;
@@ -592,13 +592,13 @@
 
 		.toggle-title {
 			font-weight: 500;
-			color: $grey-10;
+			color: $gray-10;
 			font-size: 0.875rem;
 		}
 
 		.toggle-description {
 			font-size: 0.75rem;
-			color: $grey-50;
+			color: $gray-50;
 			line-height: 1.4;
 		}
 	}
@@ -606,17 +606,17 @@
 	// Button styles
 	.btn-secondary {
 		padding: $unit $unit-2x;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		background: white;
-		color: $grey-20;
+		color: $gray-20;
 		border-radius: 8px;
 		font-size: 0.875rem;
 		cursor: pointer;
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: $grey-95;
-			border-color: $grey-70;
+			background: $gray-95;
+			border-color: $gray-70;
 		}
 
 		&:disabled {
@@ -626,11 +626,11 @@
 	}
 
 	.empty-state {
-		color: $grey-50;
+		color: $gray-50;
 		font-size: 0.875rem;
 		text-align: center;
 		padding: $unit-4x;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: $unit;
 		margin: 0;
 	}

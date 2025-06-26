@@ -224,7 +224,7 @@
 		margin-bottom: $unit;
 		font-size: 14px;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 	}
 
 	.required-indicator {
@@ -273,7 +273,7 @@
 		}
 
 		&::placeholder {
-			color: $grey-50;
+			color: $gray-50;
 		}
 
 		&:focus {
@@ -283,13 +283,13 @@
 		}
 
 		&:disabled {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			cursor: not-allowed;
-			color: $grey-40;
+			color: $gray-40;
 		}
 
 		&:read-only {
-			background-color: $grey-97;
+			background-color: $gray-97;
 			cursor: default;
 		}
 	}
@@ -364,7 +364,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: $grey-40;
+		color: $gray-40;
 		pointer-events: none;
 
 		&.prefix-icon {
@@ -401,12 +401,12 @@
 	}
 
 	.input-help {
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.char-count {
 		font-size: 12px;
-		color: $grey-50;
+		color: $gray-50;
 		font-variant-numeric: tabular-nums;
 		margin-left: auto;
 

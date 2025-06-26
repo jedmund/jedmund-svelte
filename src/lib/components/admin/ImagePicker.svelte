@@ -234,7 +234,7 @@
 	.input-label {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: $red-60;
@@ -245,15 +245,15 @@
 	.image-preview-container {
 		position: relative;
 		width: 100%;
-		border: 2px dashed $grey-80;
+		border: 2px dashed $gray-80;
 		border-radius: $card-corner-radius;
 		overflow: hidden;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		background-color: $grey-95;
+		background-color: $gray-95;
 
 		&:hover {
-			border-color: $grey-60;
+			border-color: $gray-60;
 		}
 
 		&:focus {
@@ -264,7 +264,7 @@
 
 		&.has-image {
 			border-style: solid;
-			border-color: $grey-80;
+			border-color: $gray-80;
 			background-color: transparent;
 
 			&:hover {
@@ -328,20 +328,20 @@
 	}
 
 	.empty-icon {
-		color: $grey-60;
+		color: $gray-60;
 		margin-bottom: $unit;
 	}
 
 	.empty-text {
 		margin: 0;
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 		margin-bottom: $unit;
 	}
 
 	.image-details {
 		padding: $unit-2x;
-		background-color: $grey-95;
+		background-color: $gray-95;
 		border-radius: $card-corner-radius;
 		display: flex;
 		flex-direction: column;
@@ -357,11 +357,11 @@
 
 	.detail-label {
 		font-weight: 500;
-		color: $grey-30;
+		color: $gray-30;
 	}
 
 	.detail-value {
-		color: $grey-10;
+		color: $gray-10;
 		text-align: right;
 		word-break: break-all;
 	}

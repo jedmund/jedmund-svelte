@@ -345,12 +345,12 @@
 			font-size: 1.5rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 	}
@@ -373,7 +373,7 @@
 		position: fixed;
 		bottom: $unit-3x;
 		right: $unit-3x;
-		background: $grey-100;
+		background: $gray-100;
 		padding: $unit-2x $unit-3x;
 		border-radius: $corner-radius-lg;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -386,7 +386,7 @@
 
 		p {
 			margin: 0;
-			color: $grey-50;
+			color: $gray-50;
 			font-size: 1rem;
 		}
 	}

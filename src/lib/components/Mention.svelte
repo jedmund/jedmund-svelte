@@ -65,7 +65,7 @@
 		}
 
 		footer {
-			color: $grey-50;
+			color: $gray-50;
 			flex-grow: 0;
 			font-weight: $font-weight-med;
 			font-size: 0.9rem;

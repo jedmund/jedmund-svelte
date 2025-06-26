@@ -253,7 +253,7 @@
 		}
 
 		p {
-			color: $grey-40;
+			color: $gray-40;
 			margin: 0 0 $unit-4x;
 			line-height: 1.5;
 		}
@@ -263,7 +263,7 @@
 	.album-header {
 		text-align: center;
 		padding-bottom: $unit-3x;
-		border-bottom: 1px solid $grey-90;
+		border-bottom: 1px solid $gray-90;
 		margin-bottom: $unit-4x;
 	}
 
@@ -271,7 +271,7 @@
 		font-size: 2rem;
 		font-weight: 700;
 		margin: 0 0 $unit-2x;
-		color: $grey-10;
+		color: $gray-10;
 
 		@include breakpoint('phone') {
 			font-size: 1.75rem;
@@ -280,7 +280,7 @@
 
 	.album-description {
 		font-size: 1rem;
-		color: $grey-30;
+		color: $gray-30;
 		margin: 0 0 $unit-3x;
 		line-height: 1.5;
 		max-width: 600px;
@@ -296,7 +296,7 @@
 
 		.meta-item {
 			font-size: 0.875rem;
-			color: $grey-40;
+			color: $gray-40;
 			display: flex;
 			align-items: center;
 			gap: $unit-half;
@@ -318,7 +318,7 @@
 	.empty-album {
 		text-align: center;
 		padding: $unit-6x 0;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.edra-rendered-content {
@@ -328,7 +328,7 @@
 		:global(p) {
 			margin: 0 0 $unit-3x;
 			line-height: 1.7;
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		:global(h1),
@@ -336,7 +336,7 @@
 		:global(h3),
 		:global(h4) {
 			margin: $unit-4x 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 			font-weight: 600;
 		}
 
@@ -368,10 +368,10 @@
 		:global(blockquote) {
 			margin: $unit-4x 0;
 			padding: $unit-3x;
-			background: $grey-97;
-			border-left: 4px solid $grey-80;
+			background: $gray-97;
+			border-left: 4px solid $gray-80;
 			border-radius: $unit;
-			color: $grey-30;
+			color: $gray-30;
 			font-style: italic;
 		}
 
@@ -386,7 +386,7 @@
 		}
 
 		:global(code) {
-			background: $grey-95;
+			background: $gray-95;
 			padding: 2px 6px;
 			border-radius: 3px;
 			font-family: 'SF Mono', Monaco, monospace;
@@ -394,7 +394,7 @@
 		}
 
 		:global(pre) {
-			background: $grey-95;
+			background: $gray-95;
 			padding: $unit-3x;
 			border-radius: $unit;
 			overflow-x: auto;
@@ -404,7 +404,7 @@
 		:global(hr) {
 			margin: $unit-4x 0;
 			border: none;
-			border-top: 1px solid $grey-90;
+			border-top: 1px solid $gray-90;
 		}
 
 		:global(figure) {
@@ -442,7 +442,7 @@
 		:global(figure figcaption) {
 			margin-top: $unit;
 			font-size: 0.875rem;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 
@@ -487,7 +487,7 @@
 			font-size: 1.75rem;
 			font-weight: 700;
 			margin: 0 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 
 			@include breakpoint('phone') {
 				font-size: 1.5rem;
@@ -496,7 +496,7 @@
 
 		.photo-description {
 			font-size: 1rem;
-			color: $grey-30;
+			color: $gray-30;
 			line-height: 1.6;
 			margin: 0;
 			max-width: 600px;

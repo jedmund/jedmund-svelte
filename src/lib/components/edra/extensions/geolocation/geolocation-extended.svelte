@@ -210,7 +210,7 @@
 
 	.geolocation-node {
 		margin: $unit-2x 0;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 		border-radius: $corner-radius-md;
 		overflow: hidden;
 		background: white;
@@ -221,8 +221,8 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: $unit $unit-2x;
-		background: $grey-95;
-		border-bottom: 1px solid $grey-90;
+		background: $gray-95;
+		border-bottom: 1px solid $gray-90;
 		font-size: 0.875rem;
 	}
 
@@ -237,12 +237,12 @@
 
 		.title {
 			font-weight: 500;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		.coordinates {
 			font-family: 'SF Mono', Monaco, monospace;
-			color: $grey-40;
+			color: $gray-40;
 			font-size: 0.75rem;
 		}
 	}
@@ -250,7 +250,7 @@
 	.action-button {
 		padding: 4px 8px;
 		background: transparent;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		border-radius: $corner-radius-sm;
 		cursor: pointer;
 		font-size: 0.875rem;
@@ -258,7 +258,7 @@
 
 		&:hover {
 			background: white;
-			border-color: $grey-60;
+			border-color: $gray-60;
 		}
 	}
 
@@ -266,7 +266,7 @@
 		height: 400px;
 		width: 100%;
 		position: relative;
-		background: $grey-95;
+		background: $gray-95;
 
 		&.editing {
 			opacity: 0.8;
@@ -282,13 +282,13 @@
 				margin: 0 0 $unit-half;
 				font-size: 1rem;
 				font-weight: 600;
-				color: $grey-10;
+				color: $gray-10;
 			}
 
 			p {
 				margin: 0;
 				font-size: 0.875rem;
-				color: $grey-30;
+				color: $gray-30;
 				line-height: 1.4;
 			}
 		}
@@ -308,7 +308,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: $grey-95;
+		background: $gray-95;
 		padding: $unit-3x;
 		text-align: center;
 	}
@@ -317,19 +317,19 @@
 		h3 {
 			margin: 0 0 $unit;
 			font-size: 1.25rem;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0 0 $unit;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 
 		.coordinates {
 			font-family: 'SF Mono', Monaco, monospace;
 			font-size: 0.875rem;
-			color: $grey-60;
+			color: $gray-60;
 			margin-bottom: $unit-2x;
 		}
 

@@ -451,7 +451,7 @@
 
 		p {
 			margin: 0 0 $unit-3x;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 	}
@@ -514,7 +514,7 @@
 		position: absolute;
 		border: none;
 		padding: 0;
-		background: $grey-100;
+		background: $gray-100;
 		cursor: pointer;
 		border-radius: 50%;
 		display: flex;
@@ -525,7 +525,7 @@
 			box-shadow 0.2s ease;
 
 		&:hover {
-			background: $grey-95;
+			background: $gray-95;
 		}
 
 		&.hovering {
@@ -540,11 +540,11 @@
 			outline: none;
 			box-shadow:
 				0 0 0 3px $red-60,
-				0 0 0 5px $grey-100;
+				0 0 0 5px $gray-100;
 		}
 
 		:global(svg) {
-			stroke: $grey-10;
+			stroke: $gray-10;
 			width: 16px;
 			height: 16px;
 			fill: none;

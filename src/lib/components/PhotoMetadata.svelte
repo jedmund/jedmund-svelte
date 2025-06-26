@@ -143,8 +143,8 @@
 	@import '$styles/mixins.scss';
 
 	.photo-metadata {
-		background: $grey-100;
-		border: 1px solid $grey-90;
+		background: $gray-100;
+		border: 1px solid $gray-90;
 		border-radius: $image-corner-radius;
 		padding: $unit-3x;
 		padding-bottom: $unit-2x;
@@ -162,7 +162,7 @@
 	.photo-details {
 		margin-bottom: $unit-4x;
 		padding-bottom: $unit-4x;
-		border-bottom: 1px solid $grey-90;
+		border-bottom: 1px solid $gray-90;
 		text-align: center;
 
 		@include breakpoint('phone') {
@@ -174,7 +174,7 @@
 			font-size: 1.75rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 
 			@include breakpoint('phone') {
 				font-size: 1.25rem;
@@ -184,7 +184,7 @@
 
 		.photo-description {
 			font-size: 1rem;
-			color: $grey-30;
+			color: $gray-30;
 			line-height: 1.6;
 			margin: 0;
 
@@ -223,12 +223,12 @@
 			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
-			color: $grey-40;
+			color: $gray-40;
 		}
 
 		.metadata-value {
 			font-size: 0.875rem;
-			color: $grey-10;
+			color: $gray-10;
 			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
 				monospace;
 		}
@@ -237,7 +237,7 @@
 	.albums-section {
 		margin-bottom: $unit-4x;
 		padding-bottom: $unit-4x;
-		border-bottom: 1px solid $grey-90;
+		border-bottom: 1px solid $gray-90;
 
 		@include breakpoint('phone') {
 			margin-bottom: $unit-3x;
@@ -249,7 +249,7 @@
 			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
-			color: $grey-40;
+			color: $gray-40;
 			margin: 0 0 $unit-2x;
 		}
 
@@ -272,7 +272,7 @@
 
 			&:not(:last-child)::after {
 				content: ',';
-				color: $grey-40;
+				color: $gray-40;
 				margin-left: 2px;
 			}
 		}

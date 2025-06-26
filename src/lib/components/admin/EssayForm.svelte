@@ -368,14 +368,14 @@
 
 	// Custom styles for save/publish buttons to maintain grey color scheme
 	:global(.save-button.btn-primary) {
-		background-color: $grey-10;
+		background-color: $gray-10;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-20;
+			background-color: $gray-20;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-30;
+			background-color: $gray-30;
 		}
 	}
 
@@ -386,18 +386,18 @@
 	}
 
 	:global(.chevron-button.btn-primary) {
-		background-color: $grey-10;
+		background-color: $gray-10;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-20;
+			background-color: $gray-20;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-30;
+			background-color: $gray-30;
 		}
 
 		&.active {
-			background-color: $grey-20;
+			background-color: $gray-20;
 		}
 	}
 
@@ -498,7 +498,7 @@
 			margin-bottom: $unit;
 			font-size: 14px;
 			font-weight: 500;
-			color: $grey-20;
+			color: $gray-20;
 		}
 	}
 
@@ -523,10 +523,10 @@
 		align-items: center;
 		gap: 4px;
 		padding: $unit $unit-2x;
-		background: $grey-90;
+		background: $gray-90;
 		border-radius: 20px;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 
 		:global(.btn) {
 			margin-left: 4px;

@@ -31,7 +31,7 @@
 	}
 
 	.spinner {
-		border: 3px solid $grey-80;
+		border: 3px solid $gray-80;
 		border-top-color: $primary-color;
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
@@ -45,7 +45,7 @@
 
 	.loading-text {
 		margin: 0;
-		color: $grey-40;
+		color: $gray-40;
 		font-size: 1rem;
 	}
 </style>

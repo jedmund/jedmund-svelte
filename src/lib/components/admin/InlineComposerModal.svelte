@@ -653,8 +653,8 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: calc($unit * 1.5) $unit-2x;
-		border-top: 1px solid $grey-80;
-		background-color: $grey-5;
+		border-top: 1px solid $gray-80;
+		background-color: $gray-5;
 	}
 
 	.footer-left,
@@ -666,7 +666,7 @@
 
 	.character-count {
 		font-size: 13px;
-		color: $grey-50;
+		color: $gray-50;
 		font-weight: 400;
 		padding: 0 $unit;
 		min-width: 30px;
@@ -730,7 +730,7 @@
 		position: relative;
 		background: white;
 		border-radius: $unit-2x;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		overflow: hidden;
 		width: 100%;
 
@@ -747,7 +747,7 @@
 		z-index: $z-index-dropdown;
 		background-color: rgba(255, 255, 255, 0.9) !important;
 		backdrop-filter: blur(8px);
-		border: 1px solid $grey-80 !important;
+		border: 1px solid $gray-80 !important;
 
 		&:hover {
 			background-color: rgba(255, 255, 255, 0.95) !important;
@@ -767,8 +767,8 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: $unit-2x $unit-3x;
-		border-top: 1px solid $grey-80;
-		background-color: $grey-90;
+		border-top: 1px solid $gray-80;
+		background-color: $gray-90;
 	}
 
 	.attached-photos {

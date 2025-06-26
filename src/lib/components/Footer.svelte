@@ -52,14 +52,14 @@
 	.copyright {
 		margin: 0;
 		font-size: 0.875rem; // 14px
-		color: $grey-40; // #999
+		color: $gray-40; // #999
 
 		.separator {
 			margin: 0 $unit-half;
 		}
 
 		.rss-link {
-			color: $grey-40;
+			color: $gray-40;
 			text-decoration: none;
 			transition: color 0.2s ease;
 
@@ -76,7 +76,7 @@
 		font-size: 0.875rem; // 14px
 
 		a {
-			color: $grey-40;
+			color: $gray-40;
 			text-decoration: none;
 			transition: color 0.2s ease;
 
@@ -86,7 +86,7 @@
 		}
 
 		.separator {
-			color: $grey-40;
+			color: $gray-40;
 		}
 	}
 </style>

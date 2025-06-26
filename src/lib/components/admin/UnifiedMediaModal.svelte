@@ -577,7 +577,7 @@
 			margin: 0;
 			font-size: 1.5rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		:global(.admin-filters) {
@@ -597,7 +597,7 @@
 		height: 32px;
 		border: none;
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -607,8 +607,8 @@
 		padding: 0;
 
 		&:hover {
-			background: $grey-90;
-			color: $grey-10;
+			background: $gray-90;
+			color: $gray-10;
 		}
 
 		svg {
@@ -641,11 +641,11 @@
 		justify-content: center;
 		padding: $unit-6x;
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 		min-height: 400px;
 
 		svg {
-			color: $grey-70;
+			color: $gray-70;
 			margin-bottom: $unit-2x;
 		}
 
@@ -653,12 +653,12 @@
 			margin: 0 0 $unit 0;
 			font-size: 1.25rem;
 			font-weight: 600;
-			color: $grey-30;
+			color: $gray-30;
 		}
 
 		p {
 			margin: 0;
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
@@ -672,7 +672,7 @@
 	.media-item {
 		position: relative;
 		aspect-ratio: 1;
-		background: $grey-95;
+		background: $gray-95;
 		border: none;
 		border-radius: $unit-2x;
 		overflow: hidden;
@@ -702,7 +702,7 @@
 		&.is-svg {
 			padding: $unit-2x;
 			box-sizing: border-box;
-			background-color: $grey-95 !important;
+			background-color: $gray-95 !important;
 
 			:global(.svg-image) {
 				object-fit: contain !important;
@@ -716,7 +716,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: $grey-60;
+		color: $gray-60;
 	}
 
 	.hover-overlay {
@@ -760,23 +760,23 @@
 		padding: $unit-4x;
 
 		.error-text {
-			color: $grey-40;
+			color: $gray-40;
 			margin: 0;
 		}
 
 		.retry-button {
 			padding: $unit $unit-2x;
 			background: white;
-			border: 1px solid $grey-80;
+			border: 1px solid $gray-80;
 			border-radius: $unit;
-			color: $grey-20;
+			color: $gray-20;
 			font-size: 0.875rem;
 			cursor: pointer;
 			transition: all 0.2s ease;
 
 			&:hover {
-				background: $grey-95;
-				border-color: $grey-70;
+				background: $gray-95;
+				border-color: $gray-70;
 			}
 		}
 	}
@@ -789,7 +789,7 @@
 		align-items: center;
 		gap: $unit-3x;
 		padding: $unit-3x $unit-4x $unit-4x;
-		border-top: 1px solid $grey-85;
+		border-top: 1px solid $gray-85;
 		background: white;
 		z-index: $z-index-dropdown;
 		box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
@@ -797,7 +797,7 @@
 
 	.action-summary {
 		font-size: 0.875rem;
-		color: $grey-30;
+		color: $gray-30;
 		flex: 1;
 	}
 
@@ -850,7 +850,7 @@
 		padding: $unit;
 		text-align: center;
 		font-size: 0.75rem;
-		color: $grey-50;
+		color: $gray-50;
 		word-break: break-word;
 	}
 

@@ -103,7 +103,7 @@
 	:global(.sonner-toast) {
 		background: var(--page-color) !important;
 		color: var(--text-color) !important;
-		border: 1px solid $grey-85 !important;
+		border: 1px solid $gray-85 !important;
 		border-radius: $corner-radius-lg !important;
 		box-shadow: $card-shadow !important;
 		font-size: $font-size-small !important;
@@ -143,11 +143,11 @@
 
 		&[data-type='info'] {
 			background: var(--page-color) !important;
-			border-color: $grey-70 !important;
+			border-color: $gray-70 !important;
 			color: var(--text-color) !important;
 
 			[data-icon] {
-				color: $grey-40 !important;
+				color: $gray-40 !important;
 			}
 		}
 
@@ -185,8 +185,8 @@
 
 	:global(.sonner-toast-cancel) {
 		background: transparent !important;
-		color: $grey-40 !important;
-		border: 1px solid $grey-70 !important;
+		color: $gray-40 !important;
+		border: 1px solid $gray-70 !important;
 		border-radius: $corner-radius-sm !important;
 		padding: $unit-half $unit-2x !important;
 		font-size: $font-size-extra-small !important;
@@ -194,9 +194,9 @@
 		transition: all 0.2s ease !important;
 
 		&:hover {
-			background: $grey-95 !important;
-			color: $grey-20 !important;
-			border-color: $grey-60 !important;
+			background: $gray-95 !important;
+			color: $gray-20 !important;
+			border-color: $gray-60 !important;
 		}
 	}
 

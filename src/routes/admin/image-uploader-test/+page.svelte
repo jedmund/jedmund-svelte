@@ -166,18 +166,18 @@
 		padding: $unit-4x;
 		background-color: white;
 		border-radius: $card-corner-radius;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 
 		h2 {
 			margin: 0 0 $unit 0;
 			font-size: 1.25rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0 0 $unit-3x 0;
-			color: $grey-30;
+			color: $gray-30;
 			font-size: 0.875rem;
 		}
 	}
@@ -199,15 +199,15 @@
 			margin: 0 0 $unit 0;
 			font-size: 0.875rem;
 			font-weight: 600;
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		pre {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			padding: $unit-2x;
 			border-radius: $card-corner-radius;
 			font-size: 0.75rem;
-			color: $grey-10;
+			color: $gray-10;
 			overflow-x: auto;
 			margin: 0;
 			white-space: pre-wrap;
@@ -243,11 +243,11 @@
 
 		&.btn-ghost {
 			background-color: transparent;
-			color: $grey-20;
+			color: $gray-20;
 
 			&:hover {
-				background-color: $grey-5;
-				color: $grey-00;
+				background-color: $gray-5;
+				color: $gray-00;
 			}
 		}
 	}

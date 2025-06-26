@@ -241,7 +241,7 @@
 		& + .dropdown-item {
 			margin-top: $unit;
 			padding-top: $unit;
-			border-top: 1px solid $grey-95;
+			border-top: 1px solid $gray-95;
 		}
 	}
 
@@ -252,21 +252,21 @@
 		padding: $unit-2x $unit-2x;
 		border-radius: $unit;
 		text-decoration: none;
-		color: $grey-20;
+		color: $gray-20;
 		font-size: 1rem;
 		transition: background-color 0.2s ease;
 
 		&:hover:not(.section-header) {
-			background-color: $grey-97;
+			background-color: $gray-97;
 		}
 
 		&.active {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			font-weight: 500;
 		}
 
 		&.section-header {
-			color: $grey-50;
+			color: $gray-50;
 			font-size: 0.875rem;
 			font-weight: 600;
 			text-transform: uppercase;

@@ -61,7 +61,7 @@
 	.error {
 		text-align: center;
 		padding: $unit-6x;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.error {

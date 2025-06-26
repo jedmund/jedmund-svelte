@@ -142,7 +142,7 @@
 		top: calc(100% + $unit);
 		right: 0;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit-2x;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		min-width: 140px;
@@ -166,7 +166,7 @@
 		text-align: left;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 
 		&:first-child {
@@ -183,7 +183,7 @@
 	}
 
 	.dropdown-icon {
-		color: $grey-40;
+		color: $gray-40;
 		display: flex;
 		align-items: center;
 		flex-shrink: 0;
@@ -197,6 +197,6 @@
 	.dropdown-label {
 		font-size: 0.925rem;
 		font-weight: 500;
-		color: $grey-10;
+		color: $gray-10;
 	}
 </style>

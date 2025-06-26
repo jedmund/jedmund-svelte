@@ -61,7 +61,7 @@
 		position: fixed;
 		z-index: 1050;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		padding: 4px;
@@ -78,13 +78,13 @@
 		border-radius: 4px;
 		cursor: pointer;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		white-space: nowrap;
 		transition: background-color 0.2s;
 		text-align: left;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 
 		&:focus {

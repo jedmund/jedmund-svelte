@@ -27,7 +27,7 @@
 			font-size: 1.75rem;
 			font-weight: 700;
 			margin: 0;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 

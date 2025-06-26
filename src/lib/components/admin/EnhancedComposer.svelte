@@ -1070,7 +1070,7 @@
 		border-radius: 999px;
 		border: 1px solid rgba(0, 0, 0, 0.08);
 		box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
-		background: $grey-95;
+		background: $gray-95;
 	}
 
 	.edra-editor {
@@ -1300,7 +1300,7 @@
 		justify-content: center;
 		padding: $unit-4x;
 		gap: $unit;
-		color: $grey-30;
+		color: $gray-30;
 	}
 
 	:global(.animate-spin) {
@@ -1327,7 +1327,7 @@
 		cursor: grab;
 		opacity: 0;
 		transition: opacity 0.2s;
-		color: $grey-40;
+		color: $gray-40;
 		z-index: 50;
 	}
 

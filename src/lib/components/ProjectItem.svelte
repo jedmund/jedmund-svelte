@@ -210,7 +210,7 @@
 		align-items: center;
 		gap: $unit-3x;
 		padding: $unit-3x;
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $card-corner-radius;
 		transition:
 			transform 0.15s ease-out,
@@ -232,7 +232,7 @@
 
 		&.list-only {
 			opacity: 0.7;
-			background: $grey-97;
+			background: $gray-97;
 		}
 
 		&.password-protected {
@@ -287,7 +287,7 @@
 		margin: 0;
 		font-size: 1rem; // 18px
 		line-height: 1.3;
-		color: $grey-00;
+		color: $gray-00;
 	}
 
 	.status-indicator {
@@ -299,7 +299,7 @@
 		font-weight: 500;
 
 		&.list-only {
-			color: $grey-60;
+			color: $gray-60;
 		}
 
 		&.password-protected {

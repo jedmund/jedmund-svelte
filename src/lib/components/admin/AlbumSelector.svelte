@@ -318,13 +318,13 @@
 
 	.selector-header {
 		padding: $unit-3x;
-		border-bottom: 1px solid $grey-85;
+		border-bottom: 1px solid $gray-85;
 
 		h3 {
 			margin: 0;
 			font-size: 1.125rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -358,7 +358,7 @@
 		justify-content: center;
 		padding: $unit-6x;
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 
 		p {
 			margin: $unit-2x 0 0 0;
@@ -376,13 +376,13 @@
 		align-items: center;
 		gap: $unit-2x;
 		padding: $unit-2x;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: $unit;
 		cursor: pointer;
 		transition: background 0.2s ease;
 
 		&:hover {
-			background: $grey-90;
+			background: $gray-90;
 		}
 
 		input[type='checkbox'] {
@@ -401,7 +401,7 @@
 	.album-title {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-10;
+		color: $gray-10;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -409,7 +409,7 @@
 
 	.album-meta {
 		font-size: 0.75rem;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.create-new-form {
@@ -421,7 +421,7 @@
 			margin: 0;
 			font-size: 1rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -436,6 +436,6 @@
 		justify-content: flex-end;
 		gap: $unit-2x;
 		padding: $unit-3x;
-		border-top: 1px solid $grey-85;
+		border-top: 1px solid $gray-85;
 	}
 </style>

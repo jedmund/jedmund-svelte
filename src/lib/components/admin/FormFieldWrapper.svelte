@@ -50,7 +50,7 @@
 		display: block;
 		margin-bottom: $unit;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 		font-size: 0.925rem;
 
 		.required {
@@ -67,7 +67,7 @@
 
 	.help-text {
 		margin-top: $unit;
-		color: $grey-40;
+		color: $gray-40;
 		font-size: 0.875rem;
 	}
 </style>

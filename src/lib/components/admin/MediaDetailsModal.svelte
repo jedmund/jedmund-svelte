@@ -641,7 +641,7 @@
 			font-size: 1.125rem;
 			font-weight: 500;
 			margin: 0;
-			color: $grey-10;
+			color: $gray-10;
 			word-break: break-all;
 			line-height: 1.5;
 		}
@@ -670,7 +670,7 @@
 		flex-direction: column;
 		gap: $unit-3x;
 		padding: $unit-3x;
-		background-color: $grey-90;
+		background-color: $gray-90;
 		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 	}
 
@@ -692,14 +692,14 @@
 		.label {
 			font-size: 0.75rem;
 			font-weight: 500;
-			color: $grey-50;
+			color: $gray-50;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 		}
 
 		.value {
 			font-size: 0.875rem;
-			color: $grey-10;
+			color: $gray-10;
 			font-weight: 500;
 
 			&.color-value {
@@ -723,11 +723,11 @@
 		margin-top: $unit-2x;
 		justify-content: center;
 		background: transparent;
-		border: 1px solid $grey-70;
+		border: 1px solid $gray-70;
 
 		&:hover {
 			background: rgba(0, 0, 0, 0.02);
-			border-color: $grey-70;
+			border-color: $gray-70;
 		}
 	}
 
@@ -741,7 +741,7 @@
 	.metadata-divider {
 		border-radius: 1px;
 		height: 2px;
-		background: $grey-80;
+		background: $gray-80;
 		margin: $unit-3x 0;
 	}
 
@@ -754,7 +754,7 @@
 			font-size: 1rem;
 			font-weight: 600;
 			margin: 0;
-			color: $grey-20;
+			color: $gray-20;
 		}
 	}
 
@@ -791,7 +791,7 @@
 			position: relative;
 			width: 44px;
 			height: 24px;
-			background-color: $grey-80;
+			background-color: $gray-80;
 			border-radius: 12px;
 			transition: background-color 0.2s ease;
 			flex-shrink: 0;
@@ -817,13 +817,13 @@
 
 			.toggle-title {
 				font-weight: 500;
-				color: $grey-10;
+				color: $gray-10;
 				font-size: 0.875rem;
 			}
 
 			.toggle-description {
 				font-size: 0.75rem;
-				color: $grey-50;
+				color: $gray-50;
 				line-height: 1.4;
 			}
 		}
@@ -840,7 +840,7 @@
 				margin: 0;
 				font-size: 1rem;
 				font-weight: 600;
-				color: $grey-20;
+				color: $gray-20;
 			}
 		}
 
@@ -852,15 +852,15 @@
 			background: transparent;
 			border: none;
 			border-radius: 6px;
-			color: $grey-40;
+			color: $gray-40;
 			cursor: pointer;
 			transition: all 0.2s ease;
 			font-size: 0.875rem;
 			font-weight: 500;
 
 			&:hover {
-				background: $grey-95;
-				color: $grey-20;
+				background: $gray-95;
+				color: $gray-20;
 			}
 
 			svg,
@@ -885,13 +885,13 @@
 			align-items: center;
 			gap: $unit-2x;
 			padding: $unit-2x;
-			color: $grey-50;
+			color: $gray-50;
 
 			.spinner {
 				width: 16px;
 				height: 16px;
-				border: 2px solid $grey-90;
-				border-top: 2px solid $grey-50;
+				border: 2px solid $gray-90;
+				border-top: 2px solid $gray-50;
 				border-radius: 50%;
 				animation: spin 1s linear infinite;
 			}
@@ -899,9 +899,9 @@
 
 		.usage-item {
 			padding: $unit-3x;
-			background: $grey-95;
+			background: $gray-95;
 			border-radius: 12px;
-			border: 1px solid $grey-90;
+			border: 1px solid $gray-90;
 
 			.usage-content {
 				display: flex;
@@ -917,7 +917,7 @@
 
 				.usage-title {
 					font-weight: 600;
-					color: $grey-10;
+					color: $gray-10;
 					text-decoration: none;
 					transition: color 0.2s ease;
 
@@ -927,8 +927,8 @@
 				}
 
 				.usage-type {
-					background: $grey-85;
-					color: $grey-30;
+					background: $gray-85;
+					color: $gray-30;
 					padding: $unit-half $unit;
 					border-radius: 6px;
 					font-size: 0.75rem;
@@ -945,20 +945,20 @@
 				gap: $unit-3x;
 
 				.usage-field {
-					color: $grey-40;
+					color: $gray-40;
 					font-size: 0.875rem;
 					font-weight: 500;
 				}
 
 				.usage-date {
-					color: $grey-50;
+					color: $gray-50;
 					font-size: 0.75rem;
 				}
 			}
 		}
 
 		.no-usage {
-			color: $grey-50;
+			color: $gray-50;
 			font-style: italic;
 			margin: $unit-2x 0 0 0;
 		}
@@ -971,7 +971,7 @@
 		h4 {
 			font-size: 1rem;
 			font-weight: 600;
-			color: $grey-20;
+			color: $gray-20;
 			margin: 0 0 $unit-2x 0;
 		}
 	}
@@ -986,19 +986,19 @@
 		display: inline-flex;
 		align-items: center;
 		padding: $unit-half $unit-2x;
-		background: $grey-95;
-		border: 1px solid $grey-90;
+		background: $gray-95;
+		border: 1px solid $gray-90;
 		border-radius: 20px;
-		color: $grey-20;
+		color: $gray-20;
 		text-decoration: none;
 		font-size: 0.875rem;
 		font-weight: 500;
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: $grey-90;
-			border-color: $grey-85;
-			color: $grey-10;
+			background: $gray-90;
+			border-color: $gray-85;
+			color: $gray-10;
 		}
 	}
 

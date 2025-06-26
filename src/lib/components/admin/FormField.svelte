@@ -87,7 +87,7 @@
 		display: block;
 		margin-bottom: $unit;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: #c33;
@@ -99,7 +99,7 @@
 	textarea {
 		width: 100%;
 		padding: $unit-2x $unit-3x;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		border-radius: 6px;
 		font-size: 1rem;
 		font-family: inherit;
@@ -112,7 +112,7 @@
 		}
 
 		&:disabled {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			cursor: not-allowed;
 		}
 	}
@@ -130,7 +130,7 @@
 
 	.help-text {
 		margin-top: $unit;
-		color: $grey-40;
+		color: $gray-40;
 		font-size: 0.875rem;
 	}
 </style>

@@ -155,13 +155,13 @@
 		flex-direction: column;
 		gap: $unit;
 		padding: $unit-3x;
-		border-bottom: 1px solid $grey-90;
+		border-bottom: 1px solid $gray-90;
 
 		h2 {
 			margin: 0;
 			font-size: 1.5rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -174,7 +174,7 @@
 	.modal-subtitle {
 		margin: 0;
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.close-button {
@@ -182,7 +182,7 @@
 		height: 32px;
 		border: none;
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -192,8 +192,8 @@
 		padding: 0;
 
 		&:hover {
-			background: $grey-90;
-			color: $grey-10;
+			background: $gray-90;
+			color: $gray-10;
 		}
 
 		svg {
@@ -224,13 +224,13 @@
 		align-items: center;
 		gap: $unit-3x;
 		padding: $unit-3x;
-		border-top: 1px solid $grey-90;
-		background: $grey-95;
+		border-top: 1px solid $gray-90;
+		background: $gray-95;
 	}
 
 	.action-summary {
 		font-size: 0.875rem;
-		color: $grey-30;
+		color: $gray-30;
 		flex: 1;
 	}
 

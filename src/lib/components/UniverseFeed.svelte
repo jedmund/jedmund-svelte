@@ -48,12 +48,12 @@
 			font-size: 1.5rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 	}

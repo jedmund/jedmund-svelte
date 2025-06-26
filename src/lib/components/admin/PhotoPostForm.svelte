@@ -273,12 +273,12 @@
 			font-size: 1.75rem;
 			font-weight: 700;
 			margin: 0 0 $unit-half 0;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		.subtitle {
 			font-size: 0.875rem;
-			color: $grey-40;
+			color: $gray-40;
 			margin: 0;
 		}
 	}
@@ -331,19 +331,19 @@
 		display: block;
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 		margin-bottom: $unit-half;
 	}
 
 	.editor-help {
 		font-size: 0.8rem;
-		color: $grey-40;
+		color: $gray-40;
 		margin: 0 0 $unit-2x 0;
 		line-height: 1.4;
 	}
 
 	.editor-container {
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		border-radius: $unit;
 		overflow: hidden;
 

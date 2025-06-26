@@ -283,17 +283,17 @@
 	}
 
 	.btn-secondary {
-		background-color: $grey-10;
-		color: $grey-80;
-		border: 1px solid $grey-20;
+		background-color: $gray-10;
+		color: $gray-80;
+		border: 1px solid $gray-20;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-20;
-			border-color: $grey-30;
+			background-color: $gray-20;
+			border-color: $gray-30;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-30;
+			background-color: $gray-30;
 		}
 	}
 
@@ -312,35 +312,35 @@
 
 	.btn-ghost {
 		background-color: transparent;
-		color: $grey-20;
+		color: $gray-20;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-5;
-			color: $grey-00;
+			background-color: $gray-5;
+			color: $gray-00;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-10;
+			background-color: $gray-10;
 		}
 
 		&.active {
-			background-color: $grey-10;
-			color: $grey-00;
+			background-color: $gray-10;
+			color: $gray-00;
 		}
 	}
 
 	.btn-text {
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		padding: $unit;
 
 		&:hover:not(:disabled) {
-			color: $grey-20;
-			background-color: $grey-5;
+			color: $gray-20;
+			background-color: $gray-5;
 		}
 
 		&:active:not(:disabled) {
-			color: $grey-00;
+			color: $gray-00;
 		}
 	}
 
@@ -351,30 +351,30 @@
 		font-weight: 600;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-90;
+			background-color: $gray-90;
 			color: #dc2626;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-80;
+			background-color: $gray-80;
 			color: #dc2626;
 		}
 	}
 
 	.btn-overlay {
 		background-color: white;
-		color: $grey-20;
+		color: $gray-20;
 		border: 1px solid rgba(0, 0, 0, 0.1);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
 		&:hover:not(:disabled) {
-			background-color: $grey-5;
-			color: $grey-00;
+			background-color: $gray-5;
+			color: $gray-00;
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-10;
+			background-color: $gray-10;
 			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 		}
 	}

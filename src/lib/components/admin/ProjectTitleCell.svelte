@@ -32,6 +32,6 @@
 	}
 
 	.title {
-		color: $grey-10;
+		color: $gray-10;
 	}
 </style>

@@ -258,8 +258,8 @@
 
 	.geolocation-placeholder {
 		margin: $unit-2x 0;
-		background: $grey-95;
-		border: 2px dashed $grey-80;
+		background: $gray-95;
+		border: 2px dashed $gray-80;
 		border-radius: $corner-radius-md;
 		overflow: hidden;
 	}
@@ -275,7 +275,7 @@
 
 		.label {
 			margin: 0 0 $unit-2x;
-			color: $grey-40;
+			color: $gray-40;
 			font-size: 0.875rem;
 		}
 
@@ -297,16 +297,16 @@
 		.quick-location {
 			padding: 4px 12px;
 			background: white;
-			border: 1px solid $grey-80;
+			border: 1px solid $gray-80;
 			border-radius: $corner-radius-sm;
 			font-size: 0.75rem;
-			color: $grey-30;
+			color: $gray-30;
 			cursor: pointer;
 			transition: all 0.2s ease;
 
 			&:hover {
-				border-color: $grey-60;
-				color: $grey-10;
+				border-color: $gray-60;
+				color: $gray-10;
 			}
 		}
 	}
@@ -318,7 +318,7 @@
 			margin: 0 0 $unit-3x;
 			font-size: 1rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -350,14 +350,14 @@
 		gap: $unit;
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 	}
 
 	.color-input {
 		width: 40px;
 		height: 24px;
 		padding: 0;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		border-radius: $corner-radius-sm;
 		cursor: pointer;
 	}
@@ -371,7 +371,7 @@
 		text-align: right;
 		font-family: 'SF Mono', Monaco, monospace;
 		font-size: 0.75rem;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.map-picker-modal {
@@ -402,13 +402,13 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: $unit-2x $unit-3x;
-		border-bottom: 1px solid $grey-90;
+		border-bottom: 1px solid $gray-90;
 
 		h4 {
 			margin: 0;
 			font-size: 1rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 

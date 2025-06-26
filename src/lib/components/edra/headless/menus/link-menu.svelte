@@ -165,7 +165,7 @@
 		gap: 0.25rem;
 		padding: 0.75rem;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		min-width: 280px;
@@ -175,14 +175,14 @@
 
 	.link-url-display {
 		font-size: 0.8125rem;
-		color: $grey-40;
+		color: $gray-40;
 		min-width: 120px;
 		max-width: 320px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		padding: 0.375rem 0.5rem;
-		background: $grey-80;
+		background: $gray-80;
 		border-radius: $unit-half;
 		font-family: $font-stack;
 		min-height: 32px;
@@ -194,7 +194,7 @@
 		transition: background-color 0.2s ease;
 
 		&:hover {
-			background: $grey-85;
+			background: $gray-85;
 		}
 
 		&.copied {
@@ -208,8 +208,8 @@
 			color: white;
 		}
 		100% {
-			background-color: $grey-80; // Decay to original gray
-			color: $grey-40;
+			background-color: $gray-80; // Decay to original gray
+			color: $gray-40;
 		}
 	}
 
@@ -225,11 +225,11 @@
 		}
 
 		:global(.edra-command-button svg) {
-			stroke: $grey-30;
+			stroke: $gray-30;
 		}
 
 		:global(.edra-command-button:hover svg) {
-			stroke: $grey-10;
+			stroke: $gray-10;
 		}
 
 		:global(.edra-command-button.danger:hover svg) {
@@ -258,7 +258,7 @@
 		flex: 1;
 		min-width: 220px;
 		padding: 0.3125rem 0.75rem;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit-half;
 		font-size: 0.875rem;
 		font-family: $font-stack;
@@ -289,7 +289,7 @@
 		justify-content: center;
 
 		&:hover {
-			background-color: $grey-80;
+			background-color: $gray-80;
 		}
 
 		&.danger {

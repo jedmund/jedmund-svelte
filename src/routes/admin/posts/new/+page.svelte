@@ -226,7 +226,7 @@
 		height: 40px;
 		border: none;
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -235,8 +235,8 @@
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: $grey-90;
-			color: $grey-10;
+			background: $gray-90;
+			color: $gray-10;
 		}
 	}
 
@@ -244,7 +244,7 @@
 		padding: $unit $unit-2x;
 		border: none;
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -254,8 +254,8 @@
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: $grey-90;
-			color: $grey-10;
+			background: $gray-90;
+			color: $gray-10;
 		}
 	}
 
@@ -281,7 +281,7 @@
 		top: calc(100% + $unit);
 		right: 0;
 		background: white;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		min-width: 150px;
@@ -298,14 +298,14 @@
 		text-align: left;
 		transition: background 0.2s ease;
 		font-size: 0.875rem;
-		color: $grey-10;
+		color: $gray-10;
 
 		&:hover {
-			background: $grey-95;
+			background: $gray-95;
 		}
 
 		&:not(:last-child) {
-			border-bottom: 1px solid $grey-90;
+			border-bottom: 1px solid $gray-90;
 		}
 	}
 
@@ -328,7 +328,7 @@
 		border: none;
 		font-size: 2.5rem;
 		font-weight: 700;
-		color: $grey-10;
+		color: $gray-10;
 		background: none;
 
 		&:focus {
@@ -336,7 +336,7 @@
 		}
 
 		&::placeholder {
-			color: $grey-60;
+			color: $gray-60;
 		}
 	}
 

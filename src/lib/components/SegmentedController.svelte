@@ -132,7 +132,7 @@
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		background: $grey-100;
+		background: $gray-100;
 		padding: $unit;
 		border-radius: 100px;
 		box-shadow: 0 1px 3px $shadow-light;

@@ -213,7 +213,7 @@
 				position: relative;
 				width: 100%;
 				aspect-ratio: 1 / 1;
-				background-color: $grey-5;
+				background-color: $gray-5;
 				border-radius: $unit;
 			}
 
@@ -294,7 +294,7 @@
 				.artist-name {
 					font-size: $font-size-extra-small;
 					font-weight: $font-weight-med;
-					color: $grey-40;
+					color: $gray-40;
 				}
 			}
 		}
