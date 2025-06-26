@@ -330,6 +330,19 @@ input[type='checkbox'] {
 	}
 }
 
+/* Highlight Styles */
+.tiptap mark {
+	font-style: normal !important;
+	padding: 0.125rem 0;
+	border-radius: 0.25rem;
+	text-decoration: none;
+}
+
+.tiptap mark[data-color] {
+	background-color: var(--highlight-color);
+	color: inherit;
+}
+
 /* Math Equations (KaTeX) */
 .katex:hover {
 	background-color: var(--code-bg);
