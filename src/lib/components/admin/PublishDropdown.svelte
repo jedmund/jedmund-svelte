@@ -38,21 +38,22 @@
 </script>
 
 <BaseDropdown bind:isOpen={isDropdownOpen} {disabled} {isLoading} class="publish-dropdown">
-	<Button
-		slot="trigger"
-		variant="primary"
-		buttonSize="large"
-		onclick={handlePublishClick}
-		disabled={disabled || isLoading}
-	>
-		{isLoading ? loadingText : publishText}
-	</Button>
+	{#snippet trigger()}
+		<Button
+			variant="primary"
+			buttonSize="large"
+			onclick={handlePublishClick}
+			disabled={disabled || isLoading}
+		>
+			{isLoading ? loadingText : publishText}
+		</Button>
+	{/snippet}
 
 	{#if showDropdown}
-		<div slot="dropdown">
+		{#snippet dropdown()}
 			<DropdownItem onclick={handleSaveDraftClick}>
 				{saveDraftText}
 			</DropdownItem>
-		</div>
+		{/snippet}
 	{/if}
 </BaseDropdown>
