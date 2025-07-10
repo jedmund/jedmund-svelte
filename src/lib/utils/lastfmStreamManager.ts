@@ -38,11 +38,14 @@ export class LastfmStreamManager {
 	 */
 	async checkForUpdates(): Promise<StreamUpdate> {
 		try {
+			// Always fetch fresh data for now playing detection
+			const freshData = await this.fetchFreshRecentTracks()
+			
 			// Fetch recent albums
-			const albums = await this.getRecentAlbums(4)
+			const albums = await this.getRecentAlbums(4, freshData)
 
 			// Process now playing status
-			await this.updateNowPlayingStatus(albums)
+			await this.updateNowPlayingStatus(albums, freshData)
 
 			// Enrich albums with additional data
 			const enrichedAlbums = await this.enrichAlbums(albums)
@@ -60,7 +63,7 @@ export class LastfmStreamManager {
 			}
 
 			// Check for now playing updates for non-recent albums
-			const nowPlayingUpdates = await this.getNowPlayingUpdatesForNonRecentAlbums(enrichedAlbums)
+			const nowPlayingUpdates = await this.getNowPlayingUpdatesForNonRecentAlbums(enrichedAlbums, freshData)
 			if (nowPlayingUpdates.length > 0) {
 				update.nowPlayingUpdates = nowPlayingUpdates
 			}
@@ -73,24 +76,26 @@ export class LastfmStreamManager {
 	}
 
 	/**
+	 * Fetch fresh recent tracks from Last.fm (no cache)
+	 */
+	private async fetchFreshRecentTracks(): Promise<any> {
+		logger.music('debug', 'Fetching fresh Last.fm recent tracks for now playing detection')
+		const recentTracksResponse = await this.client.user.getRecentTracks(this.username, {
+			limit: 50,
+			extended: true
+		})
+		// Still cache it for other uses, but always fetch fresh for now playing
+		await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse)
+		return recentTracksResponse
+	}
+
+	/**
 	 * Get recent albums from Last.fm
 	 */
-	private async getRecentAlbums(limit: number): Promise<Album[]> {
-		// Try cache first
-		const cached = await this.albumEnricher.getCachedRecentTracks(this.username)
-
-		let recentTracksResponse
-		if (cached) {
-			logger.music('debug', 'Using cached Last.fm recent tracks for album stream')
-			recentTracksResponse = cached
-		} else {
-			logger.music('debug', 'Fetching fresh Last.fm recent tracks for album stream')
-			recentTracksResponse = await this.client.user.getRecentTracks(this.username, {
-				limit: 50,
-				extended: true
-			})
-			// Cache the response
-			await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse)
+	private async getRecentAlbums(limit: number, recentTracksResponse?: any): Promise<Album[]> {
+		// Use provided fresh data or fetch new
+		if (!recentTracksResponse) {
+			recentTracksResponse = await this.fetchFreshRecentTracks()
 		}
 
 		// Convert tracks to unique albums
@@ -119,19 +124,10 @@ export class LastfmStreamManager {
 	/**
 	 * Update now playing status using the detector
 	 */
-	private async updateNowPlayingStatus(albums: Album[]): Promise<void> {
-		// Get recent tracks for now playing detection
-		const cached = await this.albumEnricher.getCachedRecentTracks(this.username)
-
-		let recentTracksResponse
-		if (cached) {
-			recentTracksResponse = cached
-		} else {
-			recentTracksResponse = await this.client.user.getRecentTracks(this.username, {
-				limit: 50,
-				extended: true
-			})
-			await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse)
+	private async updateNowPlayingStatus(albums: Album[], recentTracksResponse?: any): Promise<void> {
+		// Use provided fresh data or fetch new
+		if (!recentTracksResponse) {
+			recentTracksResponse = await this.fetchFreshRecentTracks()
 		}
 
 		// Process now playing detection
@@ -240,18 +236,15 @@ export class LastfmStreamManager {
 	 * Get now playing updates for albums not in the recent list
 	 */
 	private async getNowPlayingUpdatesForNonRecentAlbums(
-		recentAlbums: Album[]
+		recentAlbums: Album[],
+		recentTracksResponse?: any
 	): Promise<NowPlayingUpdate[]> {
 		const updates: NowPlayingUpdate[] = []
 
-		// Get all now playing albums
-		const cached = await this.albumEnricher.getCachedRecentTracks(this.username)
-		const recentTracksResponse =
-			cached ||
-			(await this.client.user.getRecentTracks(this.username, {
-				limit: 50,
-				extended: true
-			}))
+		// Use provided fresh data or fetch new
+		if (!recentTracksResponse) {
+			recentTracksResponse = await this.fetchFreshRecentTracks()
+		}
 
 		const nowPlayingMap = await this.nowPlayingDetector.processNowPlayingTracks(
 			recentTracksResponse,

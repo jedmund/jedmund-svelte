@@ -5,7 +5,8 @@ import { logger } from '$lib/server/logger'
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
-const UPDATE_INTERVAL = 30000 // 30 seconds to reduce API load
+const UPDATE_INTERVAL = 30000 // 30 seconds default
+const FAST_UPDATE_INTERVAL = 10000 // 10 seconds when music is playing
 
 export const GET: RequestHandler = async ({ request }) => {
 	const encoder = new TextEncoder()
@@ -16,6 +17,8 @@ export const GET: RequestHandler = async ({ request }) => {
 			const streamManager = new LastfmStreamManager(client, USERNAME)
 			let intervalId: NodeJS.Timeout | null = null
 			let isClosed = false
+			let currentInterval = UPDATE_INTERVAL
+			let isPlaying = false
 
 			// Send initial connection message
 			try {
@@ -36,6 +39,9 @@ export const GET: RequestHandler = async ({ request }) => {
 				try {
 					const update = await streamManager.checkForUpdates()
 
+					// Check if music is playing
+					let musicIsPlaying = false
+
 					// Send album updates if any
 					if (update.albums && !isClosed) {
 						try {
@@ -43,6 +49,8 @@ export const GET: RequestHandler = async ({ request }) => {
 							controller.enqueue(encoder.encode(`event: albums\ndata: ${data}\n\n`))
 
 							const nowPlayingAlbum = update.albums.find((a) => a.isNowPlaying)
+							musicIsPlaying = !!nowPlayingAlbum
+							
 							logger.music('debug', 'Sent album update with now playing status:', {
 								totalAlbums: update.albums.length,
 								nowPlayingAlbum: nowPlayingAlbum
@@ -59,8 +67,28 @@ export const GET: RequestHandler = async ({ request }) => {
 						try {
 							const data = JSON.stringify(update.nowPlayingUpdates)
 							controller.enqueue(encoder.encode(`event: nowplaying\ndata: ${data}\n\n`))
+							
+							// Check if any of the updates indicate music is playing
+							musicIsPlaying = musicIsPlaying || update.nowPlayingUpdates.some(u => u.isNowPlaying)
 						} catch (e) {
 							isClosed = true
+						}
+					}
+
+					// Adjust polling interval based on playing state
+					if (musicIsPlaying !== isPlaying) {
+						isPlaying = musicIsPlaying
+						const newInterval = isPlaying ? FAST_UPDATE_INTERVAL : UPDATE_INTERVAL
+						
+						if (newInterval !== currentInterval) {
+							currentInterval = newInterval
+							logger.music('debug', `Adjusting polling interval to ${currentInterval}ms (playing: ${isPlaying})`)
+							
+							// Reset interval with new timing
+							if (intervalId) {
+								clearInterval(intervalId)
+								intervalId = setInterval(checkForUpdates, currentInterval)
+							}
 						}
 					}
 
@@ -82,7 +110,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			await checkForUpdates()
 
 			// Set up interval
-			intervalId = setInterval(checkForUpdates, UPDATE_INTERVAL)
+			intervalId = setInterval(checkForUpdates, currentInterval)
 
 			// Handle client disconnect
 			request.signal.addEventListener('abort', () => {

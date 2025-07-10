@@ -24,6 +24,11 @@ export interface NowPlayingResult {
 const SCROBBLE_LAG = 3 * 60 * 1000 // 3 minutes to account for Last.fm scrobble delay
 const TRACK_HISTORY_WINDOW = 60 * 60 * 1000 // Keep 1 hour of track history
 
+// Confidence thresholds
+const CONFIDENCE_HIGH = 0.9
+const CONFIDENCE_MEDIUM = 0.6
+const CONFIDENCE_LOW = 0.3
+
 export class NowPlayingDetector {
 	private recentTracks: TrackPlayInfo[] = []
 
@@ -43,6 +48,36 @@ export class NowPlayingDetector {
 		const cutoffTime = new Date(now.getTime() - TRACK_HISTORY_WINDOW)
 
 		this.recentTracks = this.recentTracks.filter((track) => track.scrobbleTime > cutoffTime)
+	}
+
+	/**
+	 * Calculate confidence score for now playing detection
+	 */
+	private calculateConfidence(
+		scrobbleTime: Date,
+		durationMs: number,
+		now: Date = new Date()
+	): { confidence: number; reason: string } {
+		const elapsed = now.getTime() - scrobbleTime.getTime()
+		const progress = elapsed / durationMs
+
+		// Very confident if within normal playback window
+		if (progress >= 0 && progress <= 1.0) {
+			return { confidence: CONFIDENCE_HIGH, reason: 'within normal playback' }
+		}
+
+		// Medium confidence if slightly over (accounting for buffering/pauses)
+		if (progress > 1.0 && progress <= 1.2) {
+			return { confidence: CONFIDENCE_MEDIUM, reason: 'slightly over duration (buffering/pauses)' }
+		}
+
+		// Low confidence if significantly over but within lag window
+		if (progress > 1.2 && elapsed <= durationMs + SCROBBLE_LAG) {
+			return { confidence: CONFIDENCE_LOW, reason: 'significantly over but within lag window' }
+		}
+
+		// No confidence if too far past expected end
+		return { confidence: 0, reason: 'track ended' }
 	}
 
 	/**
@@ -74,19 +109,27 @@ export class NowPlayingDetector {
 		)
 
 		if (trackData?.durationMs) {
-			const trackEndTime = new Date(
-				mostRecentTrack.scrobbleTime.getTime() + trackData.durationMs + SCROBBLE_LAG
+			const { confidence, reason } = this.calculateConfidence(
+				mostRecentTrack.scrobbleTime,
+				trackData.durationMs,
+				now
 			)
 
-			if (now < trackEndTime) {
+			// Only consider it playing if confidence is above threshold
+			if (confidence >= CONFIDENCE_LOW) {
 				logger.music(
 					'debug',
-					`Track "${mostRecentTrack.trackName}" is still playing (ends at ${trackEndTime.toLocaleTimeString()})`
+					`Track "${mostRecentTrack.trackName}" detected as playing (confidence: ${confidence}, ${reason})`
 				)
 				return {
 					isNowPlaying: true,
 					nowPlayingTrack: mostRecentTrack.trackName
 				}
+			} else {
+				logger.music(
+					'debug',
+					`Track "${mostRecentTrack.trackName}" confidence too low: ${confidence} (${reason})`
+				)
 			}
 		}
 
@@ -120,8 +163,13 @@ export class NowPlayingDetector {
 		for (const track of tracks) {
 			if (track.nowPlaying) {
 				hasOfficialNowPlaying = true
+				logger.music('debug', `Last.fm reports "${track.name}" by ${track.artist.name} as now playing`)
 				break
 			}
+		}
+
+		if (!hasOfficialNowPlaying) {
+			logger.music('debug', 'No official now playing from Last.fm, will use duration-based detection')
 		}
 
 		// Process all tracks
@@ -150,10 +198,18 @@ export class NowPlayingDetector {
 					try {
 						const appleMusicData = await appleMusicDataLookup(album.artistName, album.albumName)
 						if (appleMusicData?.tracks) {
+							logger.music(
+								'debug',
+								`Checking duration-based detection for "${album.albumName}" (${appleMusicData.tracks.length} tracks)`
+							)
 							const result = this.checkAlbumNowPlaying(album.albumName, appleMusicData.tracks)
 							if (result?.isNowPlaying) {
 								album.isNowPlaying = true
 								album.nowPlayingTrack = result.nowPlayingTrack
+								logger.music(
+									'debug',
+									`Duration-based detection: "${album.nowPlayingTrack}" from "${album.albumName}" is now playing`
+								)
 							}
 						}
 					} catch (error) {
@@ -172,6 +228,10 @@ export class NowPlayingDetector {
 
 		// Update recent tracks
 		this.updateRecentTracks(newRecentTracks)
+
+		// Log summary
+		const nowPlayingCount = Array.from(albums.values()).filter(a => a.isNowPlaying).length
+		logger.music('debug', `Detected ${nowPlayingCount} album(s) as now playing out of ${albums.size} recent albums`)
 
 		// Ensure only one album is marked as now playing
 		return this.ensureSingleNowPlaying(albums, newRecentTracks)

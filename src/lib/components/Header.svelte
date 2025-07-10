@@ -2,6 +2,7 @@
 	import Avatar from './Avatar.svelte'
 	import SegmentedController from './SegmentedController.svelte'
 	import NavDropdown from './NavDropdown.svelte'
+	import NowPlayingBar from './NowPlayingBar.svelte'
 	import { albumStream } from '$lib/stores/album-stream'
 	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
 	import type { Album } from '$lib/types/lastfm'
@@ -23,6 +24,15 @@
 			const nowPlaying = state.albums.find((album) => album.isNowPlaying)
 			currentlyPlayingAlbum = nowPlaying || null
 			isPlayingMusic = !!nowPlaying
+
+			// Debug logging
+			if (nowPlaying) {
+				console.log('Header: Now playing detected:', {
+					artist: nowPlaying.artist.name,
+					album: nowPlaying.name,
+					track: nowPlaying.nowPlayingTrack
+				})
+			}
 		})
 
 		return unsubscribe
@@ -32,7 +42,12 @@
 	$effect(() => {
 		const unsubscribe = nowPlayingStream.subscribe((state) => {
 			const hasNowPlaying = Array.from(state.updates.values()).some((update) => update.isNowPlaying)
-			if (!hasNowPlaying && currentlyPlayingAlbum) {
+			console.log('Header: nowPlayingStream update:', {
+				hasNowPlaying,
+				updatesCount: state.updates.size
+			})
+			// Only clear if we explicitly know music stopped
+			if (!hasNowPlaying && currentlyPlayingAlbum && state.updates.size > 0) {
 				// Music stopped
 				currentlyPlayingAlbum = null
 				isPlayingMusic = false
@@ -82,31 +97,25 @@
 	style="--gradient-opacity: {gradientOpacity}; --padding-progress: {paddingProgress}"
 >
 	<div class="header-content">
-		<a 
-			href="/about" 
-			class="header-link" 
+		<a
+			href="/about"
+			class="header-link"
 			aria-label="@jedmund"
-			onmouseenter={() => isHoveringAvatar = true}
-			onmouseleave={() => isHoveringAvatar = false}
+			onmouseenter={() => {
+				isHoveringAvatar = true
+				console.log('Header: Hovering avatar, showing now playing?', {
+					isHoveringAvatar: true,
+					isPlayingMusic,
+					currentlyPlayingAlbum: currentlyPlayingAlbum?.name
+				})
+			}}
+			onmouseleave={() => (isHoveringAvatar = false)}
 		>
 			<Avatar />
 		</a>
 		<div class="nav-desktop">
 			{#if isHoveringAvatar && isPlayingMusic && currentlyPlayingAlbum}
-				<div class="now-playing">
-					<span class="music-note">♪</span>
-					{#if getAlbumArtwork(currentlyPlayingAlbum)}
-						<img 
-							src={getAlbumArtwork(currentlyPlayingAlbum)} 
-							alt="{currentlyPlayingAlbum.name} album cover"
-							class="album-thumbnail"
-						/>
-					{/if}
-					<span class="track-info">
-						{currentlyPlayingAlbum.artist.name} - {currentlyPlayingAlbum.nowPlayingTrack || currentlyPlayingAlbum.name}
-					</span>
-					<span class="music-note">♪</span>
-				</div>
+				<NowPlayingBar album={currentlyPlayingAlbum} {getAlbumArtwork} />
 			{:else}
 				<SegmentedController />
 			{/if}
@@ -197,53 +206,6 @@
 
 		@include breakpoint('phone') {
 			display: block;
-		}
-	}
-
-	.now-playing {
-		display: flex;
-		align-items: center;
-		gap: $unit-2x;
-		padding: $unit-2x $unit-3x;
-		background: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
-		border-radius: $corner-radius-3xl;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		min-width: 300px;
-		height: 52px;
-		transition: all $transition-fast ease;
-
-		.music-note {
-			font-size: $font-size-md;
-			opacity: 0.8;
-			animation: pulse 2s ease-in-out infinite;
-		}
-
-		.album-thumbnail {
-			width: 28px;
-			height: 28px;
-			border-radius: $corner-radius-sm;
-			object-fit: cover;
-		}
-
-		.track-info {
-			flex: 1;
-			font-size: $font-size-sm;
-			font-weight: $font-weight-medium;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			text-align: center;
-		}
-	}
-
-	@keyframes pulse {
-		0%, 100% {
-			opacity: 0.8;
-		}
-		50% {
-			opacity: 0.4;
 		}
 	}
 </style>
