@@ -63,9 +63,9 @@ export function getFileExtension(filename: string): string {
 export function validateFileType(file: File, acceptedTypes: string[]): boolean {
 	// If no types specified, accept all
 	if (acceptedTypes.length === 0) return true
-	
+
 	// Check if file type matches any accepted type
-	return acceptedTypes.some(type => {
+	return acceptedTypes.some((type) => {
 		if (type === 'image/*') return file.type.startsWith('image/')
 		if (type === 'video/*') return file.type.startsWith('video/')
 		if (type === 'audio/*') return file.type.startsWith('audio/')
@@ -89,6 +89,6 @@ export function getMimeTypeDisplayName(mimeType: string): string {
 		'audio/wav': 'WAV Audio',
 		'application/pdf': 'PDF Document'
 	}
-	
+
 	return typeMap[mimeType] || getFileType(mimeType)
 }

@@ -41,10 +41,8 @@ export class NowPlayingDetector {
 	private cleanupOldTracks() {
 		const now = new Date()
 		const cutoffTime = new Date(now.getTime() - TRACK_HISTORY_WINDOW)
-		
-		this.recentTracks = this.recentTracks.filter(
-			track => track.scrobbleTime > cutoffTime
-		)
+
+		this.recentTracks = this.recentTracks.filter((track) => track.scrobbleTime > cutoffTime)
 	}
 
 	/**
@@ -59,9 +57,7 @@ export class NowPlayingDetector {
 		const now = new Date()
 
 		// Find the most recent track from this album
-		const albumTracks = this.recentTracks.filter(
-			track => track.albumName === albumName
-		)
+		const albumTracks = this.recentTracks.filter((track) => track.albumName === albumName)
 
 		if (albumTracks.length === 0) {
 			return { isNowPlaying: false }
@@ -74,7 +70,7 @@ export class NowPlayingDetector {
 
 		// Find track duration from the tracks list
 		const trackData = tracks.find(
-			t => t.name.toLowerCase() === mostRecentTrack.trackName.toLowerCase()
+			(t) => t.name.toLowerCase() === mostRecentTrack.trackName.toLowerCase()
 		)
 
 		if (trackData?.durationMs) {
@@ -119,7 +115,7 @@ export class NowPlayingDetector {
 
 		// Update recent tracks list
 		const newRecentTracks: TrackPlayInfo[] = []
-		
+
 		// Check if Last.fm reports any track as officially now playing
 		for (const track of tracks) {
 			if (track.nowPlaying) {
@@ -161,7 +157,12 @@ export class NowPlayingDetector {
 							}
 						}
 					} catch (error) {
-						logger.error(`Error checking duration for ${album.albumName}:`, error as Error, undefined, 'music')
+						logger.error(
+							`Error checking duration for ${album.albumName}:`,
+							error as Error,
+							undefined,
+							'music'
+						)
 					}
 				}
 
@@ -183,8 +184,8 @@ export class NowPlayingDetector {
 		albums: Map<string, NowPlayingUpdate>,
 		recentTracks: TrackPlayInfo[]
 	): Map<string, NowPlayingUpdate> {
-		const nowPlayingAlbums = Array.from(albums.values()).filter(a => a.isNowPlaying)
-		
+		const nowPlayingAlbums = Array.from(albums.values()).filter((a) => a.isNowPlaying)
+
 		if (nowPlayingAlbums.length <= 1) {
 			return albums
 		}
@@ -199,7 +200,7 @@ export class NowPlayingDetector {
 		let mostRecentAlbum = nowPlayingAlbums[0]
 
 		for (const album of nowPlayingAlbums) {
-			const albumTracks = recentTracks.filter(t => t.albumName === album.albumName)
+			const albumTracks = recentTracks.filter((t) => t.albumName === album.albumName)
 			if (albumTracks.length > 0) {
 				const latestTrack = albumTracks.reduce((latest, track) =>
 					track.scrobbleTime > latest.scrobbleTime ? track : latest
@@ -212,7 +213,7 @@ export class NowPlayingDetector {
 		}
 
 		// Mark all others as not playing
-		nowPlayingAlbums.forEach(album => {
+		nowPlayingAlbums.forEach((album) => {
 			if (album !== mostRecentAlbum) {
 				const key = `${album.artistName}:${album.albumName}`
 				albums.set(key, {

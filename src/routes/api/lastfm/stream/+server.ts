@@ -41,8 +41,8 @@ export const GET: RequestHandler = async ({ request }) => {
 						try {
 							const data = JSON.stringify(update.albums)
 							controller.enqueue(encoder.encode(`event: albums\ndata: ${data}\n\n`))
-							
-							const nowPlayingAlbum = update.albums.find(a => a.isNowPlaying)
+
+							const nowPlayingAlbum = update.albums.find((a) => a.isNowPlaying)
 							logger.music('debug', 'Sent album update with now playing status:', {
 								totalAlbums: update.albums.length,
 								nowPlayingAlbum: nowPlayingAlbum

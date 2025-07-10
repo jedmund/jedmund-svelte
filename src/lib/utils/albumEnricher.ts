@@ -37,17 +37,22 @@ export class AlbumEnricher {
 		logger.music('debug', `Fetching fresh album info for "${album.name}"`)
 		try {
 			const albumInfo = await this.client.album.getInfo(album.name, album.artist.name)
-			
+
 			// Cache the result
 			await redis.set(cacheKey, JSON.stringify(albumInfo), 'EX', this.cacheTTL.albumInfo)
-			
+
 			return {
 				...album,
 				url: albumInfo?.url || '',
 				images: transformImages(albumInfo?.images || [])
 			}
 		} catch (error) {
-			logger.error(`Failed to fetch album info for "${album.name}":`, error as Error, undefined, 'music')
+			logger.error(
+				`Failed to fetch album info for "${album.name}":`,
+				error as Error,
+				undefined,
+				'music'
+			)
 			return album
 		}
 	}
@@ -70,10 +75,15 @@ export class AlbumEnricher {
 
 			if (appleMusicAlbum) {
 				const transformedData = await transformAlbumData(appleMusicAlbum)
-				
+
 				// Cache the result
-				await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', this.cacheTTL.appleMusicData)
-				
+				await redis.set(
+					cacheKey,
+					JSON.stringify(transformedData),
+					'EX',
+					this.cacheTTL.appleMusicData
+				)
+
 				return mergeAppleMusicData(album, transformedData)
 			}
 		} catch (error) {
@@ -120,10 +130,15 @@ export class AlbumEnricher {
 
 			const transformedData = await transformAlbumData(appleMusicAlbum)
 			await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', this.cacheTTL.appleMusicData)
-			
+
 			return transformedData
 		} catch (error) {
-			logger.error(`Error fetching Apple Music data for ${albumName}:`, error as Error, undefined, 'music')
+			logger.error(
+				`Error fetching Apple Music data for ${albumName}:`,
+				error as Error,
+				undefined,
+				'music'
+			)
 			return null
 		}
 	}
@@ -142,7 +157,7 @@ export class AlbumEnricher {
 	async getCachedRecentTracks(username: string): Promise<any | null> {
 		const cacheKey = `lastfm:recent:${username}`
 		const cached = await redis.get(cacheKey)
-		
+
 		if (cached) {
 			const data = JSON.parse(cached)
 			// Convert date strings back to Date objects
@@ -154,7 +169,7 @@ export class AlbumEnricher {
 			}
 			return data
 		}
-		
+
 		return null
 	}
 }

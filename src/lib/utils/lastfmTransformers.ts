@@ -22,7 +22,13 @@ export function transformImages(images: LastfmImage[]): AlbumImages {
 	}
 
 	// Set default to the largest available image
-	imageMap.default = imageMap.mega || imageMap.extralarge || imageMap.large || imageMap.medium || imageMap.small || ''
+	imageMap.default =
+		imageMap.mega ||
+		imageMap.extralarge ||
+		imageMap.large ||
+		imageMap.medium ||
+		imageMap.small ||
+		''
 
 	return imageMap
 }

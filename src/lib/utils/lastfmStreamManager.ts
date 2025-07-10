@@ -40,31 +40,31 @@ export class LastfmStreamManager {
 		try {
 			// Fetch recent albums
 			const albums = await this.getRecentAlbums(4)
-			
+
 			// Process now playing status
 			await this.updateNowPlayingStatus(albums)
-			
+
 			// Enrich albums with additional data
 			const enrichedAlbums = await this.enrichAlbums(albums)
-			
+
 			// Ensure only one album is marked as now playing
 			this.ensureSingleNowPlaying(enrichedAlbums)
-			
+
 			// Check for changes
 			const update: StreamUpdate = {}
-			
+
 			// Check if album order or now playing status changed
 			if (this.hasAlbumsChanged(enrichedAlbums)) {
 				update.albums = enrichedAlbums
 				this.updateState(enrichedAlbums)
 			}
-			
+
 			// Check for now playing updates for non-recent albums
 			const nowPlayingUpdates = await this.getNowPlayingUpdatesForNonRecentAlbums(enrichedAlbums)
 			if (nowPlayingUpdates.length > 0) {
 				update.nowPlayingUpdates = nowPlayingUpdates
 			}
-			
+
 			return update
 		} catch (error) {
 			logger.error('Error checking for updates:', error as Error, undefined, 'music')
@@ -78,7 +78,7 @@ export class LastfmStreamManager {
 	private async getRecentAlbums(limit: number): Promise<Album[]> {
 		// Try cache first
 		const cached = await this.albumEnricher.getCachedRecentTracks(this.username)
-		
+
 		let recentTracksResponse
 		if (cached) {
 			logger.music('debug', 'Using cached Last.fm recent tracks for album stream')
@@ -122,7 +122,7 @@ export class LastfmStreamManager {
 	private async updateNowPlayingStatus(albums: Album[]): Promise<void> {
 		// Get recent tracks for now playing detection
 		const cached = await this.albumEnricher.getCachedRecentTracks(this.username)
-		
+
 		let recentTracksResponse
 		if (cached) {
 			recentTracksResponse = cached
@@ -137,14 +137,15 @@ export class LastfmStreamManager {
 		// Process now playing detection
 		const nowPlayingMap = await this.nowPlayingDetector.processNowPlayingTracks(
 			recentTracksResponse,
-			(artistName, albumName) => this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
+			(artistName, albumName) =>
+				this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
 		)
 
 		// Update albums with now playing status
 		for (const album of albums) {
 			const key = getAlbumKey(album.artist.name, album.name)
 			const nowPlayingInfo = nowPlayingMap.get(key)
-			
+
 			if (nowPlayingInfo) {
 				album.isNowPlaying = nowPlayingInfo.isNowPlaying
 				album.nowPlayingTrack = nowPlayingInfo.nowPlayingTrack
@@ -156,15 +157,15 @@ export class LastfmStreamManager {
 	 * Enrich albums with additional data
 	 */
 	private async enrichAlbums(albums: Album[]): Promise<Album[]> {
-		return Promise.all(albums.map(album => this.albumEnricher.enrichAlbum(album)))
+		return Promise.all(albums.map((album) => this.albumEnricher.enrichAlbum(album)))
 	}
 
 	/**
 	 * Ensure only one album is marked as now playing
 	 */
 	private ensureSingleNowPlaying(albums: Album[]): void {
-		const nowPlayingCount = albums.filter(a => a.isNowPlaying).length
-		
+		const nowPlayingCount = albums.filter((a) => a.isNowPlaying).length
+
 		if (nowPlayingCount > 1) {
 			logger.music(
 				'debug',
@@ -176,11 +177,17 @@ export class LastfmStreamManager {
 			albums.forEach((album, index) => {
 				if (album.isNowPlaying) {
 					if (foundFirst) {
-						logger.music('debug', `Marking album "${album.name}" at position ${index} as not playing`)
+						logger.music(
+							'debug',
+							`Marking album "${album.name}" at position ${index} as not playing`
+						)
 						album.isNowPlaying = false
 						album.nowPlayingTrack = undefined
 					} else {
-						logger.music('debug', `Keeping album "${album.name}" at position ${index} as now playing`)
+						logger.music(
+							'debug',
+							`Keeping album "${album.name}" at position ${index} as now playing`
+						)
 						foundFirst = true
 					}
 				}
@@ -193,8 +200,9 @@ export class LastfmStreamManager {
 	 */
 	private hasAlbumsChanged(albums: Album[]): boolean {
 		// Check album order
-		const currentAlbumOrder = albums.map(a => getAlbumKey(a.artist.name, a.name))
-		const albumOrderChanged = JSON.stringify(currentAlbumOrder) !== JSON.stringify(this.state.lastAlbumOrder)
+		const currentAlbumOrder = albums.map((a) => getAlbumKey(a.artist.name, a.name))
+		const albumOrderChanged =
+			JSON.stringify(currentAlbumOrder) !== JSON.stringify(this.state.lastAlbumOrder)
 
 		// Check now playing status
 		let nowPlayingChanged = false
@@ -217,8 +225,8 @@ export class LastfmStreamManager {
 	 * Update internal state
 	 */
 	private updateState(albums: Album[]): void {
-		this.state.lastAlbumOrder = albums.map(a => getAlbumKey(a.artist.name, a.name))
-		
+		this.state.lastAlbumOrder = albums.map((a) => getAlbumKey(a.artist.name, a.name))
+
 		for (const album of albums) {
 			const key = getAlbumKey(album.artist.name, album.name)
 			this.state.lastNowPlayingState.set(key, {
@@ -231,26 +239,29 @@ export class LastfmStreamManager {
 	/**
 	 * Get now playing updates for albums not in the recent list
 	 */
-	private async getNowPlayingUpdatesForNonRecentAlbums(recentAlbums: Album[]): Promise<NowPlayingUpdate[]> {
+	private async getNowPlayingUpdatesForNonRecentAlbums(
+		recentAlbums: Album[]
+	): Promise<NowPlayingUpdate[]> {
 		const updates: NowPlayingUpdate[] = []
-		
+
 		// Get all now playing albums
 		const cached = await this.albumEnricher.getCachedRecentTracks(this.username)
-		const recentTracksResponse = cached || await this.client.user.getRecentTracks(this.username, {
-			limit: 50,
-			extended: true
-		})
-		
+		const recentTracksResponse =
+			cached ||
+			(await this.client.user.getRecentTracks(this.username, {
+				limit: 50,
+				extended: true
+			}))
+
 		const nowPlayingMap = await this.nowPlayingDetector.processNowPlayingTracks(
 			recentTracksResponse,
-			(artistName, albumName) => this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
+			(artistName, albumName) =>
+				this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
 		)
 
 		// Find albums that are now playing but not in recent albums
 		for (const [key, nowPlayingInfo] of nowPlayingMap) {
-			const isInRecentAlbums = recentAlbums.some(
-				a => getAlbumKey(a.artist.name, a.name) === key
-			)
+			const isInRecentAlbums = recentAlbums.some((a) => getAlbumKey(a.artist.name, a.name) === key)
 
 			if (!isInRecentAlbums) {
 				const lastState = this.state.lastNowPlayingState.get(key)
