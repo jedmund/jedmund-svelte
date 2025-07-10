@@ -121,6 +121,7 @@ Refactor components to reduce duplication and complexity.
   - [x] Use composition for layout variations
 
 - [x] **Componentize inline SVGs**
+
   - [x] Create `CloseButton` icon component
   - [x] Create `LoadingSpinner` component (already existed)
   - [x] Create `NavigationArrow` components (using existing arrow SVGs)
@@ -149,6 +150,7 @@ Tackle the most complex components and patterns.
   - [x] Reduce state variables from 20+ to <10
 
 - [x] **Simplify LastFM Stream Server** ✅
+
   - [x] Extract data transformation utilities
     - [x] Created `lastfmTransformers.ts` for image and data transformations
   - [x] Simplify "now playing" detection algorithm
