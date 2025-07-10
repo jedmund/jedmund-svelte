@@ -220,7 +220,7 @@
 
 	// Embed preview styles
 	.embed-preview {
-		margin: $unit-2x 0;
+		margin-bottom: $unit-2x;
 	}
 
 	.youtube-embed-preview {
@@ -231,7 +231,7 @@
 			height: 0;
 			overflow: hidden;
 			background: $gray-95;
-			border-radius: $card-corner-radius;
+			border-radius: $image-corner-radius;
 			border: 1px solid $gray-85;
 
 			iframe {
@@ -250,7 +250,7 @@
 		display: flex;
 		flex-direction: column;
 		background: $gray-97;
-		border-radius: $card-corner-radius;
+		border-radius: $image-corner-radius;
 		overflow: hidden;
 		border: 1px solid $gray-80;
 		text-decoration: none;
