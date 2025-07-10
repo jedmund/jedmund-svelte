@@ -118,7 +118,7 @@
 		</div>
 	{/if}
 
-	{#if albums && albums.length > 0}
+	<!-- {#if albums && albums.length > 0}
 		<div class="albums-section">
 			<h3 class="albums-title">This photo appears in:</h3>
 			<div class="albums-list">
@@ -129,7 +129,7 @@
 				{/each}
 			</div>
 		</div>
-	{/if}
+	{/if} -->
 
 	{#if showBackButton && backHref && backLabel}
 		<div class="card-footer">

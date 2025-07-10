@@ -82,6 +82,13 @@ export const GET: RequestHandler = async (event) => {
 			}
 		})
 
+		// Sort photos by the actual date taken (from EXIF or fallback dates)
+		photos.sort((a, b) => {
+			const dateA = new Date(a.createdAt).getTime()
+			const dateB = new Date(b.createdAt).getTime()
+			return dateB - dateA // Descending order (newest first)
+		})
+
 		// Apply pagination
 		const totalItems = photos.length
 		const paginatedItems = photos.slice(offset, offset + limit)

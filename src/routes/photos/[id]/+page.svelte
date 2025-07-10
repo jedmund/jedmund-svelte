@@ -410,18 +410,8 @@
 			{exifData}
 			createdAt={photo.createdAt}
 			albums={photo.albums}
-			backHref={fromAlbum
-				? `/albums/${fromAlbum}`
-				: photo.album
-					? `/albums/${photo.album.slug}`
-					: '/photos'}
-			backLabel={(() => {
-				if (fromAlbum && photo.albums) {
-					const album = photo.albums.find((a) => a.slug === fromAlbum)
-					return album ? `Back to ${album.title}` : 'Back to Photos'
-				}
-				return photo.album ? `Back to ${photo.album.title}` : 'Back to Photos'
-			})()}
+			backHref="/photos"
+			backLabel="Back to Photos"
 			showBackButton={true}
 		/>
 	</div>
