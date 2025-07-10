@@ -38,12 +38,7 @@
 					<div class="usage-content">
 						<div class="usage-header">
 							{#if usageItem.contentUrl}
-								<a
-									href={usageItem.contentUrl}
-									class="usage-title"
-									target="_blank"
-									rel="noopener"
-								>
+								<a href={usageItem.contentUrl} class="usage-title" target="_blank" rel="noopener">
 									{usageItem.contentTitle}
 								</a>
 							{:else}

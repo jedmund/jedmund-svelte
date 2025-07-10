@@ -9,11 +9,7 @@
 		class?: string
 	}
 
-	let {
-		media,
-		showExifToggle = true,
-		class: className = ''
-	}: Props = $props()
+	let { media, showExifToggle = true, class: className = '' }: Props = $props()
 
 	let showExif = $state(false)
 </script>
@@ -102,9 +98,7 @@
 					{#if media.exifData.dateTaken}
 						<div class="info-item">
 							<span class="label">Date Taken</span>
-							<span class="value"
-								>{new Date(media.exifData.dateTaken).toLocaleDateString()}</span
-							>
+							<span class="value">{new Date(media.exifData.dateTaken).toLocaleDateString()}</span>
 						</div>
 					{/if}
 					{#if media.exifData.coordinates}

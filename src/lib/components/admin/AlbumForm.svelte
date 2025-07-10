@@ -11,7 +11,7 @@
 	import Composer from './composer'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
-	import type { Album } from '@prisma/client'
+	import type { Album, Media } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
 
 	interface Props {
@@ -40,6 +40,7 @@
 	let albumMedia = $state<any[]>([])
 	let editorInstance = $state<any>()
 	let activeTab = $state('metadata')
+	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -56,6 +57,9 @@
 		status: 'draft' as 'draft' | 'published',
 		content: { type: 'doc', content: [{ type: 'paragraph' }] } as JSONContent
 	})
+
+	// Derived state for existing media IDs
+	const existingMediaIds = $derived(albumMedia.map((item) => item.media.id))
 
 	// Watch for album changes and populate form data
 	$effect(() => {
@@ -172,7 +176,37 @@
 			const savedAlbum = await response.json()
 
 			toast.dismiss(loadingToastId)
-			toast.success(`Album ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
+
+			// Add pending photos to newly created album
+			if (mode === 'create' && pendingMediaIds.length > 0) {
+				const photoToastId = toast.loading('Adding selected photos to album...')
+				try {
+					const photoResponse = await authenticatedFetch(`/api/albums/${savedAlbum.id}/media`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ mediaIds: pendingMediaIds })
+					})
+
+					if (!photoResponse.ok) {
+						throw new Error('Failed to add photos to album')
+					}
+
+					toast.dismiss(photoToastId)
+					toast.success(
+						`Album created with ${pendingMediaIds.length} photo${pendingMediaIds.length !== 1 ? 's' : ''}!`
+					)
+				} catch (err) {
+					toast.dismiss(photoToastId)
+					toast.error(
+						'Album created but failed to add photos. You can add them by editing the album.'
+					)
+					console.error('Failed to add photos:', err)
+				}
+			} else {
+				toast.success(`Album ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
+			}
 
 			if (mode === 'create') {
 				goto(`/admin/albums/${savedAlbum.id}/edit`)
@@ -208,6 +242,10 @@
 
 	function handleContentUpdate(content: JSONContent) {
 		formData.content = content
+	}
+
+	function handlePhotoSelection(media: Media[]) {
+		pendingMediaIds = media.map((m) => m.id)
 	}
 </script>
 
@@ -317,35 +355,42 @@
 					</div>
 
 					<!-- Photos Grid -->
-					{#if mode === 'edit'}
-						<div class="form-section">
-							<div class="section-header">
-								<h3 class="section-title">
-									Photos {albumMedia.length > 0 ? `(${albumMedia.length})` : ''}
-								</h3>
-								<button class="btn-secondary" onclick={() => (showBulkAlbumModal = true)}>
-									Manage Photos
-								</button>
-							</div>
-							{#if albumMedia.length > 0}
-								<div class="photos-grid">
-									{#each albumMedia as item}
-										<div class="photo-item">
-											<SmartImage
-												media={item.media}
-												alt={item.media.description || item.media.filename}
-												sizes="(max-width: 768px) 50vw, 25vw"
-											/>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<p class="empty-state">
-									No photos added yet. Click "Manage Photos" to add photos to this album.
-								</p>
-							{/if}
+					<div class="form-section">
+						<div class="section-header">
+							<h3 class="section-title">
+								Photos {albumMedia.length > 0 || pendingMediaIds.length > 0
+									? `(${mode === 'edit' ? albumMedia.length : pendingMediaIds.length})`
+									: ''}
+							</h3>
+							<button class="btn-secondary" onclick={() => (showBulkAlbumModal = true)}>
+								{mode === 'create' ? 'Select Photos' : 'Manage Photos'}
+							</button>
 						</div>
-					{/if}
+						{#if mode === 'edit' && albumMedia.length > 0}
+							<div class="photos-grid">
+								{#each albumMedia as item}
+									<div class="photo-item">
+										<SmartImage
+											media={item.media}
+											alt={item.media.description || item.media.filename}
+											sizes="(max-width: 768px) 50vw, 25vw"
+										/>
+									</div>
+								{/each}
+							</div>
+						{:else if mode === 'create' && pendingMediaIds.length > 0}
+							<p class="selected-count">
+								{pendingMediaIds.length} photo{pendingMediaIds.length !== 1 ? 's' : ''} selected. They
+								will be added when you save the album.
+							</p>
+						{:else}
+							<p class="empty-state">
+								No photos {mode === 'create' ? 'selected' : 'added'} yet. Click "{mode === 'create'
+									? 'Select Photos'
+									: 'Manage Photos'}" to {mode === 'create' ? 'select' : 'add'} photos.
+							</p>
+						{/if}
+					</div>
 				</div>
 
 				<!-- Content Panel -->
@@ -366,14 +411,17 @@
 </AdminPage>
 
 <!-- Media Modal -->
-{#if album && mode === 'edit'}
-	<UnifiedMediaModal
-		bind:isOpen={showBulkAlbumModal}
-		albumId={album.id}
-		showInAlbumMode={true}
-		onSave={handleBulkAlbumSave}
-	/>
-{/if}
+<UnifiedMediaModal
+	bind:isOpen={showBulkAlbumModal}
+	albumId={album?.id}
+	selectedIds={mode === 'edit' ? existingMediaIds : pendingMediaIds}
+	showInAlbumMode={mode === 'edit'}
+	onSave={mode === 'edit' ? handleBulkAlbumSave : undefined}
+	onSelect={mode === 'create' ? handlePhotoSelection : undefined}
+	mode="multiple"
+	title={mode === 'create' ? 'Select Photos for Album' : 'Manage Album Photos'}
+	confirmText={mode === 'create' ? 'Select Photos' : 'Update Photos'}
+/>
 
 <style lang="scss">
 	header {
@@ -633,5 +681,15 @@
 		background: $gray-95;
 		border-radius: $unit;
 		margin: 0;
+	}
+
+	.selected-count {
+		color: $gray-30;
+		font-size: 0.875rem;
+		padding: $unit-2x;
+		margin: 0;
+		background: $gray-95;
+		border-radius: $unit;
+		border: 1px solid $gray-90;
 	}
 </style>

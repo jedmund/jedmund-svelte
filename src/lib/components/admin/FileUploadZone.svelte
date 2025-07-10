@@ -24,7 +24,7 @@
 
 	let fileInput: HTMLInputElement
 	let internalDragActive = $state(false)
-	
+
 	// Use external drag state if provided, otherwise use internal
 	const dragActive = $derived(externalDragActive || internalDragActive)
 
@@ -43,17 +43,17 @@
 	function handleDrop(event: DragEvent) {
 		event.preventDefault()
 		internalDragActive = false
-		
+
 		if (disabled) return
 
 		const droppedFiles = Array.from(event.dataTransfer?.files || [])
-		const validFiles = droppedFiles.filter(file => validateFileType(file, accept))
-		
+		const validFiles = droppedFiles.filter((file) => validateFileType(file, accept))
+
 		if (validFiles.length !== droppedFiles.length) {
 			const invalidCount = droppedFiles.length - validFiles.length
 			console.warn(`${invalidCount} file(s) were not accepted due to invalid type`)
 		}
-		
+
 		if (validFiles.length > 0) {
 			onFilesAdded(multiple ? validFiles : [validFiles[0]])
 		}
@@ -62,12 +62,12 @@
 	function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement
 		const selectedFiles = Array.from(target.files || [])
-		const validFiles = selectedFiles.filter(file => validateFileType(file, accept))
-		
+		const validFiles = selectedFiles.filter((file) => validateFileType(file, accept))
+
 		if (validFiles.length > 0) {
 			onFilesAdded(multiple ? validFiles : [validFiles[0]])
 		}
-		
+
 		// Clear the input so the same file can be selected again
 		target.value = ''
 	}
@@ -251,7 +251,7 @@
 		&.disabled {
 			opacity: 0.6;
 			cursor: not-allowed;
-			
+
 			.drop-zone-button {
 				cursor: not-allowed;
 			}
@@ -303,7 +303,7 @@
 		&:disabled {
 			cursor: not-allowed;
 		}
-		
+
 		&:focus-visible {
 			outline: 2px solid $blue-50;
 			outline-offset: -2px;

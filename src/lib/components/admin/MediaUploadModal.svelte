@@ -52,9 +52,9 @@
 
 	function removeFile(id: string | number) {
 		// For files, the id is the filename
-		const fileToRemove = files.find(f => f.name === id)
+		const fileToRemove = files.find((f) => f.name === id)
 		if (fileToRemove) {
-			files = files.filter(f => f.name !== id)
+			files = files.filter((f) => f.name !== id)
 			// Clear any related upload progress
 			if (uploadProgress[fileToRemove.name]) {
 				const { [fileToRemove.name]: removed, ...rest } = uploadProgress
@@ -62,7 +62,6 @@
 			}
 		}
 	}
-
 
 	async function uploadFiles() {
 		if (files.length === 0) return
@@ -168,7 +167,7 @@
 					</div>
 				</div>
 			{/if}
-			
+
 			<!-- Error messages are now handled in FilePreviewList -->
 		</div>
 

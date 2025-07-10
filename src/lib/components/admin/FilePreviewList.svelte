@@ -120,10 +120,7 @@
 			{#if variant === 'upload' && isUploading && preview.file}
 				<div class="progress-bar-container">
 					<div class="progress-bar">
-						<div
-							class="progress-fill"
-							style="width: {uploadProgress[preview.name] || 0}%"
-						></div>
+						<div class="progress-fill" style="width: {uploadProgress[preview.name] || 0}%"></div>
 					</div>
 					<div class="upload-status">
 						{#if uploadProgress[preview.name] === 100}
@@ -138,7 +135,7 @@
 			{/if}
 		</div>
 	{/each}
-	
+
 	{#if uploadErrors.length > 0}
 		<div class="upload-errors">
 			{#each uploadErrors as error}
@@ -157,20 +154,20 @@
 		&.attached {
 			flex-direction: row;
 			flex-wrap: wrap;
-			
+
 			.file-item {
 				width: auto;
 				padding: 0;
 				background: none;
 				border: none;
 			}
-			
+
 			.file-preview {
 				width: 64px;
 				height: 64px;
 				border-radius: 12px;
 			}
-			
+
 			.file-info,
 			.progress-bar-container {
 				display: none;
@@ -311,7 +308,7 @@
 			background: $red-60;
 			color: white;
 		}
-		
+
 		.attached & {
 			position: absolute;
 			top: -6px;
@@ -325,21 +322,21 @@
 			align-items: center;
 			justify-content: center;
 			opacity: 0;
-			
+
 			svg {
 				width: 10px;
 				height: 10px;
 			}
 		}
 	}
-	
+
 	.attached .file-item:hover .remove-button {
 		opacity: 1;
 	}
 
 	.upload-errors {
 		margin-top: $unit-2x;
-		
+
 		.error-item {
 			color: $red-60;
 			margin-bottom: $unit;

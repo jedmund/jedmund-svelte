@@ -52,15 +52,7 @@
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
 			>
-				<rect
-					x="3"
-					y="5"
-					width="18"
-					height="14"
-					rx="2"
-					stroke="currentColor"
-					stroke-width="2"
-				/>
+				<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2" />
 				<circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
 				<path d="M3 16l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2" fill="none" />
 			</svg>
@@ -74,7 +66,9 @@
 					class="media-item"
 					class:selected={mode === 'select' && isSelected(item)}
 					onclick={() => handleClick(item)}
-					title={mode === 'select' ? `Click to ${isSelected(item) ? 'deselect' : 'select'}` : 'Click to view details'}
+					title={mode === 'select'
+						? `Click to ${isSelected(item) ? 'deselect' : 'select'}`
+						: 'Click to view details'}
 				>
 					<!-- Thumbnail -->
 					<div

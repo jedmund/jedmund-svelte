@@ -45,16 +45,36 @@
 	let currentPage = $state(1)
 	let totalPages = $state(1)
 	let total = $state(0)
-	
+
 	// Media selection state
 	let selectedMediaIds = $state<Set<number>>(new Set(selectedIds))
-	
+	let initialMediaIds = $state<Set<number>>(new Set(selectedIds))
+
 	// Derived selection values
-	const selectedMedia = $derived(
-		media.filter(m => selectedMediaIds.has(m.id))
-	)
+	const selectedMedia = $derived(media.filter((m) => selectedMediaIds.has(m.id)))
 	const hasSelection = $derived(selectedMediaIds.size > 0)
 	const selectionCount = $derived(selectedMediaIds.size)
+
+	// Track changes for add/remove operations
+	const mediaToAdd = $derived(() => {
+		const toAdd = new Set<number>()
+		selectedMediaIds.forEach((id) => {
+			if (!initialMediaIds.has(id)) {
+				toAdd.add(id)
+			}
+		})
+		return toAdd
+	})
+
+	const mediaToRemove = $derived(() => {
+		const toRemove = new Set<number>()
+		initialMediaIds.forEach((id) => {
+			if (!selectedMediaIds.has(id)) {
+				toRemove.add(id)
+			}
+		})
+		return toRemove
+	})
 
 	// Filter states
 	let filterType = $state<string>(fileType === 'all' ? 'all' : fileType)
@@ -102,37 +122,55 @@
 			selectedMediaIds = new Set([item.id])
 		} else {
 			// Multiple selection mode - toggle
-			if (selectedMediaIds.has(item.id)) {
-				selectedMediaIds.delete(item.id)
+			const newSet = new Set(selectedMediaIds)
+			if (newSet.has(item.id)) {
+				newSet.delete(item.id)
 			} else {
-				selectedMediaIds.add(item.id)
+				newSet.add(item.id)
 			}
-			// Trigger reactivity
-			selectedMediaIds = new Set(selectedMediaIds)
+			// Trigger reactivity by assigning the new Set
+			selectedMediaIds = newSet
 		}
 	}
-	
+
 	function clearSelection() {
 		selectedMediaIds = new Set()
 	}
-	
+
 	function getSelectedIds(): number[] {
 		return Array.from(selectedMediaIds)
 	}
-	
+
 	function getSelected(): Media[] {
 		return selectedMedia
 	}
 
-	const footerText = $derived(
-		showInAlbumMode && canConfirm
-			? `Add ${mediaCount} ${mediaCount === 1 ? 'photo' : 'photos'} to album`
-			: mode === 'single'
-				? canConfirm
-					? '1 item selected'
-					: 'No item selected'
-				: `${mediaCount} item${mediaCount !== 1 ? 's' : ''} selected`
-	)
+	const footerText = $derived(() => {
+		if (showInAlbumMode) {
+			const addCount = mediaToAdd().size
+			const removeCount = mediaToRemove().size
+
+			if (addCount === 0 && removeCount === 0) {
+				return `${mediaCount} ${mediaCount === 1 ? 'photo' : 'photos'} selected (no changes)`
+			}
+
+			const parts = []
+			if (addCount > 0) {
+				parts.push(`${addCount} to add`)
+			}
+			if (removeCount > 0) {
+				parts.push(`${removeCount} to remove`)
+			}
+
+			return `${mediaCount} ${mediaCount === 1 ? 'photo' : 'photos'} selected (${parts.join(', ')})`
+		}
+
+		return mode === 'single'
+			? canConfirm
+				? '1 item selected'
+				: 'No item selected'
+			: `${mediaCount} item${mediaCount !== 1 ? 's' : ''} selected`
+	})
 
 	// State for preventing flicker
 	let isInitialLoad = $state(true)
@@ -140,8 +178,9 @@
 	// Reset state when modal opens
 	$effect(() => {
 		if (isOpen) {
-			selectedMediaIds.clear()
-			selectedMediaIds = new Set() // Trigger reactivity
+			// Initialize with selectedIds from props
+			selectedMediaIds = new Set(selectedIds)
+			initialMediaIds = new Set(selectedIds)
 			// Don't clear media immediately - let new data replace old
 			currentPage = 1
 			isInitialLoad = true
@@ -178,15 +217,6 @@
 				loaderState.reset()
 				loadMedia(1)
 			}, 300)
-		}
-	})
-
-	// Initialize selected media from IDs when media loads
-	$effect(() => {
-		if (selectedIds.length > 0 && media.length > 0) {
-			// Re-select items that are in the current media list
-			const availableIds = new Set(media.map(m => m.id))
-			selectedMediaIds = new Set(selectedIds.filter(id => availableIds.has(id)))
 		}
 	})
 
@@ -273,19 +303,39 @@
 				const auth = localStorage.getItem('admin_auth')
 				if (!auth) return
 
-				const mediaIds = getSelectedIds()
+				const toAdd = Array.from(mediaToAdd())
+				const toRemove = Array.from(mediaToRemove())
 
-				const response = await fetch(`/api/albums/${albumId}/media`, {
-					method: 'POST',
-					headers: {
-						Authorization: `Basic ${auth}`,
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({ mediaIds })
-				})
+				// Handle additions
+				if (toAdd.length > 0) {
+					const response = await fetch(`/api/albums/${albumId}/media`, {
+						method: 'POST',
+						headers: {
+							Authorization: `Basic ${auth}`,
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ mediaIds: toAdd })
+					})
 
-				if (!response.ok) {
-					throw new Error('Failed to add media to album')
+					if (!response.ok) {
+						throw new Error('Failed to add media to album')
+					}
+				}
+
+				// Handle removals
+				if (toRemove.length > 0) {
+					const response = await fetch(`/api/albums/${albumId}/media`, {
+						method: 'DELETE',
+						headers: {
+							Authorization: `Basic ${auth}`,
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ mediaIds: toRemove })
+					})
+
+					if (!response.ok) {
+						throw new Error('Failed to remove media from album')
+					}
 				}
 
 				handleClose()
@@ -389,58 +439,58 @@
 				selectedIds={selectedMediaIds}
 				onItemClick={handleMediaClick}
 				isLoading={isInitialLoad && media.length === 0}
-				emptyMessage={fileType !== 'all' 
-					? 'No media found. Try adjusting your filters or search' 
+				emptyMessage={fileType !== 'all'
+					? 'No media found. Try adjusting your filters or search'
 					: 'No media found. Try adjusting your search or filters'}
 				mode="select"
 			/>
 
-				<!-- Infinite Loader -->
-				<InfiniteLoader
-					{loaderState}
-					triggerLoad={loadMore}
-					intersectionOptions={{ rootMargin: '0px 0px 200px 0px' }}
-				>
-					<div style="height: 1px;"></div>
+			<!-- Infinite Loader -->
+			<InfiniteLoader
+				{loaderState}
+				triggerLoad={loadMore}
+				intersectionOptions={{ rootMargin: '0px 0px 200px 0px' }}
+			>
+				<div style="height: 1px;"></div>
 
-					{#snippet loading()}
-						<div class="loading-container">
-							<LoadingSpinner size="medium" text="Loading more..." />
-						</div>
-					{/snippet}
+				{#snippet loading()}
+					<div class="loading-container">
+						<LoadingSpinner size="medium" text="Loading more..." />
+					</div>
+				{/snippet}
 
-					{#snippet error()}
-						<div class="error-retry">
-							<p class="error-text">Failed to load media</p>
-							<button
-								class="retry-button"
-								onclick={() => {
-									loaderState.reset()
-									loadMore()
-								}}
-							>
-								Try again
-							</button>
-						</div>
-					{/snippet}
+				{#snippet error()}
+					<div class="error-retry">
+						<p class="error-text">Failed to load media</p>
+						<button
+							class="retry-button"
+							onclick={() => {
+								loaderState.reset()
+								loadMore()
+							}}
+						>
+							Try again
+						</button>
+					</div>
+				{/snippet}
 
-					{#snippet noData()}
-						<!-- Empty snippet to hide "No more data" text -->
-					{/snippet}
+				{#snippet noData()}
+					<!-- Empty snippet to hide "No more data" text -->
+				{/snippet}
 			</InfiniteLoader>
 		</div>
 
 		<!-- Footer -->
 		<div class="modal-footer">
 			<div class="action-summary">
-				<span>{footerText}</span>
+				<span>{footerText()}</span>
 			</div>
 			<div class="action-buttons">
 				<Button variant="ghost" onclick={handleCancel}>Cancel</Button>
 				<Button variant="primary" onclick={handleConfirm} disabled={!canConfirm || isSaving}>
 					{#if isSaving}
 						<LoadingSpinner buttonSize="small" />
-						{showInAlbumMode ? 'Adding...' : 'Selecting...'}
+						{showInAlbumMode ? 'Updating...' : 'Selecting...'}
 					{:else}
 						{computedConfirmText}
 					{/if}
@@ -596,7 +646,6 @@
 	:global(.search-input .input) {
 		font-size: 13px !important;
 	}
-
 
 	// Hide the infinite scroll intersection target
 	:global(.infinite-intersection-target) {

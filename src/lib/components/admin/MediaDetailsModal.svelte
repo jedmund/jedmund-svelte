@@ -202,7 +202,6 @@
 				})
 		}
 	}
-
 </script>
 
 {#if media}
@@ -295,43 +294,46 @@
 								</div>
 								<MediaUsageList {usage} loading={loadingUsage} />
 
-							<!-- Albums list -->
-							{#if albums.length > 0}
-								<div class="albums-inline">
-									<h4>Albums</h4>
-									<div class="album-tags">
-										{#each albums as album}
-											<a href="/admin/albums/{album.id}/edit" class="album-tag">
-												{album.title}
-											</a>
-										{/each}
+								<!-- Albums list -->
+								{#if albums.length > 0}
+									<div class="albums-inline">
+										<h4>Albums</h4>
+										<div class="album-tags">
+											{#each albums as album}
+												<a href="/admin/albums/{album.id}/edit" class="album-tag">
+													{album.title}
+												</a>
+											{/each}
+										</div>
 									</div>
-								</div>
-							{/if}
+								{/if}
+							</div>
+						</div>
+					</div>
+
+					<!-- Footer -->
+					<div class="pane-footer">
+						<div class="footer-left">
+							<Button
+								variant="ghost"
+								onclick={handleDelete}
+								disabled={isSaving}
+								class="delete-button"
+							>
+								Delete
+							</Button>
+						</div>
+
+						<div class="footer-right">
+							<Button variant="primary" onclick={handleSave} disabled={isSaving}
+								>Save Changes</Button
+							>
 						</div>
 					</div>
 				</div>
-
-				<!-- Footer -->
-				<div class="pane-footer">
-					<div class="footer-left">
-						<Button
-							variant="ghost"
-							onclick={handleDelete}
-							disabled={isSaving}
-							class="delete-button"
-						>
-							Delete
-						</Button>
-					</div>
-
-					<div class="footer-right">
-						<Button variant="primary" onclick={handleSave} disabled={isSaving}>Save Changes</Button>
-					</div>
-				</div>
 			</div>
-		</div>
-	</Modal>
+		</div></Modal
+	>
 
 	<!-- Album Selector Modal -->
 	{#if showAlbumSelector && media}
@@ -634,7 +636,6 @@
 			gap: $unit-2x;
 		}
 	}
-
 
 	// Responsive adjustments
 	@media (max-width: 768px) {
