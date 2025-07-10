@@ -217,7 +217,7 @@
 	.slash-command-menu::-webkit-scrollbar-thumb {
 		background: $gray-85;
 		border-radius: 3px;
-		
+
 		&:hover {
 			background: $gray-70;
 		}

@@ -31,15 +31,20 @@
 			editor
 				.chain()
 				.focus()
-				.insertContent({
-					type: 'image',
-					attrs: {
-						src: selectedMedia.url,
-						alt: selectedMedia.altText || '',
-						title: selectedMedia.description || '',
-						mediaId: selectedMedia.id?.toString()
+				.insertContent([
+					{
+						type: 'image',
+						attrs: {
+							src: selectedMedia.url,
+							alt: selectedMedia.altText || '',
+							title: selectedMedia.description || '',
+							mediaId: selectedMedia.id?.toString()
+						}
+					},
+					{
+						type: 'paragraph'
 					}
-				})
+				])
 				.run()
 		}
 		isMediaLibraryOpen = false
@@ -85,15 +90,20 @@
 				editor
 					.chain()
 					.focus()
-					.insertContent({
-						type: 'image',
-						attrs: {
-							src: media.url,
-							alt: media.altText || '',
-							title: media.description || '',
-							mediaId: media.id?.toString()
+					.insertContent([
+						{
+							type: 'image',
+							attrs: {
+								src: media.url,
+								alt: media.altText || '',
+								title: media.description || '',
+								mediaId: media.id?.toString()
+							}
+						},
+						{
+							type: 'paragraph'
 						}
-					})
+					])
 					.run()
 			} else {
 				console.error('Failed to upload image:', response.status)

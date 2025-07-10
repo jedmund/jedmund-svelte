@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Editor } from '@tiptap/core'
-	
+
 	interface Props {
 		editor: Editor
 		isOpen: boolean
@@ -12,14 +12,46 @@
 
 	// Text style options
 	const textStyles = [
-		{ name: 'paragraph', label: 'Paragraph', action: () => editor.chain().focus().setParagraph().run() },
-		{ name: 'heading1', label: 'Heading 1', action: () => editor.chain().focus().toggleHeading({ level: 1 }).run() },
-		{ name: 'heading2', label: 'Heading 2', action: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
-		{ name: 'heading3', label: 'Heading 3', action: () => editor.chain().focus().toggleHeading({ level: 3 }).run() },
-		{ name: 'bulletList', label: 'Bullet List', action: () => editor.chain().focus().toggleBulletList().run() },
-		{ name: 'orderedList', label: 'Ordered List', action: () => editor.chain().focus().toggleOrderedList().run() },
-		{ name: 'taskList', label: 'Task List', action: () => editor.chain().focus().toggleTaskList().run() },
-		{ name: 'blockquote', label: 'Blockquote', action: () => editor.chain().focus().toggleBlockquote().run() }
+		{
+			name: 'paragraph',
+			label: 'Paragraph',
+			action: () => editor.chain().focus().setParagraph().run()
+		},
+		{
+			name: 'heading1',
+			label: 'Heading 1',
+			action: () => editor.chain().focus().toggleHeading({ level: 1 }).run()
+		},
+		{
+			name: 'heading2',
+			label: 'Heading 2',
+			action: () => editor.chain().focus().toggleHeading({ level: 2 }).run()
+		},
+		{
+			name: 'heading3',
+			label: 'Heading 3',
+			action: () => editor.chain().focus().toggleHeading({ level: 3 }).run()
+		},
+		{
+			name: 'bulletList',
+			label: 'Bullet List',
+			action: () => editor.chain().focus().toggleBulletList().run()
+		},
+		{
+			name: 'orderedList',
+			label: 'Ordered List',
+			action: () => editor.chain().focus().toggleOrderedList().run()
+		},
+		{
+			name: 'taskList',
+			label: 'Task List',
+			action: () => editor.chain().focus().toggleTaskList().run()
+		},
+		{
+			name: 'blockquote',
+			label: 'Blockquote',
+			action: () => editor.chain().focus().toggleBlockquote().run()
+		}
 	]
 
 	// Add code block if feature is enabled
@@ -61,8 +93,13 @@
 		{#each textStyles as style}
 			<button
 				class="text-style-option"
-				class:active={
-					(style.name === 'paragraph' && !editor.isActive('heading') && !editor.isActive('bulletList') && !editor.isActive('orderedList') && !editor.isActive('taskList') && !editor.isActive('blockquote') && !editor.isActive('codeBlock')) ||
+				class:active={(style.name === 'paragraph' &&
+					!editor.isActive('heading') &&
+					!editor.isActive('bulletList') &&
+					!editor.isActive('orderedList') &&
+					!editor.isActive('taskList') &&
+					!editor.isActive('blockquote') &&
+					!editor.isActive('codeBlock')) ||
 					(style.name === 'heading1' && editor.isActive('heading', { level: 1 })) ||
 					(style.name === 'heading2' && editor.isActive('heading', { level: 2 })) ||
 					(style.name === 'heading3' && editor.isActive('heading', { level: 3 })) ||
@@ -70,8 +107,7 @@
 					(style.name === 'orderedList' && editor.isActive('orderedList')) ||
 					(style.name === 'taskList' && editor.isActive('taskList')) ||
 					(style.name === 'blockquote' && editor.isActive('blockquote')) ||
-					(style.name === 'codeBlock' && editor.isActive('codeBlock'))
-				}
+					(style.name === 'codeBlock' && editor.isActive('codeBlock'))}
 				onclick={() => handleSelect(style.action)}
 			>
 				{style.label}

@@ -37,7 +37,7 @@
 
 	// Filter out link command as we'll handle it specially
 	const formattingCommands = bubbleMenuCommands.filter((cmd) => cmd.name !== 'link')
-	
+
 	// Get current text style
 	const currentTextStyle = $derived(editor ? getCurrentTextStyle(editor) : 'Paragraph')
 
@@ -193,12 +193,12 @@
 						<span class="text-style-label">{currentTextStyle}</span>
 						<ChevronDown size={12} />
 					</button>
-					
+
 					<!-- Text Style Dropdown -->
 					<BubbleTextStyleMenu
 						{editor}
 						isOpen={showTextStyleMenu}
-						onClose={() => showTextStyleMenu = false}
+						onClose={() => (showTextStyleMenu = false)}
 						{features}
 					/>
 				</div>
@@ -231,16 +231,18 @@
 							showHighlightPicker = false
 						}}
 						title="Text color"
-						style={editor.getAttributes('textStyle').color ? `color: ${editor.getAttributes('textStyle').color}` : ''}
+						style={editor.getAttributes('textStyle').color
+							? `color: ${editor.getAttributes('textStyle').color}`
+							: ''}
 					>
 						<Palette size={16} />
 					</button>
-					
+
 					<!-- Text Color Picker -->
 					<BubbleColorPicker
 						{editor}
 						isOpen={showColorPicker}
-						onClose={() => showColorPicker = false}
+						onClose={() => (showColorPicker = false)}
 						mode="text"
 						currentColor={editor.getAttributes('textStyle').color}
 					/>
@@ -256,16 +258,18 @@
 							showColorPicker = false
 						}}
 						title="Highlight color"
-						style={editor.getAttributes('highlight').color ? `background-color: ${editor.getAttributes('highlight').color}` : ''}
+						style={editor.getAttributes('highlight').color
+							? `background-color: ${editor.getAttributes('highlight').color}`
+							: ''}
 					>
 						<Highlighter size={16} />
 					</button>
-					
+
 					<!-- Highlight Color Picker -->
 					<BubbleColorPicker
 						{editor}
 						isOpen={showHighlightPicker}
-						onClose={() => showHighlightPicker = false}
+						onClose={() => (showHighlightPicker = false)}
 						mode="highlight"
 						currentColor={editor.getAttributes('highlight').color}
 					/>

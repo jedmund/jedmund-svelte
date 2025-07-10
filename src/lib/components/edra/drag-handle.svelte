@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte'
 	import { DragHandlePlugin } from './extensions/drag-handle/index.js'
 	import DropdownMenu from '../admin/DropdownMenu.svelte'
+	import { toast } from '$lib/stores/toast'
 
 	interface Props {
 		editor: Editor
@@ -349,10 +350,35 @@
 		if (!nodeToUse) return
 
 		const { node, pos } = nodeToUse
-		const resolvedPos = editor.state.doc.resolve(pos)
-		const nodeEnd = resolvedPos.after(resolvedPos.depth)
+		
+		// Create a copy of the node
+		const nodeCopy = node.toJSON()
 
-		editor.chain().focus().insertContentAt(nodeEnd, node.toJSON()).run()
+		// Find the position after this node
+		// We need to find the actual position of the node in the document
+		const resolvedPos = editor.state.doc.resolve(pos)
+		let nodePos = pos
+		
+		// If we're inside a node, get the position before it
+		if (resolvedPos.depth > 0) {
+			nodePos = resolvedPos.before(resolvedPos.depth)
+		}
+		
+		// Get the actual node at this position
+		const actualNode = editor.state.doc.nodeAt(nodePos)
+		if (!actualNode) {
+			console.error('Could not find node at position', nodePos)
+			return
+		}
+		
+		// Calculate the position after the node
+		const afterPos = nodePos + actualNode.nodeSize
+
+		// Insert the duplicated node
+		editor.chain()
+			.focus()
+			.insertContentAt(afterPos, nodeCopy)
+			.run()
 
 		isMenuOpen = false
 	}
@@ -361,17 +387,42 @@
 		const nodeToUse = menuNode || currentNode
 		if (!nodeToUse) return
 
-		const { pos } = nodeToUse
+		const { node, pos } = nodeToUse
+		
+		// Find the actual position of the node
 		const resolvedPos = editor.state.doc.resolve(pos)
-		const nodeStart = resolvedPos.before(resolvedPos.depth)
-		const nodeEnd = nodeStart + resolvedPos.node(resolvedPos.depth).nodeSize
+		let nodePos = pos
+		
+		// If we're inside a node, get the position before it
+		if (resolvedPos.depth > 0) {
+			nodePos = resolvedPos.before(resolvedPos.depth)
+		}
+		
+		// Get the actual node at this position
+		const actualNode = editor.state.doc.nodeAt(nodePos)
+		if (!actualNode) {
+			console.error('Could not find node at position', nodePos)
+			return
+		}
+		
+		const nodeEnd = nodePos + actualNode.nodeSize
 
-		editor.chain().focus().setTextSelection({ from: nodeStart, to: nodeEnd }).run()
+		// Set selection to the entire block
+		editor.chain().focus().setTextSelection({ from: nodePos, to: nodeEnd }).run()
 
-		document.execCommand('copy')
+		// Execute copy command
+		setTimeout(() => {
+			const success = document.execCommand('copy')
+			
+			// Clear selection after copy
+			editor.chain().focus().setTextSelection(nodeEnd).run()
 
-		// Clear selection after copy
-		editor.chain().focus().setTextSelection(nodeEnd).run()
+			if (success) {
+				toast.success('Block copied to clipboard')
+			} else {
+				toast.error('Failed to copy block')
+			}
+		}, 50)
 
 		isMenuOpen = false
 	}

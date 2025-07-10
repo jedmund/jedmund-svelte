@@ -36,7 +36,7 @@
 		'#FFC107', // Amber
 		'#FF9800', // Orange
 		'#FF5722', // Deep Orange
-		'#795548'  // Brown
+		'#795548' // Brown
 	]
 
 	// Lighter, pastel colors for highlighting
@@ -60,7 +60,7 @@
 		'#FFE0B2', // Light Orange
 		'#FFCCBC', // Light Deep Orange
 		'#D7CCC8', // Light Brown
-		'#F5F5F5'  // Light Gray
+		'#F5F5F5' // Light Gray
 	]
 
 	const presetColors = $derived(mode === 'text' ? textPresetColors : highlightPresetColors)
@@ -123,9 +123,7 @@
 	<div class="bubble-color-picker">
 		<div class="color-picker-header">
 			<span>{mode === 'text' ? 'Text Color' : 'Highlight Color'}</span>
-			<button class="remove-color-btn" onclick={removeColor}>
-				Remove
-			</button>
+			<button class="remove-color-btn" onclick={removeColor}> Remove </button>
 		</div>
 
 		<div class="preset-colors">
@@ -141,7 +139,7 @@
 
 		<div class="custom-color-section">
 			{#if !showPicker}
-				<button class="custom-color-btn" onclick={() => showPicker = true}>
+				<button class="custom-color-btn" onclick={() => (showPicker = true)}>
 					Custom color...
 				</button>
 			{:else}
@@ -152,9 +150,7 @@
 						sliderDirection="horizontal"
 						isAlpha={false}
 					/>
-					<button class="apply-custom-btn" onclick={handleCustomColor}>
-						Apply
-					</button>
+					<button class="apply-custom-btn" onclick={handleCustomColor}> Apply </button>
 				</div>
 			{/if}
 		</div>
@@ -335,7 +331,7 @@
 
 	:global(.bubble-color-picker .input) {
 		margin-top: 8px;
-		
+
 		input {
 			width: 100%;
 			padding: 6px 10px;

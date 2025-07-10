@@ -2,30 +2,78 @@
 	import type { NodeViewProps } from '@tiptap/core'
 	import AudioLines from 'lucide-svelte/icons/audio-lines'
 	import { NodeViewWrapper } from 'svelte-tiptap'
-	const { editor }: NodeViewProps = $props()
+	import { getContext } from 'svelte'
+	import ContentInsertionPane from './ContentInsertionPane.svelte'
+	import { paneManager } from '$lib/stores/pane-manager'
+
+	const { editor, deleteNode, getPos }: NodeViewProps = $props()
+
+	// Get album context if available
+	const editorContext = getContext<any>('editorContext') || {}
+	const albumId = $derived(editorContext.albumId)
+
+	// Generate unique pane ID based on node position
+	const paneId = $derived(`audio-${getPos?.() ?? Math.random()}`)
+
+	let showPane = $state(false)
+	let panePosition = $state({ x: 0, y: 0 })
+
+	// Subscribe to pane manager
+	const paneState = $derived($paneManager)
+	$effect(() => {
+		showPane = paneManager.isActive(paneId, paneState)
+	})
 
 	function handleClick(e: MouseEvent) {
 		if (!editor.isEditable) return
 		e.preventDefault()
-		const audioUrl = prompt('Enter the URL of an audio:')
-		if (!audioUrl) {
-			return
+
+		// Get position for pane
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+		panePosition = {
+			x: rect.left,
+			y: rect.bottom + 8
 		}
-		editor.chain().focus().setAudio(audioUrl).run()
+		paneManager.open(paneId)
+	}
+
+	// Handle keyboard navigation
+	function handleKeyDown(e: KeyboardEvent) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault()
+			handleClick(e as any)
+		} else if (e.key === 'Escape') {
+			if (showPane) {
+				paneManager.close()
+			} else {
+				deleteNode()
+			}
+		}
 	}
 </script>
 
 <NodeViewWrapper class="edra-audio-placeholder-wrapper" contenteditable="false">
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<button
 		class="edra-audio-placeholder-content"
 		onclick={handleClick}
+		onkeydown={handleKeyDown}
 		tabindex="0"
-		aria-label="Insert An Audio"
+		aria-label="Insert audio"
 	>
 		<AudioLines class="edra-audio-placeholder-icon" />
-		<span class="edra-audio-placeholder-text">Insert An Audio</span>
+		<span class="edra-audio-placeholder-text">Insert audio</span>
 	</button>
+
+	{#if showPane}
+		<ContentInsertionPane
+			{editor}
+			position={panePosition}
+			contentType="audio"
+			onClose={() => paneManager.close()}
+			{deleteNode}
+			{albumId}
+		/>
+	{/if}
 </NodeViewWrapper>
 
 <style lang="scss">

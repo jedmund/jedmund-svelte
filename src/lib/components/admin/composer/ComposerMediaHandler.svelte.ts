@@ -74,18 +74,23 @@ export class ComposerMediaHandler {
 			// Replace placeholder with actual URL
 			const displayWidth = media.width && media.width > 600 ? 600 : media.width
 
-			this.editor.commands.insertContent({
-				type: 'image',
-				attrs: {
-					src: media.url,
-					alt: media.filename || '',
-					title: media.description || '',
-					width: displayWidth,
-					height: media.height,
-					align: 'center',
-					mediaId: media.id?.toString()
+			this.editor.commands.insertContent([
+				{
+					type: 'image',
+					attrs: {
+						src: media.url,
+						alt: media.filename || '',
+						title: media.description || '',
+						width: displayWidth,
+						height: media.height,
+						align: 'center',
+						mediaId: media.id?.toString()
+					}
+				},
+				{
+					type: 'paragraph'
 				}
-			})
+			])
 
 			// Clean up the object URL
 			URL.revokeObjectURL(placeholderSrc)
@@ -130,18 +135,23 @@ export class ComposerMediaHandler {
 			const displayWidth = media.width && media.width > 600 ? 600 : media.width
 
 			// Insert image
-			this.editor.commands.insertContent({
-				type: 'image',
-				attrs: {
-					src: media.url,
-					alt: media.filename || '',
-					title: media.description || '',
-					width: displayWidth,
-					height: media.height,
-					align: 'center',
-					mediaId: media.id.toString()
+			this.editor.commands.insertContent([
+				{
+					type: 'image',
+					attrs: {
+						src: media.url,
+						alt: media.filename || '',
+						title: media.description || '',
+						width: displayWidth,
+						height: media.height,
+						align: 'center',
+						mediaId: media.id.toString()
+					}
+				},
+				{
+					type: 'paragraph'
 				}
-			})
+			])
 		}
 	}
 

@@ -4,27 +4,37 @@
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import { getContext } from 'svelte'
 	import ContentInsertionPane from './ContentInsertionPane.svelte'
+	import { paneManager } from '$lib/stores/pane-manager'
 
-	const { editor, deleteNode }: NodeViewProps = $props()
+	const { editor, deleteNode, getPos }: NodeViewProps = $props()
 
 	// Get album context if available
 	const editorContext = getContext<any>('editorContext') || {}
 	const albumId = $derived(editorContext.albumId)
 
+	// Generate unique pane ID based on node position
+	const paneId = $derived(`gallery-${getPos?.() ?? Math.random()}`)
+
 	let showPane = $state(false)
 	let panePosition = $state({ x: 0, y: 0 })
+
+	// Subscribe to pane manager
+	const paneState = $derived($paneManager)
+	$effect(() => {
+		showPane = paneManager.isActive(paneId, paneState)
+	})
 
 	function handleClick(e: MouseEvent) {
 		if (!editor.isEditable) return
 		e.preventDefault()
-		
+
 		// Get position for pane
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
 		panePosition = {
 			x: rect.left,
 			y: rect.bottom + 8
 		}
-		showPane = true
+		paneManager.open(paneId)
 	}
 
 	// Handle keyboard navigation
@@ -34,7 +44,7 @@
 			handleClick(e as any)
 		} else if (e.key === 'Escape') {
 			if (showPane) {
-				showPane = false
+				paneManager.close()
 			} else {
 				deleteNode()
 			}
@@ -53,12 +63,13 @@
 		<Grid3x3 class="edra-gallery-placeholder-icon" />
 		<span class="edra-gallery-placeholder-text">Insert a gallery</span>
 	</button>
-	
+
 	{#if showPane}
 		<ContentInsertionPane
 			{editor}
 			position={panePosition}
-			onClose={() => showPane = false}
+			contentType="gallery"
+			onClose={() => paneManager.close()}
 			{deleteNode}
 			{albumId}
 		/>
