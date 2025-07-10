@@ -1,6 +1,11 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth, parseRequestBody } from '$lib/server/api-utils'
+import {
+	jsonResponse,
+	errorResponse,
+	checkAdminAuth,
+	parseRequestBody
+} from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { selectBestDominantColor, getVibrantPalette } from '$lib/server/color-utils'
 
@@ -12,7 +17,7 @@ export const POST: RequestHandler = async (event) => {
 
 	try {
 		const body = await parseRequestBody<{ mediaId: number }>(event.request)
-		
+
 		if (!body?.mediaId) {
 			return errorResponse('Media ID is required', 400)
 		}
@@ -45,7 +50,7 @@ export const POST: RequestHandler = async (event) => {
 				excludeGreys: false,
 				preferBrighter: true
 			}),
-			
+
 			// Vibrant: exclude greys completely, prefer bright
 			vibrant: selectBestDominantColor(media.colors as Array<[string, number]>, {
 				minPercentage: 1,
@@ -53,7 +58,7 @@ export const POST: RequestHandler = async (event) => {
 				excludeGreys: true,
 				preferBrighter: true
 			}),
-			
+
 			// Prominent: focus on larger color areas
 			prominent: selectBestDominantColor(media.colors as Array<[string, number]>, {
 				minPercentage: 5,
@@ -80,7 +85,6 @@ export const POST: RequestHandler = async (event) => {
 				recommendation: strategies.default
 			}
 		})
-
 	} catch (error) {
 		logger.error('Color reanalysis error', error as Error)
 		return errorResponse(
@@ -98,11 +102,11 @@ export const PUT: RequestHandler = async (event) => {
 	}
 
 	try {
-		const body = await parseRequestBody<{ 
+		const body = await parseRequestBody<{
 			mediaId: number
-			dominantColor: string 
+			dominantColor: string
 		}>(event.request)
-		
+
 		if (!body?.mediaId || !body?.dominantColor) {
 			return errorResponse('Media ID and dominant color are required', 400)
 		}
@@ -119,16 +123,15 @@ export const PUT: RequestHandler = async (event) => {
 			data: { dominantColor: body.dominantColor }
 		})
 
-		logger.info('Dominant color updated', { 
-			mediaId: body.mediaId, 
-			color: body.dominantColor 
+		logger.info('Dominant color updated', {
+			mediaId: body.mediaId,
+			color: body.dominantColor
 		})
 
 		return jsonResponse({
 			success: true,
 			media: updated
 		})
-
 	} catch (error) {
 		logger.error('Color update error', error as Error)
 		return errorResponse(

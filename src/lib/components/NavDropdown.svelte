@@ -16,12 +16,22 @@
 		text: string
 		href: string
 		variant: 'work' | 'universe' | 'labs' | 'photos' | 'about'
+		subItems?: { text: string; href: string }[]
 	}
 
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
-		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
+		{
+			icon: PhotosIcon,
+			text: 'Photography',
+			href: '/photos',
+			variant: 'photos',
+			subItems: [
+				{ text: 'Photos', href: '/photos' },
+				{ text: 'Albums', href: '/albums' }
+			]
+		},
 		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
 		{ icon: AboutIcon, text: 'About', href: '/about', variant: 'about' }
 	]
@@ -32,9 +42,11 @@
 			? navItems[0]
 			: currentPath === '/about'
 				? navItems[4]
-				: navItems.find((item) =>
-						currentPath.startsWith(item.href === '/' ? '/work' : item.href)
-					) || navItems[0]
+				: currentPath.startsWith('/albums') || currentPath.startsWith('/photos')
+					? navItems.find((item) => item.variant === 'photos')
+					: navItems.find((item) =>
+							currentPath.startsWith(item.href === '/' ? '/work' : item.href)
+						) || navItems[0]
 	)
 
 	// Get background color based on variant
@@ -120,15 +132,34 @@
 	{#if isOpen}
 		<div class="dropdown-menu">
 			{#each navItems as item}
-				<a
-					href={item.href}
-					class="dropdown-item"
-					class:active={item === activeItem}
-					onclick={() => (isOpen = false)}
-				>
-					<item.icon class="nav-icon" />
-					<span>{item.text}</span>
-				</a>
+				{#if item.subItems}
+					<div class="dropdown-section">
+						<div class="dropdown-item section-header">
+							<item.icon class="nav-icon" />
+							<span>{item.text}</span>
+						</div>
+						{#each item.subItems as subItem}
+							<a
+								href={subItem.href}
+								class="dropdown-item sub-item"
+								class:active={currentPath === subItem.href}
+								onclick={() => (isOpen = false)}
+							>
+								<span>{subItem.text}</span>
+							</a>
+						{/each}
+					</div>
+				{:else}
+					<a
+						href={item.href}
+						class="dropdown-item"
+						class:active={item === activeItem}
+						onclick={() => (isOpen = false)}
+					>
+						<item.icon class="nav-icon" />
+						<span>{item.text}</span>
+					</a>
+				{/if}
 			{/each}
 		</div>
 	{/if}
@@ -137,8 +168,8 @@
 <style lang="scss">
 	.nav-dropdown {
 		position: relative;
-		height: 52px; // Match avatar height
-		min-width: 180px; // Wider to better match dropdown menu
+		height: $unit-6x + $unit-half; // Match avatar height
+		min-width: $unit-22x + $unit-half; // Wider to better match dropdown menu
 	}
 
 	.dropdown-trigger {
@@ -149,17 +180,17 @@
 		height: 100%;
 		padding: 0 $unit-2x;
 		border: none;
-		border-radius: 100px;
+		border-radius: $corner-radius-full;
 		background: white;
-		font-size: 1rem;
+		font-size: $font-size;
 		font-weight: 400;
 		cursor: pointer;
-		transition: all 0.2s ease;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		transition: all $transition-normal ease;
+		box-shadow: 0 $unit-1px $unit-3px $shadow-light;
 
 		&:hover {
-			transform: translateY(-1px);
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+			transform: translateY(-$unit-1px);
+			box-shadow: 0 $unit-2px $unit-6px $shadow-medium;
 		}
 
 		&:active {
@@ -167,21 +198,21 @@
 		}
 
 		:global(svg.nav-icon) {
-			width: 20px;
-			height: 20px;
+			width: $unit-20px;
+			height: $unit-20px;
 			flex-shrink: 0;
 			fill: currentColor;
 		}
 
 		:global(svg.chevron) {
-			width: 16px;
-			height: 16px;
+			width: $unit-2x;
+			height: $unit-2x;
 			margin-left: auto;
 			flex-shrink: 0;
-			transition: transform 0.2s ease;
+			transition: transform $transition-normal ease;
 			fill: none;
 			stroke: currentColor;
-			stroke-width: 2px;
+			stroke-width: $unit-2px;
 			stroke-linecap: round;
 			stroke-linejoin: round;
 
@@ -196,13 +227,22 @@
 		top: calc(100% + $unit);
 		left: 50%;
 		transform: translateX(-50%);
-		min-width: 180px;
+		min-width: $unit-22x + $unit-half;
 		background: white;
 		border-radius: $unit-2x;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		box-shadow: 0 $unit-half $unit-12px $shadow-medium;
 		padding: $unit;
-		z-index: 1000;
-		animation: dropdownOpen 0.2s ease;
+		z-index: 10;
+		animation: dropdownOpen $transition-normal ease;
+	}
+
+	.dropdown-section {
+		& + .dropdown-section,
+		& + .dropdown-item {
+			margin-top: $unit;
+			padding-top: $unit;
+			border-top: $unit-1px solid $gray-95;
+		}
 	}
 
 	.dropdown-item {
@@ -212,22 +252,37 @@
 		padding: $unit-2x $unit-2x;
 		border-radius: $unit;
 		text-decoration: none;
-		color: $grey-20;
-		font-size: 1rem;
-		transition: background-color 0.2s ease;
+		color: $gray-20;
+		font-size: $font-size;
+		transition: background-color $transition-normal ease;
 
-		&:hover {
-			background-color: $grey-97;
+		&:hover:not(.section-header) {
+			background-color: $gray-97;
 		}
 
 		&.active {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			font-weight: 500;
 		}
 
+		&.section-header {
+			color: $gray-50;
+			font-size: $font-size-small;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			padding: $unit $unit-2x;
+			cursor: default;
+		}
+
+		&.sub-item {
+			padding-left: $unit-4x + $unit-2x;
+			font-size: 0.9375rem; // 15px
+		}
+
 		:global(svg.nav-icon) {
-			width: 20px;
-			height: 20px;
+			width: $unit-20px;
+			height: $unit-20px;
 			flex-shrink: 0;
 			fill: currentColor;
 		}
@@ -236,7 +291,7 @@
 	@keyframes dropdownOpen {
 		from {
 			opacity: 0;
-			transform: translateX(-50%) translateY(-8px);
+			transform: translateX(-50%) translateY(-$unit);
 		}
 		to {
 			opacity: 1;

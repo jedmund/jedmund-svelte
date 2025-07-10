@@ -248,7 +248,7 @@
 			inset: 0;
 			border-radius: $image-corner-radius;
 			border: 4px solid transparent;
-			z-index: 2;
+			z-index: $z-index-above;
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
@@ -259,7 +259,7 @@
 			inset: 4px;
 			border-radius: calc($image-corner-radius - 4px);
 			border: 4px solid transparent;
-			z-index: 3;
+			z-index: $z-index-hover;
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
@@ -276,7 +276,7 @@
 			}
 
 			&::after {
-				border-color: $grey-100;
+				border-color: $gray-100;
 			}
 		}
 
@@ -286,12 +286,12 @@
 			}
 
 			&::after {
-				border-color: $grey-100;
+				border-color: $gray-100;
 			}
 		}
 
 		&.placeholder {
-			background: $grey-90;
+			background: $gray-90;
 			cursor: default;
 
 			&:hover {
@@ -320,7 +320,7 @@
 				font-size: 1.2rem;
 				font-weight: 600;
 				border-radius: $image-corner-radius;
-				z-index: 2;
+				z-index: $z-index-above;
 			}
 
 			&:hover {
@@ -347,7 +347,7 @@
 			height: 100%;
 			object-fit: cover;
 			position: relative;
-			z-index: 1;
+			z-index: $z-index-base;
 		}
 	}
 </style>

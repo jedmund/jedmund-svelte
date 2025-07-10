@@ -1,0 +1,39 @@
+/* Z-Index System
+ * -------------------------------------------------------------------------- 
+ * A systematic approach to z-index values to maintain consistent layering
+ * throughout the application.
+ * -------------------------------------------------------------------------- */
+
+// Base layers
+$z-index-base: 1;
+$z-index-above: 2;
+$z-index-hover: 3;
+
+// Interactive elements
+$z-index-dropdown: 10;
+$z-index-sticky: 100;
+$z-index-fixed: 200;
+
+// Overlays and modals
+$z-index-overlay: 1000;
+$z-index-modal-backdrop: 1000;
+$z-index-modal: 1050;
+$z-index-modal-content: 1100;
+
+// Top-level elements
+$z-index-popover: 1200;
+$z-index-tooltip: 1400;
+$z-index-notification: 10000;
+
+// Component-specific z-indexes
+$z-index-header: 100;
+$z-index-navigation: 150;
+$z-index-sidebar: 200;
+$z-index-media-modal: 1050;
+$z-index-lightbox: 1100;
+$z-index-toast: 10000;
+
+// Admin-specific z-indexes
+$z-index-admin-nav: 100;
+$z-index-admin-sidebar: 200;
+$z-index-admin-modal: 1050;

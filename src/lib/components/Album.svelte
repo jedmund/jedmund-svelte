@@ -165,9 +165,9 @@
 							class:playing={isPlaying}
 						>
 							{#if isPlaying}
-								<PauseIcon />
+								<svelte:component this={PauseIcon} />
 							{:else}
-								<PlayIcon />
+								<svelte:component this={PlayIcon} />
 							{/if}
 						</button>
 					{/if}
@@ -205,7 +205,7 @@
 			flex-direction: column;
 			gap: $unit * 1.5;
 			text-decoration: none;
-			transition: gap 0.125s ease-in-out;
+			transition: gap $transition-fast ease-in-out;
 			width: 100%;
 			height: 100%;
 
@@ -213,14 +213,14 @@
 				position: relative;
 				width: 100%;
 				aspect-ratio: 1 / 1;
-				background-color: $grey-5;
+				background-color: $gray-5;
 				border-radius: $unit;
 			}
 
 			img {
-				border: 1px solid rgba(0, 0, 0, 0.1);
+				border: 1px solid $shadow-light;
 				border-radius: $unit;
-				box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+				box-shadow: 0 0 8px $shadow-light;
 				width: 100%;
 				height: 100%;
 				object-fit: cover;
@@ -243,7 +243,7 @@
 				align-items: center;
 				justify-content: center;
 				font-size: 24px;
-				transition: all 0.3s ease;
+				transition: all $transition-medium ease;
 				backdrop-filter: blur(10px);
 
 				&.corner {
@@ -257,7 +257,7 @@
 				}
 
 				&:hover {
-					background: rgba(0, 0, 0, 0.5);
+					background: $overlay-medium;
 					transform: translate(-50%, -50%) scale(1.1);
 
 					&.corner {
@@ -294,7 +294,7 @@
 				.artist-name {
 					font-size: $font-size-extra-small;
 					font-weight: $font-weight-med;
-					color: $grey-40;
+					color: $gray-40;
 				}
 			}
 		}

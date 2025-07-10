@@ -224,7 +224,7 @@
 		margin-bottom: $unit;
 		font-size: 14px;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 	}
 
 	.required-indicator {
@@ -252,7 +252,7 @@
 		border: 1px solid rgba(0, 0, 0, 0.1);
 		z-index: 1;
 		cursor: pointer;
-		transition: border-color 0.15s ease;
+		transition: border-color $transition-fast ease;
 
 		&:hover {
 			border-color: rgba(0, 0, 0, 0.2);
@@ -265,7 +265,7 @@
 		border: 1px solid transparent;
 		color: $input-text-color;
 		background-color: $input-background-color;
-		transition: all 0.15s ease;
+		transition: all $transition-fast ease;
 
 		&:hover {
 			background-color: $input-background-color-hover;
@@ -273,7 +273,7 @@
 		}
 
 		&::placeholder {
-			color: $grey-50;
+			color: $gray-50;
 		}
 
 		&:focus {
@@ -283,13 +283,13 @@
 		}
 
 		&:disabled {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			cursor: not-allowed;
-			color: $grey-40;
+			color: $gray-40;
 		}
 
 		&:read-only {
-			background-color: $grey-97;
+			background-color: $gray-97;
 			cursor: default;
 		}
 	}
@@ -364,7 +364,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: $grey-40;
+		color: $gray-40;
 		pointer-events: none;
 
 		&.prefix-icon {
@@ -401,12 +401,12 @@
 	}
 
 	.input-help {
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.char-count {
 		font-size: 12px;
-		color: $grey-50;
+		color: $gray-50;
 		font-variant-numeric: tabular-nums;
 		margin-left: auto;
 

@@ -140,7 +140,7 @@
 		width: 100%;
 
 		.lock-icon {
-			color: $grey-40;
+			color: $gray-40;
 			margin-bottom: $unit-3x;
 
 			svg {
@@ -152,7 +152,7 @@
 		h1 {
 			font-size: 2rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 			margin: 0 0 $unit-2x;
 
 			@include breakpoint('phone') {
@@ -161,7 +161,7 @@
 		}
 
 		p {
-			color: $grey-40;
+			color: $gray-40;
 			margin: 0;
 			line-height: 1.5;
 			font-size: 1rem;
@@ -195,7 +195,7 @@
 		.password-input {
 			flex: 1;
 			padding: $unit-2x;
-			border: 1px solid $grey-80;
+			border: 1px solid $gray-80;
 			border-radius: $unit;
 			font-size: 1rem;
 			transition:
@@ -214,8 +214,8 @@
 			}
 
 			&:disabled {
-				background: $grey-95;
-				color: $grey-60;
+				background: $gray-95;
+				color: $gray-60;
 				cursor: not-allowed;
 			}
 		}
@@ -232,7 +232,7 @@
 		}
 
 		.back-link-wrapper {
-			border-top: 1px solid $grey-90;
+			border-top: 1px solid $gray-90;
 			padding-top: $unit-3x;
 			text-align: center;
 			width: 100%;

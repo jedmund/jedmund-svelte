@@ -3,14 +3,15 @@
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
-	import FormFieldWrapper from './FormFieldWrapper.svelte'
-	import CaseStudyEditor from './CaseStudyEditor.svelte'
+	import FormField from './FormField.svelte'
+	import Composer from './composer'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
 	import ProjectImagesForm from './ProjectImagesForm.svelte'
 	import Button from './Button.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
 	import { projectSchema } from '$lib/schemas/project'
+	import { toast } from '$lib/stores/toast'
 	import type { Project, ProjectFormData } from '$lib/types/project'
 	import { defaultProjectFormData } from '$lib/types/project'
 
@@ -24,10 +25,10 @@
 	// State
 	let isLoading = $state(mode === 'edit')
 	let isSaving = $state(false)
-	let error = $state('')
-	let successMessage = $state('')
 	let activeTab = $state('metadata')
 	let validationErrors = $state<Record<string, string>>({})
+	let error = $state<string | null>(null)
+	let successMessage = $state<string | null>(null)
 
 	// Form data
 	let formData = $state<ProjectFormData>({ ...defaultProjectFormData })
@@ -117,14 +118,14 @@
 		}
 
 		if (!validateForm()) {
-			error = 'Please fix the validation errors'
+			toast.error('Please fix the validation errors')
 			return
 		}
 
+		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} project...`)
+
 		try {
 			isSaving = true
-			error = ''
-			successMessage = ''
 
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
@@ -173,16 +174,16 @@
 			}
 
 			const savedProject = await response.json()
-			successMessage = `Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`
 
-			setTimeout(() => {
-				successMessage = ''
-				if (mode === 'create') {
-					goto(`/admin/projects/${savedProject.id}/edit`)
-				}
-			}, 1500)
+			toast.dismiss(loadingToastId)
+			toast.success(`Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
+
+			if (mode === 'create') {
+				goto(`/admin/projects/${savedProject.id}/edit`)
+			}
 		} catch (err) {
-			error = `Failed to ${mode === 'edit' ? 'save' : 'create'} project`
+			toast.dismiss(loadingToastId)
+			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -273,14 +274,14 @@
 
 				<!-- Case Study Panel -->
 				<div class="panel panel-case-study" class:active={activeTab === 'case-study'}>
-					<CaseStudyEditor
+					<Composer
 						bind:this={editorRef}
 						bind:data={formData.caseStudyContent}
 						onChange={handleEditorChange}
 						placeholder="Write your case study here..."
 						minHeight={400}
 						autofocus={false}
-						mode="default"
+						variant="full"
 					/>
 				</div>
 			</div>
@@ -322,7 +323,7 @@
 		height: 40px;
 		border: none;
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -331,8 +332,8 @@
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: $grey-90;
-			color: $grey-10;
+			background: $gray-90;
+			color: $gray-10;
 		}
 	}
 
@@ -372,7 +373,7 @@
 	.error {
 		text-align: center;
 		padding: $unit-6x;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.error {
@@ -412,12 +413,13 @@
 	}
 
 	.panel-case-study {
-		background: white;
+		background: transparent;
 		padding: 0;
 		min-height: 80vh;
-		margin: 0 auto;
+		margin: 0;
 		display: flex;
 		flex-direction: column;
+		width: 100%;
 
 		@include breakpoint('phone') {
 			min-height: 600px;

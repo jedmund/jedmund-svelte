@@ -54,8 +54,8 @@
 		border-radius: $unit * 2;
 		font-size: $font-size-small;
 		backdrop-filter: blur(10px);
-		z-index: 10;
-		animation: fadeIn 0.3s ease-out;
+		z-index: $z-index-dropdown;
+		animation: fadeIn $transition-medium ease-out;
 		width: fit-content;
 	}
 
@@ -80,7 +80,7 @@
 	.bar {
 		width: 3px;
 		background: $accent-color;
-		animation: dance 0.6s ease-in-out infinite;
+		animation: dance $animation-fast ease-in-out infinite;
 		transform-origin: bottom;
 	}
 

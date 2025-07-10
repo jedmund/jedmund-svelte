@@ -19,8 +19,8 @@ class Logger {
 		// Parse DEBUG environment variable to enable specific categories
 		const debugEnv = process.env.DEBUG || ''
 		if (debugEnv) {
-			const categories = debugEnv.split(',').map(c => c.trim()) as LogCategory[]
-			categories.forEach(cat => this.debugCategories.add(cat))
+			const categories = debugEnv.split(',').map((c) => c.trim()) as LogCategory[]
+			categories.forEach((cat) => this.debugCategories.add(cat))
 		}
 	}
 
@@ -43,11 +43,11 @@ class Logger {
 
 	private formatLog(entry: LogEntry): string {
 		const parts = [`[${entry.timestamp}]`, `[${entry.level.toUpperCase()}]`]
-		
+
 		if (entry.category) {
 			parts.push(`[${entry.category.toUpperCase()}]`)
 		}
-		
+
 		parts.push(entry.message)
 
 		if (entry.context) {
@@ -64,7 +64,13 @@ class Logger {
 		return parts.join(' ')
 	}
 
-	private log(level: LogLevel, message: string, context?: Record<string, any>, error?: Error, category?: LogCategory) {
+	private log(
+		level: LogLevel,
+		message: string,
+		context?: Record<string, any>,
+		error?: Error,
+		category?: LogCategory
+	) {
 		if (!this.shouldLog(level, category)) return
 
 		const entry: LogEntry = {

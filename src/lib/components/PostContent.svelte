@@ -104,7 +104,7 @@
 		margin: 0 0 $unit-2x;
 		font-size: 2rem;
 		font-weight: 600;
-		color: $grey-20;
+		color: $gray-20;
 		line-height: 1.2;
 	}
 
@@ -155,13 +155,13 @@
 		:global(blockquote) {
 			margin: $unit-3x 0;
 			padding-left: $unit-3x;
-			border-left: 3px solid $grey-80;
+			border-left: 3px solid $gray-80;
 			color: $text-color;
 			font-style: italic;
 		}
 
 		:global(code) {
-			background: $grey-90;
+			background: $gray-90;
 			padding: 2px 6px;
 			border-radius: 3px;
 			font-family: 'SF Mono', Monaco, monospace;
@@ -169,7 +169,7 @@
 		}
 
 		:global(pre) {
-			background: $grey-90;
+			background: $gray-90;
 			padding: $unit-2x;
 			border-radius: $unit;
 			overflow-x: auto;
@@ -193,7 +193,7 @@
 
 		:global(hr) {
 			border: none;
-			border-top: 1px solid $grey-80;
+			border-top: 1px solid $gray-80;
 			margin: $unit-4x 0;
 		}
 
@@ -206,6 +206,6 @@
 	.post-footer {
 		margin-top: $unit-6x;
 		padding-top: $unit-4x;
-		border-top: 1px solid $grey-80;
+		border-top: 1px solid $gray-80;
 	}
 </style>

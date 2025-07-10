@@ -176,7 +176,7 @@
 
 <style lang="scss">
 	.lab-card {
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $card-corner-radius;
 		padding: $unit-3x;
 		display: flex;
@@ -249,7 +249,7 @@
 		margin: 0;
 		font-size: 1rem;
 		font-weight: 400;
-		color: $grey-00;
+		color: $gray-00;
 		line-height: 1.3;
 
 		@include breakpoint('phone') {
@@ -259,7 +259,7 @@
 
 	.project-year {
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 		font-weight: 400;
 		white-space: nowrap;
 	}
@@ -268,7 +268,7 @@
 		margin: 0 0 $unit-3x 0;
 		font-size: 1rem;
 		line-height: 1.5;
-		color: $grey-20;
+		color: $gray-20;
 
 		@include breakpoint('phone') {
 			font-size: 0.9rem;
@@ -310,12 +310,12 @@
 
 		&.secondary {
 			background: transparent;
-			color: $grey-20;
+			color: $gray-20;
 			border-color: rgba(0, 0, 0, 0.1);
 
 			&:hover {
 				background: rgba(0, 0, 0, 0.05);
-				color: $grey-00;
+				color: $gray-00;
 			}
 		}
 

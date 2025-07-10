@@ -235,8 +235,8 @@
 		:global(blockquote) {
 			margin: $unit-4x 0;
 			padding: $unit-3x;
-			background: $grey-97;
-			border-left: 4px solid $grey-80;
+			background: $gray-97;
+			border-left: 4px solid $gray-80;
 			border-radius: $unit;
 			color: $text-color;
 			font-style: italic;
@@ -247,7 +247,7 @@
 		}
 
 		:global(code) {
-			background: $grey-95;
+			background: $gray-95;
 			padding: 2px 6px;
 			border-radius: 4px;
 			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
@@ -257,12 +257,12 @@
 		}
 
 		:global(pre) {
-			background: $grey-95;
+			background: $gray-95;
 			padding: $unit-3x;
 			border-radius: $unit;
 			overflow-x: auto;
 			margin: 0 0 $unit-3x;
-			border: 1px solid $grey-85;
+			border: 1px solid $gray-85;
 
 			:global(code) {
 				background: none;
@@ -283,7 +283,7 @@
 
 		:global(hr) {
 			border: none;
-			border-top: 1px solid $grey-85;
+			border-top: 1px solid $gray-85;
 			margin: $unit-4x 0;
 		}
 
@@ -319,16 +319,16 @@
 		:global(.url-embed-link) {
 			display: flex;
 			flex-direction: column;
-			background: $grey-97;
+			background: $gray-97;
 			border-radius: $card-corner-radius;
 			overflow: hidden;
-			border: 1px solid $grey-80;
+			border: 1px solid $gray-80;
 			text-decoration: none;
 			transition: all 0.2s ease;
 			width: 100%;
 
 			&:hover {
-				border-color: $grey-80;
+				border-color: $gray-80;
 				transform: translateY(-1px);
 				text-decoration: none;
 				box-shadow: 0 0px 8px rgba(0, 0, 0, 0.08);
@@ -339,7 +339,7 @@
 			width: 100%;
 			aspect-ratio: 2 / 1;
 			overflow: hidden;
-			background: $grey-90;
+			background: $gray-90;
 		}
 
 		:global(.url-embed-image img) {
@@ -362,7 +362,7 @@
 			align-items: center;
 			gap: $unit-half;
 			font-size: 0.8125rem;
-			color: $grey-40;
+			color: $gray-40;
 		}
 
 		:global(.url-embed-favicon) {
@@ -382,7 +382,7 @@
 			margin: 0;
 			font-size: 1.125rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 			line-height: 1.3;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
@@ -393,7 +393,7 @@
 		:global(.url-embed-description) {
 			margin: 0;
 			font-size: 0.9375rem;
-			color: $grey-30;
+			color: $gray-30;
 			line-height: 1.5;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
@@ -406,7 +406,7 @@
 			margin: $unit-3x 0;
 			border-radius: $card-corner-radius;
 			overflow: hidden;
-			background: $grey-95;
+			background: $gray-95;
 		}
 
 		:global(.youtube-embed-wrapper) {

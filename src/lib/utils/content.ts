@@ -63,7 +63,19 @@ export const renderEdraContent = (content: any): string => {
 				const src = block.attrs?.src || block.src || ''
 				const alt = block.attrs?.alt || block.alt || ''
 				const caption = block.attrs?.caption || block.caption || ''
-				return `<figure><img src="${src}" alt="${alt}" />${caption ? `<figcaption>${caption}</figcaption>` : ''}</figure>`
+
+				// Check if we have a media ID stored in attributes first
+				const mediaId = block.attrs?.mediaId || block.mediaId || extractMediaIdFromUrl(src)
+
+				if (mediaId) {
+					// Use album context for URL if available
+					const photoUrl = options.albumSlug
+						? `/photos/${options.albumSlug}/${mediaId}`
+						: `/photos/p/${mediaId}`
+					return `<figure class="interactive-figure"><a href="${photoUrl}" class="photo-link"><img src="${src}" alt="${alt}" /></a>${caption ? `<figcaption>${caption}</figcaption>` : ''}</figure>`
+				} else {
+					return `<figure><img src="${src}" alt="${alt}" />${caption ? `<figcaption>${caption}</figcaption>` : ''}</figure>`
+				}
 			}
 
 			case 'hr':
@@ -146,7 +158,17 @@ function renderTiptapContent(doc: any): string {
 				const height = node.attrs?.height
 				const widthAttr = width ? ` width="${width}"` : ''
 				const heightAttr = height ? ` height="${height}"` : ''
-				return `<figure><img src="${src}" alt="${alt}"${widthAttr}${heightAttr} />${title ? `<figcaption>${title}</figcaption>` : ''}</figure>`
+
+				// Check if we have a media ID stored in attributes first
+				const mediaId = node.attrs?.mediaId || extractMediaIdFromUrl(src)
+
+				if (mediaId) {
+					// Always use direct photo permalink
+					const photoUrl = `/photos/${mediaId}`
+					return `<figure class="interactive-figure"><a href="${photoUrl}" class="photo-link"><img src="${src}" alt="${alt}"${widthAttr}${heightAttr} /></a>${title ? `<figcaption>${title}</figcaption>` : ''}</figure>`
+				} else {
+					return `<figure><img src="${src}" alt="${alt}"${widthAttr}${heightAttr} />${title ? `<figcaption>${title}</figcaption>` : ''}</figure>`
+				}
 			}
 
 			case 'horizontalRule': {
@@ -360,4 +382,24 @@ function extractTiptapText(doc: any, maxLength: number): string {
 	const text = doc.content.map(extractFromNode).join(' ').trim()
 	if (text.length <= maxLength) return text
 	return text.substring(0, maxLength).trim() + '...'
+}
+
+// Helper function to extract media ID from Cloudinary URL
+function extractMediaIdFromUrl(url: string): string | null {
+	if (!url) return null
+
+	// Match Cloudinary URLs with media ID pattern
+	// Example: https://res.cloudinary.com/jedmund/image/upload/v1234567890/media/123.jpg
+	const cloudinaryMatch = url.match(/\/media\/(\d+)(?:\.|$)/)
+	if (cloudinaryMatch) {
+		return cloudinaryMatch[1]
+	}
+
+	// Fallback: try to extract numeric ID from filename
+	const filenameMatch = url.match(/\/(\d+)\.[^/]*$/)
+	if (filenameMatch) {
+		return filenameMatch[1]
+	}
+
+	return null
 }

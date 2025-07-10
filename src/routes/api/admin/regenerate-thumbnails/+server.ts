@@ -61,7 +61,7 @@ export const POST: RequestHandler = async (event) => {
 				// Generate new thumbnail URL with aspect ratio preservation
 				// 800px on the longest edge
 				let thumbnailUrl: string
-				
+
 				if (media.width && media.height) {
 					// Use actual dimensions if available
 					if (media.width > media.height) {
@@ -108,12 +108,13 @@ export const POST: RequestHandler = async (event) => {
 
 				// Log progress every 10 items
 				if (results.processed % 10 === 0) {
-					logger.info(`Thumbnail regeneration progress: ${results.processed}/${mediaWithOldThumbnails.length}`)
+					logger.info(
+						`Thumbnail regeneration progress: ${results.processed}/${mediaWithOldThumbnails.length}`
+					)
 				}
 
 				// Add a small delay to avoid rate limiting
-				await new Promise(resolve => setTimeout(resolve, 50))
-
+				await new Promise((resolve) => setTimeout(resolve, 50))
 			} catch (error) {
 				results.failed++
 				results.processed++
@@ -161,7 +162,6 @@ export const POST: RequestHandler = async (event) => {
 			...results,
 			photosUpdated: photosWithOldThumbnails.length
 		})
-
 	} catch (error) {
 		logger.error('Thumbnail regeneration error', error as Error)
 		return errorResponse(

@@ -1,7 +1,7 @@
 <script lang="ts">
 	interface Props {
 		label: string
-		name: string
+		name?: string
 		type?: string
 		value?: any
 		placeholder?: string
@@ -10,11 +10,12 @@
 		helpText?: string
 		disabled?: boolean
 		onchange?: (e: Event) => void
+		children?: any
 	}
 
 	let {
 		label,
-		name,
+		name = '',
 		type = 'text',
 		value = $bindable(),
 		placeholder = '',
@@ -22,8 +23,12 @@
 		error = '',
 		helpText = '',
 		disabled = false,
-		onchange
+		onchange,
+		children
 	}: Props = $props()
+
+	// If children are provided, this is a wrapper mode
+	const isWrapper = $derived(!!children)
 
 	function handleChange(e: Event) {
 		const target = e.target as HTMLInputElement | HTMLTextAreaElement
@@ -33,14 +38,16 @@
 </script>
 
 <div class="form-field" class:has-error={!!error}>
-	<label for={name}>
+	<label for={!isWrapper ? name : undefined}>
 		{label}
 		{#if required}
 			<span class="required">*</span>
 		{/if}
 	</label>
 
-	{#if type === 'textarea'}
+	{#if isWrapper}
+		{@render children()}
+	{:else if type === 'textarea'}
 		<textarea
 			id={name}
 			{name}
@@ -75,10 +82,17 @@
 	.form-field {
 		margin-bottom: $unit-4x;
 
+		&:last-child {
+			margin-bottom: 0;
+		}
+
 		&.has-error {
 			input,
-			textarea {
-				border-color: #c33;
+			textarea,
+			:global(input),
+			:global(textarea),
+			:global(select) {
+				border-color: $red-error;
 			}
 		}
 	}
@@ -87,10 +101,11 @@
 		display: block;
 		margin-bottom: $unit;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
+		font-size: 0.925rem;
 
 		.required {
-			color: #c33;
+			color: $red-error;
 			margin-left: 2px;
 		}
 	}
@@ -99,12 +114,12 @@
 	textarea {
 		width: 100%;
 		padding: $unit-2x $unit-3x;
-		border: 1px solid $grey-80;
-		border-radius: 6px;
+		border: 1px solid $gray-80;
+		border-radius: $corner-radius-sm;
 		font-size: 1rem;
 		font-family: inherit;
-		transition: border-color 0.2s ease;
-		background-color: white;
+		transition: border-color $transition-normal ease;
+		background-color: $white;
 
 		&:focus {
 			outline: none;
@@ -112,7 +127,7 @@
 		}
 
 		&:disabled {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			cursor: not-allowed;
 		}
 	}
@@ -124,13 +139,13 @@
 
 	.error-text {
 		margin-top: $unit;
-		color: #c33;
-		font-size: 0.875rem;
+		color: $red-error;
+		font-size: $font-size-small;
 	}
 
 	.help-text {
 		margin-top: $unit;
-		color: $grey-40;
-		font-size: 0.875rem;
+		color: $gray-40;
+		font-size: $font-size-small;
 	}
 </style>

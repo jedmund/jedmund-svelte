@@ -53,7 +53,7 @@
 		letter-spacing: -0.025em;
 		font-weight: 500;
 		margin: 0;
-		color: $grey-10;
+		color: $gray-10;
 
 		@include breakpoint('phone') {
 			font-size: 2rem;
@@ -62,7 +62,7 @@
 
 	.project-subtitle {
 		font-size: 1.25rem;
-		color: $grey-40;
+		color: $gray-40;
 		margin: 0;
 
 		@include breakpoint('phone') {

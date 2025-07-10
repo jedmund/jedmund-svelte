@@ -411,12 +411,12 @@
 	}
 
 	.drop-zone {
-		border: 2px dashed $grey-80;
+		border: 2px dashed $gray-80;
 		border-radius: $unit-2x;
 		padding: $unit-6x $unit-4x;
 		text-align: center;
 		position: relative;
-		background: $grey-95;
+		background: $gray-95;
 		transition: all 0.2s ease;
 		margin-bottom: $unit-4x;
 
@@ -439,19 +439,19 @@
 					align-items: center;
 					justify-content: center;
 					gap: $unit-2x;
-					color: $grey-40;
+					color: $gray-40;
 					font-size: 0.875rem;
 
 					.add-icon {
-						color: $grey-50;
+						color: $gray-50;
 					}
 				}
 			}
 		}
 
 		&:hover {
-			border-color: $grey-60;
-			background: $grey-90;
+			border-color: $gray-60;
+			background: $gray-90;
 		}
 
 		&.uploading {
@@ -466,24 +466,24 @@
 		pointer-events: none;
 
 		.upload-icon {
-			color: $grey-50;
+			color: $gray-50;
 			margin-bottom: $unit-2x;
 		}
 
 		h3 {
 			font-size: 1.25rem;
-			color: $grey-20;
+			color: $gray-20;
 			margin-bottom: $unit;
 		}
 
 		p {
-			color: $grey-40;
+			color: $gray-40;
 			margin-bottom: $unit-half;
 		}
 
 		.upload-hint {
 			font-size: 0.875rem;
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
@@ -508,7 +508,7 @@
 
 	.file-list {
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit-2x;
 		padding: $unit-3x;
 		margin-bottom: $unit-3x;
@@ -520,11 +520,11 @@
 		align-items: center;
 		margin-bottom: $unit-3x;
 		padding-bottom: $unit-2x;
-		border-bottom: 1px solid $grey-85;
+		border-bottom: 1px solid $gray-85;
 
 		h3 {
 			margin: 0;
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		.file-actions {
@@ -545,9 +545,9 @@
 		align-items: center;
 		gap: $unit-3x;
 		padding: $unit-2x;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: $unit;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 	}
 
 	.file-preview {
@@ -555,7 +555,7 @@
 		height: 60px;
 		border-radius: $unit;
 		overflow: hidden;
-		background: $grey-90;
+		background: $gray-90;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -577,13 +577,13 @@
 
 		.file-name {
 			font-weight: 500;
-			color: $grey-20;
+			color: $gray-20;
 			margin-bottom: $unit-half;
 		}
 
 		.file-size {
 			font-size: 0.875rem;
-			color: $grey-50;
+			color: $gray-50;
 			margin-bottom: $unit-half;
 		}
 	}
@@ -591,7 +591,7 @@
 	.progress-bar {
 		width: 100%;
 		height: 6px;
-		background: $grey-90;
+		background: $gray-90;
 		border-radius: 3px;
 		overflow: hidden;
 		margin-bottom: $unit-half;
@@ -642,14 +642,14 @@
 		}
 
 		.status-waiting {
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
 	.remove-button {
 		background: none;
 		border: none;
-		color: $grey-50;
+		color: $gray-50;
 		cursor: pointer;
 		padding: $unit;
 		border-radius: 50%;
@@ -663,7 +663,7 @@
 
 	.upload-results {
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit-2x;
 		padding: $unit-3x;
 
@@ -672,7 +672,7 @@
 			margin-bottom: $unit-2x;
 
 			small {
-				color: $grey-50;
+				color: $gray-50;
 			}
 		}
 

@@ -34,12 +34,12 @@
 		border: none;
 		text-align: left;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 
 		&.danger {

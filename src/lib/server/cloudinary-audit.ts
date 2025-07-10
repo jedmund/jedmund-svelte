@@ -317,7 +317,7 @@ export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
 			// Handle gallery items
 			if (project.gallery && typeof project.gallery === 'object') {
 				const gallery = project.gallery as any[]
-				const cleanedGallery = gallery.filter(item => {
+				const cleanedGallery = gallery.filter((item) => {
 					if (item.url?.includes('cloudinary.com')) {
 						const publicId = extractPublicId(item.url)
 						return !(publicId && publicIds.includes(publicId))
@@ -362,7 +362,7 @@ export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
 			// Handle attachments
 			if (post.attachments && typeof post.attachments === 'object') {
 				const attachments = post.attachments as any[]
-				const cleanedAttachments = attachments.filter(attachment => {
+				const cleanedAttachments = attachments.filter((attachment) => {
 					if (attachment.url?.includes('cloudinary.com')) {
 						const publicId = extractPublicId(attachment.url)
 						return !(publicId && publicIds.includes(publicId))

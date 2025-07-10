@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { HTMLButtonAttributes } from 'svelte/elements'
+	import type { Snippet } from 'svelte'
 
 	interface Props extends HTMLButtonAttributes {
 		variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'text' | 'overlay' | 'danger-text'
@@ -12,6 +13,8 @@
 		active?: boolean
 		href?: string
 		class?: string
+		icon?: Snippet
+		children?: Snippet
 	}
 
 	let {
@@ -27,6 +30,7 @@
 		type = 'button',
 		href,
 		class: className = '',
+		icon,
 		children,
 		onclick,
 		...restProps
@@ -60,8 +64,8 @@
 	})
 
 	// Handle icon slot positioning
-	const hasIcon = $derived(!!$$slots.icon)
-	const hasDefaultSlot = $derived(!!$$slots.default)
+	const hasIcon = $derived(!!icon)
+	const hasDefaultSlot = $derived(!!children)
 	const showSpinner = $derived(loading && !iconOnly)
 </script>
 
@@ -94,21 +98,21 @@
 
 		{#if hasIcon && iconPosition === 'left' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 
 		{#if hasDefaultSlot && !iconOnly}
 			<span class="btn-label">
-				<slot />
+				{@render children()}
 			</span>
 		{:else if iconOnly && hasIcon}
-			<slot name="icon" />
+			{@render icon()}
 		{/if}
 
 		{#if hasIcon && iconPosition === 'right' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 	</a>
@@ -141,21 +145,21 @@
 
 		{#if hasIcon && iconPosition === 'left' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 
 		{#if hasDefaultSlot && !iconOnly}
 			<span class="btn-label">
-				<slot />
+				{@render children()}
 			</span>
 		{:else if iconOnly && hasIcon}
-			<slot name="icon" />
+			{@render icon()}
 		{/if}
 
 		{#if hasIcon && iconPosition === 'right' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				<slot name="icon" />
+				{@render icon()}
 			</span>
 		{/if}
 	</button>
@@ -174,7 +178,7 @@
 		font-weight: 400;
 		border: none;
 		cursor: pointer;
-		transition: all 0.15s ease;
+		transition: all $transition-fast ease;
 		outline: none;
 		position: relative;
 		white-space: nowrap;
@@ -198,73 +202,73 @@
 
 		// Ensure consistent styling for both button and anchor elements
 		&:focus {
-			outline: 2px solid rgba(59, 130, 246, 0.5);
-			outline-offset: 2px;
+			outline: $unit-2px solid rgba(59, 130, 246, 0.5);
+			outline-offset: $unit-2px;
 		}
 	}
 
 	// Size variations
 	.btn-small {
 		padding: $unit calc($unit * 1.5);
-		font-size: 13px;
-		border-radius: 20px;
-		min-height: 28px;
+		font-size: 0.8125rem; // 13px
+		border-radius: $unit-20px;
+		min-height: $unit-3x + $unit-half;
 	}
 
 	.btn-medium {
 		padding: ($unit * 1.5) $unit-2x;
-		font-size: 14px;
-		border-radius: 24px;
-		min-height: 36px;
+		font-size: $unit-14px;
+		border-radius: $unit-3x;
+		min-height: $unit-4x + $unit-half;
 	}
 
 	.btn-large {
 		padding: calc($unit * 1.5) $unit-3x;
-		font-size: 15px;
-		border-radius: 28px;
-		min-height: 44px;
+		font-size: 0.9375rem; // 15px
+		border-radius: $unit-3x + $unit-half;
+		min-height: $unit-5x + $unit-half;
 	}
 
 	// Square corners variant
 	.btn-square {
 		&.btn-small {
-			border-radius: 6px;
+			border-radius: $corner-radius-sm;
 		}
 		&.btn-medium {
-			border-radius: 8px;
+			border-radius: $corner-radius-md;
 		}
 		&.btn-large {
-			border-radius: 10px;
+			border-radius: $corner-radius-lg;
 		}
 	}
 
 	// Icon-only button styles
 	.btn-icon {
 		padding: 0;
-		border-radius: 8px;
+		border-radius: $corner-radius-md;
 
 		&.btn-icon-small {
-			width: 28px;
-			height: 28px;
-			border-radius: 6px;
+			width: $unit-3x + $unit-half;
+			height: $unit-3x + $unit-half;
+			border-radius: $corner-radius-sm;
 		}
 
 		&.btn-icon-medium {
-			width: 34px;
-			height: 34px;
+			width: $unit-4x + $unit-2px;
+			height: $unit-4x + $unit-2px;
 		}
 
 		&.btn-icon-large {
-			width: 44px;
-			height: 44px;
-			border-radius: 10px;
+			width: $unit-5x + $unit-half;
+			height: $unit-5x + $unit-half;
+			border-radius: $corner-radius-lg;
 		}
 
 		&.btn-icon-icon {
 			// For circular icon buttons
-			width: 34px;
-			height: 34px;
-			border-radius: 17px;
+			width: $unit-4x + $unit-2px;
+			height: $unit-4x + $unit-2px;
+			border-radius: ($unit-4x + $unit-2px) / 2;
 		}
 	}
 
@@ -283,17 +287,17 @@
 	}
 
 	.btn-secondary {
-		background-color: $grey-10;
-		color: $grey-80;
-		border: 1px solid $grey-20;
+		background-color: $gray-10;
+		color: $gray-80;
+		border: $unit-1px solid $gray-20;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-20;
-			border-color: $grey-30;
+			background-color: $gray-20;
+			border-color: $gray-30;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-30;
+			background-color: $gray-30;
 		}
 	}
 
@@ -312,35 +316,35 @@
 
 	.btn-ghost {
 		background-color: transparent;
-		color: $grey-20;
+		color: $gray-20;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-5;
-			color: $grey-00;
+			background-color: $gray-5;
+			color: $gray-00;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-10;
+			background-color: $gray-10;
 		}
 
 		&.active {
-			background-color: $grey-10;
-			color: $grey-00;
+			background-color: $gray-10;
+			color: $gray-00;
 		}
 	}
 
 	.btn-text {
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		padding: $unit;
 
 		&:hover:not(:disabled) {
-			color: $grey-20;
-			background-color: $grey-5;
+			color: $gray-20;
+			background-color: $gray-5;
 		}
 
 		&:active:not(:disabled) {
-			color: $grey-00;
+			color: $gray-00;
 		}
 	}
 
@@ -351,31 +355,31 @@
 		font-weight: 600;
 
 		&:hover:not(:disabled) {
-			background-color: $grey-90;
+			background-color: $gray-90;
 			color: #dc2626;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-80;
+			background-color: $gray-80;
 			color: #dc2626;
 		}
 	}
 
 	.btn-overlay {
 		background-color: white;
-		color: $grey-20;
-		border: 1px solid rgba(0, 0, 0, 0.1);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		color: $gray-20;
+		border: $unit-1px solid rgba(0, 0, 0, 0.1);
+		box-shadow: 0 $unit-2px $unit-half rgba(0, 0, 0, 0.1);
 
 		&:hover:not(:disabled) {
-			background-color: $grey-5;
-			color: $grey-00;
-			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+			background-color: $gray-5;
+			color: $gray-00;
+			box-shadow: 0 $unit-half $unit rgba(0, 0, 0, 0.15);
 		}
 
 		&:active:not(:disabled) {
-			background-color: $grey-10;
-			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+			background-color: $gray-10;
+			box-shadow: 0 $unit-1px $unit-2px rgba(0, 0, 0, 0.1);
 		}
 	}
 

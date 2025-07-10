@@ -4,6 +4,9 @@
 	import Check from 'lucide-svelte/icons/check'
 	import X from 'lucide-svelte/icons/x'
 
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
+
 	interface Props {
 		x: number
 		y: number
@@ -66,7 +69,7 @@
 	bind:this={dialogElement}
 	class="link-edit-dialog"
 	style="left: {x}px; top: {y}px;"
-	transition:fly={{ y: -10, duration: 200 }}
+	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
 	onkeydown={handleKeydown}
 >
 	<div class="dialog-content">
@@ -94,7 +97,7 @@
 		position: fixed;
 		z-index: 1051;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		padding: $unit-2x;
@@ -111,10 +114,10 @@
 	.url-input {
 		flex: 1;
 		padding: $unit $unit-2x;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: 4px;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		background: white;
 		transition: border-color 0.2s;
 
@@ -141,11 +144,11 @@
 		height: 32px;
 		padding: 0;
 		background: transparent;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: 4px;
 		cursor: pointer;
 		transition: all 0.2s;
-		color: $grey-40;
+		color: $gray-40;
 
 		svg {
 			width: 16px;
@@ -153,8 +156,8 @@
 		}
 
 		&:hover:not(:disabled) {
-			background-color: $grey-95;
-			color: $grey-20;
+			background-color: $gray-95;
+			color: $gray-20;
 		}
 
 		&:disabled {

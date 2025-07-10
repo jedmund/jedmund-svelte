@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import UniverseComposer from '$lib/components/admin/UniverseComposer.svelte'
+	import InlineComposerModal from '$lib/components/admin/InlineComposerModal.svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 
 	// Get initial state from URL params
@@ -15,5 +15,10 @@
 </svelte:head>
 
 <AdminPage>
-	<UniverseComposer isOpen={true} initialMode="page" initialPostType={postType} {initialContent} />
+	<InlineComposerModal
+		isOpen={true}
+		initialMode="page"
+		initialPostType={postType}
+		{initialContent}
+	/>
 </AdminPage>

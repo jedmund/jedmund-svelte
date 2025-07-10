@@ -77,7 +77,7 @@
 			flex-direction: column;
 			gap: $unit * 1.5;
 			text-decoration: none;
-			transition: gap 0.125s ease-in-out;
+			transition: gap $transition-fast ease-in-out;
 
 			img {
 				border: 1px solid rgba(0, 0, 0, 0.1);
@@ -106,7 +106,7 @@
 				.game-playtime {
 					font-size: $font-size-extra-small;
 					font-weight: $font-weight-med;
-					color: $grey-40;
+					color: $gray-40;
 				}
 			}
 		}

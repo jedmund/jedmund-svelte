@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from './Button.svelte'
-	import DropdownMenuContainer from './DropdownMenuContainer.svelte'
+	import BaseDropdown from './BaseDropdown.svelte'
 	import DropdownItem from './DropdownItem.svelte'
 
 	interface Props {
@@ -34,32 +34,12 @@
 
 	function handlePrimaryAction() {
 		onStatusChange(primaryAction.status)
-		isDropdownOpen = false
 	}
 
 	function handleDropdownAction(status: string) {
 		onStatusChange(status)
 		isDropdownOpen = false
 	}
-
-	function handleDropdownToggle(e: MouseEvent) {
-		e.stopPropagation()
-		isDropdownOpen = !isDropdownOpen
-	}
-
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target as HTMLElement
-		if (!target.closest('.status-dropdown')) {
-			isDropdownOpen = false
-		}
-	}
-
-	$effect(() => {
-		if (isDropdownOpen) {
-			document.addEventListener('click', handleClickOutside)
-			return () => document.removeEventListener('click', handleClickOutside)
-		}
-	})
 
 	const availableActions = $derived(
 		dropdownActions.filter((action) => action.show !== false && action.status !== currentStatus)
@@ -69,72 +49,43 @@
 	const hasDropdownContent = $derived(availableActions.length > 0 || showViewInDropdown)
 </script>
 
-<div class="status-dropdown">
-	<Button
-		variant="primary"
-		buttonSize="large"
-		onclick={handlePrimaryAction}
-		disabled={disabled || isLoading}
-	>
-		{isLoading ? `${primaryAction.label.replace(/e$/, 'ing')}...` : primaryAction.label}
-	</Button>
-
-	{#if hasDropdownContent}
+<BaseDropdown bind:isOpen={isDropdownOpen} {disabled} {isLoading} class="status-dropdown">
+	{#snippet trigger()}
 		<Button
-			variant="ghost"
-			iconOnly
+			variant="primary"
 			buttonSize="large"
-			onclick={handleDropdownToggle}
+			onclick={handlePrimaryAction}
 			disabled={disabled || isLoading}
 		>
-			<svg slot="icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
-				<path
-					d="M3 4.5L6 7.5L9 4.5"
-					stroke="currentColor"
-					stroke-width="1.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				/>
-			</svg>
+			{#snippet children()}
+				{primaryAction.label}
+			{/snippet}
 		</Button>
+	{/snippet}
 
-		{#if isDropdownOpen}
-			<DropdownMenuContainer>
-				{#each availableActions as action}
-					<DropdownItem onclick={() => handleDropdownAction(action.status)}>
-						{action.label}
-					</DropdownItem>
-				{/each}
-				{#if showViewInDropdown}
-					{#if availableActions.length > 0}
-						<div class="dropdown-divider"></div>
-					{/if}
-					<a
-						href={viewUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="dropdown-item view-link"
-					>
-						View on site
-					</a>
+	{#snippet dropdown()}
+		{#if hasDropdownContent}
+			{#each availableActions as action}
+				<DropdownItem onclick={() => handleDropdownAction(action.status)}>
+					{action.label}
+				</DropdownItem>
+			{/each}
+			{#if showViewInDropdown}
+				{#if availableActions.length > 0}
+					<div class="dropdown-divider"></div>
 				{/if}
-			</DropdownMenuContainer>
+				<a href={viewUrl} target="_blank" rel="noopener noreferrer" class="dropdown-item view-link">
+					View on site
+				</a>
+			{/if}
 		{/if}
-	{/if}
-</div>
+	{/snippet}
+</BaseDropdown>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-
-	.status-dropdown {
-		position: relative;
-		display: flex;
-		gap: $unit-half;
-	}
-
 	.dropdown-divider {
 		height: 1px;
-		background-color: $grey-80;
+		background-color: $gray-80;
 		margin: $unit-half 0;
 	}
 
@@ -146,13 +97,13 @@
 		border: none;
 		text-align: left;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		cursor: pointer;
-		transition: background-color 0.2s ease;
+		transition: background-color $transition-normal ease;
 		text-decoration: none;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 	}
 </style>

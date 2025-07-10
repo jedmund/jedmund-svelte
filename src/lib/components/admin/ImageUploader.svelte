@@ -3,7 +3,7 @@
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import SmartImage from '../SmartImage.svelte'
-	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import RefreshIcon from '$icons/refresh.svg?component'
 
@@ -15,7 +15,7 @@
 		aspectRatio?: string // e.g., "16:9", "1:1"
 		required?: boolean
 		error?: string
-		allowAltText?: boolean
+		allowAltText?: boolean // @deprecated - Now using description field for alt text
 		maxFileSize?: number // MB limit
 		placeholder?: string
 		helpText?: string
@@ -45,7 +45,7 @@
 	let uploadError = $state<string | null>(null)
 	let isDragOver = $state(false)
 	let fileInputElement: HTMLInputElement
-	let altTextValue = $state(value?.altText || '')
+	// Removed altText - using only description field
 	let descriptionValue = $state(value?.description || '')
 	let isMediaLibraryOpen = $state(false)
 
@@ -79,11 +79,9 @@
 		const formData = new FormData()
 		formData.append('file', file)
 
-		if (allowAltText && altTextValue.trim()) {
-			formData.append('altText', altTextValue.trim())
-		}
+		// Removed altText upload - description is handled separately
 
-		if (allowAltText && descriptionValue.trim()) {
+		if (descriptionValue.trim()) {
 			formData.append('description', descriptionValue.trim())
 		}
 
@@ -132,7 +130,7 @@
 			// Brief delay to show completion
 			setTimeout(() => {
 				value = uploadedMedia
-				altTextValue = uploadedMedia.altText || ''
+				// altText removed - using description only
 				descriptionValue = uploadedMedia.description || ''
 				onUpload(uploadedMedia)
 				isUploading = false
@@ -181,35 +179,13 @@
 	// Remove uploaded image
 	function handleRemove() {
 		value = null
-		altTextValue = ''
+		// altText removed
 		descriptionValue = ''
 		uploadError = null
 		onRemove?.()
 	}
 
-	// Update alt text on server
-	async function handleAltTextChange() {
-		if (!value) return
-
-		try {
-			const response = await authenticatedFetch(`/api/media/${value.id}/metadata`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					altText: altTextValue.trim() || null
-				})
-			})
-
-			if (response.ok) {
-				const updatedData = await response.json()
-				value = { ...value, altText: updatedData.altText, updatedAt: updatedData.updatedAt }
-			}
-		} catch (error) {
-			console.error('Failed to update alt text:', error)
-		}
-	}
+	// Removed handleAltTextChange - using only description
 
 	async function handleDescriptionChange() {
 		if (!value) return
@@ -243,7 +219,7 @@
 		// Since this is single mode, selectedMedia will be a single Media object
 		const media = selectedMedia as Media
 		value = media
-		altTextValue = media.altText || ''
+		// altText removed - using description only
 		descriptionValue = media.description || ''
 		onUpload(media)
 	}
@@ -275,7 +251,7 @@
 					<div class="compact-image">
 						<SmartImage
 							media={value}
-							alt={value?.altText || value?.filename || 'Uploaded image'}
+							alt={value?.description || value?.filename || 'Uploaded image'}
 							containerWidth={100}
 							loading="eager"
 							{aspectRatio}
@@ -319,29 +295,18 @@
 					</div>
 
 					<div class="compact-info">
-						<!-- Alt Text Input in compact mode -->
-						{#if allowAltText}
-							<div class="compact-metadata">
-								<Input
-									type="text"
-									label="Alt Text"
-									bind:value={altTextValue}
-									placeholder="Describe this image for screen readers"
-									buttonSize="small"
-									onblur={handleAltTextChange}
-								/>
-
-								<Input
-									type="textarea"
-									label="Description (Optional)"
-									bind:value={descriptionValue}
-									placeholder="Additional description or caption"
-									rows={2}
-									buttonSize="small"
-									onblur={handleDescriptionChange}
-								/>
-							</div>
-						{/if}
+						<!-- Description Input in compact mode -->
+						<div class="compact-metadata">
+							<Input
+								type="textarea"
+								label="Description"
+								bind:value={descriptionValue}
+								placeholder="Describe this image for accessibility and SEO"
+								rows={2}
+								buttonSize="small"
+								onblur={handleDescriptionChange}
+							/>
+						</div>
 					</div>
 				</div>
 			{:else}
@@ -520,24 +485,16 @@
 		</div>
 	{/if}
 
-	<!-- Alt Text Input (only in standard mode, compact mode has it inline) -->
-	{#if allowAltText && hasValue && !compact}
+	<!-- Description Input (only in standard mode, compact mode has it inline) -->
+	{#if hasValue && !compact}
 		<div class="metadata-section">
 			<Input
-				type="text"
-				label="Alt Text"
-				bind:value={altTextValue}
-				placeholder="Describe this image for screen readers"
-				helpText="Help make your content accessible. Describe what's in the image."
-				onblur={handleAltTextChange}
-			/>
-
-			<Input
 				type="textarea"
-				label="Description (Optional)"
+				label="Description"
 				bind:value={descriptionValue}
-				placeholder="Additional description or caption"
-				rows={2}
+				placeholder="Describe this image for accessibility and SEO"
+				helpText="This description will be used for alt text and can also serve as a caption."
+				rows={3}
 				onblur={handleDescriptionChange}
 			/>
 		</div>
@@ -559,7 +516,7 @@
 </div>
 
 <!-- Media Library Modal -->
-<MediaLibraryModal
+<UnifiedMediaModal
 	bind:isOpen={isMediaLibraryOpen}
 	mode="single"
 	fileType="image"
@@ -583,7 +540,7 @@
 	.uploader-label {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: $red-60;
@@ -594,7 +551,7 @@
 	.help-text {
 		margin: 0;
 		font-size: 0.8rem;
-		color: $grey-40;
+		color: $gray-40;
 		line-height: 1.4;
 	}
 
@@ -604,9 +561,9 @@
 
 	// Drop Zone Styles
 	.drop-zone {
-		border: 2px dashed $grey-80;
+		border: 2px dashed $gray-80;
 		border-radius: $card-corner-radius;
-		background-color: $grey-97;
+		background-color: $gray-97;
 		cursor: pointer;
 		transition: all 0.2s ease;
 		min-height: 200px;
@@ -643,21 +600,21 @@
 		padding: $unit-4x;
 
 		.upload-icon {
-			color: $grey-50;
+			color: $gray-50;
 			margin-bottom: $unit-2x;
 		}
 
 		.upload-main-text {
 			margin: 0 0 $unit 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 			font-weight: 500;
 		}
 
 		.upload-sub-text {
 			margin: 0;
 			font-size: 0.75rem;
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
@@ -673,14 +630,14 @@
 		.upload-text {
 			margin: 0 0 $unit-2x 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 			font-weight: 500;
 		}
 
 		.progress-bar {
 			width: 200px;
 			height: 4px;
-			background-color: $grey-90;
+			background-color: $gray-90;
 			border-radius: 2px;
 			overflow: hidden;
 			margin: 0 auto;
@@ -698,7 +655,7 @@
 		position: relative;
 		border-radius: $card-corner-radius;
 		overflow: hidden;
-		background-color: $grey-95;
+		background-color: $gray-95;
 		min-height: 200px;
 
 		:global(.preview-image) {
@@ -739,13 +696,13 @@
 			margin: 0 0 $unit-half 0;
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		.file-meta {
 			margin: 0;
 			font-size: 0.75rem;
-			color: $grey-40;
+			color: $gray-40;
 		}
 	}
 
@@ -760,9 +717,9 @@
 		flex-direction: column;
 		gap: $unit-2x;
 		padding: $unit-3x;
-		background-color: $grey-97;
+		background-color: $gray-97;
 		border-radius: $card-corner-radius;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 	}
 
 	.error-message {
@@ -789,8 +746,8 @@
 		flex-shrink: 0;
 		border-radius: $card-corner-radius;
 		overflow: hidden;
-		background-color: $grey-95;
-		border: 1px solid $grey-90;
+		background-color: $gray-95;
+		border: 1px solid $gray-90;
 
 		:global(.preview-image) {
 			width: 100%;

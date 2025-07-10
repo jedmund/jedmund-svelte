@@ -30,7 +30,7 @@
 		color: white;
 		border-radius: $unit * 2;
 		font-size: $font-size-small;
-		z-index: 1000;
+		z-index: $z-index-overlay;
 		animation: fadeIn 0.3s ease-out;
 
 		&.connected {

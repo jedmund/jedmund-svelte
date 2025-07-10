@@ -76,21 +76,21 @@
 
 	.card-content {
 		padding: $unit-3x;
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $card-corner-radius;
-		border: 1px solid $grey-95;
-		transition: all 0.2s ease;
+		border: $unit-1px solid $gray-95;
+		transition: all $transition-normal ease;
 		cursor: pointer;
 		outline: none;
 
 		&:hover {
-			border-color: $grey-85;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+			border-color: $gray-85;
+			box-shadow: 0 $unit-2px $unit rgba(0, 0, 0, 0.08);
 		}
 
 		&:focus-visible {
-			outline: 2px solid $red-60;
-			outline-offset: 2px;
+			outline: $unit-2px solid $red-60;
+			outline-offset: $unit-2px;
 		}
 	}
 
@@ -108,17 +108,17 @@
 	}
 
 	.card-date {
-		color: $grey-40;
-		font-size: 0.875rem;
+		color: $gray-40;
+		font-size: $font-size-small;
 		font-weight: 400;
-		transition: color 0.2s ease;
+		transition: color $transition-normal ease;
 	}
 
 	:global(.card-icon) {
-		width: 16px;
-		height: 16px;
-		fill: $grey-40;
-		transition: all 0.2s ease;
+		width: $unit-2x;
+		height: $unit-2x;
+		fill: $gray-40;
+		transition: all $transition-normal ease;
 	}
 
 	.universe-card--post {
@@ -138,9 +138,9 @@
 		}
 
 		:global(.card-title-link) {
-			color: $grey-10;
+			color: $gray-10;
 			text-decoration: none;
-			transition: all 0.2s ease;
+			transition: all $transition-normal ease;
 		}
 	}
 
@@ -155,27 +155,27 @@
 			}
 
 			:global(.card-icon rect:nth-child(1)) {
-				transition: all 0.3s ease;
-				height: 6px;
-				y: 2px;
+				transition: all $transition-medium ease;
+				height: $unit-6px;
+				y: $unit-2px;
 			}
 
 			:global(.card-icon rect:nth-child(2)) {
-				transition: all 0.3s ease;
-				height: 10px;
-				y: 2px;
+				transition: all $transition-medium ease;
+				height: $unit-10px;
+				y: $unit-2px;
 			}
 
 			:global(.card-icon rect:nth-child(3)) {
-				transition: all 0.3s ease;
-				height: 8px;
-				y: 10px;
+				transition: all $transition-medium ease;
+				height: $unit;
+				y: $unit-10px;
 			}
 
 			:global(.card-icon rect:nth-child(4)) {
-				transition: all 0.3s ease;
-				height: 4px;
-				y: 14px;
+				transition: all $transition-medium ease;
+				height: $unit-half;
+				y: $unit-14px;
 			}
 
 			:global(.card-title-link) {
@@ -189,9 +189,9 @@
 		}
 
 		:global(.card-title-link) {
-			color: $grey-10;
+			color: $gray-10;
 			text-decoration: none;
-			transition: all 0.2s ease;
+			transition: all $transition-normal ease;
 		}
 	}
 </style>

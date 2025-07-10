@@ -6,7 +6,7 @@
 	import Trash from 'lucide-svelte/icons/trash'
 	import Edit from 'lucide-svelte/icons/edit'
 	import Plus from 'lucide-svelte/icons/plus'
-	import MediaLibraryModal from '../../../admin/MediaLibraryModal.svelte'
+	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 
 	const { node, editor, selected, deleteNode, updateAttributes }: NodeViewProps = $props()
@@ -155,7 +155,7 @@
 	</div>
 
 	<!-- Media Library Modal -->
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={isMediaLibraryOpen}
 		mode="multiple"
 		fileType="image"
@@ -166,9 +166,9 @@
 
 <style>
 	.edra-gallery-container {
-		border: 2px solid transparent;
-		border-radius: 8px;
-		margin: 16px 0;
+		border: $unit-2px solid transparent;
+		border-radius: $corner-radius-md;
+		margin: $unit-2x 0;
 		transition: border-color 0.2s ease;
 	}
 
@@ -184,23 +184,23 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 8px;
-		padding: 32px;
+		gap: $unit;
+		padding: $unit-4x;
 		color: #6b7280;
 		background: #f9fafb;
-		border: 2px dashed #e5e7eb;
-		border-radius: 8px;
+		border: $unit-2px dashed #e5e7eb;
+		border-radius: $corner-radius-md;
 	}
 
 	:global(.edra-gallery-empty-icon) {
-		width: 32px;
-		height: 32px;
+		width: $unit-4x;
+		height: $unit-4x;
 	}
 
 	.edra-gallery-grid {
 		display: grid;
-		gap: 8px;
-		border-radius: 8px;
+		gap: $unit;
+		border-radius: $corner-radius-md;
 		overflow: hidden;
 	}
 
@@ -210,16 +210,16 @@
 
 	.edra-gallery-grid.masonry {
 		column-count: var(--columns);
-		column-gap: 8px;
+		column-gap: $unit;
 	}
 
 	.edra-gallery-item {
 		position: relative;
 		background: #f3f4f6;
-		border-radius: 6px;
+		border-radius: $corner-radius-sm;
 		overflow: hidden;
 		break-inside: avoid;
-		margin-bottom: 8px;
+		margin-bottom: $unit;
 	}
 
 	.edra-gallery-item img {
@@ -235,10 +235,10 @@
 
 	.edra-gallery-item-remove {
 		position: absolute;
-		top: 4px;
-		right: 4px;
-		width: 24px;
-		height: 24px;
+		top: $unit-half;
+		right: $unit-half;
+		width: $unit-3x;
+		height: $unit-3x;
 		border: none;
 		border-radius: 50%;
 		background: rgba(0, 0, 0, 0.7);
@@ -260,34 +260,34 @@
 	}
 
 	:global(.edra-gallery-item-remove svg) {
-		width: 12px;
-		height: 12px;
+		width: $unit-12px;
+		height: $unit-12px;
 	}
 
 	.edra-gallery-toolbar {
 		display: flex;
 		align-items: center;
-		gap: 12px;
-		padding: 8px;
+		gap: $unit-12px;
+		padding: $unit;
 		background: rgba(255, 255, 255, 0.95);
-		border: 1px solid #e5e7eb;
-		border-radius: 6px;
-		margin-top: 8px;
-		backdrop-filter: blur(4px);
+		border: $unit-1px solid #e5e7eb;
+		border-radius: $corner-radius-sm;
+		margin-top: $unit;
+		backdrop-filter: blur($unit-half);
 	}
 
 	.edra-gallery-toolbar-section {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: $unit-half;
 	}
 
 	.edra-gallery-columns-select {
-		padding: 4px 8px;
-		border: 1px solid #e5e7eb;
-		border-radius: 4px;
+		padding: $unit-half $unit;
+		border: $unit-1px solid #e5e7eb;
+		border-radius: $corner-radius-xs;
 		background: white;
-		font-size: 12px;
+		font-size: $unit-12px;
 		cursor: pointer;
 	}
 
@@ -300,10 +300,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 28px;
-		height: 28px;
+		width: $unit-3x + $unit-half;
+		height: $unit-3x + $unit-half;
 		border: none;
-		border-radius: 4px;
+		border-radius: $corner-radius-xs;
 		background: transparent;
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -324,8 +324,8 @@
 	}
 
 	:global(.edra-toolbar-button svg) {
-		width: 16px;
-		height: 16px;
+		width: $unit-2x;
+		height: $unit-2x;
 	}
 
 	@media (max-width: 768px) {

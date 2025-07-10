@@ -1,128 +1,164 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import {
-	jsonResponse,
-	errorResponse,
-	getPaginationParams,
-	getPaginationMeta,
-	checkAdminAuth,
-	parseRequestBody
-} from '$lib/server/api-utils'
+import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
-// GET /api/albums - List all albums
+// GET /api/albums - Get published photography albums (or all albums if admin)
 export const GET: RequestHandler = async (event) => {
 	try {
-		const { page, limit } = getPaginationParams(event.url)
-		const skip = (page - 1) * limit
+		const url = new URL(event.request.url)
+		const limit = parseInt(url.searchParams.get('limit') || '50')
+		const offset = parseInt(url.searchParams.get('offset') || '0')
 
-		// Get filter parameters
-		const status = event.url.searchParams.get('status')
-		const isPhotography = event.url.searchParams.get('isPhotography')
+		// Check if this is an admin request
+		const isAdmin = checkAdminAuth(event)
 
-		// Build where clause
-		const where: any = {}
-		if (status) {
-			where.status = status
-		}
-
-		if (isPhotography !== null) {
-			where.isPhotography = isPhotography === 'true'
-		}
-
-		// Get total count
-		const total = await prisma.album.count({ where })
-
-		// Get albums with photo count and photos for thumbnails
+		// Fetch albums - all for admin, only published for public
 		const albums = await prisma.album.findMany({
-			where,
-			orderBy: { createdAt: 'desc' },
-			skip,
-			take: limit,
-			include: {
-				photos: {
-					select: {
-						id: true,
-						url: true,
-						thumbnailUrl: true,
-						caption: true
+			where: isAdmin
+				? {}
+				: {
+						status: 'published'
 					},
+			include: {
+				media: {
 					orderBy: { displayOrder: 'asc' },
-					take: 5 // Only get first 5 photos for thumbnails
+					take: 1, // Only need the first photo for cover
+					include: {
+						media: {
+							select: {
+								id: true,
+								url: true,
+								thumbnailUrl: true,
+								width: true,
+								height: true,
+								dominantColor: true,
+								colors: true,
+								aspectRatio: true,
+								photoCaption: true
+							}
+						}
+					}
 				},
 				_count: {
-					select: { photos: true }
+					select: {
+						media: true
+					}
 				}
+			},
+			orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+			skip: offset,
+			take: limit
+		})
+
+		// Get total count for pagination
+		const totalCount = await prisma.album.count({
+			where: isAdmin
+				? {}
+				: {
+						status: 'published'
+					}
+		})
+
+		// Transform albums for response
+		const transformedAlbums = albums.map((album) => ({
+			id: album.id,
+			slug: album.slug,
+			title: album.title,
+			description: album.description,
+			date: album.date,
+			location: album.location,
+			photoCount: album._count.media,
+			coverPhoto: album.media[0]?.media
+				? {
+						id: album.media[0].media.id,
+						url: album.media[0].media.url,
+						thumbnailUrl: album.media[0].media.thumbnailUrl,
+						width: album.media[0].media.width,
+						height: album.media[0].media.height,
+						dominantColor: album.media[0].media.dominantColor,
+						colors: album.media[0].media.colors,
+						aspectRatio: album.media[0].media.aspectRatio,
+						caption: album.media[0].media.photoCaption
+					}
+				: null,
+			hasContent: !!album.content, // Indicates if album has composed content
+			// Include additional fields for admin
+			...(isAdmin
+				? {
+						status: album.status,
+						showInUniverse: album.showInUniverse,
+						publishedAt: album.publishedAt,
+						createdAt: album.createdAt,
+						updatedAt: album.updatedAt,
+						coverPhotoId: album.coverPhotoId,
+						photos: album.media.map((m) => ({
+							id: m.media.id,
+							url: m.media.url,
+							thumbnailUrl: m.media.thumbnailUrl,
+							caption: m.media.photoCaption
+						})),
+						_count: album._count
+					}
+				: {})
+		}))
+
+		const response = {
+			albums: transformedAlbums,
+			pagination: {
+				total: totalCount,
+				limit,
+				offset,
+				hasMore: offset + limit < totalCount
 			}
-		})
+		}
 
-		const pagination = getPaginationMeta(total, page, limit)
-
-		logger.info('Albums list retrieved', { total, page, limit })
-
-		return jsonResponse({
-			albums,
-			pagination
-		})
+		return jsonResponse(response)
 	} catch (error) {
-		logger.error('Failed to retrieve albums', error as Error)
-		return errorResponse('Failed to retrieve albums', 500)
+		logger.error('Failed to fetch albums', error as Error)
+		return errorResponse('Failed to fetch albums', 500)
 	}
 }
 
-// POST /api/albums - Create a new album
+// POST /api/albums - Create a new album (admin only)
 export const POST: RequestHandler = async (event) => {
-	// Check authentication
+	// Check admin auth
 	if (!checkAdminAuth(event)) {
 		return errorResponse('Unauthorized', 401)
 	}
 
 	try {
-		const body = await parseRequestBody<{
-			slug: string
-			title: string
-			description?: string
-			date?: string
-			location?: string
-			coverPhotoId?: number
-			isPhotography?: boolean
-			status?: string
-			showInUniverse?: boolean
-		}>(event.request)
+		const body = await event.request.json()
 
-		if (!body || !body.slug || !body.title) {
-			return errorResponse('Missing required fields: slug, title', 400)
+		// Validate required fields
+		if (!body.title || !body.slug) {
+			return errorResponse('Title and slug are required', 400)
 		}
 
-		// Check if slug already exists
-		const existing = await prisma.album.findUnique({
-			where: { slug: body.slug }
-		})
-
-		if (existing) {
-			return errorResponse('Album with this slug already exists', 409)
-		}
-
-		// Create album
+		// Create the album
 		const album = await prisma.album.create({
 			data: {
-				slug: body.slug,
 				title: body.title,
-				description: body.description,
+				slug: body.slug,
+				description: body.description || null,
 				date: body.date ? new Date(body.date) : null,
-				location: body.location,
-				coverPhotoId: body.coverPhotoId,
-				isPhotography: body.isPhotography ?? false,
-				status: body.status ?? 'draft',
-				showInUniverse: body.showInUniverse ?? false
+				location: body.location || null,
+				showInUniverse: body.showInUniverse ?? false,
+				status: body.status || 'draft',
+				content: body.content || null,
+				publishedAt: body.status === 'published' ? new Date() : null
 			}
 		})
-
-		logger.info('Album created', { id: album.id, slug: album.slug })
 
 		return jsonResponse(album, 201)
 	} catch (error) {
 		logger.error('Failed to create album', error as Error)
+
+		// Check for unique constraint violation
+		if (error instanceof Error && error.message.includes('Unique constraint')) {
+			return errorResponse('An album with this slug already exists', 409)
+		}
+
 		return errorResponse('Failed to create album', 500)
 	}
 }

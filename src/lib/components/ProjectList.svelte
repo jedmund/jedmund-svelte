@@ -41,7 +41,7 @@
 					name={project.title}
 					slug={project.slug}
 					description={project.description || ''}
-					highlightColor={project.highlightColor || '#333'}
+					highlightColor={project.highlightColor || '$gray-00'}
 					status={project.status}
 					{index}
 				/>
@@ -88,7 +88,7 @@
 
 	.intro-card {
 		padding: $unit-3x;
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $card-corner-radius;
 	}
 
@@ -96,7 +96,7 @@
 		margin: 0;
 		font-size: 1rem; // 18px
 		line-height: 1.3;
-		color: $grey-00;
+		color: $gray-00;
 
 		&:not(:last-child) {
 			margin-bottom: $unit-2x;
@@ -110,6 +110,6 @@
 	.no-projects {
 		padding: $unit-3x;
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 	}
 </style>

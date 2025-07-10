@@ -54,7 +54,7 @@
 
 	.select {
 		box-sizing: border-box;
-		color: $grey-20;
+		color: $gray-20;
 		cursor: pointer;
 		font-family: inherit;
 		transition: all 0.2s ease;
@@ -67,14 +67,14 @@
 		}
 
 		&:disabled {
-			color: $grey-60;
+			color: $gray-60;
 			cursor: not-allowed;
 			opacity: 0.6;
 		}
 
 		// Default variant
 		&.select-default {
-			border: 1px solid $grey-80;
+			border: 1px solid $gray-80;
 			background: white;
 			font-weight: 500;
 
@@ -84,22 +84,22 @@
 			}
 
 			&:disabled {
-				background: $grey-90;
+				background: $gray-90;
 			}
 		}
 
 		// Minimal variant
 		&.select-minimal {
 			border: none;
-			background: $grey-90;
+			background: $gray-90;
 			font-weight: 500;
 
 			&:hover {
-				background: $grey-80;
+				background: $gray-80;
 			}
 
 			&:focus {
-				background: $grey-80;
+				background: $gray-80;
 			}
 
 			&:disabled {
@@ -196,7 +196,7 @@
 		top: 50%;
 		transform: translateY(-50%);
 		pointer-events: none;
-		color: $grey-60;
+		color: $gray-60;
 		display: flex;
 		align-items: center;
 		justify-content: center;

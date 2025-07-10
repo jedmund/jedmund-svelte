@@ -37,7 +37,7 @@
 				showThumbnails={slideshowItems.length > 1}
 				maxThumbnails={6}
 				totalCount={album.photosCount}
-				showMoreLink="/photos/{album.slug}"
+				showMoreLink="/albums/{album.slug}"
 			/>
 		</div>
 	{/if}
@@ -45,7 +45,7 @@
 	<div class="album-info">
 		<h2 class="card-title">
 			<a
-				href="/photos/{album.slug}"
+				href="/albums/{album.slug}"
 				class="card-title-link"
 				onclick={(e) => e.preventDefault()}
 				tabindex="-1">{album.title}</a
@@ -54,6 +54,12 @@
 
 		{#if album.description}
 			<p class="album-description">{album.description}</p>
+		{/if}
+
+		{#if album.hasContent}
+			<div class="album-story-indicator">
+				<span class="story-badge">📖 Photo Story</span>
+			</div>
 		{/if}
 	</div>
 </UniverseCard>
@@ -83,12 +89,28 @@
 
 	.album-description {
 		margin: 0;
-		color: $grey-10;
+		color: $gray-10;
 		font-size: 1rem;
 		line-height: 1.5;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 3;
 		overflow: hidden;
+	}
+
+	.album-story-indicator {
+		margin-top: $unit-2x;
+	}
+
+	.story-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: $unit-half;
+		padding: $unit-half $unit-2x;
+		background: $blue-10;
+		color: $blue-50;
+		border-radius: $corner-radius-sm;
+		font-size: 0.8125rem;
+		font-weight: 500;
 	}
 </style>

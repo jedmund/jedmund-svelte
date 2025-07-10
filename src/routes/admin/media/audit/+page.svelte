@@ -40,7 +40,12 @@
 	let selectedFiles = new Set<string>()
 	let showDeleteModal = false
 	let deleteResults: { succeeded: number; failed: string[] } | null = null
-	let cleanupResults: { cleanedMedia: number; cleanedProjects: number; cleanedPosts: number; errors: string[] } | null = null
+	let cleanupResults: {
+		cleanedMedia: number
+		cleanedProjects: number
+		cleanedPosts: number
+		errors: string[]
+	} | null = null
 	let showCleanupModal = false
 	let cleaningUp = false
 
@@ -50,7 +55,6 @@
 		auditData?.orphanedFiles
 			.filter((f) => selectedFiles.has(f.publicId))
 			.reduce((sum, f) => sum + f.size, 0) || 0
-	
 
 	onMount(() => {
 		runAudit()
@@ -124,7 +128,7 @@
 
 			const response = await fetch('/api/admin/cloudinary-audit', {
 				method: 'DELETE',
-				headers: { 
+				headers: {
 					'Content-Type': 'application/json',
 					Authorization: `Basic ${auth}`
 				},
@@ -180,7 +184,7 @@
 
 			const response = await fetch('/api/admin/cloudinary-audit', {
 				method: 'PATCH',
-				headers: { 
+				headers: {
 					'Content-Type': 'application/json',
 					Authorization: `Basic ${auth}`
 				},
@@ -326,7 +330,7 @@
 					</thead>
 					<tbody>
 						{#each auditData.orphanedFiles as file}
-							<tr 
+							<tr
 								class:selected={selectedFiles.has(file.publicId)}
 								onclick={() => toggleFile(file.publicId)}
 								role="button"
@@ -394,7 +398,8 @@
 			<div class="broken-references-section">
 				<h2>Broken References</h2>
 				<p class="broken-references-info">
-					Found {auditData.missingReferences.length} files referenced in the database but missing from Cloudinary.
+					Found {auditData.missingReferences.length} files referenced in the database but missing from
+					Cloudinary.
 				</p>
 				<Button
 					variant="secondary"
@@ -408,7 +413,7 @@
 				>
 					Clean Up Broken References
 				</Button>
-				
+
 				{#if cleanupResults}
 					<div class="cleanup-results">
 						<h3>Cleanup Complete</h3>
@@ -437,12 +442,19 @@
 			<p class="warning">⚠️ This action cannot be undone.</p>
 		</div>
 		<div class="modal-actions">
-			<Button variant="secondary" onclick={() => {
-				showDeleteModal = false
-			}}>Cancel</Button>
-			<Button variant="danger" onclick={() => {
-				deleteSelected(false)
-			}} disabled={deleting}>
+			<Button
+				variant="secondary"
+				onclick={() => {
+					showDeleteModal = false
+				}}>Cancel</Button
+			>
+			<Button
+				variant="danger"
+				onclick={() => {
+					deleteSelected(false)
+				}}
+				disabled={deleting}
+			>
 				{deleting ? 'Deleting...' : 'Delete Files'}
 			</Button>
 		</div>
@@ -456,7 +468,9 @@
 			<h2>Clean Up Broken References</h2>
 		</div>
 		<div class="cleanup-confirmation">
-			<p>Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?</p>
+			<p>
+				Are you sure you want to clean up {auditData?.missingReferences.length || 0} broken references?
+			</p>
 			<p class="warning">⚠️ This will:</p>
 			<ul class="cleanup-actions">
 				<li>Delete Media records where the main file no longer exists in Cloudinary</li>
@@ -467,12 +481,19 @@
 			<p class="warning">This action cannot be undone.</p>
 		</div>
 		<div class="modal-actions">
-			<Button variant="secondary" onclick={() => {
-				showCleanupModal = false
-			}}>Cancel</Button>
-			<Button variant="danger" onclick={() => {
-				cleanupBrokenReferences()
-			}} disabled={cleaningUp}>
+			<Button
+				variant="secondary"
+				onclick={() => {
+					showCleanupModal = false
+				}}>Cancel</Button
+			>
+			<Button
+				variant="danger"
+				onclick={() => {
+					cleanupBrokenReferences()
+				}}
+				disabled={cleaningUp}
+			>
 				{cleaningUp ? 'Cleaning Up...' : 'Clean Up References'}
 			</Button>
 		</div>
@@ -498,7 +519,7 @@
 			margin: 0;
 			font-size: 1.5rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -513,7 +534,7 @@
 		height: 40px;
 		border: none;
 		background: none;
-		color: $grey-40;
+		color: $gray-40;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -532,8 +553,8 @@
 		}
 
 		&:hover {
-			background: $grey-90;
-			color: $grey-10;
+			background: $gray-90;
+			color: $gray-10;
 		}
 	}
 
@@ -548,14 +569,14 @@
 		.spinner {
 			width: 40px;
 			height: 40px;
-			border: 3px solid $grey-80;
+			border: 3px solid $gray-80;
 			border-top-color: $red-60;
 			border-radius: 50%;
 			animation: spin 1s linear infinite;
 		}
 
 		p {
-			color: $grey-30;
+			color: $gray-30;
 		}
 	}
 
@@ -585,7 +606,7 @@
 	}
 
 	.summary-card {
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: 8px;
 		padding: 0;
 		display: flex;
@@ -602,7 +623,7 @@
 		h3 {
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: $grey-30;
+			color: $gray-30;
 			margin: 0 0 0.75rem 0;
 			letter-spacing: 0.01em;
 			text-transform: uppercase;
@@ -611,7 +632,7 @@
 		.value {
 			font-size: 2.5rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 			margin: 0 0 0.5rem 0;
 			line-height: 1;
 			display: block;
@@ -619,7 +640,7 @@
 
 		.label {
 			font-size: 0.875rem;
-			color: $grey-40;
+			color: $gray-40;
 			margin: 0;
 			line-height: 1.2;
 			display: block;
@@ -647,12 +668,12 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: 1rem;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: 8px;
 		margin-bottom: 1rem;
 
 		.selection-info {
-			color: $grey-30;
+			color: $gray-30;
 			font-size: 0.875rem;
 			display: flex;
 			align-items: center;
@@ -672,7 +693,7 @@
 
 	.files-table {
 		background: white;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 		border-radius: 8px;
 		overflow: hidden;
 
@@ -685,9 +706,9 @@
 				padding: 0.75rem 1rem;
 				font-size: 0.875rem;
 				font-weight: 500;
-				color: $grey-30;
-				background: $grey-95;
-				border-bottom: 1px solid $grey-90;
+				color: $gray-30;
+				background: $gray-95;
+				border-bottom: 1px solid $gray-90;
 
 				&.checkbox {
 					width: 40px;
@@ -696,7 +717,7 @@
 
 			td {
 				padding: 0.75rem 1rem;
-				border-bottom: 1px solid $grey-95;
+				border-bottom: 1px solid $gray-95;
 				vertical-align: middle;
 
 				&.checkbox {
@@ -719,34 +740,34 @@
 					.svg-preview {
 						width: 40px;
 						height: 40px;
-						background: $grey-90;
+						background: $gray-90;
 						border-radius: 4px;
 						display: flex;
 						align-items: center;
 						justify-content: center;
 						font-size: 0.75rem;
-						color: $grey-40;
+						color: $gray-40;
 					}
 				}
 
 				&.file-path {
 					.folder {
-						color: $grey-40;
+						color: $gray-40;
 					}
 				}
 
 				&.size {
-					color: $grey-30;
+					color: $gray-30;
 					font-size: 0.875rem;
 				}
 
 				&.dimensions {
-					color: $grey-30;
+					color: $gray-30;
 					font-size: 0.875rem;
 				}
 
 				&.date {
-					color: $grey-30;
+					color: $gray-30;
 					font-size: 0.875rem;
 					vertical-align: middle;
 					white-space: nowrap;
@@ -758,7 +779,7 @@
 				transition: background-color 0.15s ease;
 
 				&:hover {
-					background: $grey-95;
+					background: $gray-95;
 				}
 
 				&.selected {
@@ -788,11 +809,11 @@
 
 		h2 {
 			margin: 1rem 0 0.5rem;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
-			color: $grey-30;
+			color: $gray-30;
 			max-width: 400px;
 		}
 	}
@@ -805,7 +826,7 @@
 		}
 
 		.size-info {
-			color: $grey-30;
+			color: $gray-30;
 			font-size: 0.875rem;
 		}
 
@@ -830,26 +851,26 @@
 
 		p {
 			margin: 0.25rem 0;
-			color: $grey-30;
+			color: $gray-30;
 		}
 	}
 
 	.broken-references-section {
 		margin-top: 2rem;
 		padding: 1.5rem;
-		background: $grey-95;
+		background: $gray-95;
 		border-radius: 8px;
 		border: 1px solid rgba($yellow-60, 0.2);
 
 		h2 {
 			margin: 0 0 0.5rem;
 			font-size: 1.25rem;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		.broken-references-info {
 			margin: 0 0 1rem;
-			color: $grey-30;
+			color: $gray-30;
 		}
 	}
 
@@ -867,7 +888,7 @@
 
 		p {
 			margin: 0.25rem 0;
-			color: $grey-30;
+			color: $gray-30;
 			font-size: 0.875rem;
 		}
 	}
@@ -889,7 +910,7 @@
 			margin: 0.75rem 0 0.75rem 1.5rem;
 			padding: 0;
 			list-style-type: disc;
-			color: $grey-30;
+			color: $gray-30;
 			font-size: 0.875rem;
 
 			li {
@@ -905,7 +926,7 @@
 			margin: 0;
 			font-size: 1.25rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
@@ -922,7 +943,7 @@
 		gap: 0.75rem;
 		margin-top: 1.5rem;
 		padding-top: 1.5rem;
-		border-top: 1px solid $grey-90;
+		border-top: 1px solid $gray-90;
 	}
 
 	@keyframes spin {

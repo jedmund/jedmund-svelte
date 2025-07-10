@@ -117,7 +117,6 @@ export const initiateEditor = (
 				limit
 			}),
 			SearchAndReplace,
-
 			...(extensions ?? [])
 		],
 		autofocus: true,

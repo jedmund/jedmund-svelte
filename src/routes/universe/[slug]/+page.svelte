@@ -130,7 +130,7 @@
 
 		p {
 			margin: 0 0 $unit-3x;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 	}

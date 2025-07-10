@@ -4,11 +4,9 @@
 	import { goto } from '$app/navigation'
 
 	const {
-		item,
-		albumSlug // For when this is used within an album context
+		item
 	}: {
 		item: PhotoItem
-		albumSlug?: string
 	} = $props()
 
 	let imageLoaded = $state(false)
@@ -16,18 +14,11 @@
 	function handleClick() {
 		if (isAlbum(item)) {
 			// Navigate to album page using the slug
-			goto(`/photos/${item.slug}`)
+			goto(`/albums/${item.slug}`)
 		} else {
-			// For individual photos, check if we have album context
-			if (albumSlug) {
-				// Navigate to photo within album
-				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
-				goto(`/photos/${albumSlug}/${mediaId}`)
-			} else {
-				// Navigate to individual photo page using the media ID
-				const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
-				goto(`/photos/p/${mediaId}`)
-			}
+			// Navigate to individual photo page using the media ID
+			const mediaId = item.id.replace(/^(media|photo)-/, '') // Support both prefixes
+			goto(`/photos/${mediaId}`)
 		}
 	}
 
@@ -37,16 +28,8 @@
 
 	const photo = $derived(isAlbum(item) ? item.coverPhoto : item)
 	const isAlbumItem = $derived(isAlbum(item))
-	const placeholderStyle = $derived(
-		photo.dominantColor 
-			? `background: ${photo.dominantColor}` 
-			: ''
-	)
-	const aspectRatioStyle = $derived(
-		photo.aspectRatio 
-			? `aspect-ratio: ${photo.aspectRatio}` 
-			: ''
-	)
+	const placeholderStyle = $derived(photo.dominantColor ? `background: ${photo.dominantColor}` : '')
+	const aspectRatioStyle = $derived(photo.aspectRatio ? `aspect-ratio: ${photo.aspectRatio}` : '')
 </script>
 
 <div class="photo-item" class:is-album={isAlbumItem}>
@@ -116,7 +99,7 @@
 
 		&:hover {
 			transform: translateY(-2px);
-			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+			box-shadow: 0 8px 25px $shadow-medium;
 		}
 
 		&:active {
@@ -136,7 +119,7 @@
 			opacity: 0;
 			transition: opacity 0.4s ease;
 			position: relative;
-			z-index: 2;
+			z-index: $z-index-above;
 
 			&.loaded {
 				opacity: 1;
@@ -158,8 +141,8 @@
 			left: 6px;
 			right: -6px;
 			height: 100%;
-			background: rgba(0, 0, 0, 0.1);
-			z-index: 1;
+			background: $shadow-light;
+			z-index: $z-index-base;
 			transform: rotate(2deg);
 		}
 
@@ -169,14 +152,14 @@
 			left: 3px;
 			right: -3px;
 			height: 100%;
-			background: rgba(0, 0, 0, 0.2);
-			z-index: 2;
+			background: $shadow-dark;
+			z-index: $z-index-above;
 			transform: rotate(-1deg);
 		}
 
 		&.stack-front {
 			position: relative;
-			z-index: 3;
+			z-index: $z-index-hover;
 
 			img {
 				width: 100%;
@@ -186,7 +169,7 @@
 				opacity: 0;
 				transition: opacity 0.4s ease;
 				position: relative;
-				z-index: 2;
+				z-index: $z-index-above;
 
 				&.loaded {
 					opacity: 1;
@@ -203,7 +186,7 @@
 		background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
 		color: white;
 		padding: $unit-2x;
-		z-index: 4;
+		z-index: calc($z-index-hover + 1);
 		border-radius: 0 0 $corner-radius $corner-radius;
 	}
 
@@ -246,14 +229,12 @@
 		border-radius: $corner-radius;
 		opacity: 1;
 		transition: opacity 0.4s ease;
-		z-index: 1;
+		z-index: $z-index-base;
 		overflow: hidden;
-
 
 		&.loaded {
 			opacity: 0;
 			pointer-events: none;
 		}
 	}
-
 </style>

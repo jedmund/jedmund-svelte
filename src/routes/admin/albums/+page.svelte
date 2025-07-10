@@ -24,15 +24,15 @@
 		date: string | null
 		location: string | null
 		coverPhotoId: number | null
-		isPhotography: boolean
 		status: string
 		showInUniverse: boolean
 		publishedAt: string | null
 		createdAt: string
 		updatedAt: string
 		photos: Photo[]
+		content?: any
 		_count: {
-			photos: number
+			media: number
 		}
 	}
 
@@ -48,14 +48,14 @@
 	let activeDropdown = $state<number | null>(null)
 
 	// Filter state
-	let photographyFilter = $state<string>('all')
+	let statusFilter = $state<string>('all')
 	let sortBy = $state<string>('newest')
 
 	// Filter options
 	const filterOptions = [
 		{ value: 'all', label: 'All albums' },
-		{ value: 'true', label: 'Photography albums' },
-		{ value: 'false', label: 'Regular albums' }
+		{ value: 'published', label: 'Published' },
+		{ value: 'draft', label: 'Drafts' }
 	]
 
 	const sortOptions = [
@@ -107,11 +107,11 @@
 			albums = data.albums || []
 			total = data.pagination?.total || albums.length
 
-			// Calculate album type counts
+			// Calculate album status counts
 			const counts: Record<string, number> = {
 				all: albums.length,
-				photography: albums.filter((a) => a.isPhotography).length,
-				regular: albums.filter((a) => !a.isPhotography).length
+				published: albums.filter((a) => a.status === 'published').length,
+				draft: albums.filter((a) => a.status === 'draft').length
 			}
 			albumTypeCounts = counts
 
@@ -129,10 +129,10 @@
 		let filtered = [...albums]
 
 		// Apply filter
-		if (photographyFilter === 'true') {
-			filtered = filtered.filter((album) => album.isPhotography === true)
-		} else if (photographyFilter === 'false') {
-			filtered = filtered.filter((album) => album.isPhotography === false)
+		if (statusFilter === 'published') {
+			filtered = filtered.filter((album) => album.status === 'published')
+		} else if (statusFilter === 'draft') {
+			filtered = filtered.filter((album) => album.status === 'draft')
 		}
 
 		// Apply sorting
@@ -289,7 +289,7 @@
 		<AdminFilters>
 			{#snippet left()}
 				<Select
-					bind:value={photographyFilter}
+					bind:value={statusFilter}
 					options={filterOptions}
 					size="small"
 					variant="minimal"
@@ -316,7 +316,7 @@
 		{:else if filteredAlbums.length === 0}
 			<div class="empty-state">
 				<p>
-					{#if photographyFilter === 'all'}
+					{#if statusFilter === 'all'}
 						No albums found. Create your first album!
 					{:else}
 						No albums found matching the current filters. Try adjusting your filters or create a new
@@ -361,13 +361,13 @@
 	.loading {
 		padding: $unit-8x;
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 
 		.spinner {
 			width: 32px;
 			height: 32px;
-			border: 3px solid $grey-80;
-			border-top-color: $grey-40;
+			border: 3px solid $gray-80;
+			border-top-color: $gray-40;
 			border-radius: 50%;
 			margin: 0 auto $unit-2x;
 			animation: spin 0.8s linear infinite;
@@ -387,7 +387,7 @@
 	.empty-state {
 		padding: $unit-8x;
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 
 		p {
 			margin: 0;

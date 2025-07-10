@@ -4,7 +4,7 @@
 	import Image from 'lucide-svelte/icons/image'
 	import Upload from 'lucide-svelte/icons/upload'
 	import { NodeViewWrapper } from 'svelte-tiptap'
-	import MediaLibraryModal from '../../../admin/MediaLibraryModal.svelte'
+	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte'
 	import { onMount } from 'svelte'
 
 	const { editor, deleteNode }: NodeViewProps = $props()
@@ -31,11 +31,20 @@
 			editor
 				.chain()
 				.focus()
-				.setImage({
-					src: selectedMedia.url,
-					alt: selectedMedia.altText || '',
-					title: selectedMedia.description || ''
-				})
+				.insertContent([
+					{
+						type: 'image',
+						attrs: {
+							src: selectedMedia.url,
+							alt: selectedMedia.altText || '',
+							title: selectedMedia.description || '',
+							mediaId: selectedMedia.id?.toString()
+						}
+					},
+					{
+						type: 'paragraph'
+					}
+				])
 				.run()
 		}
 		isMediaLibraryOpen = false
@@ -81,11 +90,20 @@
 				editor
 					.chain()
 					.focus()
-					.setImage({
-						src: media.url,
-						alt: media.altText || '',
-						title: media.description || ''
-					})
+					.insertContent([
+						{
+							type: 'image',
+							attrs: {
+								src: media.url,
+								alt: media.altText || '',
+								title: media.description || '',
+								mediaId: media.id?.toString()
+							}
+						},
+						{
+							type: 'paragraph'
+						}
+					])
 					.run()
 			} else {
 				console.error('Failed to upload image:', response.status)
@@ -156,7 +174,7 @@
 	/>
 
 	<!-- Media Library Modal -->
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={isMediaLibraryOpen}
 		mode="single"
 		fileType="image"

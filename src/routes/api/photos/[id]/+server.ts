@@ -54,10 +54,9 @@ export const GET: RequestHandler = async (event) => {
 				})
 				logger.info('Album check', {
 					albumId: album.id,
-					status: fullAlbum?.status,
-					isPhotography: fullAlbum?.isPhotography
+					status: fullAlbum?.status
 				})
-				if (!fullAlbum || fullAlbum.status !== 'published' || !fullAlbum.isPhotography) {
+				if (!fullAlbum || fullAlbum.status !== 'published') {
 					logger.warn('Album not valid for public access', { albumId: album.id })
 					return errorResponse('Photo not found', 404)
 				}
@@ -79,7 +78,8 @@ export const GET: RequestHandler = async (event) => {
 			slug: media.photoSlug,
 			publishedAt: media.photoPublishedAt,
 			createdAt: media.createdAt,
-			album: media.albums.length > 0 ? media.albums[0].album : null,
+			album: media.albums.length > 0 ? media.albums[0].album : null, // Legacy single album support
+			albums: media.albums.map((albumMedia) => albumMedia.album), // All albums this photo belongs to
 			media: media // Include full media object for compatibility
 		}
 

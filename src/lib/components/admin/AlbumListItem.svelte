@@ -18,15 +18,15 @@
 		date: string | null
 		location: string | null
 		coverPhotoId: number | null
-		isPhotography: boolean
 		status: string
 		showInUniverse: boolean
 		publishedAt: string | null
 		createdAt: string
 		updatedAt: string
 		photos: Photo[]
+		content?: any
 		_count: {
-			photos: number
+			media: number
 		}
 	}
 
@@ -105,7 +105,7 @@
 	}
 
 	function getPhotoCount(): number {
-		return album._count?.photos || 0
+		return album._count?.media || 0
 	}
 </script>
 
@@ -135,9 +135,10 @@
 		<h3 class="album-title">{album.title}</h3>
 		<AdminByline
 			sections={[
-				album.isPhotography ? 'Photography' : 'Album',
+				'Album',
 				album.status === 'published' ? 'Published' : 'Draft',
 				`${getPhotoCount()} ${getPhotoCount() === 1 ? 'photo' : 'photos'}`,
+				...(album.content ? ['📖 Story'] : []),
 				album.status === 'published' && album.publishedAt
 					? `Published ${formatRelativeTime(album.publishedAt)}`
 					: `Created ${formatRelativeTime(album.createdAt)}`
@@ -188,7 +189,7 @@
 		text-align: left;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 	}
 
@@ -201,7 +202,7 @@
 		justify-content: center;
 		border-radius: $unit;
 		overflow: hidden;
-		background-color: $grey-90;
+		background-color: $gray-90;
 
 		.thumbnail-image {
 			width: 100%;
@@ -215,7 +216,7 @@
 			justify-content: center;
 			width: 100%;
 			height: 100%;
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
@@ -230,7 +231,7 @@
 	.album-title {
 		font-size: 1rem;
 		font-weight: 600;
-		color: $grey-10;
+		color: $gray-10;
 		margin: 0;
 		white-space: nowrap;
 		overflow: hidden;
@@ -253,7 +254,7 @@
 		border: none;
 		border-radius: $unit;
 		cursor: pointer;
-		color: $grey-30;
+		color: $gray-30;
 		transition: all 0.2s ease;
 
 		&:hover {
@@ -267,7 +268,7 @@
 		right: 0;
 		margin-top: $unit-half;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		overflow: hidden;
@@ -282,12 +283,12 @@
 		border: none;
 		text-align: left;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 
 		&.delete {
@@ -297,7 +298,7 @@
 
 	.dropdown-divider {
 		height: 1px;
-		background-color: $grey-80;
+		background-color: $gray-80;
 		margin: $unit-half 0;
 	}
 </style>

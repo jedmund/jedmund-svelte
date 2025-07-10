@@ -3,6 +3,7 @@ import { NodeSelection, Plugin, PluginKey, TextSelection } from '@tiptap/pm/stat
 import { Fragment, Slice, Node } from '@tiptap/pm/model'
 import { EditorView } from '@tiptap/pm/view'
 import { serializeForClipboard } from './ClipboardSerializer.js'
+import DragHandleIcon from '$icons/drag-handle.svg?raw'
 
 export interface GlobalDragHandleOptions {
 	/**
@@ -70,6 +71,9 @@ function nodeDOMAtCoords(coords: { x: number; y: number }, options: GlobalDragHa
 		'h4',
 		'h5',
 		'h6',
+		'[data-drag-handle]', // NodeView components with drag handle
+		'.edra-url-embed-wrapper', // URL embed wrapper
+		'.edra-youtube-embed-card', // YouTube embed
 		...options.customNodes.map((node) => `[data-type=${node}]`)
 	].join(', ')
 	return document
@@ -192,7 +196,11 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 			const relatedTarget = event.relatedTarget as HTMLElement
 			const isInsideEditor =
 				relatedTarget?.classList.contains('tiptap') ||
-				relatedTarget?.classList.contains('drag-handle')
+				relatedTarget?.classList.contains('drag-handle') ||
+				relatedTarget?.classList.contains('drag-handle-menu') ||
+				relatedTarget?.classList.contains('dropdown-menu') ||
+				relatedTarget?.closest('.drag-handle') ||
+				relatedTarget?.closest('.dropdown-menu')
 
 			if (isInsideEditor) return
 		}
@@ -209,6 +217,11 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 			dragHandleElement.draggable = true
 			dragHandleElement.dataset.dragHandle = ''
 			dragHandleElement.classList.add('drag-handle')
+
+			// Add custom drag handle SVG if element was created (not selected)
+			if (!handleBySelector) {
+				dragHandleElement.innerHTML = DragHandleIcon
+			}
 
 			function onDragHandleDragStart(e: DragEvent) {
 				handleDragStart(e, view)
@@ -254,6 +267,18 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 						return
 					}
 
+					// Check if we're hovering over the drag handle itself
+					const target = event.target as HTMLElement
+					if (target.closest('.drag-handle') || target.closest('.dropdown-menu')) {
+						// Keep the handle visible when hovering over it or the dropdown
+						return
+					}
+
+					// Don't move the drag handle if the menu is open
+					if (dragHandleElement?.classList.contains('menu-open')) {
+						return
+					}
+
 					const node = nodeDOMAtCoords(
 						{
 							x: event.clientX + 50 + options.dragHandleWidth,
@@ -274,21 +299,36 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 					if (nodePos !== undefined) {
 						const currentNode = view.state.doc.nodeAt(nodePos)
 						if (currentNode !== null) {
+							// Still update the current node for tracking, but don't reposition if menu is open
 							options.onMouseMove?.({ node: currentNode, pos: nodePos })
 						}
 					}
 
-					const compStyle = window.getComputedStyle(node)
-					const parsedLineHeight = parseInt(compStyle.lineHeight, 10)
-					const lineHeight = isNaN(parsedLineHeight)
-						? parseInt(compStyle.fontSize) * 1.2
-						: parsedLineHeight
-					const paddingTop = parseInt(compStyle.paddingTop, 10)
+					// Don't reposition the drag handle if menu is open
+					if (dragHandleElement?.classList.contains('menu-open')) {
+						return
+					}
 
+					const compStyle = window.getComputedStyle(node)
+					const paddingTop = parseInt(compStyle.paddingTop, 10)
 					const rect = absoluteRect(node)
 
-					rect.top += (lineHeight - 24) / 2
-					rect.top += paddingTop
+					// For custom nodes like embeds, position at the top of the element
+					const isCustomNode = node.matches(
+						'[data-drag-handle], .edra-url-embed-wrapper, .edra-youtube-embed-card, [data-type]'
+					)
+					if (isCustomNode) {
+						// For NodeView components, position handle at top with small offset
+						rect.top += 8
+					} else {
+						// For text nodes, calculate based on line height
+						const parsedLineHeight = parseInt(compStyle.lineHeight, 10)
+						const lineHeight = isNaN(parsedLineHeight)
+							? parseInt(compStyle.fontSize) * 1.2
+							: parsedLineHeight
+						rect.top += (lineHeight - 20) / 2
+						rect.top += paddingTop
+					}
 					// Li markers
 					if (node.matches('ul:not([data-type=taskList]) li, ol li')) {
 						rect.left -= options.dragHandleWidth
@@ -297,8 +337,13 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 
 					if (!dragHandleElement) return
 
-					dragHandleElement.style.left = `${rect.left - rect.width}px`
-					dragHandleElement.style.top = `${rect.top}px`
+					// Get the computed padding of the element to position handle correctly
+					const paddingLeft = parseInt(compStyle.paddingLeft, 10) || 0
+
+					// Add 12px gap between drag handle and content
+					// Position the handle inside the padding area, close to the text
+					dragHandleElement.style.left = `${rect.left + paddingLeft - rect.width - 12}px`
+					dragHandleElement.style.top = `${rect.top - 1}px`
 					showDragHandle()
 				},
 				keydown: () => {

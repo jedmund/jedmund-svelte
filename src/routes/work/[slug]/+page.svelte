@@ -209,14 +209,14 @@
 		text-align: center;
 
 		p {
-			color: $grey-40;
+			color: $gray-40;
 			margin-bottom: $unit-2x;
 		}
 	}
 
 	.loading {
 		text-align: center;
-		color: $grey-40;
+		color: $gray-40;
 		padding: $unit-4x;
 	}
 

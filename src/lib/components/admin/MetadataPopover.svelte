@@ -195,7 +195,7 @@
 
 	.metadata-popover {
 		background: white;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		border-radius: $card-corner-radius;
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 		min-width: 420px;
@@ -215,13 +215,13 @@
 			font-size: 1.125rem;
 			font-weight: 600;
 			margin: 0;
-			color: $grey-10;
+			color: $gray-10;
 		}
 	}
 
 	.popover-footer {
 		padding: $unit-3x;
-		border-top: 1px solid $grey-90;
+		border-top: 1px solid $gray-90;
 		display: flex;
 		justify-content: flex-start;
 	}
@@ -236,7 +236,7 @@
 		align-self: flex-start;
 		margin-top: $unit-half;
 		padding: $unit $unit-2x;
-		background: $grey-10;
+		background: $gray-10;
 		color: white;
 		border: none;
 		border-radius: 6px;
@@ -245,7 +245,7 @@
 		transition: background-color 0.15s ease;
 
 		&:hover {
-			background: $grey-20;
+			background: $gray-20;
 		}
 	}
 
@@ -261,28 +261,28 @@
 		align-items: center;
 		gap: 4px;
 		padding: 4px $unit-2x;
-		background: $grey-80;
+		background: $gray-80;
 		border-radius: 20px;
 		font-size: 0.75rem;
 
 		button {
 			background: none;
 			border: none;
-			color: $grey-40;
+			color: $gray-40;
 			cursor: pointer;
 			padding: 0;
 			font-size: 1rem;
 			line-height: 1;
 
 			&:hover {
-				color: $grey-10;
+				color: $gray-10;
 			}
 		}
 	}
 
 	.metadata {
 		font-size: 0.75rem;
-		color: $grey-40;
+		color: $gray-40;
 
 		p {
 			margin: $unit-half 0;

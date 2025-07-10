@@ -51,11 +51,16 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 
 		if (!response.ok) {
 			const errorText = await response.text()
-			logger.error('Apple Music API error response:', undefined, {
-				status: response.status,
-				statusText: response.statusText,
-				body: errorText
-			}, 'music')
+			logger.error(
+				'Apple Music API error response:',
+				undefined,
+				{
+					status: response.status,
+					statusText: response.statusText,
+					body: errorText
+				},
+				'music'
+			)
 
 			// Record failure and handle rate limiting
 			if (identifier) {
@@ -128,19 +133,6 @@ export async function getAlbumDetails(id: string): Promise<AppleMusicAlbum | nul
 			included?: AppleMusicTrack[]
 		}>(endpoint, `album:${id}`)
 
-		logger.music('debug', `Album details for ${id}:`, {
-			hasData: !!response.data?.[0],
-			hasRelationships: !!response.data?.[0]?.relationships,
-			hasTracks: !!response.data?.[0]?.relationships?.tracks,
-			hasIncluded: !!response.included,
-			includedCount: response.included?.length || 0
-		})
-
-		// Check if tracks are in the included array
-		if (response.included?.length) {
-			logger.music('debug', 'First included track:', { track: response.included[0] })
-		}
-
 		return response.data?.[0] || null
 	} catch (error) {
 		logger.error(`Failed to get album details for ID ${id}:`, error as Error, undefined, 'music')
@@ -151,6 +143,12 @@ export async function getAlbumDetails(id: string): Promise<AppleMusicAlbum | nul
 export async function getTrack(id: string): Promise<{ data: AppleMusicTrack[] }> {
 	const endpoint = `/catalog/${DEFAULT_STOREFRONT}/songs/${id}`
 	return makeAppleMusicRequest<{ data: AppleMusicTrack[] }>(endpoint, `track:${id}`)
+}
+
+// Helper function to detect if a string contains Japanese characters
+function containsJapanese(str: string): boolean {
+	// Check for Hiragana, Katakana, and Kanji
+	return /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(str)
 }
 
 // Helper function to search for an album by artist and album name
@@ -168,6 +166,17 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		// Remove leading punctuation marks like ; ! ? . , : ' " etc.
 		return str.replace(/^[^\w\s]+/, '').trim()
 	}
+
+	// Determine primary storefront based on content
+	const hasJapaneseContent = containsJapanese(album) || containsJapanese(artist)
+	const primaryStorefront = hasJapaneseContent ? JAPANESE_STOREFRONT : DEFAULT_STOREFRONT
+	const secondaryStorefront = hasJapaneseContent ? DEFAULT_STOREFRONT : JAPANESE_STOREFRONT
+
+	logger.music('debug', `Album search strategy for "${album}" by "${artist}":`, {
+		hasJapaneseContent,
+		primaryStorefront,
+		secondaryStorefront
+	})
 
 	// Helper function to perform the album search and matching
 	async function searchAndMatch(
@@ -190,75 +199,121 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		const albums = response.results.albums.data
 		logger.music('debug', `Found ${albums.length} albums`)
 
-		// First try exact match with original album name
-		let match = albums.find(
-			(a) =>
-				a.attributes?.name?.toLowerCase() === album.toLowerCase() &&
-				a.attributes?.artistName?.toLowerCase() === artist.toLowerCase()
-		)
+		// Log all album results for debugging
+		albums.forEach((a, index) => {
+			logger.music(
+				'debug',
+				`Album ${index + 1}: "${a.attributes?.name}" by "${a.attributes?.artistName}"`
+			)
+		})
 
-		// If no exact match, try matching with the search term we used
-		if (!match && searchAlbum !== album) {
-			match = albums.find(
-				(a) =>
-					a.attributes?.name?.toLowerCase() === searchAlbum.toLowerCase() &&
-					a.attributes?.artistName?.toLowerCase() === artist.toLowerCase()
+		// Helper function to check if albums match
+		const albumsMatch = (albumName: string, searchTerm: string, exact = false): boolean => {
+			if (exact) {
+				return albumName === searchTerm
+			}
+			const albumLower = albumName.toLowerCase()
+			const searchLower = searchTerm.toLowerCase()
+			return (
+				albumLower === searchLower ||
+				albumLower.startsWith(searchLower) ||
+				albumLower.includes(searchLower)
 			)
 		}
 
-		// If no exact match, try partial match
-		if (!match) {
-			match = albums.find(
-				(a) =>
-					a.attributes?.name?.toLowerCase().includes(searchAlbum.toLowerCase()) &&
-					a.attributes?.artistName?.toLowerCase().includes(artist.toLowerCase())
-			)
+		// Helper function to check if artists match
+		const artistsMatch = (artistName: string, searchArtist: string, exact = false): boolean => {
+			if (exact) {
+				return artistName === searchArtist
+			}
+			const artistLower = artistName.toLowerCase()
+			const searchLower = searchArtist.toLowerCase()
+
+			// Direct match
+			if (artistLower === searchLower) return true
+
+			// Handle comma-separated artists
+			if (searchArtist.includes(',')) {
+				const primaryArtist = searchArtist.split(',')[0].trim().toLowerCase()
+				if (artistLower === primaryArtist || artistLower.includes(primaryArtist)) return true
+			}
+
+			// Reverse check - if the found artist is in our search
+			return searchLower.includes(artistLower)
 		}
+
+		// Try different matching strategies in order of preference
+		let match = albums.find((a) => {
+			const albumName = a.attributes?.name || ''
+			const artistName = a.attributes?.artistName || ''
+
+			// 1. Exact match (case-insensitive)
+			if (albumsMatch(albumName, album) && artistsMatch(artistName, artist)) {
+				return true
+			}
+
+			// 2. For Japanese content, try exact character match
+			if (
+				hasJapaneseContent &&
+				albumsMatch(albumName, album, true) &&
+				artistsMatch(artistName, artist, true)
+			) {
+				return true
+			}
+
+			// 3. Try with cleaned album name if different
+			if (
+				searchAlbum !== album &&
+				albumsMatch(albumName, searchAlbum) &&
+				artistsMatch(artistName, artist)
+			) {
+				return true
+			}
+
+			// 4. Flexible matching for albums with extra text
+			if (albumsMatch(albumName, album) && artistsMatch(artistName, artist)) {
+				return true
+			}
+
+			return false
+		})
 
 		return match ? { album: match, storefront } : null
 	}
 
 	try {
-		// First try with the original album name in US storefront
-		let result = await searchAndMatch(album)
-
-		// If no match, try Japanese storefront
-		if (!result) {
-			logger.music('debug', `No match found in US storefront, trying Japanese storefront`)
-			result = await searchAndMatch(album, JAPANESE_STOREFRONT)
+		// Try different album variations
+		const albumVariations = [album]
+		const cleanedAlbum = removeLeadingPunctuation(album)
+		if (cleanedAlbum !== album && cleanedAlbum.length > 0) {
+			albumVariations.push(cleanedAlbum)
 		}
 
-		// If no match and album starts with punctuation, try without it in both storefronts
-		if (!result) {
-			const cleanedAlbum = removeLeadingPunctuation(album)
-			if (cleanedAlbum !== album && cleanedAlbum.length > 0) {
-				logger.music('debug', 
-					`No match found for "${album}", trying without leading punctuation: "${cleanedAlbum}"`
-				)
-				result = await searchAndMatch(cleanedAlbum)
+		// Try each variation in both storefronts
+		for (const albumVariation of albumVariations) {
+			for (const storefront of [primaryStorefront, secondaryStorefront]) {
+				logger.music('debug', `Searching for "${albumVariation}" in ${storefront} storefront`)
+				const result = await searchAndMatch(albumVariation, storefront)
 
-				// Also try Japanese storefront with cleaned album name
-				if (!result) {
-					logger.music('debug', `Still no match, trying Japanese storefront with cleaned name`)
-					result = await searchAndMatch(cleanedAlbum, JAPANESE_STOREFRONT)
+				if (result) {
+					// Store the storefront information with the album
+					const matchedAlbum = result.album as any
+					matchedAlbum._storefront = result.storefront
+					return result.album
 				}
 			}
 		}
 
 		// If still no match, cache as not found
-		if (!result) {
-			await rateLimiter.cacheNotFound(identifier, 3600)
-			return null
-		}
-
-		// Store the storefront information with the album
-		const matchedAlbum = result.album as any
-		matchedAlbum._storefront = result.storefront
-
-		// Return the match
-		return result.album
+		await rateLimiter.cacheNotFound(identifier, 3600)
+		return null
 	} catch (error) {
-		logger.error(`Failed to find album "${album}" by "${artist}":`, error as Error, undefined, 'music')
+		logger.error(
+			`Failed to find album "${album}" by "${artist}":`,
+			error as Error,
+			undefined,
+			'music'
+		)
 		// Don't cache as not found on error - might be temporary
 		return null
 	}
@@ -285,16 +340,6 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 				included?: AppleMusicTrack[]
 			}>(endpoint, `album:${appleMusicAlbum.id}`)
 
-			logger.music('debug', `Album details response structure:`, {
-				hasData: !!response.data,
-				dataLength: response.data?.length,
-				hasIncluded: !!response.included,
-				includedLength: response.included?.length,
-				// Check if tracks are in relationships
-				hasRelationships: !!response.data?.[0]?.relationships,
-				hasTracks: !!response.data?.[0]?.relationships?.tracks
-			})
-
 			// Tracks are in relationships.tracks.data when using ?include=tracks
 			const albumData = response.data?.[0]
 			const tracksData = albumData?.relationships?.tracks?.data
@@ -311,21 +356,12 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 						durationMs: track.attributes?.durationInMillis
 					}))
 
-				// Log track details
-				tracks.forEach((track, index) => {
-					logger.music('debug', 
-						`Track ${index + 1}: ${track.name} - Preview: ${track.previewUrl ? 'Yes' : 'No'} - Duration: ${track.durationMs}ms`
-					)
-				})
-
 				// Find the first track with a preview if we don't have one
 				if (!previewUrl) {
-					for (const track of tracksData) {
-						if (track.type === 'songs' && track.attributes?.previews?.[0]?.url) {
-							previewUrl = track.attributes.previews[0].url
-							logger.music('debug', `Using preview URL from track "${track.attributes.name}"`)
-							break
-						}
+					const trackWithPreview = tracks.find((t) => t.previewUrl)
+					if (trackWithPreview) {
+						previewUrl = trackWithPreview.previewUrl
+						logger.music('debug', `Using preview URL from track "${trackWithPreview.name}"`)
 					}
 				}
 			} else {

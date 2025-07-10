@@ -3,7 +3,7 @@
 /**
  * Script to reanalyze colors for specific images or all images
  * Usage: tsx scripts/reanalyze-colors.ts [options]
- * 
+ *
  * Options:
  *   --id <mediaId>     Reanalyze specific media ID
  *   --grey-only        Only reanalyze images with grey dominant colors
@@ -106,7 +106,7 @@ async function reanalyzeColors(options: Options) {
 				console.log(`\n${media.filename}:`)
 				console.log(`  Current: ${currentColor || 'none'}`)
 				console.log(`  New:     ${newColor}`)
-				
+
 				// Show color breakdown
 				const topColors = colors.slice(0, 5)
 				console.log('  Top colors:')
@@ -141,7 +141,6 @@ async function reanalyzeColors(options: Options) {
 		if (options.dryRun) {
 			console.log(`  (Dry run - no changes made)`)
 		}
-
 	} catch (error) {
 		console.error('Error:', error)
 		process.exit(1)

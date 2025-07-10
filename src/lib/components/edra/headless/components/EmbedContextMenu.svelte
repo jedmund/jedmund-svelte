@@ -2,6 +2,9 @@
 	import { onMount, onDestroy } from 'svelte'
 	import { fly } from 'svelte/transition'
 
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
+
 	interface Props {
 		x: number
 		y: number
@@ -56,7 +59,7 @@
 	bind:this={dropdown}
 	class="embed-context-menu"
 	style="left: {x}px; top: {y}px;"
-	transition:fly={{ y: -10, duration: 200 }}
+	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
 	tabindex="-1"
 >
 	<div class="menu-url">{url}</div>
@@ -80,7 +83,7 @@
 		position: fixed;
 		z-index: 1050;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		padding: 4px;
@@ -92,7 +95,7 @@
 	.menu-url {
 		padding: $unit $unit-2x;
 		font-size: 0.75rem;
-		color: $grey-40;
+		color: $gray-40;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -100,7 +103,7 @@
 
 	.menu-divider {
 		height: 1px;
-		background-color: $grey-90;
+		background-color: $gray-90;
 		margin: 4px 0;
 	}
 
@@ -113,12 +116,12 @@
 		border-radius: 4px;
 		cursor: pointer;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		text-align: left;
 		transition: background-color 0.2s;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 
 		&:focus {

@@ -151,7 +151,7 @@
 		margin-bottom: $unit;
 		font-size: 14px;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: $red-50;
@@ -181,7 +181,7 @@
 		}
 
 		&::placeholder {
-			color: $grey-50;
+			color: $gray-50;
 		}
 
 		&:focus {
@@ -191,14 +191,14 @@
 		}
 
 		&:disabled {
-			background-color: $grey-95;
+			background-color: $gray-95;
 			cursor: not-allowed;
-			color: $grey-40;
+			color: $gray-40;
 			resize: none;
 		}
 
 		&:read-only {
-			background-color: $grey-97;
+			background-color: $gray-97;
 			cursor: default;
 			resize: none;
 		}
@@ -246,13 +246,13 @@
 
 	.textarea-help {
 		font-size: 13px;
-		color: $grey-40;
+		color: $gray-40;
 		flex: 1;
 	}
 
 	.char-count {
 		font-size: 12px;
-		color: $grey-40;
+		color: $gray-40;
 		margin-left: $unit;
 
 		&.warning {

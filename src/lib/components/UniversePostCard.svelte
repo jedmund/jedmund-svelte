@@ -1,6 +1,6 @@
 <script lang="ts">
 	import UniverseCard from './UniverseCard.svelte'
-	import { getContentExcerpt } from '$lib/utils/content'
+	import { getContentExcerpt, renderEdraContent } from '$lib/utils/content'
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
@@ -36,12 +36,6 @@
 		<h2 class="card-title">
 			<a href="/universe/{post.slug}" class="card-title-link" tabindex="-1">{post.title}</a>
 		</h2>
-	{/if}
-
-	{#if post.content}
-		<div class="post-excerpt">
-			<p>{getContentExcerpt(post.content, 150)}</p>
-		</div>
 	{/if}
 
 	{#if firstEmbed}
@@ -84,7 +78,17 @@
 		</div>
 	{/if}
 
-	{#if post.postType === 'essay' && isContentTruncated}
+	{#if post.content}
+		<div class="post-excerpt">
+			{#if post.postType === 'essay'}
+				<p>{getContentExcerpt(post.content, 300)}</p>
+			{:else}
+				{@html renderEdraContent(post.content)}
+			{/if}
+		</div>
+	{/if}
+
+	{#if post.postType === 'essay' && isContentTruncated()}
 		<p>
 			<a href="/universe/{post.slug}" class="read-more" tabindex="-1">Continue reading</a>
 		</p>
@@ -113,8 +117,8 @@
 	}
 
 	.link-preview {
-		background: $grey-97;
-		border: 1px solid $grey-90;
+		background: $gray-97;
+		border: 1px solid $gray-90;
 		border-radius: $card-corner-radius;
 		padding: $unit-2x;
 		margin-bottom: $unit-3x;
@@ -134,7 +138,7 @@
 
 		.link-description {
 			margin: 0;
-			color: $grey-30;
+			color: $gray-30;
 			font-size: 0.875rem;
 			line-height: 1.4;
 		}
@@ -143,13 +147,52 @@
 	.post-excerpt {
 		p {
 			margin: 0;
-			color: $grey-10;
+			color: $gray-10;
 			font-size: 1rem;
 			line-height: 1.5;
+		}
+
+		// Only apply truncation for essay excerpts
+		p:only-child {
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 2;
 			overflow: hidden;
+		}
+
+		// Styles for full content (non-essays)
+		:global(p) {
+			margin: 0 0 $unit-2x;
+			color: $gray-10;
+			font-size: 1rem;
+			line-height: 1.5;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		:global(a) {
+			color: $red-60;
+			text-decoration: none;
+			transition: all 0.2s ease;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+
+		:global(strong) {
+			font-weight: 600;
+		}
+
+		:global(em) {
+			font-style: italic;
+		}
+
+		// Hide embeds in the rendered content since we show them separately
+		:global(.url-embed-rendered) {
+			display: none;
 		}
 	}
 
@@ -157,12 +200,12 @@
 		margin-bottom: $unit-3x;
 
 		.attachment-count {
-			background: $grey-95;
-			border: 1px solid $grey-85;
+			background: $gray-95;
+			border: 1px solid $gray-85;
 			border-radius: $unit;
 			padding: $unit $unit-2x;
 			font-size: 0.875rem;
-			color: $grey-40;
+			color: $gray-40;
 			display: inline-block;
 		}
 	}
@@ -187,9 +230,9 @@
 			padding-bottom: 56%; // 16:9 aspect ratio
 			height: 0;
 			overflow: hidden;
-			background: $grey-95;
+			background: $gray-95;
 			border-radius: $card-corner-radius;
-			border: 1px solid $grey-85;
+			border: 1px solid $gray-85;
 
 			iframe {
 				position: absolute;
@@ -206,16 +249,16 @@
 	.url-embed-preview {
 		display: flex;
 		flex-direction: column;
-		background: $grey-97;
+		background: $gray-97;
 		border-radius: $card-corner-radius;
 		overflow: hidden;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		text-decoration: none;
 		transition: all 0.2s ease;
 		width: 100%;
 
 		&:hover {
-			border-color: $grey-80;
+			border-color: $gray-80;
 			transform: translateY(-1px);
 			box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
 		}
@@ -224,7 +267,7 @@
 			width: 100%;
 			aspect-ratio: 2 / 1;
 			overflow: hidden;
-			background: $grey-90;
+			background: $gray-90;
 
 			img {
 				width: 100%;
@@ -247,7 +290,7 @@
 			align-items: center;
 			gap: $unit-half;
 			font-size: 0.8125rem;
-			color: $grey-40;
+			color: $gray-40;
 		}
 
 		.embed-favicon {
@@ -267,7 +310,7 @@
 			margin: 0;
 			font-size: 1.125rem;
 			font-weight: 600;
-			color: $grey-10;
+			color: $gray-10;
 			line-height: 1.3;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
@@ -278,7 +321,7 @@
 		.embed-description {
 			margin: 0;
 			font-size: 0.9375rem;
-			color: $grey-30;
+			color: $gray-30;
 			line-height: 1.5;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;

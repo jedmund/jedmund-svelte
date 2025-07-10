@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,181 +7,172 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Projects table (for /work)
 model Project {
-  id                 Int       @id @default(autoincrement())
-  slug               String    @unique @db.VarChar(255)
-  title              String    @db.VarChar(255)
-  subtitle           String?   @db.VarChar(255)
-  description        String?   @db.Text
-  year               Int
-  client             String?   @db.VarChar(255)
-  role               String?   @db.VarChar(255)
-  featuredImage      String?   @db.VarChar(500)
-  logoUrl            String?   @db.VarChar(500)
-  gallery            Json?     // Array of image URLs
-  externalUrl        String?   @db.VarChar(500)
-  caseStudyContent   Json?     // BlockNote JSON format
-  backgroundColor    String?   @db.VarChar(50)  // For project card styling
-  highlightColor     String?   @db.VarChar(50)  // For project card accent
-  projectType        String    @default("work") @db.VarChar(50) // "work" or "labs"
-  displayOrder       Int       @default(0)
-  status             String    @default("draft") @db.VarChar(50) // "draft", "published", "list-only", "password-protected"
-  password           String?   @db.VarChar(255) // Required when status is "password-protected"
-  publishedAt        DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
+  id               Int       @id @default(autoincrement())
+  slug             String    @unique @db.VarChar(255)
+  title            String    @db.VarChar(255)
+  subtitle         String?   @db.VarChar(255)
+  description      String?
+  year             Int
+  client           String?   @db.VarChar(255)
+  role             String?   @db.VarChar(255)
+  featuredImage    String?   @db.VarChar(500)
+  gallery          Json?
+  externalUrl      String?   @db.VarChar(500)
+  caseStudyContent Json?
+  displayOrder     Int       @default(0)
+  status           String    @default("draft") @db.VarChar(50)
+  publishedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  backgroundColor  String?   @db.VarChar(50)
+  highlightColor   String?   @db.VarChar(50)
+  logoUrl          String?   @db.VarChar(500)
+  password         String?   @db.VarChar(255)
+  projectType      String    @default("work") @db.VarChar(50)
+
   @@index([slug])
   @@index([status])
 }
 
-// Posts table (for /universe)
 model Post {
-  id                 Int       @id @default(autoincrement())
-  slug               String    @unique @db.VarChar(255)
-  postType           String    @db.VarChar(50) // post, essay
-  title              String?   @db.VarChar(255) // Optional for post type
-  content            Json?     // JSON content for posts and essays
-  
-  featuredImage      String?   @db.VarChar(500)
-  attachments        Json?     // Array of media IDs for photo attachments
-  tags               Json?     // Array of tags
-  status             String    @default("draft") @db.VarChar(50)
-  publishedAt        DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
+  id            Int       @id @default(autoincrement())
+  slug          String    @unique @db.VarChar(255)
+  postType      String    @db.VarChar(50)
+  title         String?   @db.VarChar(255)
+  content       Json?
+  featuredImage String?   @db.VarChar(500)
+  tags          Json?
+  status        String    @default("draft") @db.VarChar(50)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  attachments   Json?
+
   @@index([slug])
   @@index([status])
   @@index([postType])
 }
 
-// Albums table
 model Album {
-  id                 Int       @id @default(autoincrement())
-  slug               String    @unique @db.VarChar(255)
-  title              String    @db.VarChar(255)
-  description        String?   @db.Text
-  date               DateTime?
-  location           String?   @db.VarChar(255)
-  coverPhotoId       Int?
-  isPhotography      Boolean   @default(false)   // Show in photos experience
-  status             String    @default("draft") @db.VarChar(50)
-  showInUniverse     Boolean   @default(false)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  photos             Photo[]                      // Will be removed after migration
-  media              AlbumMedia[]
-  
+  id             Int           @id @default(autoincrement())
+  slug           String        @unique @db.VarChar(255)
+  title          String        @db.VarChar(255)
+  description    String?
+  date           DateTime?
+  location       String?       @db.VarChar(255)
+  coverPhotoId   Int?
+  status         String        @default("draft") @db.VarChar(50)
+  showInUniverse Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  content        Json?
+  publishedAt    DateTime?
+  media          AlbumMedia[]
+  geoLocations   GeoLocation[]
+
   @@index([slug])
   @@index([status])
 }
 
-// Photos table
 model Photo {
-  id                 Int       @id @default(autoincrement())
-  albumId            Int?
-  mediaId            Int?      // Reference to the Media item
-  filename           String    @db.VarChar(255)
-  url                String    @db.VarChar(500)
-  thumbnailUrl       String?   @db.VarChar(500)
-  width              Int?
-  height             Int?
-  dominantColor      String?   @db.VarChar(7)    // Hex color like #FFFFFF
-  colors             Json?                       // Full color palette from Cloudinary
-  aspectRatio        Float?                      // Width/height ratio
-  exifData           Json?
-  caption            String?   @db.Text
-  displayOrder       Int       @default(0)
-  
-  // Individual publishing support
-  slug               String?   @unique @db.VarChar(255)
-  title              String?   @db.VarChar(255)
-  description        String?   @db.Text
-  status             String    @default("draft") @db.VarChar(50)
-  publishedAt        DateTime?
-  showInPhotos       Boolean   @default(true)
-  
-  createdAt          DateTime  @default(now())
-  
-  // Relations
-  album              Album?    @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  media              Media?    @relation(fields: [mediaId], references: [id], onDelete: SetNull)
-  
+  id            Int       @id @default(autoincrement())
+  filename      String    @db.VarChar(255)
+  url           String    @db.VarChar(500)
+  thumbnailUrl  String?   @db.VarChar(500)
+  width         Int?
+  height        Int?
+  exifData      Json?
+  caption       String?
+  displayOrder  Int       @default(0)
+  slug          String?   @unique @db.VarChar(255)
+  title         String?   @db.VarChar(255)
+  description   String?
+  status        String    @default("draft") @db.VarChar(50)
+  publishedAt   DateTime?
+  showInPhotos  Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  mediaId       Int?
+  dominantColor String?   @db.VarChar(7)
+  colors        Json?
+  aspectRatio   Float?
+  media         Media?    @relation(fields: [mediaId], references: [id])
+
   @@index([slug])
   @@index([status])
   @@index([mediaId])
 }
 
-// Media table (general uploads)
 model Media {
-  id                 Int       @id @default(autoincrement())
-  filename           String    @db.VarChar(255)
-  originalName       String?   @db.VarChar(255)  // Original filename from user (optional for backward compatibility)
-  mimeType           String    @db.VarChar(100)
-  size               Int
-  url                String    @db.Text
-  thumbnailUrl       String?   @db.Text
-  width              Int?
-  height             Int?
-  dominantColor      String?   @db.VarChar(7)    // Hex color like #FFFFFF
-  colors             Json?                       // Full color palette from Cloudinary
-  aspectRatio        Float?                      // Width/height ratio
-  exifData           Json?                       // EXIF data for photos
-  description        String?   @db.Text          // Description (used for alt text and captions)
-  isPhotography      Boolean   @default(false)   // Star for photos experience
-  
-  // Photo-specific fields (migrated from Photo model)
-  photoCaption       String?   @db.Text          // Caption when used as standalone photo
-  photoTitle         String?   @db.VarChar(255)  // Title when used as standalone photo
-  photoDescription   String?   @db.Text          // Description when used as standalone photo
-  photoSlug          String?   @unique @db.VarChar(255)  // Slug for standalone photo
-  photoPublishedAt   DateTime?                   // Published date for standalone photo
-  
-  usedIn             Json      @default("[]")    // Track where media is used (legacy)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  usage              MediaUsage[]
-  photos             Photo[]                      // Will be removed after migration
-  albums             AlbumMedia[]
+  id               Int          @id @default(autoincrement())
+  filename         String       @db.VarChar(255)
+  mimeType         String       @db.VarChar(100)
+  size             Int
+  url              String
+  thumbnailUrl     String?
+  width            Int?
+  height           Int?
+  usedIn           Json         @default("[]")
+  createdAt        DateTime     @default(now())
+  description      String?
+  originalName     String?      @db.VarChar(255)
+  updatedAt        DateTime     @updatedAt
+  isPhotography    Boolean      @default(false)
+  exifData         Json?
+  photoCaption     String?
+  photoTitle       String?      @db.VarChar(255)
+  photoDescription String?
+  photoSlug        String?      @unique @db.VarChar(255)
+  photoPublishedAt DateTime?
+  dominantColor    String?      @db.VarChar(7)
+  colors           Json?
+  aspectRatio      Float?
+  albums           AlbumMedia[]
+  usage            MediaUsage[]
+  photos           Photo[]
 }
 
-// Media usage tracking table
 model MediaUsage {
-  id                 Int       @id @default(autoincrement())
-  mediaId            Int
-  contentType        String    @db.VarChar(50)   // 'project', 'post', 'album'
-  contentId          Int
-  fieldName          String    @db.VarChar(100)  // 'featuredImage', 'logoUrl', 'gallery', 'content'
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  media              Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  
+  id          Int      @id @default(autoincrement())
+  mediaId     Int
+  contentType String   @db.VarChar(50)
+  contentId   Int
+  fieldName   String   @db.VarChar(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  media       Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
   @@unique([mediaId, contentType, contentId, fieldName])
   @@index([mediaId])
   @@index([contentType, contentId])
 }
 
-// Album-Media relationship table (many-to-many)
 model AlbumMedia {
-  id                 Int       @id @default(autoincrement())
-  albumId            Int
-  mediaId            Int
-  displayOrder       Int       @default(0)
-  createdAt          DateTime  @default(now())
-  
-  // Relations
-  album              Album     @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  media              Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  
+  id           Int      @id @default(autoincrement())
+  albumId      Int
+  mediaId      Int
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  album        Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  media        Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
   @@unique([albumId, mediaId])
   @@index([albumId])
   @@index([mediaId])
+}
+
+model GeoLocation {
+  id          Int      @id @default(autoincrement())
+  albumId     Int
+  latitude    Float
+  longitude   Float
+  title       String   @db.VarChar(255)
+  description String?
+  markerColor String?  @db.VarChar(7)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  album       Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@index([albumId])
 }

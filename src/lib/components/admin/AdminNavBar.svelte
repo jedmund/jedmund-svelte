@@ -4,7 +4,8 @@
 	import AvatarSimple from '$lib/components/AvatarSimple.svelte'
 	import WorkIcon from '$icons/work.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
-	import PhotosIcon from '$icons/photos.svg?component'
+	import MediaIcon from '$icons/media.svg?component'
+	import AlbumIcon from '$icons/album.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
 	let isScrolled = $state(false)
@@ -31,8 +32,8 @@
 	const navItems: NavItem[] = [
 		{ text: 'Projects', href: '/admin/projects', icon: WorkIcon },
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
-		{ text: 'Albums', href: '/admin/albums', icon: PhotosIcon },
-		{ text: 'Media', href: '/admin/media', icon: PhotosIcon }
+		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
+		{ text: 'Media', href: '/admin/media', icon: MediaIcon }
 	]
 
 	// Calculate active index based on current path
@@ -83,14 +84,14 @@
 	.admin-nav-bar {
 		position: sticky;
 		top: 0;
-		z-index: 100;
+		z-index: $z-index-admin-nav;
 		width: 100%;
 		background: $bg-color;
 		border-bottom: 1px solid transparent;
 		transition: border-bottom 0.2s ease;
 
 		&.scrolled {
-			border-bottom: 1px solid $grey-60;
+			border-bottom: 1px solid $gray-60;
 		}
 	}
 
@@ -143,13 +144,13 @@
 		align-items: center;
 		gap: $unit;
 		text-decoration: none;
-		color: $grey-30;
+		color: $gray-30;
 		font-weight: 400;
 		font-size: 0.925rem;
 		transition: color 0.2s ease;
 
 		&:hover {
-			color: $grey-20;
+			color: $gray-20;
 		}
 
 		.brand-logo {
@@ -202,7 +203,7 @@
 		text-decoration: none;
 		font-size: 0.925rem;
 		font-weight: 500;
-		color: $grey-30;
+		color: $gray-30;
 		transition: all 0.2s ease;
 		position: relative;
 
@@ -211,7 +212,7 @@
 		}
 
 		&:hover {
-			background-color: $grey-70;
+			background-color: $gray-70;
 		}
 
 		&.active {

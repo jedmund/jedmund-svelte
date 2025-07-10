@@ -76,7 +76,7 @@
 
 	.post-content {
 		padding: $unit-3x;
-		background: $grey-100;
+		background: $gray-100;
 		border-radius: $card-corner-radius;
 	}
 
@@ -106,7 +106,7 @@
 
 	.post-excerpt {
 		margin: 0;
-		color: $grey-00;
+		color: $gray-00;
 		font-size: 1rem;
 		line-height: 1.5;
 		display: -webkit-box;
@@ -132,7 +132,7 @@
 	.post-date {
 		display: block;
 		font-size: 1rem;
-		color: $grey-40;
+		color: $gray-40;
 		font-weight: 400;
 		transition: all 0.2s ease;
 	}
@@ -146,6 +146,6 @@
 	:global(.universe-icon) {
 		width: 16px;
 		height: 16px;
-		fill: $grey-40;
+		fill: $gray-40;
 	}
 </style>

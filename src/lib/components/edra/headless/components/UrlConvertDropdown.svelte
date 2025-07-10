@@ -2,6 +2,9 @@
 	import { onMount, onDestroy } from 'svelte'
 	import { fly } from 'svelte/transition'
 
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
+
 	interface Props {
 		x: number
 		y: number
@@ -50,7 +53,7 @@
 	bind:this={dropdown}
 	class="url-convert-dropdown"
 	style="left: {x}px; top: {y}px;"
-	transition:fly={{ y: -10, duration: 200 }}
+	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
 	tabindex="-1"
 >
 	<button class="convert-button" onclick={handleConvert}> Convert to card </button>
@@ -61,7 +64,7 @@
 		position: fixed;
 		z-index: 1050;
 		background: white;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $unit;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		padding: 4px;
@@ -78,13 +81,13 @@
 		border-radius: 4px;
 		cursor: pointer;
 		font-size: 0.875rem;
-		color: $grey-20;
+		color: $gray-20;
 		white-space: nowrap;
 		transition: background-color 0.2s;
 		text-align: left;
 
 		&:hover {
-			background-color: $grey-95;
+			background-color: $gray-95;
 		}
 
 		&:focus {

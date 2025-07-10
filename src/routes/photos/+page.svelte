@@ -1,8 +1,6 @@
 <script lang="ts">
-	import MasonryPhotoGrid from '$components/MasonryPhotoGrid.svelte'
-	import SingleColumnPhotoGrid from '$components/SingleColumnPhotoGrid.svelte'
-	import TwoColumnPhotoGrid from '$components/TwoColumnPhotoGrid.svelte'
-	import HorizontalScrollPhotoGrid from '$components/HorizontalScrollPhotoGrid.svelte'
+	import PhotoGrid from '$components/PhotoGrid.svelte'
+	import HorizontalPhotoScroll from '$components/HorizontalPhotoScroll.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import ViewModeSelector from '$components/ViewModeSelector.svelte'
 	import type { ViewMode } from '$components/ViewModeSelector.svelte'
@@ -12,7 +10,7 @@
 	import { goto } from '$app/navigation'
 	import { browser } from '$app/environment'
 	import type { PageData } from './$types'
-	import type { PhotoItem } from '$lib/types/photos'
+	import type { Photo } from '$lib/types/photos'
 	import type { Snapshot } from './$types'
 
 	const { data }: { data: PageData } = $props()
@@ -21,18 +19,20 @@
 	const loaderState = new LoaderState()
 
 	// Initialize state with server-side data
-	let allPhotoItems = $state<PhotoItem[]>(data.photoItems || [])
+	let allPhotos = $state<Photo[]>(data.photos || [])
 	let currentOffset = $state(data.pagination?.limit || 20)
 	let containerWidth = $state<'normal' | 'wide'>('normal')
 
 	// Initialize view mode from URL or default
 	const urlMode = $page.url.searchParams.get('view') as ViewMode
 	let viewMode = $state<ViewMode>(
-		urlMode && ['masonry', 'single', 'two-column', 'horizontal'].includes(urlMode) ? urlMode : 'two-column'
+		urlMode && ['masonry', 'single', 'two-column', 'horizontal'].includes(urlMode)
+			? urlMode
+			: 'two-column'
 	)
 
 	// Track loaded photo IDs to prevent duplicates
-	let loadedPhotoIds = $state(new Set(data.photoItems?.map((item) => item.id) || []))
+	let loadedPhotoIds = $state(new Set(data.photos?.map((photo) => photo.id) || []))
 
 	const error = $derived(data.error)
 	const pageUrl = $derived($page.url.href)
@@ -71,12 +71,12 @@
 				if (!response.ok) break
 
 				const result = await response.json()
-				const newItems = (result.photoItems || []).filter(
-					(item: PhotoItem) => !loadedPhotoIds.has(item.id)
+				const newPhotos = (result.photoItems || []).filter(
+					(photo: Photo) => !loadedPhotoIds.has(photo.id)
 				)
 
-				newItems.forEach((item: PhotoItem) => loadedPhotoIds.add(item.id))
-				allPhotoItems = [...allPhotoItems, ...newItems]
+				newPhotos.forEach((photo: Photo) => loadedPhotoIds.add(photo.id))
+				allPhotos = [...allPhotos, ...newPhotos]
 				currentOffset += result.pagination?.limit || 50
 
 				if (!result.pagination?.hasMore) break
@@ -98,21 +98,21 @@
 			const data = await response.json()
 
 			// Filter out duplicates
-			const newItems = (data.photoItems || []).filter(
-				(item: PhotoItem) => !loadedPhotoIds.has(item.id)
+			const newPhotos = (data.photoItems || []).filter(
+				(photo: Photo) => !loadedPhotoIds.has(photo.id)
 			)
 
 			// Add new photo IDs to the set
-			newItems.forEach((item: PhotoItem) => loadedPhotoIds.add(item.id))
+			newPhotos.forEach((photo: Photo) => loadedPhotoIds.add(photo.id))
 
 			// Append new photos to existing list
-			allPhotoItems = [...allPhotoItems, ...newItems]
+			allPhotos = [...allPhotos, ...newPhotos]
 
 			// Update pagination state
 			currentOffset += data.pagination?.limit || 20
 
 			// Update loader state
-			if (!data.pagination?.hasMore || newItems.length === 0) {
+			if (!data.pagination?.hasMore || newPhotos.length === 0) {
 				loaderState.complete()
 			} else {
 				loaderState.loaded()
@@ -212,7 +212,7 @@
 				<p>{error}</p>
 			</div>
 		</div>
-	{:else if allPhotoItems.length === 0}
+	{:else if allPhotos.length === 0}
 		<div class="empty-container">
 			<div class="empty-message">
 				<h2>No photos yet</h2>
@@ -229,13 +229,13 @@
 
 		<div class="grid-container" class:full-width={viewMode === 'horizontal'}>
 			{#if viewMode === 'masonry'}
-				<MasonryPhotoGrid photoItems={allPhotoItems} />
+				<PhotoGrid photos={allPhotos} columns="auto" masonry={true} gap="medium" />
 			{:else if viewMode === 'single'}
-				<SingleColumnPhotoGrid photoItems={allPhotoItems} />
+				<PhotoGrid photos={allPhotos} columns={1} gap="large" showCaptions={true} />
 			{:else if viewMode === 'two-column'}
-				<TwoColumnPhotoGrid photoItems={allPhotoItems} />
+				<PhotoGrid photos={allPhotos} columns={2} gap="medium" />
 			{:else if viewMode === 'horizontal'}
-				<HorizontalScrollPhotoGrid photoItems={allPhotoItems} />
+				<HorizontalPhotoScroll photos={allPhotos} />
 				{#if isLoadingAll}
 					<div class="loading-more-indicator">
 						<LoadingSpinner size="small" text="Loading all photos..." />
@@ -343,12 +343,12 @@
 			font-size: 1.5rem;
 			font-weight: 600;
 			margin: 0 0 $unit-2x;
-			color: $grey-10;
+			color: $gray-10;
 		}
 
 		p {
 			margin: 0;
-			color: $grey-40;
+			color: $gray-40;
 			line-height: 1.5;
 		}
 	}
@@ -371,7 +371,7 @@
 		position: fixed;
 		bottom: $unit-3x;
 		right: $unit-3x;
-		background: $grey-100;
+		background: $gray-100;
 		padding: $unit-2x $unit-3x;
 		border-radius: $corner-radius-lg;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -384,7 +384,7 @@
 
 		p {
 			margin: 0;
-			color: $grey-50;
+			color: $gray-50;
 			font-size: 1rem;
 		}
 	}

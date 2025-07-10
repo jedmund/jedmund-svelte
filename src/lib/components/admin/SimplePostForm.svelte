@@ -5,6 +5,7 @@
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import { toast } from '$lib/stores/toast'
 
 	interface Props {
 		postType: 'post'
@@ -23,7 +24,6 @@
 
 	// State
 	let isSaving = $state(false)
-	let error = $state('')
 	let status = $state<'draft' | 'published'>(initialData?.status || 'draft')
 
 	// Form data
@@ -53,19 +53,22 @@
 
 	async function handleSave(publishStatus: 'draft' | 'published') {
 		if (isOverLimit) {
-			error = 'Post is too long'
+			toast.error('Post is too long')
 			return
 		}
 
 		// For link posts, URL is required
 		if (linkUrl && !linkUrl.trim()) {
-			error = 'Link URL is required'
+			toast.error('Link URL is required')
 			return
 		}
 
+		const loadingToastId = toast.loading(
+			`${publishStatus === 'published' ? 'Publishing' : 'Saving'} post...`
+		)
+
 		try {
 			isSaving = true
-			error = ''
 
 			const auth = localStorage.getItem('admin_auth')
 			if (!auth) {
@@ -104,10 +107,14 @@
 
 			const savedPost = await response.json()
 
+			toast.dismiss(loadingToastId)
+			toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
+
 			// Redirect back to posts list after creation
 			goto('/admin/posts')
 		} catch (err) {
-			error = `Failed to ${mode === 'edit' ? 'save' : 'create'} post`
+			toast.dismiss(loadingToastId)
+			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} post`)
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -146,16 +153,12 @@
 				onclick={() => handleSave('published')}
 				disabled={isSaving || !hasContent() || (postType === 'microblog' && isOverLimit)}
 			>
-				{isSaving ? 'Posting...' : 'Post'}
+				Post
 			</Button>
 		</div>
 	</header>
 
 	<div class="composer-container">
-		{#if error}
-			<div class="error-message">{error}</div>
-		{/if}
-
 		<div class="composer">
 			{#if postType === 'microblog'}
 				<div class="post-composer">
@@ -219,7 +222,7 @@
 				font-size: 1.5rem;
 				font-weight: 700;
 				margin: 0;
-				color: $grey-10;
+				color: $gray-10;
 			}
 		}
 
@@ -273,12 +276,12 @@
 		justify-content: flex-end;
 		margin-top: $unit-2x;
 		padding-top: $unit-2x;
-		border-top: 1px solid $grey-80;
+		border-top: 1px solid $gray-80;
 	}
 
 	.char-count {
 		font-size: 0.875rem;
-		color: $grey-50;
+		color: $gray-50;
 
 		&.over-limit {
 			color: $red-60;
@@ -294,11 +297,11 @@
 			border-radius: 0;
 
 			&:first-child {
-				border-bottom: 1px solid $grey-90;
+				border-bottom: 1px solid $gray-90;
 			}
 
 			&:last-child {
-				border-top: 1px solid $grey-90;
+				border-top: 1px solid $gray-90;
 			}
 		}
 
@@ -313,14 +316,14 @@
 
 			&:focus {
 				border: none;
-				background: $grey-97;
+				background: $gray-97;
 			}
 		}
 
 		:global(.description-input) {
 			font-size: 1rem;
 			line-height: 1.5;
-			color: $grey-20;
+			color: $gray-20;
 			padding: $unit-3x;
 			border: none;
 			border-radius: 0;
@@ -329,7 +332,7 @@
 
 			&:focus {
 				border: none;
-				background: $grey-97;
+				background: $gray-97;
 			}
 		}
 	}
@@ -340,16 +343,16 @@
 		border: none;
 		background: transparent;
 		font-size: 1rem;
-		color: $grey-10;
-		border-bottom: 1px solid $grey-90;
+		color: $gray-10;
+		border-bottom: 1px solid $gray-90;
 
 		&:focus {
 			outline: none;
-			background: $grey-97;
+			background: $gray-97;
 		}
 
 		&::placeholder {
-			color: $grey-60;
+			color: $gray-60;
 		}
 	}
 </style>

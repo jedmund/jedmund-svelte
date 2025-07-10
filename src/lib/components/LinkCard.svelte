@@ -101,10 +101,10 @@
 	.link-card {
 		display: flex;
 		flex-direction: column;
-		background: $grey-90;
+		background: $gray-90;
 		border-radius: $image-corner-radius;
 		overflow: hidden;
-		border: 1px solid $grey-80;
+		border: 1px solid $gray-80;
 		padding: 0;
 		width: 100%;
 		text-align: left;
@@ -112,7 +112,7 @@
 		transition: border-color 0.2s ease;
 
 		&:hover {
-			border-color: $grey-50;
+			border-color: $gray-50;
 		}
 
 		&:focus {
@@ -125,7 +125,7 @@
 			cursor: default;
 
 			&:hover {
-				border-color: $grey-80;
+				border-color: $gray-80;
 			}
 		}
 
@@ -161,7 +161,7 @@
 		align-items: center;
 		gap: $unit;
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.favicon {
@@ -180,7 +180,7 @@
 		margin: 0;
 		font-size: 1.1rem;
 		font-weight: 600;
-		color: $grey-00;
+		color: $gray-00;
 		line-height: 1.3;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
@@ -191,7 +191,7 @@
 	.link-description {
 		margin: 0;
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
@@ -200,9 +200,9 @@
 	}
 
 	.skeleton {
-		background: $grey-80;
+		background: $gray-80;
 		border-radius: 4px;
-		animation: pulse 1.5s ease-in-out infinite;
+		animation: pulse $animation-slow ease-in-out infinite;
 	}
 
 	.skeleton-meta {
@@ -232,7 +232,7 @@
 
 	.error-message {
 		margin: 0 0 $unit;
-		color: $grey-40;
+		color: $gray-40;
 		font-size: 0.875rem;
 	}
 

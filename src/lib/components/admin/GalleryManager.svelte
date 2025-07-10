@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from './Button.svelte'
-	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import CloseButton from '../icons/CloseButton.svelte'
+	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -221,20 +222,7 @@
 						onclick={() => removeImage(index)}
 						aria-label="Remove image"
 					>
-						<svg
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M6 6L18 18M6 18L18 6"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-							/>
-						</svg>
+						<CloseButton size={14} color="currentColor" />
 					</button>
 
 					<!-- Order Indicator -->
@@ -350,14 +338,14 @@
 	{/if}
 
 	<!-- Media Library Modal -->
-	<MediaLibraryModal
+	<UnifiedMediaModal
 		bind:isOpen={showModal}
 		mode="multiple"
 		fileType="image"
 		{selectedIds}
 		title="Add Images to Gallery"
 		confirmText="Add Selected Images"
-		onselect={handleImagesSelect}
+		onSelect={handleImagesSelect}
 	/>
 </div>
 
@@ -378,7 +366,7 @@
 	.input-label {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: $red-60;
@@ -388,7 +376,7 @@
 
 	.items-count {
 		font-size: 0.75rem;
-		color: $grey-40;
+		color: $gray-40;
 		font-weight: 500;
 	}
 
@@ -397,9 +385,9 @@
 		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 		gap: $unit-2x;
 		padding: $unit-2x;
-		border: 1px solid $grey-85;
+		border: 1px solid $gray-85;
 		border-radius: $card-corner-radius;
-		background-color: $grey-97;
+		background-color: $gray-97;
 
 		&.has-error {
 			border-color: $red-60;
@@ -414,7 +402,7 @@
 		cursor: move;
 		transition: all 0.2s ease;
 		background-color: white;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 
 		&:hover {
 			transform: translateY(-2px);
@@ -467,8 +455,8 @@
 		justify-content: center;
 		width: 100%;
 		height: 100%;
-		background-color: $grey-95;
-		color: $grey-60;
+		background-color: $gray-95;
+		color: $gray-60;
 	}
 
 	.image-info {
@@ -543,10 +531,10 @@
 		justify-content: center;
 		gap: $unit;
 		aspect-ratio: 1;
-		border: 2px dashed $grey-70;
+		border: 2px dashed $gray-70;
 		border-radius: $card-corner-radius;
 		background-color: transparent;
-		color: $grey-50;
+		color: $gray-50;
 		cursor: pointer;
 		transition: all 0.2s ease;
 		font-size: 0.875rem;
@@ -568,9 +556,9 @@
 		align-items: center;
 		justify-content: center;
 		min-height: 200px;
-		border: 2px dashed $grey-80;
+		border: 2px dashed $gray-80;
 		border-radius: $card-corner-radius;
-		background-color: $grey-97;
+		background-color: $gray-97;
 
 		&.has-error {
 			border-color: $red-60;
@@ -587,13 +575,13 @@
 	}
 
 	.empty-icon {
-		color: $grey-60;
+		color: $gray-60;
 	}
 
 	.empty-text {
 		margin: 0;
 		font-size: 0.875rem;
-		color: $grey-40;
+		color: $gray-40;
 	}
 
 	.add-more-container {
@@ -611,7 +599,7 @@
 	.help-text {
 		margin: 0;
 		font-size: 0.75rem;
-		color: $grey-50;
+		color: $gray-50;
 		text-align: center;
 		font-style: italic;
 	}

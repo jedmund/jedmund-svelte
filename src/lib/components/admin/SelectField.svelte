@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Select from './Select.svelte'
-	import FormFieldWrapper from './FormFieldWrapper.svelte'
+	import FormField from './FormField.svelte'
 	import type { HTMLSelectAttributes } from 'svelte/elements'
 
 	interface Option {
@@ -36,11 +36,11 @@
 	}: Props = $props()
 </script>
 
-<FormFieldWrapper {label} {required} {helpText} {error}>
+<FormField {label} {required} {helpText} {error}>
 	{#snippet children()}
 		<Select bind:value {options} {size} {variant} {fullWidth} {pill} {...restProps} />
 	{/snippet}
-</FormFieldWrapper>
+</FormField>
 
 <style lang="scss">
 	// Ensure proper spacing for select fields

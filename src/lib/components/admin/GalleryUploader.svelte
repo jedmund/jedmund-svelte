@@ -3,7 +3,7 @@
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import SmartImage from '../SmartImage.svelte'
-	import MediaLibraryModal from './MediaLibraryModal.svelte'
+	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 
@@ -369,7 +369,7 @@
 			thumbnailUrl: media.thumbnailUrl,
 			width: media.width,
 			height: media.height,
-			altText: media.altText || '',
+			// altText removed - using description only
 			description: media.description || '',
 			isPhotography: media.isPhotography || false,
 			createdAt: media.createdAt,
@@ -387,7 +387,7 @@
 		if (index !== -1) {
 			value[index] = {
 				...value[index],
-				altText: updatedMedia.altText,
+				// altText removed - using description only
 				description: updatedMedia.description,
 				isPhotography: updatedMedia.isPhotography,
 				updatedAt: updatedMedia.updatedAt
@@ -587,13 +587,13 @@
 									thumbnailUrl: media.thumbnailUrl,
 									width: media.width,
 									height: media.height,
-									altText: media.altText,
+									// altText removed - using description only
 									description: media.description,
 									isPhotography: media.isPhotography || false,
 									createdAt: media.createdAt,
 									updatedAt: media.updatedAt
 								}}
-								alt={media.altText || media.filename || 'Gallery image'}
+								alt={media.description || media.filename || 'Gallery image'}
 								containerWidth={300}
 								loading="lazy"
 								aspectRatio="1:1"
@@ -675,7 +675,7 @@
 </div>
 
 <!-- Media Library Modal -->
-<MediaLibraryModal
+<UnifiedMediaModal
 	bind:isOpen={isMediaLibraryOpen}
 	mode="multiple"
 	fileType="image"
@@ -706,7 +706,7 @@
 	.uploader-label {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: $grey-20;
+		color: $gray-20;
 
 		.required {
 			color: $red-60;
@@ -717,15 +717,15 @@
 	.help-text {
 		margin: 0;
 		font-size: 0.8rem;
-		color: $grey-40;
+		color: $gray-40;
 		line-height: 1.4;
 	}
 
 	// Drop Zone Styles
 	.drop-zone {
-		border: 2px dashed $grey-80;
+		border: 2px dashed $gray-80;
 		border-radius: $card-corner-radius;
-		background-color: $grey-97;
+		background-color: $gray-97;
 		cursor: pointer;
 		transition: all 0.2s ease;
 		min-height: 120px;
@@ -761,8 +761,8 @@
 			cursor: not-allowed;
 
 			&:hover {
-				border-color: $grey-80;
-				background-color: $grey-97;
+				border-color: $gray-80;
+				background-color: $gray-97;
 			}
 		}
 	}
@@ -772,21 +772,21 @@
 		padding: $unit-3x;
 
 		.upload-icon {
-			color: $grey-50;
+			color: $gray-50;
 			margin-bottom: $unit-2x;
 		}
 
 		.upload-main-text {
 			margin: 0 0 $unit 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 			font-weight: 500;
 		}
 
 		.upload-sub-text {
 			margin: 0;
 			font-size: 0.75rem;
-			color: $grey-50;
+			color: $gray-50;
 		}
 	}
 
@@ -802,7 +802,7 @@
 		.upload-text {
 			margin: 0 0 $unit-2x 0;
 			font-size: 0.875rem;
-			color: $grey-30;
+			color: $gray-30;
 			font-weight: 500;
 		}
 
@@ -822,7 +822,7 @@
 
 			.file-name {
 				flex: 1;
-				color: $grey-30;
+				color: $gray-30;
 				text-align: left;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -832,7 +832,7 @@
 			.progress-bar {
 				width: 60px;
 				height: 4px;
-				background-color: $grey-90;
+				background-color: $gray-90;
 				border-radius: 2px;
 				overflow: hidden;
 
@@ -846,7 +846,7 @@
 			.progress-percent {
 				width: 30px;
 				text-align: right;
-				color: $grey-40;
+				color: $gray-40;
 				font-size: 0.7rem;
 			}
 		}
@@ -868,14 +868,14 @@
 
 	.gallery-item {
 		position: relative;
-		border: 1px solid $grey-90;
+		border: 1px solid $gray-90;
 		border-radius: $card-corner-radius;
 		background-color: white;
 		overflow: hidden;
 		transition: all 0.2s ease;
 
 		&:hover {
-			border-color: $grey-70;
+			border-color: $gray-70;
 			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 		}
 
@@ -898,7 +898,7 @@
 			border-radius: 4px;
 			padding: $unit-half;
 			cursor: grab;
-			color: $grey-40;
+			color: $gray-40;
 			opacity: 0;
 			transition: opacity 0.2s ease;
 
@@ -929,7 +929,7 @@
 		position: relative;
 		aspect-ratio: 1;
 		overflow: hidden;
-		background-color: $grey-97;
+		background-color: $gray-97;
 
 		.image-button {
 			width: 100%;
@@ -969,7 +969,7 @@
 			align-items: center;
 			justify-content: center;
 			cursor: pointer;
-			color: $grey-40;
+			color: $gray-40;
 			opacity: 0;
 			transition: all 0.2s ease;
 			z-index: 1;
@@ -993,13 +993,13 @@
 	.file-info {
 		padding: $unit-2x;
 		padding-top: $unit;
-		border-top: 1px solid $grey-95;
+		border-top: 1px solid $gray-95;
 
 		.filename {
 			margin: 0 0 $unit-half 0;
 			font-size: 0.75rem;
 			font-weight: 500;
-			color: $grey-10;
+			color: $gray-10;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -1008,7 +1008,7 @@
 		.file-meta {
 			margin: 0;
 			font-size: 0.7rem;
-			color: $grey-40;
+			color: $gray-40;
 		}
 	}
 

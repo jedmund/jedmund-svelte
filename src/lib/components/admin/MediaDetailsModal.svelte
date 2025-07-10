@@ -4,7 +4,16 @@
 	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import SmartImage from '../SmartImage.svelte'
+	import AlbumSelector from './AlbumSelector.svelte'
+	import AlbumIcon from '$icons/album.svg?component'
+	import CloseButton from '$components/icons/CloseButton.svelte'
+	import FileIcon from '$components/icons/FileIcon.svelte'
+	import CopyIcon from '$components/icons/CopyIcon.svelte'
+	import MediaMetadataPanel from './MediaMetadataPanel.svelte'
+	import MediaUsageList from './MediaUsageList.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
+	import { toast } from '$lib/stores/toast'
+	import { formatFileSize, getFileType } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -20,8 +29,6 @@
 	let description = $state('')
 	let isPhotography = $state(false)
 	let isSaving = $state(false)
-	let error = $state('')
-	let successMessage = $state('')
 
 	// Usage tracking state
 	let usage = $state<
@@ -36,19 +43,21 @@
 	>([])
 	let loadingUsage = $state(false)
 
-	// EXIF toggle state
-	let showExif = $state(false)
+	// Album management state
+	let albums = $state<Array<{ id: number; title: string; slug: string }>>([])
+	let loadingAlbums = $state(false)
+	let showAlbumSelector = $state(false)
 
 	// Initialize form when media changes
 	$effect(() => {
 		if (media) {
-			// Use description if available, otherwise fall back to altText for backwards compatibility
-			description = media.description || media.altText || ''
+			description = media.description || ''
 			isPhotography = media.isPhotography || false
-			error = ''
-			successMessage = ''
-			showExif = false
 			loadUsage()
+			// Only load albums for images
+			if (media.mimeType?.startsWith('image/')) {
+				loadAlbums()
+			}
 		}
 	})
 
@@ -75,11 +84,30 @@
 		}
 	}
 
+	// Load albums the media belongs to
+	async function loadAlbums() {
+		if (!media) return
+
+		try {
+			loadingAlbums = true
+
+			// Load albums this media belongs to
+			const mediaResponse = await authenticatedFetch(`/api/media/${media.id}/albums`)
+			if (mediaResponse.ok) {
+				const data = await mediaResponse.json()
+				albums = data.albums || []
+			}
+		} catch (error) {
+			console.error('Error loading albums:', error)
+			albums = []
+		} finally {
+			loadingAlbums = false
+		}
+	}
+
 	function handleClose() {
 		description = ''
 		isPhotography = false
-		error = ''
-		successMessage = ''
 		isOpen = false
 		onClose()
 	}
@@ -87,9 +115,10 @@
 	async function handleSave() {
 		if (!media) return
 
+		const loadingToastId = toast.loading('Saving changes...')
+
 		try {
 			isSaving = true
-			error = ''
 
 			const response = await authenticatedFetch(`/api/media/${media.id}`, {
 				method: 'PUT',
@@ -97,8 +126,6 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					// Use description for both altText and description fields
-					altText: description.trim() || null,
 					description: description.trim() || null,
 					isPhotography: isPhotography
 				})
@@ -110,14 +137,17 @@
 
 			const updatedMedia = await response.json()
 			onUpdate(updatedMedia)
-			successMessage = 'Media updated successfully!'
+
+			toast.dismiss(loadingToastId)
+			toast.success('Media updated successfully!')
 
 			// Auto-close after success
 			setTimeout(() => {
 				handleClose()
 			}, 1500)
 		} catch (err) {
-			error = 'Failed to update media. Please try again.'
+			toast.dismiss(loadingToastId)
+			toast.error('Failed to update media. Please try again.')
 			console.error('Failed to update media:', err)
 		} finally {
 			isSaving = false
@@ -132,9 +162,10 @@
 			return
 		}
 
+		const loadingToastId = toast.loading('Deleting media...')
+
 		try {
 			isSaving = true
-			error = ''
 
 			const response = await authenticatedFetch(`/api/media/${media.id}`, {
 				method: 'DELETE'
@@ -144,11 +175,15 @@
 				throw new Error('Failed to delete media')
 			}
 
+			toast.dismiss(loadingToastId)
+			toast.success('Media deleted successfully')
+
 			// Close modal and let parent handle the deletion
 			handleClose()
 			// Note: Parent component should refresh the media list
 		} catch (err) {
-			error = 'Failed to delete media. Please try again.'
+			toast.dismiss(loadingToastId)
+			toast.error('Failed to delete media. Please try again.')
 			console.error('Failed to delete media:', err)
 		} finally {
 			isSaving = false
@@ -160,34 +195,12 @@
 			navigator.clipboard
 				.writeText(media.url)
 				.then(() => {
-					successMessage = 'URL copied to clipboard!'
-					setTimeout(() => {
-						successMessage = ''
-					}, 2000)
+					toast.success('URL copied to clipboard!')
 				})
 				.catch(() => {
-					error = 'Failed to copy URL'
-					setTimeout(() => {
-						error = ''
-					}, 2000)
+					toast.error('Failed to copy URL')
 				})
 		}
-	}
-
-	function formatFileSize(bytes: number): string {
-		if (bytes === 0) return '0 Bytes'
-		const k = 1024
-		const sizes = ['Bytes', 'KB', 'MB', 'GB']
-		const i = Math.floor(Math.log(bytes) / Math.log(k))
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-	}
-
-	function getFileType(mimeType: string): string {
-		if (mimeType.startsWith('image/')) return 'Image'
-		if (mimeType.startsWith('video/')) return 'Video'
-		if (mimeType.startsWith('audio/')) return 'Audio'
-		if (mimeType.includes('pdf')) return 'PDF'
-		return 'File'
 	}
 </script>
 
@@ -205,36 +218,11 @@
 			<div class="image-pane">
 				{#if media.mimeType.startsWith('image/')}
 					<div class="image-container">
-						<SmartImage
-							{media}
-							alt={media.description || media.altText || media.filename}
-							class="preview-image"
-						/>
+						<SmartImage {media} alt={media.description || media.filename} class="preview-image" />
 					</div>
 				{:else}
 					<div class="file-placeholder">
-						<svg
-							width="64"
-							height="64"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<polyline
-								points="14,2 14,8 20,8"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
+						<FileIcon size={64} />
 						<span class="file-type">{getFileType(media.mimeType)}</span>
 					</div>
 				{/if}
@@ -248,159 +236,17 @@
 					<div class="header-actions">
 						{#if !isSaving}
 							<Button variant="ghost" onclick={copyUrl} iconOnly aria-label="Copy URL">
-								<svg
-									slot="icon"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<rect
-										x="9"
-										y="9"
-										width="13"
-										height="13"
-										rx="2"
-										stroke="currentColor"
-										stroke-width="2"
-									/>
-									<path
-										d="M5 15H4C2.89543 15 2 14.1046 2 13V4C2 2.89543 2.89543 2 4 2H13C14.1046 2 15 2.89543 15 4V5"
-										stroke="currentColor"
-										stroke-width="2"
-									/>
-								</svg>
+								<CopyIcon slot="icon" size={20} />
 							</Button>
 							<Button variant="ghost" onclick={handleClose} iconOnly aria-label="Close modal">
-								<svg
-									slot="icon"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										d="M6 6L18 18M6 18L18 6"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-									/>
-								</svg>
+								<CloseButton slot="icon" />
 							</Button>
 						{/if}
 					</div>
 				</div>
 				<div class="pane-body">
-					<div class="file-info">
-						<div class="info-grid">
-							<div class="info-item">
-								<span class="label">Type</span>
-								<span class="value">{getFileType(media.mimeType)}</span>
-							</div>
-							<div class="info-item">
-								<span class="label">Size</span>
-								<span class="value">{formatFileSize(media.size)}</span>
-							</div>
-							{#if media.width && media.height}
-								<div class="info-item">
-									<span class="label">Dimensions</span>
-									<span class="value">{media.width} × {media.height}px</span>
-								</div>
-							{/if}
-							{#if media.dominantColor}
-								<div class="info-item">
-									<span class="label">Dominant Color</span>
-									<span class="value color-value">
-										<span 
-											class="color-swatch" 
-											style="background-color: {media.dominantColor}"
-											title={media.dominantColor}
-										></span>
-										{media.dominantColor}
-									</span>
-								</div>
-							{:else}
-								<!-- Debug: dominantColor = {JSON.stringify(media.dominantColor)} -->
-							{/if}
-							<div class="info-item">
-								<span class="label">Uploaded</span>
-								<span class="value">{new Date(media.createdAt).toLocaleDateString()}</span>
-							</div>
-						</div>
-
-						{#if media.exifData && Object.keys(media.exifData).length > 0}
-							{#if showExif}
-								<div class="exif-data">
-									{#if media.exifData.camera}
-										<div class="info-item">
-											<span class="label">Camera</span>
-											<span class="value">{media.exifData.camera}</span>
-										</div>
-									{/if}
-									{#if media.exifData.lens}
-										<div class="info-item">
-											<span class="label">Lens</span>
-											<span class="value">{media.exifData.lens}</span>
-										</div>
-									{/if}
-									{#if media.exifData.focalLength}
-										<div class="info-item">
-											<span class="label">Focal Length</span>
-											<span class="value">{media.exifData.focalLength}</span>
-										</div>
-									{/if}
-									{#if media.exifData.aperture}
-										<div class="info-item">
-											<span class="label">Aperture</span>
-											<span class="value">{media.exifData.aperture}</span>
-										</div>
-									{/if}
-									{#if media.exifData.shutterSpeed}
-										<div class="info-item">
-											<span class="label">Shutter Speed</span>
-											<span class="value">{media.exifData.shutterSpeed}</span>
-										</div>
-									{/if}
-									{#if media.exifData.iso}
-										<div class="info-item">
-											<span class="label">ISO</span>
-											<span class="value">{media.exifData.iso}</span>
-										</div>
-									{/if}
-									{#if media.exifData.dateTaken}
-										<div class="info-item">
-											<span class="label">Date Taken</span>
-											<span class="value"
-												>{new Date(media.exifData.dateTaken).toLocaleDateString()}</span
-											>
-										</div>
-									{/if}
-									{#if media.exifData.coordinates}
-										<div class="info-item">
-											<span class="label">GPS</span>
-											<span class="value">
-												{media.exifData.coordinates.latitude.toFixed(6)},
-												{media.exifData.coordinates.longitude.toFixed(6)}
-											</span>
-										</div>
-									{/if}
-								</div>
-							{/if}
-
-							<Button
-								variant="ghost"
-								onclick={() => (showExif = !showExif)}
-								buttonSize="small"
-								fullWidth
-								pill={false}
-								class="exif-toggle"
-							>
-								{showExif ? 'Hide EXIF' : 'Show EXIF'}
-							</Button>
-						{/if}
-					</div>
+					<!-- Media Metadata Panel -->
+					<MediaMetadataPanel {media} showExifToggle={true} />
 
 					<div class="pane-body-content">
 						<!-- Photography Toggle -->
@@ -433,79 +279,76 @@
 
 							<!-- Usage Tracking -->
 							<div class="usage-section">
-								<h4>Used In</h4>
-								{#if loadingUsage}
-									<div class="usage-loading">
-										<div class="spinner"></div>
-										<span>Loading usage information...</span>
+								<div class="section-header">
+									<h4>Used In</h4>
+									{#if media.mimeType?.startsWith('image/')}
+										<button
+											class="add-album-button"
+											onclick={() => (showAlbumSelector = true)}
+											title="Manage albums"
+										>
+											<AlbumIcon />
+											<span>Albums</span>
+										</button>
+									{/if}
+								</div>
+								<MediaUsageList {usage} loading={loadingUsage} />
+
+								<!-- Albums list -->
+								{#if albums.length > 0}
+									<div class="albums-inline">
+										<h4>Albums</h4>
+										<div class="album-tags">
+											{#each albums as album}
+												<a href="/admin/albums/{album.id}/edit" class="album-tag">
+													{album.title}
+												</a>
+											{/each}
+										</div>
 									</div>
-								{:else if usage.length > 0}
-									<ul class="usage-list">
-										{#each usage as usageItem}
-											<li class="usage-item">
-												<div class="usage-content">
-													<div class="usage-header">
-														{#if usageItem.contentUrl}
-															<a
-																href={usageItem.contentUrl}
-																class="usage-title"
-																target="_blank"
-																rel="noopener"
-															>
-																{usageItem.contentTitle}
-															</a>
-														{:else}
-															<span class="usage-title">{usageItem.contentTitle}</span>
-														{/if}
-														<span class="usage-type">{usageItem.contentType}</span>
-													</div>
-													<div class="usage-details">
-														<span class="usage-field">{usageItem.fieldDisplayName}</span>
-														<span class="usage-date"
-															>Added {new Date(usageItem.createdAt).toLocaleDateString()}</span
-														>
-													</div>
-												</div>
-											</li>
-										{/each}
-									</ul>
-								{:else}
-									<p class="no-usage">This media file is not currently used in any content.</p>
 								{/if}
 							</div>
 						</div>
 					</div>
-				</div>
 
-				<!-- Footer -->
-				<div class="pane-footer">
-					<div class="footer-left">
-						<Button
-							variant="ghost"
-							onclick={handleDelete}
-							disabled={isSaving}
-							class="delete-button"
-						>
-							Delete
-						</Button>
-					</div>
+					<!-- Footer -->
+					<div class="pane-footer">
+						<div class="footer-left">
+							<Button
+								variant="ghost"
+								onclick={handleDelete}
+								disabled={isSaving}
+								class="delete-button"
+							>
+								Delete
+							</Button>
+						</div>
 
-					<div class="footer-right">
-						{#if error}
-							<span class="error-text">{error}</span>
-						{/if}
-						{#if successMessage}
-							<span class="success-text">{successMessage}</span>
-						{/if}
-
-						<Button variant="primary" onclick={handleSave} disabled={isSaving}>
-							{isSaving ? 'Saving...' : 'Save Changes'}
-						</Button>
+						<div class="footer-right">
+							<Button variant="primary" onclick={handleSave} disabled={isSaving}
+								>Save Changes</Button
+							>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	</Modal>
+		</div></Modal
+	>
+
+	<!-- Album Selector Modal -->
+	{#if showAlbumSelector && media}
+		<Modal isOpen={showAlbumSelector} onClose={() => (showAlbumSelector = false)} size="medium">
+			<AlbumSelector
+				mediaId={media.id}
+				currentAlbums={albums}
+				onUpdate={(updatedAlbums) => {
+					albums = updatedAlbums
+					showAlbumSelector = false
+				}}
+				onClose={() => (showAlbumSelector = false)}
+			/>
+		</Modal>
+	{/if}
 {/if}
 
 <style lang="scss">
@@ -571,7 +414,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: $unit-2x $unit-3x;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+		border-bottom: $unit-1px solid rgba(0, 0, 0, 0.08);
 		flex-shrink: 0;
 		gap: $unit-2x;
 
@@ -580,7 +423,7 @@
 			font-size: 1.125rem;
 			font-weight: 500;
 			margin: 0;
-			color: $grey-10;
+			color: $gray-10;
 			word-break: break-all;
 			line-height: 1.5;
 		}
@@ -604,80 +447,6 @@
 		gap: $unit-6x;
 	}
 
-	.file-info {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-3x;
-		padding: $unit-3x;
-		background-color: $grey-90;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-	}
-
-	.info-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: $unit-3x;
-	}
-
-	.info-item {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-
-		&.vertical {
-			grid-column: 1 / -1;
-		}
-
-		.label {
-			font-size: 0.75rem;
-			font-weight: 500;
-			color: $grey-50;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-		}
-
-		.value {
-			font-size: 0.875rem;
-			color: $grey-10;
-			font-weight: 500;
-			
-			&.color-value {
-				display: flex;
-				align-items: center;
-				gap: $unit-2x;
-			}
-		}
-	}
-	
-	.color-swatch {
-		display: inline-block;
-		width: 20px;
-		height: 20px;
-		border-radius: 4px;
-		border: 1px solid rgba(0, 0, 0, 0.1);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-	}
-
-	:global(.btn.btn-ghost.exif-toggle) {
-		margin-top: $unit-2x;
-		justify-content: center;
-		background: transparent;
-		border: 1px solid $grey-70;
-
-		&:hover {
-			background: rgba(0, 0, 0, 0.02);
-			border-color: $grey-70;
-		}
-	}
-
-	.exif-data {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: $unit-3x;
-		padding-top: $unit-3x;
-		border-top: 1px solid $grey-90;
-	}
-
 	.edit-form {
 		display: flex;
 		flex-direction: column;
@@ -687,7 +456,7 @@
 			font-size: 1rem;
 			font-weight: 600;
 			margin: 0;
-			color: $grey-20;
+			color: $gray-20;
 		}
 	}
 
@@ -710,7 +479,7 @@
 				background-color: $blue-60;
 
 				&::before {
-					transform: translateX(20px);
+					transform: translateX($unit-20px);
 				}
 			}
 
@@ -722,24 +491,24 @@
 
 		.toggle-slider {
 			position: relative;
-			width: 44px;
-			height: 24px;
-			background-color: $grey-80;
-			border-radius: 12px;
+			width: $unit-5x + $unit-half;
+			height: $unit-3x;
+			background-color: $gray-80;
+			border-radius: $corner-radius-xl;
 			transition: background-color 0.2s ease;
 			flex-shrink: 0;
 
 			&::before {
 				content: '';
 				position: absolute;
-				top: 2px;
-				left: 2px;
-				width: 20px;
-				height: 20px;
+				top: $unit-2px;
+				left: $unit-2px;
+				width: $unit-20px;
+				height: $unit-20px;
 				background-color: white;
 				border-radius: 50%;
 				transition: transform 0.2s ease;
-				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+				box-shadow: 0 $unit-1px $unit-3px rgba(0, 0, 0, 0.1);
 			}
 		}
 
@@ -750,109 +519,96 @@
 
 			.toggle-title {
 				font-weight: 500;
-				color: $grey-10;
+				color: $gray-10;
 				font-size: 0.875rem;
 			}
 
 			.toggle-description {
 				font-size: 0.75rem;
-				color: $grey-50;
+				color: $gray-50;
 				line-height: 1.4;
 			}
 		}
 	}
 
 	.usage-section {
-		.usage-list {
-			list-style: none;
-			padding: 0;
-			margin: $unit-2x 0 0 0;
-			display: flex;
-			flex-direction: column;
-			gap: $unit;
-		}
-
-		.usage-loading {
+		.section-header {
 			display: flex;
 			align-items: center;
-			gap: $unit-2x;
-			padding: $unit-2x;
-			color: $grey-50;
+			justify-content: space-between;
+			margin-bottom: $unit-2x;
 
-			.spinner {
-				width: 16px;
-				height: 16px;
-				border: 2px solid $grey-90;
-				border-top: 2px solid $grey-50;
-				border-radius: 50%;
-				animation: spin 1s linear infinite;
+			h4 {
+				margin: 0;
+				font-size: 1rem;
+				font-weight: 600;
+				color: $gray-20;
 			}
 		}
 
-		.usage-item {
-			padding: $unit-3x;
-			background: $grey-95;
-			border-radius: 12px;
-			border: 1px solid $grey-90;
+		.add-album-button {
+			display: flex;
+			align-items: center;
+			gap: $unit-half;
+			padding: $unit-half;
+			background: transparent;
+			border: none;
+			border-radius: $corner-radius-sm;
+			color: $gray-40;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			font-size: 0.875rem;
+			font-weight: 500;
 
-			.usage-content {
-				display: flex;
-				flex-direction: column;
-				gap: $unit;
+			&:hover {
+				background: $gray-95;
+				color: $gray-20;
 			}
 
-			.usage-header {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: $unit-2x;
-
-				.usage-title {
-					font-weight: 600;
-					color: $grey-10;
-					text-decoration: none;
-					transition: color 0.2s ease;
-
-					&:hover {
-						color: $blue-60;
-					}
-				}
-
-				.usage-type {
-					background: $grey-85;
-					color: $grey-30;
-					padding: $unit-half $unit;
-					border-radius: 6px;
-					font-size: 0.75rem;
-					font-weight: 500;
-					text-transform: uppercase;
-					letter-spacing: 0.5px;
-					flex-shrink: 0;
-				}
-			}
-
-			.usage-details {
-				display: flex;
-				align-items: center;
-				gap: $unit-3x;
-
-				.usage-field {
-					color: $grey-40;
-					font-size: 0.875rem;
-					font-weight: 500;
-				}
-
-				.usage-date {
-					color: $grey-50;
-					font-size: 0.75rem;
-				}
+			svg,
+			:global(svg) {
+				width: $unit-2x;
+				height: $unit-2x;
+				flex-shrink: 0;
 			}
 		}
+	}
 
-		.no-usage {
-			color: $grey-50;
-			font-style: italic;
-			margin: $unit-2x 0 0 0;
+	// Albums inline display
+	.albums-inline {
+		margin-top: $unit-4x;
+
+		h4 {
+			font-size: 1rem;
+			font-weight: 600;
+			color: $gray-20;
+			margin: 0 0 $unit-2x 0;
+		}
+	}
+
+	.album-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $unit;
+	}
+
+	.album-tag {
+		display: inline-flex;
+		align-items: center;
+		padding: $unit-half $unit-2x;
+		background: $gray-95;
+		border: $unit-1px solid $gray-90;
+		border-radius: $unit-20px;
+		color: $gray-20;
+		text-decoration: none;
+		font-size: 0.875rem;
+		font-weight: 500;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: $gray-90;
+			border-color: $gray-85;
+			color: $gray-10;
 		}
 	}
 
@@ -861,7 +617,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: $unit-2x $unit-3x;
-		border-top: 1px solid rgba(0, 0, 0, 0.08);
+		border-top: $unit-1px solid rgba(0, 0, 0, 0.08);
 		flex-shrink: 0;
 
 		.footer-left {
@@ -878,25 +634,6 @@
 			display: flex;
 			align-items: center;
 			gap: $unit-2x;
-
-			.error-text {
-				color: $red-60;
-				font-size: 0.875rem;
-			}
-
-			.success-text {
-				color: #16a34a; // green-600 equivalent
-				font-size: 0.875rem;
-			}
-		}
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
 		}
 	}
 

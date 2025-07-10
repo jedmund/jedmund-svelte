@@ -26,10 +26,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const testMode = url.searchParams.get('test') === 'nowplaying'
 
 	try {
-		// const albums = await getWeeklyAlbumChart(client, USERNAME)
-
 		const albums = await getRecentAlbums(client, USERNAME, ALBUM_LIMIT, testMode)
-		// console.log(albums)
 		const enrichedAlbums = await Promise.all(
 			albums.slice(0, ALBUM_LIMIT).map(async (album) => {
 				try {

@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { fade, scale } from 'svelte/transition'
+	import CloseButton from '$components/icons/CloseButton.svelte'
+
+	// Convert CSS transition durations to milliseconds for Svelte transitions
+	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
 
 	let {
 		images = [],
@@ -76,7 +80,7 @@
 	<div
 		class="lightbox-backdrop"
 		onclick={handleBackgroundClick}
-		transition:fade={{ duration: 200 }}
+		transition:fade={{ duration: TRANSITION_NORMAL_MS }}
 		role="button"
 		tabindex="-1"
 	>
@@ -85,7 +89,7 @@
 				<img
 					src={images[selectedIndex]}
 					alt="{alt} {selectedIndex + 1}"
-					transition:scale={{ duration: 200, start: 0.9 }}
+					transition:scale={{ duration: TRANSITION_NORMAL_MS, start: 0.9 }}
 				/>
 			</div>
 
@@ -108,20 +112,7 @@
 		</div>
 
 		<button class="lightbox-close" onclick={close} aria-label="Close lightbox">
-			<svg
-				width="24"
-				height="24"
-				viewBox="0 0 24 24"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<path
-					d="M18 6L6 18M6 6l12 12"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-				/>
-			</svg>
+			<CloseButton />
 		</button>
 	</div>
 {/if}
@@ -131,7 +122,7 @@
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.9);
-		z-index: 1400;
+		z-index: $z-index-lightbox;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -208,7 +199,7 @@
 			inset: 0;
 			border-radius: $unit-2x;
 			border: 2px solid transparent;
-			z-index: 2;
+			z-index: $z-index-above;
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
@@ -219,7 +210,7 @@
 			inset: 2px;
 			border-radius: calc($unit-2x - 2px);
 			border: 2px solid transparent;
-			z-index: 3;
+			z-index: $z-index-hover;
 			pointer-events: none;
 			transition: border-color 0.2s ease;
 		}
@@ -237,7 +228,7 @@
 			}
 
 			&::after {
-				border-color: $grey-00; // Black inner border
+				border-color: $gray-00; // Black inner border
 			}
 		}
 
@@ -246,7 +237,7 @@
 			height: 100%;
 			object-fit: cover;
 			position: relative;
-			z-index: 1;
+			z-index: $z-index-base;
 			user-select: none;
 			-webkit-user-drag: none;
 		}
@@ -261,7 +252,7 @@
 		border-radius: 50%;
 		border: none;
 		background: rgba(255, 255, 255, 0.1);
-		color: $grey-100;
+		color: $gray-100;
 		cursor: pointer;
 		display: flex;
 		align-items: center;

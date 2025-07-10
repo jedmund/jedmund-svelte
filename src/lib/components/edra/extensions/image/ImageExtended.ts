@@ -24,6 +24,18 @@ export const ImageExtended = (component: Component<NodeViewProps>): Node<ImageOp
 				},
 				align: {
 					default: 'left'
+				},
+				mediaId: {
+					default: null,
+					parseHTML: (element) => element.getAttribute('data-media-id'),
+					renderHTML: (attributes) => {
+						if (!attributes.mediaId) {
+							return {}
+						}
+						return {
+							'data-media-id': attributes.mediaId
+						}
+					}
 				}
 			}
 		},

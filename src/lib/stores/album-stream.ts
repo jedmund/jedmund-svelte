@@ -97,14 +97,18 @@ function createAlbumStream() {
 		update((state) => ({ ...state, connected: false }))
 	}
 
-	// Auto-connect in browser
-	if (browser) {
+	// Auto-connect in browser (but not in admin)
+	if (browser && !window.location.pathname.startsWith('/admin')) {
 		connect()
 
 		// Reconnect on visibility change
 		document.addEventListener('visibilitychange', () => {
 			const currentState = get({ subscribe })
-			if (document.visibilityState === 'visible' && !currentState.connected) {
+			if (
+				document.visibilityState === 'visible' &&
+				!currentState.connected &&
+				!window.location.pathname.startsWith('/admin')
+			) {
 				connect()
 			}
 		})

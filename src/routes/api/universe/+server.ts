@@ -24,6 +24,7 @@ export interface UniverseItem {
 	photosCount?: number
 	coverPhoto?: any
 	photos?: any[]
+	hasContent?: boolean
 }
 
 // GET /api/universe - Get mixed feed of published posts and albums
@@ -66,20 +67,25 @@ export const GET: RequestHandler = async (event) => {
 				description: true,
 				date: true,
 				location: true,
+				content: true,
 				createdAt: true,
 				_count: {
-					select: { photos: true }
+					select: { media: true }
 				},
-				photos: {
+				media: {
 					take: 6, // Fetch enough for 5 thumbnails + 1 background
 					orderBy: { displayOrder: 'asc' },
-					select: {
-						id: true,
-						url: true,
-						thumbnailUrl: true,
-						caption: true,
-						width: true,
-						height: true
+					include: {
+						media: {
+							select: {
+								id: true,
+								url: true,
+								thumbnailUrl: true,
+								photoCaption: true,
+								width: true,
+								height: true
+							}
+						}
 					}
 				}
 			},
@@ -101,20 +107,33 @@ export const GET: RequestHandler = async (event) => {
 		}))
 
 		// Transform albums to universe items
-		const albumItems: UniverseItem[] = albums.map((album) => ({
-			id: album.id,
-			type: 'album' as const,
-			slug: album.slug,
-			title: album.title,
-			description: album.description || undefined,
-			location: album.location || undefined,
-			date: album.date?.toISOString(),
-			photosCount: album._count.photos,
-			coverPhoto: album.photos[0] || null, // Keep for backward compatibility
-			photos: album.photos, // Add all photos for slideshow
-			publishedAt: album.createdAt.toISOString(), // Albums use createdAt as publishedAt
-			createdAt: album.createdAt.toISOString()
-		}))
+		const albumItems: UniverseItem[] = albums.map((album) => {
+			// Transform media through the join table
+			const photos = album.media.map((albumMedia) => ({
+				id: albumMedia.media.id,
+				url: albumMedia.media.url,
+				thumbnailUrl: albumMedia.media.thumbnailUrl,
+				caption: albumMedia.media.photoCaption,
+				width: albumMedia.media.width,
+				height: albumMedia.media.height
+			}))
+
+			return {
+				id: album.id,
+				type: 'album' as const,
+				slug: album.slug,
+				title: album.title,
+				description: album.description || undefined,
+				location: album.location || undefined,
+				date: album.date?.toISOString(),
+				photosCount: album._count.media,
+				coverPhoto: photos[0] || null, // Keep for backward compatibility
+				photos: photos, // Add all photos for slideshow
+				hasContent: !!album.content, // Add content indicator
+				publishedAt: album.createdAt.toISOString(), // Albums use createdAt as publishedAt
+				createdAt: album.createdAt.toISOString()
+			}
+		})
 
 		// Combine and sort by publishedAt
 		const allItems = [...postItems, ...albumItems].sort(

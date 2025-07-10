@@ -32,7 +32,38 @@ export default (menuList: Component<any, any, ''>): Extension =>
 					modifiers: [
 						{
 							name: 'flip',
-							enabled: false
+							enabled: true,
+							options: {
+								fallbackPlacements: ['top-start', 'top', 'bottom', 'bottom-start'],
+								padding: 40,
+								boundary: 'scrollParent',
+								rootBoundary: 'viewport',
+								flipVariations: true
+							}
+						},
+						{
+							name: 'preventOverflow',
+							enabled: true,
+							options: {
+								boundary: 'scrollParent',
+								rootBoundary: 'viewport',
+								padding: 40,
+								altAxis: true,
+								tether: false
+							}
+						},
+						{
+							name: 'offset',
+							enabled: true,
+							options: {
+								offset: ({ placement }) => {
+									// Add more offset when flipped to top
+									if (placement.includes('top')) {
+										return [16, 12]
+									}
+									return [16, 8]
+								}
+							}
 						}
 					]
 				}
@@ -131,14 +162,8 @@ export default (menuList: Component<any, any, ''>): Extension =>
 										return props.editor.storage[extensionName].rect
 									}
 
-									let yPos = rect.y
-
-									if (rect.top + component.element.offsetHeight + 40 > window.innerHeight) {
-										const diff = rect.top + component.element.offsetHeight - window.innerHeight + 40
-										yPos = rect.y - diff
-									}
-
-									return new DOMRect(rect.x, yPos, rect.width, rect.height)
+									// Return the rect as-is and let Popper.js handle positioning
+									return rect
 								}
 
 								scrollHandler = () => {
@@ -174,14 +199,8 @@ export default (menuList: Component<any, any, ''>): Extension =>
 										return props.editor.storage[extensionName].rect
 									}
 
-									let yPos = rect.y
-
-									if (rect.top + component.element.offsetHeight + 40 > window.innerHeight) {
-										const diff = rect.top + component.element.offsetHeight - window.innerHeight + 40
-										yPos = rect.y - diff
-									}
-
-									return new DOMRect(rect.x, yPos, rect.width, rect.height)
+									// Return the rect as-is and let Popper.js handle positioning
+									return rect
 								}
 
 								const scrollHandler = () => {
@@ -219,8 +238,8 @@ export default (menuList: Component<any, any, ''>): Extension =>
 
 								if (props.event.key === 'Enter') return true
 
-								// return component.ref?.onKeyDown(props);
-								return false
+								return component.ref?.onKeyDown(props)
+								// return false
 							},
 
 							onExit(props) {

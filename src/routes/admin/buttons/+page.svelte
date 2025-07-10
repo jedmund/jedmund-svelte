@@ -141,7 +141,7 @@
 		h2 {
 			font-size: 18px;
 			font-weight: 600;
-			color: $grey-20;
+			color: $gray-20;
 			margin: 0;
 		}
 	}
