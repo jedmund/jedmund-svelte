@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
+	import { musicStream } from '$lib/stores/music-stream'
 
 	let isConnected = $state(false)
 
 	$effect(() => {
-		const unsubscribe = nowPlayingStream.subscribe((state) => {
+		const unsubscribe = musicStream.subscribe((state) => {
 			isConnected = state.connected
 		})
 		return unsubscribe

@@ -3,6 +3,7 @@
 	import { page } from '$app/stores'
 	import Header from '$components/Header.svelte'
 	import Footer from '$components/Footer.svelte'
+	import DebugPanel from '$components/DebugPanel.svelte'
 	import { generatePersonJsonLd } from '$lib/utils/metadata'
 	import { Toaster } from 'svelte-sonner'
 
@@ -53,6 +54,9 @@
 		duration: 4000
 	}}
 />
+
+<!-- Debug Panel (dev only) -->
+<DebugPanel />
 
 <style lang="scss">
 	:global(html) {

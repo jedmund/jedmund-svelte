@@ -1,6 +1,6 @@
 import { LastClient } from '@musicorum/lastfm'
 import type { RequestHandler } from './$types'
-import { LastfmStreamManager } from '$lib/utils/lastfmStreamManager'
+import { SimpleLastfmStreamManager } from '$lib/utils/simpleLastfmStreamManager'
 import { logger } from '$lib/server/logger'
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY
@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ request }) => {
 	const stream = new ReadableStream({
 		async start(controller) {
 			const client = new LastClient(LASTFM_API_KEY || '')
-			const streamManager = new LastfmStreamManager(client, USERNAME)
+			const streamManager = new SimpleLastfmStreamManager(client, USERNAME)
 			let intervalId: NodeJS.Timeout | null = null
 			let isClosed = false
 			let currentInterval = UPDATE_INTERVAL
@@ -39,65 +39,91 @@ export const GET: RequestHandler = async ({ request }) => {
 				try {
 					const update = await streamManager.checkForUpdates()
 
-					// Check if music is playing
-					let musicIsPlaying = false
-
 					// Send album updates if any
 					if (update.albums && !isClosed) {
 						try {
 							const data = JSON.stringify(update.albums)
 							controller.enqueue(encoder.encode(`event: albums\ndata: ${data}\n\n`))
 
+							// Check if music is playing and calculate smart interval
 							const nowPlayingAlbum = update.albums.find((a) => a.isNowPlaying)
-							musicIsPlaying = !!nowPlayingAlbum
+							const musicIsPlaying = !!nowPlayingAlbum
 							
-							logger.music('debug', 'Sent album update with now playing status:', {
-								totalAlbums: update.albums.length,
-								nowPlayingAlbum: nowPlayingAlbum
-									? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
-									: 'none'
-							})
-						} catch (e) {
-							isClosed = true
-						}
-					}
-
-					// Send now playing updates if any
-					if (update.nowPlayingUpdates && update.nowPlayingUpdates.length > 0 && !isClosed) {
-						try {
-							const data = JSON.stringify(update.nowPlayingUpdates)
-							controller.enqueue(encoder.encode(`event: nowplaying\ndata: ${data}\n\n`))
-							
-							// Check if any of the updates indicate music is playing
-							musicIsPlaying = musicIsPlaying || update.nowPlayingUpdates.some(u => u.isNowPlaying)
-						} catch (e) {
-							isClosed = true
-						}
-					}
-
-					// Adjust polling interval based on playing state
-					if (musicIsPlaying !== isPlaying) {
-						isPlaying = musicIsPlaying
-						const newInterval = isPlaying ? FAST_UPDATE_INTERVAL : UPDATE_INTERVAL
-						
-						if (newInterval !== currentInterval) {
-							currentInterval = newInterval
-							logger.music('debug', `Adjusting polling interval to ${currentInterval}ms (playing: ${isPlaying})`)
-							
-							// Reset interval with new timing
-							if (intervalId) {
-								clearInterval(intervalId)
-								intervalId = setInterval(checkForUpdates, currentInterval)
+							// Calculate remaining time if we have track duration
+							let remainingMs = 0
+							if (nowPlayingAlbum?.nowPlayingTrack && nowPlayingAlbum.appleMusicData?.tracks) {
+								const track = nowPlayingAlbum.appleMusicData.tracks.find(
+									t => t.name === nowPlayingAlbum.nowPlayingTrack
+								)
+								
+								if (track?.durationMs && nowPlayingAlbum.lastScrobbleTime) {
+									const elapsed = Date.now() - new Date(nowPlayingAlbum.lastScrobbleTime).getTime()
+									remainingMs = Math.max(0, track.durationMs - elapsed)
+								}
 							}
+							
+							logger.music('debug', '📤 SSE: Sent album update:', {
+								totalAlbums: update.albums.length,
+								nowPlaying: nowPlayingAlbum
+									? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
+									: 'none',
+								remainingMs: remainingMs,
+								albumsWithStatus: update.albums.map(a => ({
+									name: a.name,
+									artist: a.artist.name,
+									isNowPlaying: a.isNowPlaying,
+									track: a.nowPlayingTrack
+								}))
+							})
+
+							// Smart interval adjustment based on remaining track time
+							let targetInterval = UPDATE_INTERVAL // Default 30s
+							
+							if (musicIsPlaying && remainingMs > 0) {
+								// If track is ending soon (within 20 seconds), check more frequently
+								if (remainingMs < 20000) {
+									targetInterval = 5000 // 5 seconds
+								}
+								// If track has 20-60 seconds left, moderate frequency
+								else if (remainingMs < 60000) {
+									targetInterval = 10000 // 10 seconds
+								}
+								// If track has more than 60 seconds, check every 15 seconds
+								else {
+									targetInterval = 15000 // 15 seconds
+								}
+							} else if (musicIsPlaying) {
+								// If playing but no duration info, use fast interval
+								targetInterval = FAST_UPDATE_INTERVAL
+							}
+							
+							// Apply new interval if it changed significantly (more than 1 second difference)
+							if (Math.abs(targetInterval - currentInterval) > 1000) {
+								currentInterval = targetInterval
+								logger.music('debug', `Adjusting interval to ${currentInterval}ms (playing: ${isPlaying}, remaining: ${Math.round(remainingMs/1000)}s)`)
+								
+								// Reset interval with new timing
+								if (intervalId) {
+									clearInterval(intervalId)
+									intervalId = setInterval(checkForUpdates, currentInterval)
+								}
+							}
+						} catch (e) {
+							isClosed = true
 						}
 					}
 
-					// Send heartbeat to keep connection alive
+					// Always send heartbeat with timestamp to keep client synced
 					if (!isClosed) {
 						try {
-							controller.enqueue(encoder.encode('event: heartbeat\ndata: {}\n\n'))
+							const heartbeatData = JSON.stringify({
+								timestamp: new Date().toISOString(),
+								interval: currentInterval,
+								hasUpdates: !!update.albums
+							})
+							controller.enqueue(encoder.encode(`event: heartbeat\ndata: ${heartbeatData}\n\n`))
 						} catch (e) {
-							// This is expected when client disconnects
+							// Expected when client disconnects
 							isClosed = true
 						}
 					}

@@ -56,7 +56,8 @@ export function trackToAlbum(track: any, rank: number): Album {
 		url: track.url,
 		rank,
 		isNowPlaying: track.nowPlaying || false,
-		nowPlayingTrack: track.nowPlaying ? track.name : undefined
+		nowPlayingTrack: track.nowPlaying ? track.name : undefined,
+		lastScrobbleTime: track.date || track.nowPlaying ? new Date() : undefined
 	}
 }
 

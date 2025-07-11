@@ -104,6 +104,18 @@ export async function searchAlbums(
 	return makeAppleMusicRequest<AppleMusicSearchResponse>(endpoint, query)
 }
 
+// Search for both albums and songs
+export async function searchAlbumsAndSongs(
+	query: string,
+	limit: number = 10,
+	storefront: string = DEFAULT_STOREFRONT
+): Promise<AppleMusicSearchResponse> {
+	const encodedQuery = encodeURIComponent(query)
+	const endpoint = `/catalog/${storefront}/search?types=albums,songs&term=${encodedQuery}&limit=${limit}`
+
+	return makeAppleMusicRequest<AppleMusicSearchResponse>(endpoint, query)
+}
+
 export async function searchTracks(
 	query: string,
 	limit: number = 10
@@ -154,6 +166,8 @@ function containsJapanese(str: string): boolean {
 // Helper function to search for an album by artist and album name
 export async function findAlbum(artist: string, album: string): Promise<AppleMusicAlbum | null> {
 	const identifier = `${artist}:${album}`
+	
+	logger.music('info', `=== SEARCHING FOR ALBUM: "${album}" by "${artist}" ===`)
 
 	// Check if this album was already marked as not found
 	if (await rateLimiter.isNotFoundCached(identifier)) {
@@ -175,7 +189,9 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 	logger.music('debug', `Album search strategy for "${album}" by "${artist}":`, {
 		hasJapaneseContent,
 		primaryStorefront,
-		secondaryStorefront
+		secondaryStorefront,
+		albumHasJapanese: containsJapanese(album),
+		artistHasJapanese: containsJapanese(artist)
 	})
 
 	// Helper function to perform the album search and matching
@@ -203,7 +219,11 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		albums.forEach((a, index) => {
 			logger.music(
 				'debug',
-				`Album ${index + 1}: "${a.attributes?.name}" by "${a.attributes?.artistName}"`
+				`Album ${index + 1}: "${a.attributes?.name}" by "${a.attributes?.artistName}"`,
+				{
+					id: a.id,
+					hasPreview: !!a.attributes?.previews?.[0]?.url
+				}
 			)
 		})
 
@@ -304,6 +324,104 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 			}
 		}
 
+		// If no album match found, try searching for it as a single/song
+		logger.music('debug', `No album found for "${album}" by "${artist}", trying as single/song`)
+		
+		for (const storefront of [primaryStorefront, secondaryStorefront]) {
+			try {
+				const searchQuery = `${artist} ${album}`
+				logger.music('debug', `Searching for songs with query: "${searchQuery}" in ${storefront}`)
+				const response = await searchAlbumsAndSongs(searchQuery, 5, storefront)
+				
+				// Check if we found the song
+				if (response.results?.songs?.data?.length) {
+					const songs = response.results.songs.data
+					logger.music('debug', `Found ${songs.length} songs in ${storefront}`)
+					
+					// Log all songs for debugging
+					songs.forEach((s, index) => {
+						logger.music('debug', `Song ${index + 1}: "${s.attributes?.name}" by "${s.attributes?.artistName}" on "${s.attributes?.albumName}"`)
+					})
+					
+					// Find matching song
+					const matchingSong = songs.find(s => {
+						const songName = s.attributes?.name || ''
+						const artistName = s.attributes?.artistName || ''
+						const albumName = s.attributes?.albumName || ''
+						
+						// For single/track searches, the "album" parameter from Last.fm might actually be the track name
+						// Check if this is our song by comparing against the track name
+						const songNameLower = songName.toLowerCase()
+						const albumSearchLower = album.toLowerCase()
+						const artistNameLower = artistName.toLowerCase()
+						const artistSearchLower = artist.toLowerCase()
+						
+						// Check if the song name matches what we're looking for
+						const songMatches = songNameLower === albumSearchLower ||
+							songNameLower.includes(albumSearchLower) ||
+							albumSearchLower.includes(songNameLower)
+						
+						// Check if the artist matches (handle spaces in Japanese names)
+						const artistNameNormalized = artistNameLower.replace(/\s+/g, '')
+						const artistSearchNormalized = artistSearchLower.replace(/\s+/g, '')
+						
+						const artistMatches = artistNameLower === artistSearchLower ||
+							artistNameNormalized === artistSearchNormalized ||
+							artistNameLower.includes(artistSearchLower) ||
+							artistSearchLower.includes(artistNameLower) ||
+							artistNameNormalized.includes(artistSearchNormalized) ||
+							artistSearchNormalized.includes(artistNameNormalized)
+						
+						if (songMatches && artistMatches) {
+							logger.music('debug', `Found matching song: "${songName}" by "${artistName}" on album "${albumName}"`)
+							return true
+						}
+						
+						return false
+					})
+					
+					if (matchingSong) {
+						// Get the album info from the song
+						const albumName = matchingSong.attributes?.albumName
+						if (albumName) {
+							logger.music('debug', `Found as single/song, searching for album: "${albumName}"`)
+							
+							// Search for the actual album
+							const albumResponse = await searchAlbums(`${artist} ${albumName}`, 5, storefront)
+							if (albumResponse.results?.albums?.data?.length) {
+								const album = albumResponse.results.albums.data[0]
+								const matchedAlbum = album as any
+								matchedAlbum._storefront = storefront
+								return album
+							}
+						}
+						
+						// If no album found, create a synthetic album from the song
+						logger.music('debug', `Creating synthetic album from single: "${matchingSong.attributes?.name}"`)
+						return {
+							id: `single-${matchingSong.id}`,
+							type: 'albums' as const,
+							attributes: {
+								name: matchingSong.attributes?.albumName || matchingSong.attributes?.name || album,
+								artistName: matchingSong.attributes?.artistName || artist,
+								artwork: matchingSong.attributes?.artwork,
+								genreNames: matchingSong.attributes?.genreNames,
+								releaseDate: matchingSong.attributes?.releaseDate,
+								trackCount: 1,
+								isSingle: true,
+								// Store the song ID so we can fetch it later
+								_singleSongId: matchingSong.id,
+								_singleSongPreview: matchingSong.attributes?.previews?.[0]?.url
+							},
+							_storefront: storefront
+						} as any
+					}
+				}
+			} catch (error) {
+				logger.error(`Failed to search for single "${album}":`, error as Error, undefined, 'music')
+			}
+		}
+		
 		// If still no match, cache as not found
 		await rateLimiter.cacheNotFound(identifier, 3600)
 		return null
@@ -327,8 +445,18 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 	let previewUrl = attributes.previews?.[0]?.url
 	let tracks: Array<{ name: string; previewUrl?: string; durationMs?: number }> = []
 
+	// Check if this is a synthetic single album
+	if ((attributes as any).isSingle && (attributes as any)._singleSongPreview) {
+		logger.music('debug', 'Processing synthetic single album')
+		previewUrl = (attributes as any)._singleSongPreview
+		tracks = [{
+			name: attributes.name,
+			previewUrl: (attributes as any)._singleSongPreview,
+			durationMs: undefined // We'd need to fetch the song details for duration
+		}]
+	}
 	// Always fetch tracks to get preview URLs
-	if (appleMusicAlbum.id) {
+	else if (appleMusicAlbum.id) {
 		try {
 			// Determine which storefront to use
 			const storefront = (appleMusicAlbum as any)._storefront || DEFAULT_STOREFRONT
@@ -350,11 +478,13 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 				// Process all tracks
 				tracks = tracksData
 					.filter((item: any) => item.type === 'songs')
-					.map((track: any) => ({
-						name: track.attributes?.name || 'Unknown',
-						previewUrl: track.attributes?.previews?.[0]?.url,
-						durationMs: track.attributes?.durationInMillis
-					}))
+					.map((track: any) => {
+						return {
+							name: track.attributes?.name || 'Unknown',
+							previewUrl: track.attributes?.previews?.[0]?.url,
+							durationMs: track.attributes?.durationInMillis
+						}
+					})
 
 				// Find the first track with a preview if we don't have one
 				if (!previewUrl) {

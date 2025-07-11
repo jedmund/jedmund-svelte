@@ -28,6 +28,7 @@ export interface Album {
 	images: AlbumImages
 	isNowPlaying?: boolean
 	nowPlayingTrack?: string
+	lastScrobbleTime?: Date | string
 	appleMusicData?: {
 		appleMusicId?: string
 		highResArtwork?: string
@@ -44,6 +45,24 @@ export interface Album {
 			previewUrl?: string
 			durationMs?: number
 		}>
+		// Debug information
+		debug?: {
+			searchQuery?: string
+			storefront?: string
+			responseTime?: number
+			rawResponse?: any
+			matchType?: 'exact' | 'fuzzy' | 'single'
+			searchAttempts?: number
+		}
+		// Search metadata for failed searches
+		searchMetadata?: {
+			searchTime: string
+			searchQuery: string
+			artist: string
+			album: string
+			found: boolean
+			error: string | null
+		}
 	}
 }
 
