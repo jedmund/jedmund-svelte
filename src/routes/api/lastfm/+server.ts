@@ -187,6 +187,15 @@ async function addAppleMusicDataToAlbums(albums: Album[]): Promise<Album[]> {
 }
 
 async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
+	const searchMetadata = {
+		searchTime: new Date().toISOString(),
+		searchQuery: `${album.artist.name} ${album.name}`,
+		artist: album.artist.name,
+		album: album.name,
+		found: false,
+		error: null as string | null
+	}
+
 	try {
 		// Check cache first
 		const cacheKey = `apple:album:${album.artist.name}:${album.name}`
@@ -217,6 +226,7 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 
 		if (appleMusicAlbum) {
 			const transformedData = await transformAlbumData(appleMusicAlbum)
+			searchMetadata.found = true
 
 			// Cache the result for 24 hours
 			await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', 86400)
@@ -232,16 +242,39 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 				},
 				appleMusicData: transformedData
 			}
+		} else {
+			// Store search metadata for failed searches
+			searchMetadata.error = 'No matching album found'
+			
+			// Cache the failed search metadata for 1 hour
+			const failedSearchData = {
+				searchMetadata,
+				notFound: true
+			}
+			await redis.set(cacheKey, JSON.stringify(failedSearchData), 'EX', 3600)
 		}
 	} catch (error) {
+		searchMetadata.error = error instanceof Error ? error.message : 'Unknown error'
 		console.error(
 			`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}":`,
 			error
 		)
+		
+		// Cache the error metadata for 30 minutes
+		const errorData = {
+			searchMetadata,
+			error: true
+		}
+		await redis.set(`apple:album:${album.artist.name}:${album.name}`, JSON.stringify(errorData), 'EX', 1800)
 	}
 
-	// Return album unchanged if Apple Music search fails
-	return album
+	// Return album with search metadata if Apple Music search fails
+	return {
+		...album,
+		appleMusicData: {
+			searchMetadata
+		}
+	}
 }
 
 function transformImages(images: LastfmImage[]): AlbumImages {
