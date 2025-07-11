@@ -2,10 +2,9 @@
 	import { Spring } from 'svelte/motion'
 	import type { Album } from '$lib/types/lastfm'
 	import { audioPreview } from '$lib/stores/audio-preview'
-	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
 	import NowPlaying from './NowPlaying.svelte'
-	import PlayIcon from '$icons/play.svg'
-	import PauseIcon from '$icons/pause.svg'
+	import PlayIcon from '$icons/play.svg?component'
+	import PauseIcon from '$icons/pause.svg?component'
 
 	interface AlbumProps {
 		album?: Album
@@ -32,8 +31,8 @@
 	})
 
 	const scale = new Spring(1, {
-		stiffness: 0.2,
-		damping: 0.12
+		stiffness: 0.3,
+		damping: 0.25
 	})
 
 	// Determine if this album should shrink
@@ -41,9 +40,9 @@
 
 	$effect(() => {
 		if (isHovering) {
-			scale.target = 1.1
+			scale.target = 1.05
 		} else if (shouldShrink) {
-			scale.target = 0.95
+			scale.target = 0.97
 		} else {
 			scale.target = 1
 		}
@@ -99,32 +98,17 @@
 
 	const hasPreview = $derived(!!album?.appleMusicData?.previewUrl)
 
-	// Subscribe to real-time now playing updates
-	let realtimeNowPlaying = $state<{ isNowPlaying: boolean; nowPlayingTrack?: string } | null>(null)
-
-	$effect(() => {
-		if (album) {
-			const unsubscribe = nowPlayingStream.isAlbumPlaying.subscribe((checkAlbum) => {
-				const status = checkAlbum(album.artist.name, album.name)
-				if (status !== null) {
-					realtimeNowPlaying = status
-				}
-			})
-			return unsubscribe
-		}
-	})
-
-	// Combine initial state with real-time updates
-	const isNowPlaying = $derived(realtimeNowPlaying?.isNowPlaying ?? album?.isNowPlaying ?? false)
-	const nowPlayingTrack = $derived(realtimeNowPlaying?.nowPlayingTrack ?? album?.nowPlayingTrack)
-
+	// Use the album's isNowPlaying status directly - single source of truth
+	const isNowPlaying = $derived(album?.isNowPlaying ?? false)
+	const nowPlayingTrack = $derived(album?.nowPlayingTrack)
+	
 	// Debug logging
 	$effect(() => {
-		if (album && isNowPlaying) {
-			console.log(`Album "${album.name}" is now playing:`, {
-				fromRealtime: realtimeNowPlaying?.isNowPlaying,
-				fromAlbum: album?.isNowPlaying,
-				track: nowPlayingTrack
+		if (album && (isNowPlaying || album.isNowPlaying)) {
+			console.log(`🎵 Album component "${album.name}":`, {
+				isNowPlaying,
+				nowPlayingTrack,
+				albumData: album
 			})
 		}
 	})
@@ -165,9 +149,9 @@
 							class:playing={isPlaying}
 						>
 							{#if isPlaying}
-								<svelte:component this={PauseIcon} />
+								<PauseIcon />
 							{:else}
-								<svelte:component this={PlayIcon} />
+								<PlayIcon />
 							{/if}
 						</button>
 					{/if}

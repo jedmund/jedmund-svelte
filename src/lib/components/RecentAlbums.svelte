@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Album from '$components/Album.svelte'
 	import type { Album as AlbumType } from '$lib/types/lastfm'
-	import { albumStream } from '$lib/stores/album-stream'
+	import { musicStream } from '$lib/stores/music-stream'
 
 	interface RecentAlbumsProps {
 		albums?: AlbumType[]
@@ -13,7 +13,7 @@
 	let albums = $state<AlbumType[]>(initialAlbums)
 
 	$effect(() => {
-		const unsubscribe = albumStream.albums.subscribe((streamAlbums) => {
+		const unsubscribe = musicStream.albums.subscribe((streamAlbums) => {
 			if (streamAlbums.length > 0) {
 				albums = streamAlbums
 			}

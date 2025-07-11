@@ -3,8 +3,7 @@
 	import SegmentedController from './SegmentedController.svelte'
 	import NavDropdown from './NavDropdown.svelte'
 	import NowPlayingBar from './NowPlayingBar.svelte'
-	import { albumStream } from '$lib/stores/album-stream'
-	import { nowPlayingStream } from '$lib/stores/now-playing-stream'
+	import { musicStream } from '$lib/stores/music-stream'
 	import type { Album } from '$lib/types/lastfm'
 
 	let scrollY = $state(0)
@@ -18,40 +17,19 @@
 	let currentlyPlayingAlbum = $state<Album | null>(null)
 	let isPlayingMusic = $state(false)
 
-	// Subscribe to album updates
+	// Subscribe to music stream updates - single source of truth
 	$effect(() => {
-		const unsubscribe = albumStream.subscribe((state) => {
-			const nowPlaying = state.albums.find((album) => album.isNowPlaying)
-			currentlyPlayingAlbum = nowPlaying || null
+		const unsubscribe = musicStream.nowPlaying.subscribe((nowPlaying) => {
+			currentlyPlayingAlbum = nowPlaying?.album || null
 			isPlayingMusic = !!nowPlaying
 
 			// Debug logging
-			if (nowPlaying) {
-				console.log('Header: Now playing detected:', {
-					artist: nowPlaying.artist.name,
-					album: nowPlaying.name,
-					track: nowPlaying.nowPlayingTrack
-				})
-			}
-		})
-
-		return unsubscribe
-	})
-
-	// Also check now playing stream for updates
-	$effect(() => {
-		const unsubscribe = nowPlayingStream.subscribe((state) => {
-			const hasNowPlaying = Array.from(state.updates.values()).some((update) => update.isNowPlaying)
-			console.log('Header: nowPlayingStream update:', {
-				hasNowPlaying,
-				updatesCount: state.updates.size
+			console.log('🎧 Header now playing update:', {
+				hasNowPlaying: !!nowPlaying,
+				album: nowPlaying?.album.name,
+				artist: nowPlaying?.album.artist.name,
+				track: nowPlaying?.track
 			})
-			// Only clear if we explicitly know music stopped
-			if (!hasNowPlaying && currentlyPlayingAlbum && state.updates.size > 0) {
-				// Music stopped
-				currentlyPlayingAlbum = null
-				isPlayingMusic = false
-			}
 		})
 
 		return unsubscribe
