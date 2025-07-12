@@ -10,6 +10,7 @@
 	let { children } = $props()
 
 	const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'))
+	const isAboutPage = $derived($page.url.pathname === '/about')
 
 	// Generate person structured data for the site
 	const personJsonLd = $derived(
@@ -55,8 +56,10 @@
 	}}
 />
 
-<!-- Debug Panel (dev only) -->
-<DebugPanel />
+<!-- Debug Panel (dev only, about page only) -->
+{#if isAboutPage}
+	<DebugPanel />
+{/if}
 
 <style lang="scss">
 	:global(html) {
