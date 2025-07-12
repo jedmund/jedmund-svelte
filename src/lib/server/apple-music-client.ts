@@ -508,6 +508,7 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 			? attributes.artwork.url.replace('{w}x{h}', '3000x3000')
 			: undefined,
 		previewUrl,
+		url: attributes.url,
 		// Store additional metadata for future use
 		genres: attributes.genreNames,
 		releaseDate: attributes.releaseDate,

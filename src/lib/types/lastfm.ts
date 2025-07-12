@@ -33,6 +33,7 @@ export interface Album {
 		appleMusicId?: string
 		highResArtwork?: string
 		previewUrl?: string
+		url?: string
 		genres?: string[]
 		releaseDate?: string
 		trackCount?: number

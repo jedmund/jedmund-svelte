@@ -102,6 +102,9 @@
 	const isNowPlaying = $derived(album?.isNowPlaying ?? false)
 	const nowPlayingTrack = $derived(album?.nowPlayingTrack)
 	
+	// Use Apple Music URL if available, otherwise fall back to Last.fm
+	const albumUrl = $derived(album?.appleMusicData?.url || album?.url || '#')
+	
 	// Debug logging
 	$effect(() => {
 		if (album && (isNowPlaying || album.isNowPlaying)) {
@@ -118,7 +121,7 @@
 	{#if album}
 		<div class="album-wrapper">
 			<a
-				href={album.url}
+				href={albumUrl}
 				target="_blank"
 				rel="noopener noreferrer"
 				onmouseenter={() => {
