@@ -168,7 +168,7 @@
 				.photo-grid__item {
 					:global(.photo-item) {
 						aspect-ratio: 1;
-						overflow: hidden;
+						// overflow: hidden;
 					}
 
 					:global(.photo-button) {
