@@ -154,35 +154,11 @@
 {:else if album}
 	<div class="album-wrapper">
 		<Page>
-			{#snippet header()}
-				<div class="album-header">
-					<h1 class="album-title">{album.title}</h1>
-
-					{#if album.description}
-						<p class="album-description">{album.description}</p>
-					{/if}
-
-					<div class="album-meta">
-						{#if album.date}
-							<span class="meta-item">📅 {formatDate(album.date)}</span>
-						{/if}
-						{#if album.location}
-							<span class="meta-item">📍 {album.location}</span>
-						{/if}
-						<span class="meta-item"
-							>📷 {album.photos?.length || 0} photo{(album.photos?.length || 0) !== 1
-								? 's'
-								: ''}</span
-						>
-					</div>
-				</div>
-			{/snippet}
-
 			<!-- Album Content -->
 			{#if album.content}
 				<div class="album-content">
 					<div class="edra-rendered-content">
-						{@html renderEdraContent(album.content)}
+						{@html renderEdraContent(album.content, { albumSlug: album.slug })}
 					</div>
 				</div>
 			{:else}
@@ -197,34 +173,6 @@
 					</div>
 				{/if}
 			{/if}
-		</Page>
-	</div>
-{:else if type === 'photo' && photo}
-	<div class="photo-wrapper">
-		<Page>
-			<div class="photo-header">
-				<BackButton href="/photos" label="Back to Photos" />
-			</div>
-
-			<div class="photo-container">
-				<img src={photo.url} alt={photo.title || photo.caption || 'Photo'} class="photo-image" />
-			</div>
-
-			<div class="photo-info">
-				{#if photo.title}
-					<h1 class="photo-title">{photo.title}</h1>
-				{/if}
-
-				{#if photo.caption || photo.description}
-					<p class="photo-description">{photo.caption || photo.description}</p>
-				{/if}
-
-				{#if photo.exifData}
-					<div class="photo-exif">
-						<!-- EXIF data could be displayed here -->
-					</div>
-				{/if}
-			</div>
 		</Page>
 	</div>
 {/if}
@@ -260,53 +208,6 @@
 	}
 
 	/* Album Styles */
-	.album-header {
-		text-align: center;
-		padding-bottom: $unit-3x;
-		border-bottom: 1px solid $gray-90;
-		margin-bottom: $unit-4x;
-	}
-
-	.album-title {
-		font-size: 2rem;
-		font-weight: 700;
-		margin: 0 0 $unit-2x;
-		color: $gray-10;
-
-		@include breakpoint('phone') {
-			font-size: 1.75rem;
-		}
-	}
-
-	.album-description {
-		font-size: 1rem;
-		color: $gray-30;
-		margin: 0 0 $unit-3x;
-		line-height: 1.5;
-		max-width: 600px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.album-meta {
-		display: flex;
-		justify-content: center;
-		gap: $unit-3x;
-		flex-wrap: wrap;
-
-		.meta-item {
-			font-size: 0.875rem;
-			color: $gray-40;
-			display: flex;
-			align-items: center;
-			gap: $unit-half;
-		}
-
-		@include breakpoint('phone') {
-			gap: $unit-2x;
-		}
-	}
-
 	.album-content {
 		padding: $unit-2x 0;
 	}

@@ -1,5 +1,5 @@
 // Render Edra/BlockNote JSON content to HTML
-export const renderEdraContent = (content: any): string => {
+export const renderEdraContent = (content: any, options: { albumSlug?: string } = {}): string => {
 	if (!content) return ''
 
 	// Handle Tiptap format first (has type: 'doc')

@@ -149,7 +149,7 @@
 	{:else}
 		<div class="albums-grid">
 			{#each allAlbums as album}
-				<a href="/photos/{album.slug}" class="album-card">
+				<a href="/albums/{album.slug}" class="album-card">
 					{#if album.coverPhoto}
 						<div class="album-cover">
 							<SmartImage
