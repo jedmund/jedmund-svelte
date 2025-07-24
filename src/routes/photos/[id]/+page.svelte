@@ -315,9 +315,26 @@
 		window.addEventListener('keydown', handleKeydown)
 		window.addEventListener('scroll', handleScroll)
 
+		// On mobile, ensure viewport allows zooming
+		const isMobile = 'ontouchstart' in window && window.innerWidth <= 768
+		if (isMobile) {
+			const viewport = document.querySelector('meta[name="viewport"]')
+			if (viewport) {
+				viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes')
+			}
+		}
+
 		return () => {
 			window.removeEventListener('keydown', handleKeydown)
 			window.removeEventListener('scroll', handleScroll)
+			
+			// Reset viewport on unmount
+			if (isMobile) {
+				const viewport = document.querySelector('meta[name="viewport"]')
+				if (viewport) {
+					viewport.setAttribute('content', 'width=device-width, initial-scale=1.0')
+				}
+			}
 		}
 	})
 </script>

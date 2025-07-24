@@ -18,6 +18,23 @@
 	let imageRef = $state<HTMLImageElement>()
 	let isUltrawide = $state(false)
 	let imageLoaded = $state(false)
+	let isMobile = $state(false)
+
+	// Detect if we're on a mobile device
+	onMount(() => {
+		// Check for touch capability and screen size
+		const checkMobile = () => {
+			const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+			const isSmallScreen = window.innerWidth <= 768
+			isMobile = hasTouch && isSmallScreen
+		}
+		
+		checkMobile()
+		
+		// Update on resize
+		window.addEventListener('resize', checkMobile)
+		return () => window.removeEventListener('resize', checkMobile)
+	})
 
 	// Check if image is ultrawide (aspect ratio > 2:1)
 	function checkIfUltrawide() {
@@ -146,7 +163,7 @@
 	})
 
 	$effect(() => {
-		if (isUltrawide && imageLoaded) {
+		if (isUltrawide && imageLoaded && !isMobile) {
 			const cleanup = enhanceZoomForUltrawide()
 			return cleanup
 		}
@@ -158,17 +175,27 @@
 	}
 </script>
 
-<div class="photo-view {className}" class:ultrawide={isUltrawide}>
+<div class="photo-view {className}" class:ultrawide={isUltrawide} class:mobile={isMobile}>
 	{#key id || src}
-		<Zoom>
+		{#if !isMobile}
+			<Zoom>
+				<img
+					bind:this={imageRef}
+					{src}
+					alt={title || alt || 'Photo'}
+					class="photo-image"
+					onload={handleImageLoad}
+				/>
+			</Zoom>
+		{:else}
 			<img
 				bind:this={imageRef}
 				{src}
 				alt={title || alt || 'Photo'}
-				class="photo-image"
+				class="photo-image mobile-image"
 				onload={handleImageLoad}
 			/>
-		</Zoom>
+		{/if}
 	{/key}
 </div>
 
@@ -202,6 +229,22 @@
 	// Hide the zoom library's close button
 	:global([data-smiz-btn-unzoom]) {
 		display: none !important;
+	}
+
+	// Mobile-specific styles
+	.mobile {
+		.mobile-image {
+			// Allow native zoom
+			touch-action: pinch-zoom;
+			// Ensure image is contained within viewport initially
+			max-width: 100%;
+			max-height: 80vh;
+			width: auto;
+			height: auto;
+			// Prevent iOS from applying its own zoom on double-tap
+			-webkit-user-select: none;
+			user-select: none;
+		}
 	}
 
 	// Ultrawide zoom enhancements
