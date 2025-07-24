@@ -66,68 +66,9 @@ export const GET: RequestHandler = async (event) => {
 			take: 25
 		})
 
-		// Get published albums that show in universe
-		const universeAlbums = await prisma.album.findMany({
-			where: {
-				status: 'published',
-				showInUniverse: true
-			},
-			include: {
-				media: {
-					include: {
-						media: true
-					},
-					orderBy: { displayOrder: 'asc' },
-					take: 1 // Get first media for cover image
-				},
-				_count: {
-					select: { media: true }
-				}
-			},
-			orderBy: { createdAt: 'desc' },
-			take: 15
-		})
-
-		// Get published photography albums
-		const photoAlbums = await prisma.album.findMany({
-			where: {
-				status: 'published',
-				media: {
-					some: {
-						media: {
-							isPhotography: true
-						}
-					}
-				}
-			},
-			include: {
-				media: {
-					include: {
-						media: true
-					},
-					where: {
-						media: {
-							isPhotography: true
-						}
-					},
-					orderBy: { displayOrder: 'asc' },
-					take: 1 // Get first photo for cover image
-				},
-				_count: {
-					select: {
-						media: {
-							where: {
-								media: {
-									isPhotography: true
-								}
-							}
-						}
-					}
-				}
-			},
-			orderBy: { createdAt: 'desc' },
-			take: 15
-		})
+		// TODO: Re-enable albums once database schema is updated
+		const universeAlbums: any[] = []
+		const photoAlbums: any[] = []
 
 		// Combine all content types
 		const items = [
