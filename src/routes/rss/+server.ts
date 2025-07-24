@@ -73,16 +73,15 @@ export const GET: RequestHandler = async (event) => {
 				showInUniverse: true
 			},
 			include: {
-				photos: {
-					where: {
-						status: 'published',
-						showInPhotos: true
+				media: {
+					include: {
+						media: true
 					},
 					orderBy: { displayOrder: 'asc' },
-					take: 1 // Get first photo for cover image
+					take: 1 // Get first media for cover image
 				},
 				_count: {
-					select: { photos: true }
+					select: { media: true }
 				}
 			},
 			orderBy: { createdAt: 'desc' },
@@ -93,23 +92,34 @@ export const GET: RequestHandler = async (event) => {
 		const photoAlbums = await prisma.album.findMany({
 			where: {
 				status: 'published',
-				isPhotography: true
+				media: {
+					some: {
+						media: {
+							isPhotography: true
+						}
+					}
+				}
 			},
 			include: {
-				photos: {
+				media: {
+					include: {
+						media: true
+					},
 					where: {
-						status: 'published',
-						showInPhotos: true
+						media: {
+							isPhotography: true
+						}
 					},
 					orderBy: { displayOrder: 'asc' },
 					take: 1 // Get first photo for cover image
 				},
 				_count: {
 					select: {
-						photos: {
+						media: {
 							where: {
-								status: 'published',
-								showInPhotos: true
+								media: {
+									isPhotography: true
+								}
 							}
 						}
 					}
@@ -127,7 +137,7 @@ export const GET: RequestHandler = async (event) => {
 				id: post.id.toString(),
 				title:
 					post.title || `${post.postType.charAt(0).toUpperCase() + post.postType.slice(1)} Post`,
-				description: post.excerpt || extractTextSummary(post.content) || '',
+				description: extractTextSummary(post.content) || '',
 				content: convertContentToHTML(post.content),
 				link: `${event.url.origin}/universe/${post.slug}`,
 				guid: `${event.url.origin}/universe/${post.slug}`,
@@ -143,14 +153,14 @@ export const GET: RequestHandler = async (event) => {
 				title: album.title,
 				description:
 					album.description ||
-					`Photo album with ${album._count.photos} photo${album._count.photos !== 1 ? 's' : ''}`,
+					`Photo album with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
 				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
 				link: `${event.url.origin}/photos/${album.slug}`,
 				guid: `${event.url.origin}/photos/${album.slug}`,
 				pubDate: album.createdAt,
 				updatedDate: album.updatedAt,
-				photoCount: album._count.photos,
-				coverPhoto: album.photos[0],
+				photoCount: album._count.media,
+				coverPhoto: album.media[0]?.media,
 				location: album.location
 			})),
 			...photoAlbums
@@ -162,14 +172,14 @@ export const GET: RequestHandler = async (event) => {
 					title: album.title,
 					description:
 						album.description ||
-						`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.photos} photo${album._count.photos !== 1 ? 's' : ''}`,
+						`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
 					content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
 					link: `${event.url.origin}/photos/${album.slug}`,
 					guid: `${event.url.origin}/photos/${album.slug}`,
 					pubDate: album.createdAt,
 					updatedDate: album.updatedAt,
-					photoCount: album._count.photos,
-					coverPhoto: album.photos[0],
+					photoCount: album._count.media,
+					coverPhoto: album.media[0]?.media,
 					location: album.location,
 					date: album.date
 				}))
@@ -209,9 +219,9 @@ ${item.updatedDate ? `<atom:updated>${new Date(item.updatedDate).toISOString()}<
 ${
 	item.type === 'album' && item.coverPhoto
 		? `
-<enclosure url="${event.url.origin}${item.coverPhoto.url}" type="image/jpeg" length="0"/>
-<media:thumbnail url="${event.url.origin}${item.coverPhoto.thumbnailUrl || item.coverPhoto.url}"/>
-<media:content url="${event.url.origin}${item.coverPhoto.url}" type="image/jpeg"/>`
+<enclosure url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg" length="${item.coverPhoto.size || 0}"/>
+<media:thumbnail url="${(item.coverPhoto.thumbnailUrl || item.coverPhoto.url).startsWith('http') ? (item.coverPhoto.thumbnailUrl || item.coverPhoto.url) : event.url.origin + (item.coverPhoto.thumbnailUrl || item.coverPhoto.url)}"/>
+<media:content url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg"/>`
 		: ''
 }
 ${item.location ? `<category domain="location">${escapeXML(item.location)}</category>` : ''}
