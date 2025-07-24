@@ -22,56 +22,7 @@ function convertContentToHTML(content: any): string {
 		return `<p>${escapeXML(content)}</p>`
 	}
 	
-	// Handle TipTap/EditorJS JSON format
-	if (content.blocks && Array.isArray(content.blocks)) {
-		return content.blocks
-			.map((block: any) => {
-				switch (block.type) {
-					case 'paragraph':
-						// Handle both data.text and content formats
-						const paragraphText = block.data?.text || block.content || ''
-						return paragraphText ? `<p>${escapeXML(paragraphText)}</p>` : ''
-					case 'heading':
-					case 'header':
-						const level = block.data?.level || block.level || 2
-						const headingText = block.data?.text || block.content || ''
-						return headingText ? `<h${level}>${escapeXML(headingText)}</h${level}>` : ''
-					case 'list':
-						const items = (block.data?.items || block.content || [])
-							.map((item: any) => {
-								const itemText = typeof item === 'string' ? item : item.content || item.text || ''
-								return itemText ? `<li>${escapeXML(itemText)}</li>` : ''
-							})
-							.filter((item: string) => item)
-							.join('')
-						if (!items) return ''
-						const listType = block.data?.style || block.listType
-						return listType === 'ordered' ? `<ol>${items}</ol>` : `<ul>${items}</ul>`
-					case 'image':
-						const imageUrl = block.data?.file?.url || block.data?.url || ''
-						const caption = block.data?.caption || ''
-						if (!imageUrl) return ''
-						return `<figure><img src="${escapeXML(imageUrl)}" alt="${escapeXML(caption)}" />${caption ? `<figcaption>${escapeXML(caption)}</figcaption>` : ''}</figure>`
-					case 'code':
-						const code = block.data?.code || block.content || ''
-						return code ? `<pre><code>${escapeXML(code)}</code></pre>` : ''
-					case 'quote':
-					case 'blockquote':
-						const quoteText = block.data?.text || block.content || ''
-						const citation = block.data?.caption || ''
-						if (!quoteText) return ''
-						return `<blockquote>${escapeXML(quoteText)}${citation ? `<cite>${escapeXML(citation)}</cite>` : ''}</blockquote>`
-					default:
-						// Fallback for unknown block types
-						const defaultText = block.data?.text || block.content || ''
-						return defaultText ? `<p>${escapeXML(defaultText)}</p>` : ''
-				}
-			})
-			.filter((html: string) => html) // Remove empty blocks
-			.join('\n')
-	}
-	
-	// Handle TipTap format with doc root
+	// Handle TipTap/Edra format with doc root
 	if (content.type === 'doc' && content.content && Array.isArray(content.content)) {
 		return content.content
 			.map((node: any) => {
@@ -151,15 +102,7 @@ function extractTextSummary(content: any, maxLength: number = 300): string {
 	if (typeof content === 'string') {
 		text = content
 	}
-	// Handle EditorJS format
-	else if (content.blocks && Array.isArray(content.blocks)) {
-		text = content.blocks
-			.filter((block: any) => block.type === 'paragraph')
-			.map((block: any) => block.data?.text || block.content || '')
-			.filter((t: string) => t)
-			.join(' ')
-	}
-	// Handle TipTap format
+	// Handle TipTap/Edra format
 	else if (content.type === 'doc' && content.content && Array.isArray(content.content)) {
 		text = content.content
 			.filter((node: any) => node.type === 'paragraph')
