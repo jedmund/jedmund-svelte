@@ -58,6 +58,83 @@ function convertContentToHTML(content: any): string {
 						const src = node.attrs?.src || ''
 						const alt = node.attrs?.alt || ''
 						return src ? `<figure><img src="${escapeXML(src)}" alt="${escapeXML(alt)}" /></figure>` : ''
+					case 'video':
+						const videoSrc = node.attrs?.src || ''
+						if (!videoSrc) return ''
+						// Check if it's a YouTube URL
+						const youtubeMatch = videoSrc.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)
+						if (youtubeMatch) {
+							const videoId = youtubeMatch[1]
+							return `<div class="video-embed"><iframe width="560" height="315" src="https://www.youtube.com/embed/${escapeXML(videoId)}" frameborder="0" allowfullscreen></iframe><p><a href="${escapeXML(videoSrc)}">Watch on YouTube</a></p></div>`
+						}
+						// For other video sources, include a video tag
+						return `<video controls><source src="${escapeXML(videoSrc)}" type="video/mp4">Your browser does not support the video tag. <a href="${escapeXML(videoSrc)}">Download video</a></video>`
+					case 'urlEmbed':
+						const embedUrl = node.attrs?.url || ''
+						const embedTitle = node.attrs?.title || ''
+						const embedDescription = node.attrs?.description || ''
+						const embedImage = node.attrs?.image || ''
+						const embedSiteName = node.attrs?.siteName || ''
+						
+						if (!embedUrl) return ''
+						
+						// Check if it's a YouTube URL
+						const ytMatch = embedUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)
+						if (ytMatch) {
+							const videoId = ytMatch[1]
+							let html = '<div class="url-embed youtube-embed">'
+							html += `<iframe width="560" height="315" src="https://www.youtube.com/embed/${escapeXML(videoId)}" frameborder="0" allowfullscreen></iframe>`
+							if (embedTitle) {
+								html += `<h3><a href="${escapeXML(embedUrl)}">${escapeXML(embedTitle)}</a></h3>`
+							}
+							if (embedDescription) {
+								html += `<p>${escapeXML(embedDescription)}</p>`
+							}
+							html += '</div>'
+							return html
+						}
+						
+						// Check if it's a Twitter/X URL
+						const twitterMatch = embedUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/)
+						if (twitterMatch) {
+							// For Twitter/X, we can't embed the actual tweet in RSS, but we can provide a nice preview
+							let html = '<div class="url-embed twitter-embed">'
+							if (embedImage) {
+								html += `<img src="${escapeXML(embedImage)}" alt="Tweet preview" />`
+							}
+							html += '<div class="embed-content">'
+							html += `<span class="site-name">𝕏 (Twitter)</span>`
+							if (embedTitle || embedDescription) {
+								html += `<p>${escapeXML(embedDescription || embedTitle || '')}</p>`
+							}
+							html += `<p><a href="${escapeXML(embedUrl)}">View on 𝕏</a></p>`
+							html += '</div></div>'
+							return html
+						}
+						
+						// For other URL embeds, create a rich preview
+						let html = '<div class="url-embed">'
+						if (embedImage) {
+							html += `<img src="${escapeXML(embedImage)}" alt="${escapeXML(embedTitle || '')}" />`
+						}
+						html += '<div class="embed-content">'
+						if (embedSiteName) {
+							html += `<span class="site-name">${escapeXML(embedSiteName)}</span>`
+						}
+						if (embedTitle) {
+							html += `<h3><a href="${escapeXML(embedUrl)}">${escapeXML(embedTitle)}</a></h3>`
+						}
+						if (embedDescription) {
+							html += `<p>${escapeXML(embedDescription)}</p>`
+						}
+						html += '</div></div>'
+						return html
+					case 'iframe':
+						const iframeSrc = node.attrs?.src || ''
+						const iframeWidth = node.attrs?.width || 560
+						const iframeHeight = node.attrs?.height || 315
+						if (!iframeSrc) return ''
+						return `<iframe src="${escapeXML(iframeSrc)}" width="${iframeWidth}" height="${iframeHeight}" frameborder="0" allowfullscreen></iframe>`
 					default:
 						const defaultText = extractTextFromNode(node)
 						return defaultText ? `<p>${defaultText}</p>` : ''
