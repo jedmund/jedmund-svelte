@@ -1,0 +1,5 @@
+-- Add video metadata fields to Media table
+ALTER TABLE "Media" ADD COLUMN IF NOT EXISTS "duration" DOUBLE PRECISION;
+ALTER TABLE "Media" ADD COLUMN IF NOT EXISTS "videoCodec" VARCHAR(50);
+ALTER TABLE "Media" ADD COLUMN IF NOT EXISTS "audioCodec" VARCHAR(50);
+ALTER TABLE "Media" ADD COLUMN IF NOT EXISTS "bitrate" INTEGER;

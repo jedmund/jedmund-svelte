@@ -127,6 +127,10 @@ model Media {
   dominantColor    String?      @db.VarChar(7)
   colors           Json?
   aspectRatio      Float?
+  duration         Float?       // Video duration in seconds
+  videoCodec       String?      @db.VarChar(50)
+  audioCodec       String?      @db.VarChar(50)
+  bitrate          Int?         // Bitrate in bits per second
   albums           AlbumMedia[]
   usage            MediaUsage[]
   photos           Photo[]

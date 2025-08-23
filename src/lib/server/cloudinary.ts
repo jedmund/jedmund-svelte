@@ -51,7 +51,7 @@ const uploadPresets = {
 
 // Image size variants (2025-appropriate sizes)
 export const imageSizes = {
-	thumbnail: { width: 800, height: 600, crop: 'fill' as const }, // Much larger thumbnails for modern displays
+	thumbnail: { width: 1920, crop: 'scale' as const, quality: 'auto:good' as const }, // High-res thumbnails that maintain aspect ratio
 	small: { width: 600, quality: 'auto:good' as const },
 	medium: { width: 1200, quality: 'auto:good' as const },
 	large: { width: 1920, quality: 'auto:good' as const },
@@ -71,6 +71,10 @@ export interface UploadResult {
 	dominantColor?: string
 	colors?: any
 	aspectRatio?: number
+	duration?: number
+	videoCodec?: string
+	audioCodec?: string
+	bitrate?: number
 	error?: string
 }
 
@@ -81,8 +85,8 @@ export async function uploadFile(
 	customOptions?: any
 ): Promise<UploadResult> {
 	try {
-		// TEMPORARY: Force Cloudinary usage for testing
-		const FORCE_CLOUDINARY_IN_DEV = true // Toggle this to test
+		// Toggle this to use Cloudinary in development (requires API keys)
+		const FORCE_CLOUDINARY_IN_DEV = false // Set to true to use Cloudinary in dev
 
 		// Use local storage in development or when Cloudinary is not configured
 		if ((dev && !FORCE_CLOUDINARY_IN_DEV) || !isCloudinaryConfigured()) {
@@ -109,7 +113,11 @@ export async function uploadFile(
 				height: localResult.height,
 				format: file.type.split('/')[1],
 				size: localResult.size,
-				aspectRatio
+				aspectRatio,
+				duration: localResult.duration,
+				videoCodec: localResult.videoCodec,
+				audioCodec: localResult.audioCodec,
+				bitrate: localResult.bitrate
 			}
 		}
 
@@ -155,11 +163,21 @@ export async function uploadFile(
 			uploadStream.end(buffer)
 		})
 
-		// Generate thumbnail URL
-		const thumbnailUrl = cloudinary.url(result.public_id, {
-			...imageSizes.thumbnail,
-			secure: true
-		})
+		// Generate thumbnail URL - different approach for videos vs images
+		const isVideo = file.type.startsWith('video/')
+		const thumbnailUrl = isVideo 
+			? cloudinary.url(result.public_id + '.jpg', {
+				resource_type: 'video',
+				transformation: [
+					{ width: 1920, crop: 'scale', quality: 'auto:good' }, // 'scale' maintains aspect ratio
+					{ start_offset: 'auto' } // Let Cloudinary pick the most interesting frame
+				],
+				secure: true
+			})
+			: cloudinary.url(result.public_id, {
+				...imageSizes.thumbnail,
+				secure: true
+			})
 
 		// Extract dominant color using smart selection
 		let dominantColor: string | undefined
@@ -174,6 +192,19 @@ export async function uploadFile(
 
 		// Calculate aspect ratio
 		const aspectRatio = result.width && result.height ? result.width / result.height : undefined
+		
+		// Extract video metadata if present
+		let duration: number | undefined
+		let videoCodec: string | undefined
+		let audioCodec: string | undefined
+		let bitrate: number | undefined
+		
+		if (isVideo && result.duration) {
+			duration = result.duration
+			videoCodec = result.video?.codec
+			audioCodec = result.audio?.codec
+			bitrate = result.bit_rate
+		}
 
 		logger.mediaUpload(file.name, file.size, file.type, true)
 
@@ -189,7 +220,11 @@ export async function uploadFile(
 			size: result.bytes,
 			dominantColor,
 			colors: result.colors,
-			aspectRatio
+			aspectRatio,
+			duration,
+			videoCodec,
+			audioCodec,
+			bitrate
 		}
 	} catch (error) {
 		logger.error('Cloudinary upload failed', error as Error)
