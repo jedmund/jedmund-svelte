@@ -367,10 +367,12 @@
 					onStatusChange={handleSave}
 					disabled={saving}
 					isLoading={saving}
-					primaryAction={status === 'published'
-						? { label: 'Save', status: 'published' }
-						: { label: 'Publish', status: 'published' }}
-					dropdownActions={[{ label: 'Save as Draft', status: 'draft', show: status !== 'draft' }]}
+					primaryAction={status === 'draft'
+						? { label: 'Save draft', status: 'draft' }
+						: { label: 'Save post', status: 'published' }}
+					dropdownActions={status === 'draft'
+						? [{ label: 'Publish', status: 'published' }]
+						: [{ label: 'Save as Draft', status: 'draft' }]}
 					viewUrl={slug ? `/universe/${slug}` : undefined}
 				/>
 			</div>
