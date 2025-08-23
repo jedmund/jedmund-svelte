@@ -13,7 +13,7 @@
 	import MediaUsageList from './MediaUsageList.svelte'
 	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
-	import { formatFileSize, getFileType } from '$lib/utils/mediaHelpers'
+	import { formatFileSize, getFileType, isVideoFile } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -214,11 +214,18 @@
 		showCloseButton={false}
 	>
 		<div class="media-details-modal">
-			<!-- Left Pane - Image Preview -->
+			<!-- Left Pane - Media Preview -->
 			<div class="image-pane">
 				{#if media.mimeType.startsWith('image/')}
 					<div class="image-container">
 						<SmartImage {media} alt={media.description || media.filename} class="preview-image" />
+					</div>
+				{:else if isVideoFile(media.mimeType)}
+					<div class="video-container">
+						<video controls poster={media.thumbnailUrl || undefined} class="preview-video">
+							<source src={media.url} type={media.mimeType} />
+							Your browser does not support the video tag.
+						</video>
 					</div>
 				{:else}
 					<div class="file-placeholder">
@@ -383,6 +390,23 @@
 				object-fit: contain;
 				border-radius: $corner-radius-md;
 				display: block;
+			}
+		}
+
+		.video-container {
+			max-width: 90%;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			.preview-video {
+				width: 100%;
+				height: auto;
+				max-width: 100%;
+				object-fit: contain;
+				background: #000;
+				border-radius: $corner-radius-md;
 			}
 		}
 

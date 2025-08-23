@@ -37,17 +37,19 @@
 	}
 
 	function addFiles(newFiles: File[]) {
-		// Filter for image files
-		const imageFiles = newFiles.filter((file) => file.type.startsWith('image/'))
+		// Filter for supported file types (images and videos)
+		const supportedFiles = newFiles.filter(
+			(file) => file.type.startsWith('image/') || file.type.startsWith('video/')
+		)
 
-		if (imageFiles.length !== newFiles.length) {
+		if (supportedFiles.length !== newFiles.length) {
 			uploadErrors = [
 				...uploadErrors,
-				`${newFiles.length - imageFiles.length} non-image files were skipped`
+				`${newFiles.length - supportedFiles.length} unsupported files were skipped`
 			]
 		}
 
-		files = [...files, ...imageFiles]
+		files = [...files, ...supportedFiles]
 	}
 
 	function removeFile(id: string | number) {
@@ -149,7 +151,7 @@
 			<!-- Drop Zone (compact when files are selected) -->
 			<FileUploadZone
 				onFilesAdded={handleFilesAdded}
-				accept={['image/*']}
+				accept={['image/*', 'video/*']}
 				multiple={true}
 				compact={files.length > 0}
 				disabled={isUploading}
@@ -221,6 +223,9 @@
 
 	.modal-inner-content {
 		padding: $unit $unit-3x $unit-3x;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-2x;
 		flex: 1;
 		overflow-y: auto;
 	}

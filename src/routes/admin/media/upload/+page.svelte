@@ -45,17 +45,19 @@
 	}
 
 	function addFiles(newFiles: File[]) {
-		// Filter for image files
-		const imageFiles = newFiles.filter((file) => file.type.startsWith('image/'))
+		// Filter for supported file types (images and videos)
+		const supportedFiles = newFiles.filter((file) => 
+			file.type.startsWith('image/') || file.type.startsWith('video/')
+		)
 
-		if (imageFiles.length !== newFiles.length) {
+		if (supportedFiles.length !== newFiles.length) {
 			uploadErrors = [
 				...uploadErrors,
-				`${newFiles.length - imageFiles.length} non-image files were skipped`
+				`${newFiles.length - supportedFiles.length} unsupported files were skipped`
 			]
 		}
 
-		files = [...files, ...imageFiles]
+		files = [...files, ...supportedFiles]
 	}
 
 	function removeFile(index: number) {
@@ -197,6 +199,8 @@
 							<div class="file-preview">
 								{#if file.type.startsWith('image/')}
 									<img src={URL.createObjectURL(file)} alt={file.name} />
+								{:else if file.type.startsWith('video/')}
+									<div class="file-icon">🎬</div>
 								{:else}
 									<div class="file-icon">📄</div>
 								{/if}
@@ -317,9 +321,9 @@
 							/>
 						</svg>
 					</div>
-					<h3>Drop images here</h3>
+					<h3>Drop media files here</h3>
 					<p>or click to browse and select files</p>
-					<p class="upload-hint">Supports JPG, PNG, GIF, WebP, and SVG files</p>
+					<p class="upload-hint">Images: JPG, PNG, GIF, WebP, SVG | Videos: WebM, MP4, OGG, MOV, AVI</p>
 				{:else}
 					<div class="compact-content">
 						<svg
@@ -358,7 +362,7 @@
 				bind:this={fileInput}
 				type="file"
 				multiple
-				accept="image/*"
+				accept="image/*,video/*"
 				onchange={handleFileSelect}
 				class="hidden-input"
 			/>

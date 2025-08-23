@@ -12,7 +12,8 @@
 	import MediaDetailsModal from '$lib/components/admin/MediaDetailsModal.svelte'
 	import MediaUploadModal from '$lib/components/admin/MediaUploadModal.svelte'
 	import AlbumSelectorModal from '$lib/components/admin/AlbumSelectorModal.svelte'
-	import ChevronDown from '$icons/chevron-down.svg'
+	import ChevronDown from '$icons/chevron-down.svg?component'
+	import PlayIcon from '$icons/play.svg?component'
 	import type { Media } from '@prisma/client'
 
 	let media = $state<Media[]>([])
@@ -155,6 +156,10 @@
 		if (mimeType.startsWith('audio/')) return 'Audio'
 		if (mimeType.includes('pdf')) return 'PDF'
 		return 'File'
+	}
+
+	function isVideoFile(mimeType: string): boolean {
+		return mimeType.startsWith('video/')
 	}
 
 	function handleMediaClick(item: Media) {
@@ -543,6 +548,20 @@
 									src={item.mimeType === 'image/svg+xml' ? item.url : item.thumbnailUrl || item.url}
 									alt={item.description || item.filename}
 								/>
+							{:else if isVideoFile(item.mimeType)}
+								{#if item.thumbnailUrl}
+									<div class="video-thumbnail-wrapper">
+										<img src={item.thumbnailUrl} alt={item.description || item.filename} />
+										<div class="video-overlay">
+											<PlayIcon class="play-icon" />
+										</div>
+									</div>
+								{:else}
+									<div class="file-placeholder video-placeholder">
+										<PlayIcon class="video-icon" />
+										<span class="file-type">Video</span>
+									</div>
+								{/if}
 							{:else}
 								<div class="file-placeholder">
 									<span class="file-type">{getFileType(item.mimeType)}</span>
@@ -746,6 +765,41 @@
 			object-fit: cover;
 		}
 
+		.video-thumbnail-wrapper {
+			width: 100%;
+			height: 150px;
+			position: relative;
+			overflow: hidden;
+
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+			}
+
+			.video-overlay {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				background: rgba(0, 0, 0, 0.7);
+				border-radius: 50%;
+				width: 40px;
+				height: 40px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				pointer-events: none;
+
+				:global(.play-icon) {
+					width: 20px;
+					height: 20px;
+					color: white;
+					margin-left: -2px;
+				}
+			}
+		}
+
 		.file-placeholder {
 			width: 100%;
 			height: 150px;
@@ -753,6 +807,17 @@
 			align-items: center;
 			justify-content: center;
 			background: $gray-90;
+
+			&.video-placeholder {
+				flex-direction: column;
+				gap: $unit;
+
+				:global(.video-icon) {
+					width: 24px;
+					height: 24px;
+					color: $gray-60;
+				}
+			}
 
 			.file-type {
 				font-size: 0.875rem;
