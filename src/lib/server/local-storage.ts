@@ -2,6 +2,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import path from 'path'
 import sharp from 'sharp'
+import ffmpeg from 'fluent-ffmpeg'
 import { logger } from './logger'
 
 // Base directory for local uploads
@@ -44,6 +45,10 @@ export interface LocalUploadResult {
 	width?: number
 	height?: number
 	size?: number
+	duration?: number
+	videoCodec?: string
+	audioCodec?: string
+	bitrate?: number
 	error?: string
 }
 
@@ -58,48 +63,119 @@ export async function uploadFileLocally(
 		// Generate unique filename
 		const filename = generateFilename(file.name)
 		const filepath = path.join(UPLOAD_DIR, type, filename)
-		const thumbnailPath = path.join(UPLOAD_DIR, 'thumbnails', `thumb-${filename}`)
+		const thumbnailFilename = `thumb-${filename.replace(path.extname(filename), '')}.jpg`
+		const thumbnailPath = path.join(UPLOAD_DIR, 'thumbnails', thumbnailFilename)
 
 		// Convert File to buffer
 		const arrayBuffer = await file.arrayBuffer()
 		const buffer = Buffer.from(arrayBuffer)
 
-		// Process image with sharp to get dimensions
+		// Check if file is a video
+		const isVideo = file.type.startsWith('video/')
+
+		// Process dimensions and create thumbnail
 		let width = 0
 		let height = 0
+		let duration: number | undefined
+		let videoCodec: string | undefined
+		let audioCodec: string | undefined
+		let bitrate: number | undefined
 
-		try {
-			const image = sharp(buffer)
-			const metadata = await image.metadata()
-			width = metadata.width || 0
-			height = metadata.height || 0
-
-			// Save original
+		if (isVideo) {
+			// Save video file first
 			await writeFile(filepath, buffer)
 
-			// Create thumbnail (800x600 for modern displays)
-			await image
-				.resize(800, 600, {
-					fit: 'cover',
-					position: 'center'
+			// Get video metadata and generate thumbnail
+			await new Promise<void>((resolve, reject) => {
+				ffmpeg.ffprobe(filepath, (err, metadata) => {
+					if (err) {
+						logger.error('Failed to probe video file', err)
+						reject(err)
+						return
+					}
+
+					// Extract video metadata
+					const videoStream = metadata.streams.find(s => s.codec_type === 'video')
+					const audioStream = metadata.streams.find(s => s.codec_type === 'audio')
+					
+					if (videoStream) {
+						width = videoStream.width || 0
+						height = videoStream.height || 0
+						videoCodec = videoStream.codec_name
+					}
+					
+					if (audioStream) {
+						audioCodec = audioStream.codec_name
+					}
+					
+					duration = metadata.format.duration
+					bitrate = metadata.format.bit_rate ? parseInt(metadata.format.bit_rate) : undefined
+
+					// Generate thumbnail
+					ffmpeg(filepath)
+						.on('end', () => {
+							logger.info('Video thumbnail generated', { 
+								filename: thumbnailFilename,
+								duration,
+								videoCodec,
+								audioCodec,
+								bitrate
+							})
+							resolve()
+						})
+						.on('error', (err) => {
+							logger.error('Failed to generate video thumbnail', err)
+							resolve() // Continue without thumbnail
+						})
+						.screenshots({
+							timestamps: ['50%'], // Get frame at 50% of video duration
+							filename: thumbnailFilename,
+							folder: path.join(UPLOAD_DIR, 'thumbnails'),
+							size: '1920x?' // Maintain aspect ratio with max 1920px width
+						})
 				})
-				.jpeg({ quality: 85 }) // Good quality for larger thumbnails
-				.toFile(thumbnailPath)
-		} catch (imageError) {
-			// If sharp fails (e.g., for SVG), just save the original
-			logger.warn('Sharp processing failed, saving original only', imageError as Error)
-			await writeFile(filepath, buffer)
+			}).catch((err) => {
+				// If ffmpeg fails, continue without metadata
+				logger.warn('Video processing failed, continuing without metadata', err)
+			})
+		} else {
+			// Process image with sharp
+			try {
+				const image = sharp(buffer)
+				const metadata = await image.metadata()
+				width = metadata.width || 0
+				height = metadata.height || 0
+
+				// Save original
+				await writeFile(filepath, buffer)
+
+				// Create thumbnail (max 1920px wide for high-res displays)
+				await image
+					.resize(1920, null, {
+						fit: 'inside',
+						withoutEnlargement: true
+					})
+					.jpeg({ quality: 85 }) // Good quality for larger thumbnails
+					.toFile(thumbnailPath)
+			} catch (imageError) {
+				// If sharp fails (e.g., for SVG), just save the original
+				logger.warn('Sharp processing failed, saving original only', imageError as Error)
+				await writeFile(filepath, buffer)
+			}
 		}
 
 		// Construct URLs
 		const url = `${PUBLIC_PATH}/${type}/${filename}`
-		const thumbnailUrl = `${PUBLIC_PATH}/thumbnails/thumb-${filename}`
+		const thumbnailUrl = existsSync(thumbnailPath) 
+			? `${PUBLIC_PATH}/thumbnails/${thumbnailFilename}`
+			: null
 
 		logger.info('File uploaded locally', {
 			filename,
 			type,
 			size: file.size,
-			dimensions: `${width}x${height}`
+			dimensions: `${width}x${height}`,
+			isVideo
 		})
 
 		return {
@@ -109,7 +185,11 @@ export async function uploadFileLocally(
 			thumbnailUrl,
 			width,
 			height,
-			size: file.size
+			size: file.size,
+			duration,
+			videoCodec,
+			audioCodec,
+			bitrate
 		}
 	} catch (error) {
 		logger.error('Local upload failed', error as Error)

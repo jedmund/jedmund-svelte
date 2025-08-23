@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from './Button.svelte'
-	import { formatFileSize, getFileType } from '$lib/utils/mediaHelpers'
+	import { formatFileSize, getFileType, isVideoFile, formatDuration, formatBitrate } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -36,7 +36,32 @@
 						<span class="value">{media.width} × {media.height}px</span>
 					</div>
 				{/if}
-				{#if media.dominantColor}
+				{#if isVideoFile(media.mimeType)}
+					{#if media.duration}
+						<div class="info-item">
+							<span class="label">Duration</span>
+							<span class="value">{formatDuration(media.duration)}</span>
+						</div>
+					{/if}
+					{#if media.videoCodec}
+						<div class="info-item">
+							<span class="label">Video Codec</span>
+							<span class="value">{media.videoCodec.toUpperCase()}</span>
+						</div>
+					{/if}
+					{#if media.audioCodec}
+						<div class="info-item">
+							<span class="label">Audio Codec</span>
+							<span class="value">{media.audioCodec.toUpperCase()}</span>
+						</div>
+					{/if}
+					{#if media.bitrate}
+						<div class="info-item">
+							<span class="label">Bitrate</span>
+							<span class="value">{formatBitrate(media.bitrate)}</span>
+						</div>
+					{/if}
+				{:else if media.dominantColor}
 					<div class="info-item">
 						<span class="label">Dominant Color</span>
 						<span class="value color-value">

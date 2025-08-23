@@ -92,3 +92,26 @@ export function getMimeTypeDisplayName(mimeType: string): string {
 
 	return typeMap[mimeType] || getFileType(mimeType)
 }
+
+/**
+ * Format duration from seconds to readable format
+ */
+export function formatDuration(seconds: number): string {
+	const hours = Math.floor(seconds / 3600)
+	const minutes = Math.floor((seconds % 3600) / 60)
+	const secs = Math.floor(seconds % 60)
+	
+	if (hours > 0) {
+		return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+	}
+	return `${minutes}:${secs.toString().padStart(2, '0')}`
+}
+
+/**
+ * Format bitrate to readable format
+ */
+export function formatBitrate(bitrate: number): string {
+	if (bitrate < 1000) return `${bitrate} bps`
+	if (bitrate < 1000000) return `${(bitrate / 1000).toFixed(0)} kbps`
+	return `${(bitrate / 1000000).toFixed(1)} Mbps`
+}

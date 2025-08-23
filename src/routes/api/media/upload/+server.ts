@@ -119,7 +119,7 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		// Validate file type
-		const allowedTypes = [
+		const allowedImageTypes = [
 			'image/jpeg',
 			'image/jpg',
 			'image/png',
@@ -127,14 +127,28 @@ export const POST: RequestHandler = async (event) => {
 			'image/gif',
 			'image/svg+xml'
 		]
+		
+		const allowedVideoTypes = [
+			'video/webm',
+			'video/mp4',
+			'video/ogg',
+			'video/quicktime',
+			'video/x-msvideo'
+		]
+		
+		const allowedTypes = [...allowedImageTypes, ...allowedVideoTypes]
+		
 		if (!allowedTypes.includes(file.type)) {
-			return errorResponse('Invalid file type. Allowed types: JPEG, PNG, WebP, GIF, SVG', 400)
+			return errorResponse('Invalid file type. Allowed types: Images (JPEG, PNG, WebP, GIF, SVG) and Videos (WebM, MP4, OGG, MOV, AVI)', 400)
 		}
 
-		// Validate file size (max 10MB)
-		const maxSize = 10 * 1024 * 1024 // 10MB
+		// Validate file size - different limits for images and videos
+		const isVideo = allowedVideoTypes.includes(file.type)
+		const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024 // 100MB for videos, 10MB for images
+		const maxSizeText = isVideo ? '100MB' : '10MB'
+		
 		if (file.size > maxSize) {
-			return errorResponse('File too large. Maximum size is 10MB', 400)
+			return errorResponse(`File too large. Maximum size is ${maxSizeText}`, 400)
 		}
 
 		// Extract EXIF data for image files (but don't block upload if it fails)
@@ -164,6 +178,10 @@ export const POST: RequestHandler = async (event) => {
 				dominantColor: uploadResult.dominantColor,
 				colors: uploadResult.colors,
 				aspectRatio: uploadResult.aspectRatio,
+				duration: uploadResult.duration,
+				videoCodec: uploadResult.videoCodec,
+				audioCodec: uploadResult.audioCodec,
+				bitrate: uploadResult.bitrate,
 				exifData: exifData,
 				description: description?.trim() || null,
 				isPhotography: isPhotography

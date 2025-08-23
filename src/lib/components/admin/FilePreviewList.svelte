@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatFileSize, isImageFile } from '$lib/utils/mediaHelpers'
+	import { formatFileSize, isImageFile, isVideoFile } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface FilePreview {
@@ -85,6 +85,8 @@
 			<div class="file-preview">
 				{#if isImageFile(preview.type)}
 					<img src={preview.url} alt={preview.name} />
+				{:else if isVideoFile(preview.type)}
+					<div class="file-icon">🎬</div>
 				{:else}
 					<div class="file-icon">📄</div>
 				{/if}

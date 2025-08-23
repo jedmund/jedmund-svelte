@@ -1,7 +1,8 @@
 <script lang="ts">
 	import SmartImage from '../SmartImage.svelte'
 	import FileIcon from '../icons/FileIcon.svelte'
-	import { isImageFile } from '$lib/utils/mediaHelpers'
+	import PlayIcon from '$icons/play.svg?component'
+	import { isImageFile, isVideoFile } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -86,6 +87,25 @@
 								class="media-image {item.mimeType === 'image/svg+xml' ? 'svg-image' : ''}"
 								containerWidth={150}
 							/>
+						{:else if isVideoFile(item.mimeType)}
+							{#if item.thumbnailUrl}
+								<div class="video-thumbnail-wrapper">
+									<img 
+										src={item.thumbnailUrl} 
+										alt={item.filename}
+										loading={i < 8 ? 'eager' : 'lazy'}
+										class="media-image video-thumbnail"
+									/>
+									<div class="video-overlay">
+										<PlayIcon class="play-icon" />
+									</div>
+								</div>
+							{:else}
+								<div class="media-placeholder video-placeholder">
+									<PlayIcon class="video-icon" />
+									<span class="video-label">Video</span>
+								</div>
+							{/if}
 						{:else}
 							<div class="media-placeholder">
 								<FileIcon size={32} />
@@ -204,6 +224,40 @@
 		}
 	}
 
+	.video-thumbnail-wrapper {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		
+		.video-thumbnail {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+		
+		.video-overlay {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: rgba(0, 0, 0, 0.7);
+			border-radius: 50%;
+			width: 40px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			pointer-events: none;
+			
+			:global(.play-icon) {
+				width: 20px;
+				height: 20px;
+				color: white;
+				margin-left: -2px;
+			}
+		}
+	}
+	
 	.media-placeholder {
 		width: 100%;
 		height: 100%;
@@ -211,6 +265,24 @@
 		align-items: center;
 		justify-content: center;
 		color: $gray-60;
+		
+		&.video-placeholder {
+			flex-direction: column;
+			gap: $unit;
+			
+			:global(.video-icon) {
+				width: 32px;
+				height: 32px;
+				color: $gray-60;
+			}
+			
+			.video-label {
+				font-size: 12px;
+				color: $gray-50;
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+		}
 	}
 
 	.hover-overlay {
