@@ -383,7 +383,9 @@
 			<div class="actions-dropdown">
 				<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload</Button>
 				<Button variant="ghost" iconOnly buttonSize="large" onclick={handleDropdownToggle}>
-					<ChevronDown slot="icon" />
+					{#snippet icon()}
+						<ChevronDown />
+					{/snippet}
 				</Button>
 
 				{#if isDropdownOpen}
