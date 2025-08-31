@@ -225,8 +225,6 @@
 			// Short delay to prevent flicker
 			await new Promise((resolve) => setTimeout(resolve, 500))
 
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
 
 			let url = `/api/media?page=${page}&limit=24`
 
@@ -248,15 +246,7 @@
 				url += `&albumId=${albumId}`
 			}
 
-			const response = await fetch(url, {
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (!response.ok) {
-				throw new Error('Failed to load media')
-			}
-
-			const data = await response.json()
+			const data = await (await import('$lib/admin/api')).api.get(url)
 
 			if (page === 1) {
 				// Only clear media after we have new data to prevent flash

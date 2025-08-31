@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { page } from '$app/stores'
-	import ProjectForm from '$lib/components/admin/ProjectForm.svelte'
-	import type { Project } from '$lib/types/project'
+import { page } from '$app/stores'
+import ProjectForm from '$lib/components/admin/ProjectForm.svelte'
+import type { Project } from '$lib/types/project'
+import { api } from '$lib/admin/api'
 
 	let project = $state<Project | null>(null)
 	let isLoading = $state(true)
@@ -17,21 +18,7 @@
 
 	async function loadProject() {
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-
-			const response = await fetch(`/api/projects/${projectId}`, {
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (!response.ok) {
-				throw new Error('Failed to load project')
-			}
-
-			const data = await response.json()
+			const data = await api.get(`/api/projects/${projectId}`)
 			project = data
 		} catch (err) {
 			error = 'Failed to load project'
