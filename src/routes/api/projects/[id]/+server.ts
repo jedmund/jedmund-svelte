@@ -71,6 +71,14 @@ export const PUT: RequestHandler = async (event) => {
 			slug = await ensureUniqueSlug(body.slug, 'project', id)
 		}
 
+		// Concurrency control: if updatedAt provided, ensure it matches current
+		if (body.updatedAt) {
+			const incoming = new Date(body.updatedAt)
+			if (existing.updatedAt.getTime() !== incoming.getTime()) {
+				return errorResponse('Conflict: project has changed', 409)
+			}
+		}
+
 		// Update project
 		const project = await prisma.project.update({
 			where: { id },
@@ -195,6 +203,14 @@ export const PATCH: RequestHandler = async (event) => {
 
 		if (!existing) {
 			return errorResponse('Project not found', 404)
+		}
+
+		// Concurrency control: if updatedAt provided, ensure it matches current
+		if (body.updatedAt) {
+			const incoming = new Date(body.updatedAt)
+			if (existing.updatedAt.getTime() !== incoming.getTime()) {
+				return errorResponse('Conflict: project has changed', 409)
+			}
 		}
 
 		// Build update data object with only provided fields
