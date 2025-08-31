@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
-	import { onMount } from 'svelte'
+	import { goto, beforeNavigate } from '$app/navigation'
+import { onMount } from 'svelte'
+import { api } from '$lib/admin/api'
+import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
@@ -9,6 +11,8 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
+	import { createAutoSaveController } from '$lib/admin/autoSave'
+	import AutoSaveStatus from '$lib/components/admin/AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
 	let post = $state<any>(null)
@@ -27,7 +31,14 @@
 	let tagInput = $state('')
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement
-	let showDeleteConfirmation = $state(false)
+let showDeleteConfirmation = $state(false)
+
+// Draft backup
+const draftKey = $derived(makeDraftKey('post', $page.params.id))
+let showDraftPrompt = $state(false)
+let draftTimestamp = $state<number | null>(null)
+let timeTicker = $state(0)
+const draftTimeText = $derived(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -35,6 +46,31 @@
 	}
 
 	let config = $derived(postTypeConfig[postType])
+
+	// Autosave controller
+	let autoSave = createAutoSaveController({
+		debounceMs: 2000,
+		getPayload: () => {
+			if (!post) return null
+			return {
+				title: config?.showTitle ? title : null,
+				slug,
+				type: postType,
+				status,
+				content: config?.showContent ? content : null,
+				excerpt: postType === 'essay' ? excerpt : undefined,
+				tags,
+				updatedAt: post?.updatedAt
+			}
+		},
+		save: async (payload, { signal }) => {
+			const saved = await api.put(`/api/posts/${$page.params.id}`, payload, { signal })
+			return saved
+		},
+		onSaved: (saved: any) => {
+			post = saved
+		}
+	})
 
 	// Convert blocks format (from database) to Tiptap format
 	function convertBlocksToTiptap(blocksContent: any): JSONContent {
@@ -135,11 +171,16 @@
 		}
 	}
 
-	onMount(async () => {
-		// Wait a tick to ensure page params are loaded
-		await new Promise((resolve) => setTimeout(resolve, 0))
-		await loadPost()
-	})
+onMount(async () => {
+  // Wait a tick to ensure page params are loaded
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  await loadPost()
+  const draft = loadDraft<any>(draftKey)
+  if (draft) {
+    showDraftPrompt = true
+    draftTimestamp = draft.ts
+  }
+})
 
 	async function loadPost() {
 		const postId = $page.params.id
@@ -150,20 +191,10 @@
 			return
 		}
 
-		const auth = localStorage.getItem('admin_auth')
-
-		if (!auth) {
-			goto('/admin/login')
-			return
-		}
-
 		try {
-			const response = await fetch(`/api/posts/${postId}`, {
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (response.ok) {
-				post = await response.json()
+			const data = await api.get(`/api/posts/${postId}`)
+			if (data) {
+				post = data
 
 				// Populate form fields
 				title = post.title || ''
@@ -186,14 +217,8 @@
 				// Set content ready after all data is loaded
 				contentReady = true
 			} else {
-				if (response.status === 404) {
+				// Fallback error messaging
 					loadError = 'Post not found'
-				} else if (response.status === 401) {
-					goto('/admin/login')
-					return
-				} else {
-					loadError = `Failed to load post: ${response.status} ${response.statusText}`
-				}
 			}
 		} catch (error) {
 			loadError = 'Network error occurred while loading post'
@@ -214,12 +239,6 @@
 	}
 
 	async function handleSave(newStatus?: string) {
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-			return
-		}
-
 		saving = true
 
 		// Save content in native Tiptap format to preserve all formatting
@@ -236,20 +255,13 @@
 		}
 
 		try {
-			const response = await fetch(`/api/posts/${$page.params.id}`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Basic ${auth}`
-				},
-				body: JSON.stringify(postData)
+			const saved = await api.put(`/api/posts/${$page.params.id}`, {
+				...postData,
+				updatedAt: post?.updatedAt
 			})
-
-			if (response.ok) {
-				post = await response.json()
-				if (newStatus) {
-					status = newStatus
-				}
+			if (saved) {
+				post = saved
+				if (newStatus) status = newStatus
 			}
 		} catch (error) {
 			console.error('Failed to save post:', error)
@@ -264,22 +276,10 @@
 	}
 
 	async function handleDelete() {
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-			return
-		}
-
 		try {
-			const response = await fetch(`/api/posts/${$page.params.id}`, {
-				method: 'DELETE',
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (response.ok) {
-				showDeleteConfirmation = false
-				goto('/admin/posts')
-			}
+			await api.delete(`/api/posts/${$page.params.id}`)
+			showDeleteConfirmation = false
+			goto('/admin/posts')
 		} catch (error) {
 			console.error('Failed to delete post:', error)
 		}
@@ -303,6 +303,49 @@
 			return () => document.removeEventListener('click', handleMetadataPopover)
 		}
 	})
+
+	// Schedule autosave on changes to key fields
+$effect(() => {
+    // Establish dependencies
+    title; slug; status; content; tags; excerpt; postType; loading
+    if (post && !loading) {
+        autoSave.schedule()
+        saveDraft(draftKey, {
+            title: config?.showTitle ? title : null,
+            slug,
+            type: postType,
+            status,
+            content: config?.showContent ? content : null,
+            excerpt: postType === 'essay' ? excerpt : undefined,
+            tags,
+            updatedAt: post?.updatedAt
+        })
+    }
+})
+
+	function handleKeydown(e: KeyboardEvent) {
+		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+			e.preventDefault()
+			autoSave.flush()
+		}
+	}
+
+	$effect(() => {
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+beforeNavigate(() => {
+  autoSave.flush()
+})
+
+// Auto-update draft time text every minute when prompt visible
+$effect(() => {
+  if (showDraftPrompt) {
+    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+    return () => clearInterval(id)
+  }
+})
 </script>
 
 <svelte:head>
@@ -375,6 +418,14 @@
 						: [{ label: 'Save as Draft', status: 'draft' }]}
 					viewUrl={slug ? `/universe/${slug}` : undefined}
 				/>
+				<AutoSaveStatus statusStore={autoSave.status} errorStore={autoSave.lastError} />
+				{#if showDraftPrompt}
+					<div class="draft-prompt">
+						Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+						<button class="link" onclick={restoreDraft}>Restore</button>
+						<button class="link" onclick={dismissDraft}>Dismiss</button>
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</header>
@@ -457,6 +508,21 @@
 		display: flex;
 		align-items: center;
 		gap: $unit-2x;
+	}
+
+	.draft-prompt {
+		margin-left: $unit-2x;
+		color: $gray-40;
+		font-size: 0.75rem;
+
+		.link {
+			background: none;
+			border: none;
+			color: $gray-20;
+			cursor: pointer;
+			margin-left: $unit;
+			padding: 0;
+		}
 	}
 
 	.btn-icon {
