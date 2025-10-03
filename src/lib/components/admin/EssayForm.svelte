@@ -5,7 +5,8 @@
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
-	import { toast } from '$lib/stores/toast'
+import { toast } from '$lib/stores/toast'
+import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import type { JSONContent } from '@tiptap/core'
 
 	interface Props {
@@ -37,7 +38,25 @@
 	let tagInput = $state('')
 
 	// Ref to the editor component
-	let editorRef: any
+let editorRef: any
+
+// Draft backup
+const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
+let showDraftPrompt = $state(false)
+let draftTimestamp = $state<number | null>(null)
+let timeTicker = $state(0)
+const draftTimeText = $derived(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+
+function buildPayload() {
+  return {
+    title,
+    slug,
+    type: 'essay',
+    status,
+    content,
+    tags
+  }
+}
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -45,14 +64,53 @@
 	]
 
 	// Auto-generate slug from title
-	$effect(() => {
-		if (title && !slug) {
+$effect(() => {
+  if (title && !slug) {
 			slug = title
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, '-')
 				.replace(/^-+|-+$/g, '')
 		}
-	})
+})
+
+// Save draft when key fields change
+$effect(() => {
+  title; slug; status; content; tags
+  saveDraft(draftKey, buildPayload())
+})
+
+// Show restore prompt if a draft exists
+$effect(() => {
+  const draft = loadDraft<any>(draftKey)
+  if (draft) {
+    showDraftPrompt = true
+    draftTimestamp = draft.ts
+  }
+})
+
+function restoreDraft() {
+  const draft = loadDraft<any>(draftKey)
+  if (!draft) return
+  const p = draft.payload
+  title = p.title ?? title
+  slug = p.slug ?? slug
+  status = p.status ?? status
+  content = p.content ?? content
+  tags = p.tags ?? tags
+  showDraftPrompt = false
+}
+
+function dismissDraft() {
+  showDraftPrompt = false
+}
+
+// Auto-update draft time text every minute when prompt visible
+$effect(() => {
+  if (showDraftPrompt) {
+    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+    return () => clearInterval(id)
+  }
+})
 
 	function addTag() {
 		if (tagInput && !tags.includes(tagInput)) {
@@ -122,7 +180,8 @@
 			const savedPost = await response.json()
 
 			toast.dismiss(loadingToastId)
-			toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
+      toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
+      clearDraft(draftKey)
 
 			if (mode === 'create') {
 				goto(`/admin/posts/${savedPost.id}/edit`)
@@ -237,6 +296,13 @@
 					</div>
 				{/if}
 			</div>
+      {#if showDraftPrompt}
+        <div class="draft-prompt">
+          Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+          <button class="link" onclick={restoreDraft}>Restore</button>
+          <button class="link" onclick={dismissDraft}>Dismiss</button>
+        </div>
+      {/if}
 		</div>
 	</header>
 
@@ -364,6 +430,21 @@
 	.save-actions {
 		position: relative;
 		display: flex;
+	}
+
+	.draft-prompt {
+		margin-left: $unit-2x;
+		color: $gray-40;
+		font-size: 0.75rem;
+
+		.link {
+			background: none;
+			border: none;
+			color: $gray-20;
+			cursor: pointer;
+			margin-left: $unit;
+			padding: 0;
+		}
 	}
 
 	// Custom styles for save/publish buttons to maintain grey color scheme

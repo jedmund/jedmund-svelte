@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
+import { goto } from '$app/navigation'
+import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
@@ -79,25 +80,7 @@
 
 	async function loadProjects() {
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-
-			const response = await fetch('/api/projects', {
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to load projects')
-			}
-
-			const data = await response.json()
+			const data = await api.get('/api/projects')
 			projects = data.projects
 
 			// Calculate status counts
@@ -126,21 +109,9 @@
 		const project = event.detail.project
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
 			const newStatus = project.status === 'published' ? 'draft' : 'published'
-
-			const response = await fetch(`/api/projects/${project.id}`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Basic ${auth}`
-				},
-				body: JSON.stringify({ status: newStatus })
-			})
-
-			if (response.ok) {
-				await loadProjects()
-			}
+			await api.patch(`/api/projects/${project.id}`, { status: newStatus, updatedAt: project.updatedAt })
+			await loadProjects()
 		} catch (err) {
 			console.error('Failed to update project status:', err)
 		}
@@ -155,16 +126,8 @@
 		if (!projectToDelete) return
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-
-			const response = await fetch(`/api/projects/${projectToDelete.id}`, {
-				method: 'DELETE',
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (response.ok) {
-				await loadProjects()
-			}
+			await api.delete(`/api/projects/${projectToDelete.id}`)
+			await loadProjects()
 		} catch (err) {
 			console.error('Failed to delete project:', err)
 		} finally {

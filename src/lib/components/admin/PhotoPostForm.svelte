@@ -5,7 +5,8 @@
 	import Input from './Input.svelte'
 	import ImageUploader from './ImageUploader.svelte'
 	import Editor from './Editor.svelte'
-	import { toast } from '$lib/stores/toast'
+import { toast } from '$lib/stores/toast'
+import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
@@ -34,7 +35,85 @@
 	let tags = $state(initialData?.tags?.join(', ') || '')
 
 	// Editor ref
-	let editorRef: any
+let editorRef: any
+
+// Draft backup
+const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
+let showDraftPrompt = $state(false)
+let draftTimestamp = $state<number | null>(null)
+let timeTicker = $state(0)
+const draftTimeText = $derived(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+
+function buildPayload() {
+  return {
+    title: title.trim(),
+    slug: createSlug(title),
+    type: 'photo',
+    status,
+    content,
+    featuredImage: featuredImage ? featuredImage.url : null,
+    tags: tags
+      ? tags
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+      : []
+  }
+}
+
+$effect(() => {
+  title; status; content; featuredImage; tags
+  saveDraft(draftKey, buildPayload())
+})
+
+$effect(() => {
+  const draft = loadDraft<any>(draftKey)
+  if (draft) {
+    showDraftPrompt = true
+    draftTimestamp = draft.ts
+  }
+})
+
+function restoreDraft() {
+  const draft = loadDraft<any>(draftKey)
+  if (!draft) return
+  const p = draft.payload
+  title = p.title ?? title
+  status = p.status ?? status
+  content = p.content ?? content
+  tags = Array.isArray(p.tags) ? (p.tags as string[]).join(', ') : tags
+  if (p.featuredImage) {
+    featuredImage = {
+      id: -1,
+      filename: 'photo.jpg',
+      originalName: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      size: 0,
+      url: p.featuredImage,
+      thumbnailUrl: p.featuredImage,
+      width: null,
+      height: null,
+      altText: null,
+      description: null,
+      usedIn: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    } as any
+  }
+  showDraftPrompt = false
+}
+
+function dismissDraft() {
+  showDraftPrompt = false
+}
+
+// Auto-update draft time text every minute when prompt visible
+$effect(() => {
+  if (showDraftPrompt) {
+    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+    return () => clearInterval(id)
+  }
+})
 
 	// Initialize featured image if editing
 	$effect(() => {
@@ -146,10 +225,11 @@
 				throw new Error(`Failed to ${mode === 'edit' ? 'update' : 'create'} photo post`)
 			}
 
-			const savedPost = await response.json()
+    const savedPost = await response.json()
 
-			toast.dismiss(loadingToastId)
-			toast.success(`Photo post ${status === 'published' ? 'published' : 'saved'} successfully!`)
+    toast.dismiss(loadingToastId)
+    toast.success(`Photo post ${status === 'published' ? 'published' : 'saved'} successfully!`)
+    clearDraft(draftKey)
 
 			// Redirect to posts list or edit page
 			if (mode === 'create') {
@@ -186,6 +266,13 @@
 
 		<div class="header-actions">
 			{#if !isSaving}
+				{#if showDraftPrompt}
+					<div class="draft-prompt">
+						Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+						<button class="link" onclick={restoreDraft}>Restore</button>
+						<button class="link" onclick={dismissDraft}>Dismiss</button>
+					</div>
+				{/if}
 				<Button variant="ghost" onclick={() => goto('/admin/posts')}>Cancel</Button>
 				<Button
 					variant="secondary"
@@ -287,6 +374,20 @@
 		display: flex;
 		gap: $unit-2x;
 		align-items: center;
+	}
+
+	.draft-prompt {
+		color: $gray-40;
+		font-size: 0.75rem;
+
+		.link {
+			background: none;
+			border: none;
+			color: $gray-20;
+			cursor: pointer;
+			margin-left: $unit;
+			padding: 0;
+		}
 	}
 
 	.form-container {

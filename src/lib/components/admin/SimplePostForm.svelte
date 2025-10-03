@@ -5,7 +5,8 @@
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
-	import { toast } from '$lib/stores/toast'
+import { toast } from '$lib/stores/toast'
+import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 
 	interface Props {
 		postType: 'post'
@@ -20,7 +21,7 @@
 		mode: 'create' | 'edit'
 	}
 
-	let { postType, postId, initialData, mode }: Props = $props()
+let { postType, postId, initialData, mode }: Props = $props()
 
 	// State
 	let isSaving = $state(false)
@@ -32,7 +33,7 @@
 	let linkDescription = $state(initialData?.linkDescription || '')
 	let title = $state(initialData?.title || '')
 
-	// Character count for posts
+// Character count for posts
 	const maxLength = 280
 	const textContent = $derived(() => {
 		if (!content.content) return ''
@@ -44,12 +45,77 @@
 	const isOverLimit = $derived(charCount > maxLength)
 
 	// Check if form has content
-	const hasContent = $derived(() => {
+const hasContent = $derived(() => {
 		// For posts, check if either content exists or it's a link with URL
 		const hasTextContent = textContent().trim().length > 0
 		const hasLinkContent = linkUrl && linkUrl.trim().length > 0
 		return hasTextContent || hasLinkContent
-	})
+})
+
+// Draft backup
+const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
+let showDraftPrompt = $state(false)
+let draftTimestamp = $state<number | null>(null)
+let timeTicker = $state(0)
+const draftTimeText = $derived(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+
+function buildPayload() {
+  const payload: any = {
+    type: 'post',
+    status,
+    content
+  }
+  if (linkUrl && linkUrl.trim()) {
+    payload.title = title || linkUrl
+    payload.link_url = linkUrl
+    payload.linkDescription = linkDescription
+  } else if (title) {
+    payload.title = title
+  }
+  return payload
+}
+
+$effect(() => {
+  // Save draft on changes
+  status; content; linkUrl; linkDescription; title
+  saveDraft(draftKey, buildPayload())
+})
+
+$effect(() => {
+  const draft = loadDraft<any>(draftKey)
+  if (draft) {
+    showDraftPrompt = true
+    draftTimestamp = draft.ts
+  }
+})
+
+function restoreDraft() {
+  const draft = loadDraft<any>(draftKey)
+  if (!draft) return
+  const p = draft.payload
+  status = p.status ?? status
+  content = p.content ?? content
+  if (p.link_url) {
+    linkUrl = p.link_url
+    linkDescription = p.linkDescription ?? linkDescription
+    title = p.title ?? title
+  } else {
+    title = p.title ?? title
+  }
+  showDraftPrompt = false
+}
+
+function dismissDraft() {
+  showDraftPrompt = false
+}
+
+// Auto-update draft time text every minute when prompt visible
+$effect(() => {
+  if (showDraftPrompt) {
+    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+    return () => clearInterval(id)
+  }
+})
 
 	async function handleSave(publishStatus: 'draft' | 'published') {
 		if (isOverLimit) {
@@ -105,10 +171,11 @@
 				throw new Error(`Failed to ${mode === 'edit' ? 'save' : 'create'} post`)
 			}
 
-			const savedPost = await response.json()
+    const savedPost = await response.json()
 
-			toast.dismiss(loadingToastId)
-			toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
+    toast.dismiss(loadingToastId)
+    toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
+    clearDraft(draftKey)
 
 			// Redirect back to posts list after creation
 			goto('/admin/posts')
@@ -145,6 +212,13 @@
 			</h1>
 		</div>
 		<div class="header-actions">
+			{#if showDraftPrompt}
+				<div class="draft-prompt">
+					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+					<button class="link" onclick={restoreDraft}>Restore</button>
+					<button class="link" onclick={dismissDraft}>Dismiss</button>
+				</div>
+			{/if}
 			<Button variant="secondary" onclick={() => handleSave('draft')} disabled={isSaving}>
 				Save Draft
 			</Button>
@@ -355,4 +429,18 @@
 			color: $gray-60;
 		}
 	}
+.draft-prompt {
+  margin-right: $unit-2x;
+  color: $gray-40;
+  font-size: 0.75rem;
+
+  .link {
+    background: none;
+    border: none;
+    color: $gray-20;
+    cursor: pointer;
+    margin-left: $unit;
+    padding: 0;
+  }
+}
 </style>

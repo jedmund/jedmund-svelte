@@ -14,6 +14,10 @@
 	import { toast } from '$lib/stores/toast'
 	import type { Project, ProjectFormData } from '$lib/types/project'
 	import { defaultProjectFormData } from '$lib/types/project'
+  import { beforeNavigate } from '$app/navigation'
+  import { createAutoSaveController } from '$lib/admin/autoSave'
+  import AutoSaveStatus from './AutoSaveStatus.svelte'
+  import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 
 	interface Props {
 		project?: Project | null
@@ -36,6 +40,55 @@
 	// Ref to the editor component
 	let editorRef: any
 
+	// Local draft recovery
+	const draftKey = $derived(mode === 'edit' && project ? makeDraftKey('project', project.id) : null)
+	let showDraftPrompt = $state(false)
+	let draftTimestamp = $state<number | null>(null)
+	let timeTicker = $state(0)
+	const draftTimeText = $derived(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+
+	function buildPayload() {
+		return {
+			title: formData.title,
+			subtitle: formData.subtitle,
+			description: formData.description,
+			year: formData.year,
+			client: formData.client,
+			role: formData.role,
+			projectType: formData.projectType,
+			externalUrl: formData.externalUrl,
+			featuredImage: formData.featuredImage && formData.featuredImage !== '' ? formData.featuredImage : null,
+			logoUrl: formData.logoUrl && formData.logoUrl !== '' ? formData.logoUrl : null,
+			backgroundColor: formData.backgroundColor,
+			highlightColor: formData.highlightColor,
+			status: formData.status,
+			password: formData.status === 'password-protected' ? formData.password : null,
+			caseStudyContent:
+				formData.caseStudyContent &&
+				formData.caseStudyContent.content &&
+				formData.caseStudyContent.content.length > 0
+					? formData.caseStudyContent
+					: null,
+			updatedAt: project?.updatedAt
+		}
+	}
+
+	// Autosave (edit mode only)
+	let autoSave = mode === 'edit'
+		? createAutoSaveController({
+			debounceMs: 2000,
+			getPayload: () => (isLoading ? null : buildPayload()),
+			save: async (payload, { signal }) => {
+				return await api.put(`/api/projects/${project?.id}`, payload, { signal })
+			},
+			onSaved: (savedProject: any) => {
+				// Update baseline updatedAt on successful save
+				project = savedProject
+				if (draftKey) clearDraft(draftKey)
+			}
+		})
+		: null
+
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
 		{ value: 'case-study', label: 'Case Study' }
@@ -47,6 +100,66 @@
 			populateFormData(project)
 		} else if (mode === 'create') {
 			isLoading = false
+		}
+	})
+
+	// Check for local draft to restore
+	$effect(() => {
+		if (mode === 'edit' && project && draftKey) {
+			const draft = loadDraft<any>(draftKey)
+			if (draft) {
+				// Show prompt; restoration is manual to avoid overwriting loaded data unintentionally
+				showDraftPrompt = true
+				draftTimestamp = draft.ts
+			}
+		}
+	})
+
+	// Auto-update draft time text every minute when prompt visible
+	$effect(() => {
+		if (showDraftPrompt) {
+			const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+			return () => clearInterval(id)
+		}
+	})
+
+	function restoreDraft() {
+		if (!draftKey) return
+		const draft = loadDraft<any>(draftKey)
+		if (!draft) return
+		const p = draft.payload
+		// Apply payload fields to formData
+		formData = {
+			title: p.title ?? formData.title,
+			subtitle: p.subtitle ?? formData.subtitle,
+			description: p.description ?? formData.description,
+			year: p.year ?? formData.year,
+			client: p.client ?? formData.client,
+			role: p.role ?? formData.role,
+			projectType: p.projectType ?? formData.projectType,
+			externalUrl: p.externalUrl ?? formData.externalUrl,
+			featuredImage: p.featuredImage ?? formData.featuredImage,
+			logoUrl: p.logoUrl ?? formData.logoUrl,
+			backgroundColor: p.backgroundColor ?? formData.backgroundColor,
+			highlightColor: p.highlightColor ?? formData.highlightColor,
+			status: p.status ?? formData.status,
+			password: p.password ?? formData.password,
+			caseStudyContent: p.caseStudyContent ?? formData.caseStudyContent
+		}
+		showDraftPrompt = false
+	}
+
+	function dismissDraft() {
+		showDraftPrompt = false
+	}
+
+	// Trigger autosave and store local draft when formData changes (edit mode)
+	$effect(() => {
+		// Establish dependencies on fields
+		formData; activeTab
+		if (mode === 'edit' && !isLoading && autoSave) {
+			autoSave.schedule()
+			if (draftKey) saveDraft(draftKey, buildPayload())
 		}
 	})
 
@@ -108,6 +221,8 @@
 		formData.caseStudyContent = content
 	}
 
+	import { api } from '$lib/admin/api'
+
 	async function handleSave() {
 		// Check if we're on the case study tab and should save editor content
 		if (activeTab === 'case-study' && editorRef) {
@@ -155,35 +270,33 @@
 					formData.caseStudyContent.content.length > 0
 						? formData.caseStudyContent
 						: null
+				,
+				// Include updatedAt for concurrency control in edit mode
+				updatedAt: mode === 'edit' ? project?.updatedAt : undefined
 			}
 
-			const url = mode === 'edit' ? `/api/projects/${project?.id}` : '/api/projects'
-			const method = mode === 'edit' ? 'PUT' : 'POST'
-
-			const response = await fetch(url, {
-				method,
-				headers: {
-					Authorization: `Basic ${auth}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(payload)
-			})
-
-			if (!response.ok) {
-				throw new Error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
+			let savedProject
+			if (mode === 'edit') {
+				savedProject = await api.put(`/api/projects/${project?.id}`, payload)
+			} else {
+				savedProject = await api.post('/api/projects', payload)
 			}
-
-			const savedProject = await response.json()
 
 			toast.dismiss(loadingToastId)
 			toast.success(`Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 
 			if (mode === 'create') {
 				goto(`/admin/projects/${savedProject.id}/edit`)
+			} else {
+				project = savedProject
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
-			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
+			if ((err as any)?.status === 409) {
+				toast.error('This project has changed in another tab. Please reload.')
+			} else {
+				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
+			}
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -194,6 +307,26 @@
 		formData.status = newStatus as any
 		await handleSave()
 	}
+
+	// Keyboard shortcut: Cmd/Ctrl+S flushes autosave
+	function handleKeydown(e: KeyboardEvent) {
+		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+			e.preventDefault()
+			if (mode === 'edit' && autoSave) autoSave.flush()
+		}
+	}
+
+	$effect(() => {
+		if (mode === 'edit') {
+			document.addEventListener('keydown', handleKeydown)
+			return () => document.removeEventListener('keydown', handleKeydown)
+		}
+	})
+
+	// Flush before navigating away
+	beforeNavigate(() => {
+		if (mode === 'edit' && autoSave) autoSave.flush()
+	})
 </script>
 
 <AdminPage>
@@ -239,6 +372,16 @@
 					]}
 					viewUrl={project?.slug ? `/work/${project.slug}` : undefined}
 				/>
+				{#if mode === 'edit' && autoSave}
+					<AutoSaveStatus statusStore={autoSave.status} errorStore={autoSave.lastError} />
+				{/if}
+			{#if mode === 'edit' && showDraftPrompt}
+				<div class="draft-prompt">
+					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+					<button class="link" onclick={restoreDraft}>Restore</button>
+					<button class="link" onclick={dismissDraft}>Dismiss</button>
+				</div>
+			{/if}
 			{/if}
 		</div>
 	</header>
@@ -423,6 +566,21 @@
 
 		@include breakpoint('phone') {
 			min-height: 600px;
+		}
+	}
+
+	.draft-prompt {
+		margin-left: $unit-2x;
+		color: $gray-40;
+		font-size: 0.75rem;
+
+		.button, .link {
+			background: none;
+			border: none;
+			color: $gray-20;
+			cursor: pointer;
+			margin-left: $unit;
+			padding: 0;
 		}
 	}
 </style>

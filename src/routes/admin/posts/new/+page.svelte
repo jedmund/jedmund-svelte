@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+import { goto } from '$app/navigation'
+import { api } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
@@ -73,12 +74,6 @@
 	}
 
 	async function handleSave(publishStatus?: 'draft' | 'published') {
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-			return
-		}
-
 		saving = true
 		const postData = {
 			title: config?.showTitle ? title : null,
@@ -91,22 +86,8 @@
 		}
 
 		try {
-			const response = await fetch('/api/posts', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Basic ${auth}`
-				},
-				body: JSON.stringify(postData)
-			})
-
-			if (response.ok) {
-				const newPost = await response.json()
-				// Redirect to edit page after creation
-				goto(`/admin/posts/${newPost.id}/edit`)
-			} else {
-				console.error('Failed to create post:', response.statusText)
-			}
+			const newPost = await api.post('/api/posts', postData)
+			goto(`/admin/posts/${newPost.id}/edit`)
 		} catch (error) {
 			console.error('Failed to create post:', error)
 		} finally {

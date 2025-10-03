@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
+import { goto } from '$app/navigation'
+import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
@@ -85,25 +86,7 @@
 
 	async function loadPosts() {
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-
-			const response = await fetch('/api/posts', {
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to load posts')
-			}
-
-			const data = await response.json()
+			const data = await api.get('/api/posts')
 			posts = data.posts || []
 			total = data.pagination?.total || posts.length
 
@@ -209,28 +192,11 @@
 
 	async function handleTogglePublish(event: CustomEvent<{ post: Post }>) {
 		const { post } = event.detail
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-			return
-		}
-
 		const newStatus = post.status === 'published' ? 'draft' : 'published'
 
 		try {
-			const response = await fetch(`/api/posts/${post.id}`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Basic ${auth}`
-				},
-				body: JSON.stringify({ status: newStatus })
-			})
-
-			if (response.ok) {
-				// Reload posts to refresh the list
-				await loadPosts()
-			}
+			await api.patch(`/api/posts/${post.id}`, { status: newStatus, updatedAt: post.updatedAt })
+			await loadPosts()
 		} catch (error) {
 			console.error('Failed to toggle publish status:', error)
 		}
@@ -244,24 +210,11 @@
 	async function confirmDelete() {
 		if (!postToDelete) return
 
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-			return
-		}
-
 		try {
-			const response = await fetch(`/api/posts/${postToDelete.id}`, {
-				method: 'DELETE',
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (response.ok) {
-				showDeleteConfirmation = false
-				postToDelete = null
-				// Reload posts to refresh the list
-				await loadPosts()
-			}
+			await api.delete(`/api/posts/${postToDelete.id}`)
+			showDeleteConfirmation = false
+			postToDelete = null
+			await loadPosts()
 		} catch (error) {
 			console.error('Failed to delete post:', error)
 		}
