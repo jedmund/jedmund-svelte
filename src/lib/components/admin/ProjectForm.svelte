@@ -177,9 +177,15 @@
 		}
 	})
 
-	// Navigation guard: flush autosave before navigating away
+	// Navigation guard: flush autosave before navigating away (only if there are unsaved changes)
 	beforeNavigate(async (navigation) => {
 		if (mode === 'edit' && hasLoaded && autoSave) {
+			// If status is 'saved', there are no unsaved changes - allow navigation
+			if (autoSave.status === 'saved') {
+				return
+			}
+
+			// Otherwise, flush any pending changes before navigating
 			navigation.cancel()
 			try {
 				await autoSave.flush()
@@ -189,6 +195,22 @@
 				toast.error('Failed to save changes')
 			}
 		}
+	})
+
+	// Warn before closing browser tab/window if there are unsaved changes
+	$effect(() => {
+		if (mode !== 'edit' || !autoSave) return
+
+		function handleBeforeUnload(event: BeforeUnloadEvent) {
+			// Only warn if there are unsaved changes
+			if (autoSave!.status !== 'saved') {
+				event.preventDefault()
+				event.returnValue = '' // Required for Chrome
+			}
+		}
+
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 	})
 
 	// Keyboard shortcut: Cmd/Ctrl+S to save immediately
