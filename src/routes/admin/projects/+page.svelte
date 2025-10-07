@@ -8,6 +8,7 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
+	import { createListFilters, commonSorts } from '$lib/admin/listFilters.svelte'
 	import type { PageData } from './$types'
 	import type { AdminProject } from '$lib/types/admin'
 
@@ -16,13 +17,27 @@
 	let showDeleteModal = false
 	let projectToDelete: AdminProject | null = null
 
-	let selectedTypeFilter: string = 'all'
-	let selectedStatusFilter: string = 'all'
-	let sortBy: string = 'newest'
-
 	const actionError = form?.message ?? ''
 	const projects = data.items ?? []
-	let filteredProjects = $state<AdminProject[]>([...projects])
+
+	// Create reactive filters
+	const filters = createListFilters(projects, {
+		filters: {
+			type: { field: 'projectType', default: 'all' },
+			status: { field: 'status', default: 'all' }
+		},
+		sorts: {
+			newest: commonSorts.dateDesc<AdminProject>('createdAt'),
+			oldest: commonSorts.dateAsc<AdminProject>('createdAt'),
+			'title-asc': commonSorts.stringAsc<AdminProject>('title'),
+			'title-desc': commonSorts.stringDesc<AdminProject>('title'),
+			'year-desc': commonSorts.numberDesc<AdminProject>('year'),
+			'year-asc': commonSorts.numberAsc<AdminProject>('year'),
+			'status-published': commonSorts.statusPublishedFirst<AdminProject>('status'),
+			'status-draft': commonSorts.statusDraftFirst<AdminProject>('status')
+		},
+		defaultSort: 'newest'
+	})
 
 	let toggleForm: HTMLFormElement | null = null
 	let toggleIdField: HTMLInputElement | null = null
@@ -54,68 +69,6 @@
 		{ value: 'status-published', label: 'Published first' },
 		{ value: 'status-draft', label: 'Draft first' }
 	]
-
-	function applyFilterAndSort() {
-		let next = [...projects]
-
-		if (selectedStatusFilter !== 'all') {
-			next = next.filter((project) => project.status === selectedStatusFilter)
-		}
-
-		if (selectedTypeFilter !== 'all') {
-			next = next.filter((project) => project.projectType === selectedTypeFilter)
-		}
-
-		switch (sortBy) {
-			case 'oldest':
-				next.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-				break
-			case 'title-asc':
-				next.sort((a, b) => a.title.localeCompare(b.title))
-				break
-			case 'title-desc':
-				next.sort((a, b) => b.title.localeCompare(a.title))
-				break
-			case 'year-desc':
-				next.sort((a, b) => b.year - a.year)
-				break
-			case 'year-asc':
-				next.sort((a, b) => a.year - b.year)
-				break
-			case 'status-published':
-				next.sort((a, b) => {
-					if (a.status === b.status) return 0
-					return a.status === 'published' ? -1 : 1
-				})
-				break
-			case 'status-draft':
-				next.sort((a, b) => {
-					if (a.status === b.status) return 0
-					return a.status === 'draft' ? -1 : 1
-				})
-				break
-			case 'newest':
-			default:
-				next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-				break
-		}
-
-		filteredProjects = next
-	}
-
-	applyFilterAndSort()
-
-	function handleTypeFilterChange() {
-		applyFilterAndSort()
-	}
-
-	function handleStatusFilterChange() {
-		applyFilterAndSort()
-	}
-
-	function handleSortChange() {
-		applyFilterAndSort()
-	}
 
 	onMount(() => {
 		document.addEventListener('click', handleOutsideClick)
@@ -185,27 +138,27 @@
 	<AdminFilters>
 		{#snippet left()}
 				<Select
-					bind:value={selectedTypeFilter}
+					value={filters.values.type}
 					options={typeFilterOptions}
 					size="small"
 					variant="minimal"
-					onchange={handleTypeFilterChange}
+					onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
 				/>
 				<Select
-					bind:value={selectedStatusFilter}
+					value={filters.values.status}
 					options={statusFilterOptions}
 					size="small"
 					variant="minimal"
-					onchange={handleStatusFilterChange}
+					onchange={(e) => filters.set('status', (e.target as HTMLSelectElement).value)}
 				/>
 		{/snippet}
 		{#snippet right()}
 			<Select
-				bind:value={sortBy}
+				value={filters.sort}
 				options={sortOptions}
 				size="small"
 				variant="minimal"
-				onchange={handleSortChange}
+				onchange={(e) => filters.setSort((e.target as HTMLSelectElement).value)}
 			/>
 		{/snippet}
 	</AdminFilters>
@@ -214,11 +167,11 @@
 		<div class="error">{actionError}</div>
 	{/if}
 
-	{#if filteredProjects.length === 0}
+	{#if filters.items.length === 0}
 		<div class="empty-state">
 			<h3>No projects found</h3>
 			<p>
-				{#if selectedTypeFilter === 'all' && selectedStatusFilter === 'all'}
+				{#if filters.values.type === 'all' && filters.values.status === 'all'}
 					Create your first project to get started!
 				{:else}
 					No projects found matching the current filters. Try adjusting your filters or create a new
@@ -228,7 +181,7 @@
 		</div>
 	{:else}
 		<div class="projects-list">
-			{#each filteredProjects as project (project.id)}
+			{#each filters.items as project (project.id)}
 				<ProjectListItem
 					{project}
 					on:edit={handleEdit}

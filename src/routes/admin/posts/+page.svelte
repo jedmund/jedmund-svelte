@@ -9,6 +9,7 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
+	import { createListFilters, commonSorts } from '$lib/admin/listFilters.svelte'
 	import type { PageData } from './$types'
 	import type { AdminPost } from '$lib/types/admin'
 
@@ -18,13 +19,25 @@ let showInlineComposer = true
 let showDeleteConfirmation = false
 let postToDelete: AdminPost | null = null
 
-let selectedTypeFilter = 'all'
-let selectedStatusFilter = 'all'
-let sortBy = 'newest'
-
 const actionError = form?.message ?? ''
 const posts = data.items ?? []
-let filteredPosts = $state<AdminPost[]>([...posts])
+
+// Create reactive filters
+const filters = createListFilters(posts, {
+	filters: {
+		type: { field: 'postType', default: 'all' },
+		status: { field: 'status', default: 'all' }
+	},
+	sorts: {
+		newest: commonSorts.dateDesc<AdminPost>('createdAt'),
+		oldest: commonSorts.dateAsc<AdminPost>('createdAt'),
+		'title-asc': commonSorts.stringAsc<AdminPost>('title'),
+		'title-desc': commonSorts.stringDesc<AdminPost>('title'),
+		'status-published': commonSorts.statusPublishedFirst<AdminPost>('status'),
+		'status-draft': commonSorts.statusDraftFirst<AdminPost>('status')
+	},
+	defaultSort: 'newest'
+})
 
 	let toggleForm: HTMLFormElement | null = null
 	let toggleIdField: HTMLInputElement | null = null
@@ -54,62 +67,6 @@ const statusFilterOptions = [
 		{ value: 'status-published', label: 'Published first' },
 		{ value: 'status-draft', label: 'Draft first' }
 	]
-
-function applyFilterAndSort() {
-	let next = [...posts]
-
-	if (selectedTypeFilter !== 'all') {
-		next = next.filter((post) => post.postType === selectedTypeFilter)
-	}
-
-	if (selectedStatusFilter !== 'all') {
-		next = next.filter((post) => post.status === selectedStatusFilter)
-	}
-
-	switch (sortBy) {
-		case 'oldest':
-			next.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-			break
-		case 'title-asc':
-			next.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
-			break
-		case 'title-desc':
-			next.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
-			break
-		case 'status-published':
-			next.sort((a, b) => {
-				if (a.status === b.status) return 0
-				return a.status === 'published' ? -1 : 1
-			})
-			break
-		case 'status-draft':
-			next.sort((a, b) => {
-				if (a.status === b.status) return 0
-				return a.status === 'draft' ? -1 : 1
-			})
-			break
-		case 'newest':
-		default:
-			next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-			break
-	}
-
-	filteredPosts = next
-}
-
-applyFilterAndSort()
-
-function handleTypeFilterChange() {
-	applyFilterAndSort()
-}
-
-function handleStatusFilterChange() {
-	applyFilterAndSort()
-}
-
-function handleSortChange() {
-	applyFilterAndSort()
-}
 
 	onMount(() => {
 		document.addEventListener('click', handleOutsideClick)
@@ -195,27 +152,27 @@ function handleSortChange() {
 	<AdminFilters>
 		{#snippet left()}
 			<Select
-				bind:value={selectedTypeFilter}
+				value={filters.values.type}
 				options={typeFilterOptions}
 				size="small"
 				variant="minimal"
-				onchange={handleTypeFilterChange}
+				onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
 			/>
 			<Select
-				bind:value={selectedStatusFilter}
+				value={filters.values.status}
 				options={statusFilterOptions}
 				size="small"
 				variant="minimal"
-				onchange={handleStatusFilterChange}
+				onchange={(e) => filters.set('status', (e.target as HTMLSelectElement).value)}
 			/>
 		{/snippet}
 		{#snippet right()}
 			<Select
-				bind:value={sortBy}
+				value={filters.sort}
 				options={sortOptions}
 				size="small"
 				variant="minimal"
-				onchange={handleSortChange}
+				onchange={(e) => filters.setSort((e.target as HTMLSelectElement).value)}
 			/>
 		{/snippet}
 	</AdminFilters>
@@ -224,12 +181,12 @@ function handleSortChange() {
 		<div class="error-message">{actionError}</div>
 	{/if}
 
-	{#if filteredPosts.length === 0}
+	{#if filters.items.length === 0}
 		<div class="empty-state">
 			<div class="empty-icon">📝</div>
 			<h3>No posts found</h3>
 			<p>
-				{#if selectedTypeFilter === 'all' && selectedStatusFilter === 'all'}
+				{#if filters.values.type === 'all' && filters.values.status === 'all'}
 					Create your first post to get started!
 				{:else}
 					No posts found matching the current filters. Try adjusting your filters or create a new
@@ -239,7 +196,7 @@ function handleSortChange() {
 		</div>
 	{:else}
 		<div class="posts-list">
-			{#each filteredPosts as post (post.id)}
+			{#each filters.items as post (post.id)}
 				<PostListItem
 					{post}
 					on:edit={handleEdit}
