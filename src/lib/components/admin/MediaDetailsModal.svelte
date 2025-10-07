@@ -11,7 +11,6 @@
 	import CopyIcon from '$components/icons/CopyIcon.svelte'
 	import MediaMetadataPanel from './MediaMetadataPanel.svelte'
 	import MediaUsageList from './MediaUsageList.svelte'
-	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
 	import { formatFileSize, getFileType, isVideoFile } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
@@ -67,7 +66,9 @@
 
 		try {
 			loadingUsage = true
-			const response = await authenticatedFetch(`/api/media/${media.id}/usage`)
+			const response = await fetch(`/api/media/${media.id}/usage`, {
+				credentials: 'same-origin'
+			})
 
 			if (response.ok) {
 				const data = await response.json()
@@ -92,7 +93,9 @@
 			loadingAlbums = true
 
 			// Load albums this media belongs to
-			const mediaResponse = await authenticatedFetch(`/api/media/${media.id}/albums`)
+			const mediaResponse = await fetch(`/api/media/${media.id}/albums`, {
+				credentials: 'same-origin'
+			})
 			if (mediaResponse.ok) {
 				const data = await mediaResponse.json()
 				albums = data.albums || []
@@ -120,7 +123,7 @@
 		try {
 			isSaving = true
 
-			const response = await authenticatedFetch(`/api/media/${media.id}`, {
+			const response = await fetch(`/api/media/${media.id}`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json'
@@ -128,7 +131,8 @@
 				body: JSON.stringify({
 					description: description.trim() || null,
 					isPhotography: isPhotography
-				})
+				}),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
@@ -167,8 +171,9 @@
 		try {
 			isSaving = true
 
-			const response = await authenticatedFetch(`/api/media/${media.id}`, {
-				method: 'DELETE'
+			const response = await fetch(`/api/media/${media.id}`, {
+				method: 'DELETE',
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {

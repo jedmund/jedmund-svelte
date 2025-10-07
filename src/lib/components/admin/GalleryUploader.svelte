@@ -5,7 +5,6 @@
 	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
-	import { authenticatedFetch } from '$lib/admin-auth'
 
 	interface Props {
 		label: string
@@ -80,9 +79,10 @@
 			const formData = new FormData()
 			formData.append('file', file)
 
-			const response = await authenticatedFetch('/api/media/upload', {
+			const response = await fetch('/api/media/upload', {
 				method: 'POST',
-				body: formData
+				body: formData,
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {

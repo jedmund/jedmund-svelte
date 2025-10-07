@@ -4,7 +4,6 @@
 	import Input from './Input.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
-	import { authenticatedFetch } from '$lib/admin-auth'
 	import RefreshIcon from '$icons/refresh.svg?component'
 
 	interface Props {
@@ -85,9 +84,10 @@
 			formData.append('description', descriptionValue.trim())
 		}
 
-		const response = await authenticatedFetch('/api/media/upload', {
+		const response = await fetch('/api/media/upload', {
 			method: 'POST',
-			body: formData
+			body: formData,
+			credentials: 'same-origin'
 		})
 
 		if (!response.ok) {
@@ -191,14 +191,15 @@
 		if (!value) return
 
 		try {
-			const response = await authenticatedFetch(`/api/media/${value.id}/metadata`, {
+			const response = await fetch(`/api/media/${value.id}/metadata`, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
 					description: descriptionValue.trim() || null
-				})
+				}),
+				credentials: 'same-origin'
 			})
 
 			if (response.ok) {

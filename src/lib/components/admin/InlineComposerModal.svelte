@@ -111,18 +111,11 @@
 			formData.append('file', file)
 			formData.append('type', 'image')
 
-			// Add auth header if needed
-			const auth = localStorage.getItem('admin_auth')
-			const headers: Record<string, string> = {}
-			if (auth) {
-				headers.Authorization = `Basic ${auth}`
-			}
-
 			try {
 				const response = await fetch('/api/media/upload', {
 					method: 'POST',
-					headers,
-					body: formData
+					body: formData,
+					credentials: 'same-origin'
 				})
 
 				if (response.ok) {
@@ -200,16 +193,13 @@
 		}
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-			if (auth) {
-				headers.Authorization = `Basic ${auth}`
-			}
-
 			const response = await fetch('/api/posts', {
 				method: 'POST',
-				headers,
-				body: JSON.stringify(postData)
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(postData),
+				credentials: 'same-origin'
 			})
 
 			if (response.ok) {

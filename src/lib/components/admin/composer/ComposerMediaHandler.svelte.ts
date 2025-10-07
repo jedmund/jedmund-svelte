@@ -44,11 +44,6 @@ export class ComposerMediaHandler {
 		})
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				throw new Error('Not authenticated')
-			}
-
 			const formData = new FormData()
 			formData.append('file', file)
 
@@ -59,10 +54,8 @@ export class ComposerMediaHandler {
 
 			const response = await fetch('/api/media/upload', {
 				method: 'POST',
-				headers: {
-					Authorization: `Basic ${auth}`
-				},
-				body: formData
+				body: formData,
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
