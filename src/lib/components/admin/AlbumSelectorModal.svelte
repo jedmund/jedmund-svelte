@@ -34,16 +34,14 @@
 		try {
 			isSaving = true
 			error = ''
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
 
 			const response = await fetch(`/api/albums/${selectedAlbumId}/media`, {
 				method: 'POST',
 				headers: {
-					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ mediaIds: selectedMediaIds })
+				body: JSON.stringify({ mediaIds: selectedMediaIds }),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {

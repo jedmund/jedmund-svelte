@@ -242,12 +242,6 @@
 		try {
 			isSaving = true
 
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-
 			const payload = {
 				title: formData.title,
 				subtitle: formData.subtitle,

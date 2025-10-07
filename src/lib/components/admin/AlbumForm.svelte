@@ -9,7 +9,6 @@
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import Composer from './composer'
-	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
 	import type { Album, Media } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
@@ -99,7 +98,9 @@
 		if (!album) return
 
 		try {
-			const response = await authenticatedFetch(`/api/albums/${album.id}`)
+		const response = await fetch(`/api/albums/${album.id}`, {
+			credentials: 'same-origin'
+		})
 			if (response.ok) {
 				const data = await response.json()
 				albumMedia = data.media || []
@@ -158,12 +159,13 @@
 			const url = mode === 'edit' ? `/api/albums/${album?.id}` : '/api/albums'
 			const method = mode === 'edit' ? 'PUT' : 'POST'
 
-			const response = await authenticatedFetch(url, {
+			const response = await fetch(url, {
 				method,
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(payload)
+				body: JSON.stringify(payload),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
@@ -181,12 +183,13 @@
 			if (mode === 'create' && pendingMediaIds.length > 0) {
 				const photoToastId = toast.loading('Adding selected photos to album...')
 				try {
-					const photoResponse = await authenticatedFetch(`/api/albums/${savedAlbum.id}/media`, {
+					const photoResponse = await fetch(`/api/albums/${savedAlbum.id}/media`, {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json'
 						},
-						body: JSON.stringify({ mediaIds: pendingMediaIds })
+						body: JSON.stringify({ mediaIds: pendingMediaIds }),
+						credentials: 'same-origin'
 					})
 
 					if (!photoResponse.ok) {

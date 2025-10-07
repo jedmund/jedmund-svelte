@@ -185,12 +185,6 @@ $effect(() => {
 				}
 			}
 
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-
 			// Generate slug from title
 			const slug = createSlug(title)
 
@@ -215,13 +209,17 @@ $effect(() => {
 			const response = await fetch(url, {
 				method,
 				headers: {
-					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(payload)
+				body: JSON.stringify(payload),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error(`Failed to ${mode === 'edit' ? 'update' : 'create'} photo post`)
 			}
 

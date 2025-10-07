@@ -61,11 +61,9 @@
 	async function loadAlbums() {
 		try {
 			isLoading = true
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
 
 			const response = await fetch('/api/albums', {
-				headers: { Authorization: `Basic ${auth}` }
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
@@ -98,13 +96,10 @@
 		try {
 			isSaving = true
 			error = ''
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
 
 			const response = await fetch('/api/albums', {
 				method: 'POST',
 				headers: {
-					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
@@ -112,7 +107,8 @@
 					slug: newAlbumSlug.trim(),
 					isPhotography: true,
 					status: 'draft'
-				})
+				}),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
@@ -143,8 +139,6 @@
 		try {
 			isSaving = true
 			error = ''
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
 
 			// Get the list of albums to add/remove
 			const currentAlbumIds = new Set(currentAlbums.map((a) => a.id))
@@ -158,10 +152,10 @@
 				const response = await fetch(`/api/albums/${albumId}/media`, {
 					method: 'POST',
 					headers: {
-						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify({ mediaIds: [mediaId] })
+					body: JSON.stringify({ mediaIds: [mediaId] }),
+					credentials: 'same-origin'
 				})
 
 				if (!response.ok) {
@@ -174,10 +168,10 @@
 				const response = await fetch(`/api/albums/${albumId}/media`, {
 					method: 'DELETE',
 					headers: {
-						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify({ mediaIds: [mediaId] })
+					body: JSON.stringify({ mediaIds: [mediaId] }),
+					credentials: 'same-origin'
 				})
 
 				if (!response.ok) {
