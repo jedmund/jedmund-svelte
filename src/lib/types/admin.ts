@@ -13,3 +13,20 @@ export interface AdminProject {
 	createdAt: string
 	updatedAt: string
 }
+
+export interface AdminPost {
+	id: number
+	slug: string
+	postType: string
+	title: string | null
+	content: unknown
+	excerpt?: string | null
+	status: string
+	tags: string[] | null
+	featuredImage: string | null
+	publishedAt: string | null
+	createdAt: string
+	updatedAt: string
+	attachments?: unknown
+	linkDescription?: string | null
+}
