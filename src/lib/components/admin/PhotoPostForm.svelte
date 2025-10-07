@@ -1,12 +1,14 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, beforeNavigate } from '$app/navigation'
 	import AdminPage from './AdminPage.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import ImageUploader from './ImageUploader.svelte'
 	import Editor from './Editor.svelte'
-import { toast } from '$lib/stores/toast'
-import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
+	import { toast } from '$lib/stores/toast'
+	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
+	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
+	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
@@ -18,6 +20,7 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 			featuredImage?: string
 			status: 'draft' | 'published'
 			tags?: string[]
+			updatedAt?: string
 		}
 		mode: 'create' | 'edit'
 	}
@@ -26,7 +29,9 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 
 	// State
 	let isSaving = $state(false)
+	let hasLoaded = $state(mode === 'create')
 	let status = $state<'draft' | 'published'>(initialData?.status || 'draft')
+	let updatedAt = $state<string | undefined>(initialData?.updatedAt)
 
 	// Form data
 	let title = $state(initialData?.title || '')
@@ -35,14 +40,14 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	let tags = $state(initialData?.tags?.join(', ') || '')
 
 	// Editor ref
-let editorRef: any
+	let editorRef: any
 
-// Draft backup
-const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
-let showDraftPrompt = $state(false)
-let draftTimestamp = $state<number | null>(null)
-let timeTicker = $state(0)
-const draftTimeText = $derived(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+	// Draft backup
+	const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
+	let showDraftPrompt = $state(false)
+	let draftTimestamp = $state<number | null>(null)
+	let timeTicker = $state(0)
+	const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
 
 function buildPayload() {
   return {
@@ -57,14 +62,60 @@ function buildPayload() {
           .split(',')
           .map((tag) => tag.trim())
           .filter(Boolean)
-      : []
+      : [],
+    updatedAt
   }
 }
 
-$effect(() => {
-  title; status; content; featuredImage; tags
-  saveDraft(draftKey, buildPayload())
-})
+// Autosave store (edit mode only)
+let autoSave = mode === 'edit' && postId
+	? createAutoSaveStore({
+			debounceMs: 2000,
+			getPayload: () => (hasLoaded ? buildPayload() : null),
+			save: async (payload, { signal }) => {
+				const response = await fetch(`/api/posts/${postId}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload),
+					credentials: 'same-origin',
+					signal
+				})
+				if (!response.ok) throw new Error('Failed to save')
+				return await response.json()
+			},
+			onSaved: (saved: any, { prime }) => {
+				updatedAt = saved.updatedAt
+				prime(buildPayload())
+				if (draftKey) clearDraft(draftKey)
+			}
+		})
+	: null
+
+	// Prime autosave on initial load (edit mode only)
+	$effect(() => {
+		if (mode === 'edit' && initialData && !hasLoaded && autoSave) {
+			autoSave.prime(buildPayload())
+			hasLoaded = true
+		}
+	})
+
+	// Trigger autosave when form data changes
+	$effect(() => {
+		title; status; content; featuredImage; tags
+		if (hasLoaded && autoSave) {
+			autoSave.schedule()
+		}
+	})
+
+	// Save draft only when autosave fails
+	$effect(() => {
+		if (hasLoaded && autoSave) {
+			const saveStatus = autoSave.status
+			if (saveStatus === 'error' || saveStatus === 'offline') {
+				saveDraft(draftKey, buildPayload())
+			}
+		}
+	})
 
 $effect(() => {
   const draft = loadDraft<any>(draftKey)
@@ -74,46 +125,103 @@ $effect(() => {
   }
 })
 
-function restoreDraft() {
-  const draft = loadDraft<any>(draftKey)
-  if (!draft) return
-  const p = draft.payload
-  title = p.title ?? title
-  status = p.status ?? status
-  content = p.content ?? content
-  tags = Array.isArray(p.tags) ? (p.tags as string[]).join(', ') : tags
-  if (p.featuredImage) {
-    featuredImage = {
-      id: -1,
-      filename: 'photo.jpg',
-      originalName: 'photo.jpg',
-      mimeType: 'image/jpeg',
-      size: 0,
-      url: p.featuredImage,
-      thumbnailUrl: p.featuredImage,
-      width: null,
-      height: null,
-      altText: null,
-      description: null,
-      usedIn: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    } as any
-  }
-  showDraftPrompt = false
-}
+	function restoreDraft() {
+		const draft = loadDraft<any>(draftKey)
+		if (!draft) return
+		const p = draft.payload
+		title = p.title ?? title
+		status = p.status ?? status
+		content = p.content ?? content
+		tags = Array.isArray(p.tags) ? (p.tags as string[]).join(', ') : tags
+		if (p.featuredImage) {
+			featuredImage = {
+				id: -1,
+				filename: 'photo.jpg',
+				originalName: 'photo.jpg',
+				mimeType: 'image/jpeg',
+				size: 0,
+				url: p.featuredImage,
+				thumbnailUrl: p.featuredImage,
+				width: null,
+				height: null,
+				altText: null,
+				description: null,
+				usedIn: [],
+				createdAt: new Date(),
+				updatedAt: new Date()
+			} as any
+		}
+		showDraftPrompt = false
+		clearDraft(draftKey)
+	}
 
-function dismissDraft() {
-  showDraftPrompt = false
-}
+	function dismissDraft() {
+		showDraftPrompt = false
+		clearDraft(draftKey)
+	}
 
-// Auto-update draft time text every minute when prompt visible
-$effect(() => {
-  if (showDraftPrompt) {
-    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
-    return () => clearInterval(id)
-  }
-})
+	// Auto-update draft time text every minute when prompt visible
+	$effect(() => {
+		if (showDraftPrompt) {
+			const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+			return () => clearInterval(id)
+		}
+	})
+
+	// Navigation guard: flush autosave before navigating away (only if unsaved)
+	beforeNavigate(async (navigation) => {
+		if (hasLoaded && autoSave) {
+			if (autoSave.status === 'saved') {
+				return
+			}
+			navigation.cancel()
+			try {
+				await autoSave.flush()
+				navigation.retry()
+			} catch (error) {
+				console.error('Autosave flush failed:', error)
+			}
+		}
+	})
+
+	// Warn before closing browser tab/window if there are unsaved changes
+	$effect(() => {
+		if (!hasLoaded || !autoSave) return
+
+		function handleBeforeUnload(event: BeforeUnloadEvent) {
+			if (autoSave!.status !== 'saved') {
+				event.preventDefault()
+				event.returnValue = ''
+			}
+		}
+
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	})
+
+	// Keyboard shortcut: Cmd/Ctrl+S to save immediately
+	$effect(() => {
+		if (!hasLoaded || !autoSave) return
+
+		function handleKeydown(e: KeyboardEvent) {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+				e.preventDefault()
+				autoSave!.flush().catch((error) => {
+					console.error('Autosave flush failed:', error)
+				})
+			}
+		}
+
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Cleanup autosave on unmount
+	$effect(() => {
+		if (autoSave) {
+			return () => autoSave.destroy()
+		}
+	})
 
 	// Initialize featured image if editing
 	$effect(() => {
@@ -264,12 +372,8 @@ $effect(() => {
 
 		<div class="header-actions">
 			{#if !isSaving}
-				{#if showDraftPrompt}
-					<div class="draft-prompt">
-						Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
-						<button class="link" onclick={restoreDraft}>Restore</button>
-						<button class="link" onclick={dismissDraft}>Dismiss</button>
-					</div>
+				{#if mode === 'edit' && autoSave}
+					<AutoSaveStatus status={autoSave.status} error={autoSave.lastError} />
 				{/if}
 				<Button variant="ghost" onclick={() => goto('/admin/posts')}>Cancel</Button>
 				<Button
@@ -290,11 +394,21 @@ $effect(() => {
 		</div>
 	</header>
 
-	<div class="form-container">
-		{#if error}
-			<div class="error-message">{error}</div>
-		{/if}
+	{#if showDraftPrompt}
+		<div class="draft-banner">
+			<div class="draft-banner-content">
+				<span class="draft-banner-text">
+					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+				</span>
+				<div class="draft-banner-actions">
+					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>
+					<button class="draft-banner-button dismiss" onclick={dismissDraft}>Dismiss</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 
+	<div class="form-container">
 		<div class="form-content">
 			<!-- Featured Photo Upload -->
 			<div class="form-section">
@@ -374,17 +488,103 @@ $effect(() => {
 		align-items: center;
 	}
 
-	.draft-prompt {
-		color: $gray-40;
-		font-size: 0.75rem;
+	.draft-banner {
+		background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+		border-bottom: 1px solid #f59e0b;
+		box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+		padding: $unit-3x $unit-4x;
+		animation: slideDown 0.3s ease-out;
 
-		.link {
-			background: none;
-			border: none;
-			color: $gray-20;
-			cursor: pointer;
-			margin-left: $unit;
-			padding: 0;
+		@include breakpoint('phone') {
+			padding: $unit-2x $unit-3x;
+		}
+	}
+
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.draft-banner-content {
+		max-width: 1200px;
+		margin: 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $unit-3x;
+
+		@include breakpoint('phone') {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: $unit-2x;
+		}
+	}
+
+	.draft-banner-text {
+		color: #92400e;
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.5;
+
+		@include breakpoint('phone') {
+			font-size: 0.8125rem;
+		}
+	}
+
+	.draft-banner-actions {
+		display: flex;
+		gap: $unit-2x;
+		flex-shrink: 0;
+
+		@include breakpoint('phone') {
+			width: 100%;
+		}
+	}
+
+	.draft-banner-button {
+		background: white;
+		border: 1px solid #f59e0b;
+		color: #92400e;
+		padding: $unit $unit-3x;
+		border-radius: $unit;
+		font-size: 0.875rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		white-space: nowrap;
+
+		&:hover {
+			background: #fffbeb;
+			border-color: #d97706;
+			transform: translateY(-1px);
+			box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+		}
+
+		&:active {
+			transform: translateY(0);
+		}
+
+		&.dismiss {
+			background: transparent;
+			border-color: #fbbf24;
+			color: #b45309;
+
+			&:hover {
+				background: rgba(255, 255, 255, 0.5);
+				border-color: #f59e0b;
+			}
+		}
+
+		@include breakpoint('phone') {
+			flex: 1;
+			padding: $unit-1_5x $unit-2x;
+			font-size: 0.8125rem;
 		}
 	}
 
@@ -396,15 +596,6 @@ $effect(() => {
 		@include breakpoint('phone') {
 			padding: $unit-3x;
 		}
-	}
-
-	.error-message {
-		background-color: #fee;
-		color: #d33;
-		padding: $unit-3x;
-		border-radius: $unit;
-		margin-bottom: $unit-4x;
-		text-align: center;
 	}
 
 	.form-content {
