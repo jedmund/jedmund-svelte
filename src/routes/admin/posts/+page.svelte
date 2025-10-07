@@ -12,18 +12,19 @@
 	import type { PageData } from './$types'
 	import type { AdminPost } from '$lib/types/admin'
 
-	const { data, form } = $props<{ data: PageData; form?: { message?: string } }>()
+const { data, form } = $props<{ data: PageData; form?: { message?: string } }>()
 
-	let showInlineComposer = $state(true)
-	let showDeleteConfirmation = $state(false)
-	let postToDelete = $state<AdminPost | null>(null)
+let showInlineComposer = true
+let showDeleteConfirmation = false
+let postToDelete: AdminPost | null = null
 
-	let selectedTypeFilter = $state<string>('all')
-	let selectedStatusFilter = $state<string>('all')
-	let sortBy = $state<string>('newest')
+let selectedTypeFilter = 'all'
+let selectedStatusFilter = 'all'
+let sortBy = 'newest'
 
-	const actionError = $derived(form?.message ?? '')
-	const posts = $derived(data.items ?? [])
+const actionError = form?.message ?? ''
+const posts = data.items ?? []
+let filteredPosts = $state<AdminPost[]>([...posts])
 
 	let toggleForm: HTMLFormElement | null = null
 	let toggleIdField: HTMLInputElement | null = null
@@ -33,17 +34,17 @@
 	let deleteForm: HTMLFormElement | null = null
 	let deleteIdField: HTMLInputElement | null = null
 
-	const typeFilterOptions = $derived([
-		{ value: 'all', label: 'All posts' },
-		{ value: 'post', label: 'Posts' },
-		{ value: 'essay', label: 'Essays' }
-	])
+const typeFilterOptions = [
+	{ value: 'all', label: 'All posts' },
+	{ value: 'post', label: 'Posts' },
+	{ value: 'essay', label: 'Essays' }
+]
 
-	const statusFilterOptions = $derived([
+const statusFilterOptions = [
 		{ value: 'all', label: 'All statuses' },
 		{ value: 'published', label: 'Published' },
 		{ value: 'draft', label: 'Draft' }
-	])
+]
 
 	const sortOptions = [
 		{ value: 'newest', label: 'Newest first' },
@@ -54,47 +55,61 @@
 		{ value: 'status-draft', label: 'Draft first' }
 	]
 
-	const filteredPosts = $derived(() => {
-		let next = [...posts]
+function applyFilterAndSort() {
+	let next = [...posts]
 
-		if (selectedTypeFilter !== 'all') {
-			next = next.filter((post) => post.postType === selectedTypeFilter)
-		}
+	if (selectedTypeFilter !== 'all') {
+		next = next.filter((post) => post.postType === selectedTypeFilter)
+	}
 
-		if (selectedStatusFilter !== 'all') {
-			next = next.filter((post) => post.status === selectedStatusFilter)
-		}
+	if (selectedStatusFilter !== 'all') {
+		next = next.filter((post) => post.status === selectedStatusFilter)
+	}
 
-		switch (sortBy) {
-			case 'oldest':
-				next.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-				break
-			case 'title-asc':
-				next.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
-				break
-			case 'title-desc':
-				next.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
-				break
-			case 'status-published':
-				next.sort((a, b) => {
-					if (a.status === b.status) return 0
-					return a.status === 'published' ? -1 : 1
-				})
-				break
-			case 'status-draft':
-				next.sort((a, b) => {
-					if (a.status === b.status) return 0
-					return a.status === 'draft' ? -1 : 1
-				})
-				break
-			case 'newest':
-			default:
-				next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-				break
-		}
+	switch (sortBy) {
+		case 'oldest':
+			next.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+			break
+		case 'title-asc':
+			next.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+			break
+		case 'title-desc':
+			next.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
+			break
+		case 'status-published':
+			next.sort((a, b) => {
+				if (a.status === b.status) return 0
+				return a.status === 'published' ? -1 : 1
+			})
+			break
+		case 'status-draft':
+			next.sort((a, b) => {
+				if (a.status === b.status) return 0
+				return a.status === 'draft' ? -1 : 1
+			})
+			break
+		case 'newest':
+		default:
+			next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+			break
+	}
 
-		return next
-	})
+	filteredPosts = next
+}
+
+applyFilterAndSort()
+
+function handleTypeFilterChange() {
+	applyFilterAndSort()
+}
+
+function handleStatusFilterChange() {
+	applyFilterAndSort()
+}
+
+function handleSortChange() {
+	applyFilterAndSort()
+}
 
 	onMount(() => {
 		document.addEventListener('click', handleOutsideClick)
@@ -184,16 +199,24 @@
 				options={typeFilterOptions}
 				size="small"
 				variant="minimal"
+				onchange={handleTypeFilterChange}
 			/>
 			<Select
 				bind:value={selectedStatusFilter}
 				options={statusFilterOptions}
 				size="small"
 				variant="minimal"
+				onchange={handleStatusFilterChange}
 			/>
 		{/snippet}
 		{#snippet right()}
-			<Select bind:value={sortBy} options={sortOptions} size="small" variant="minimal" />
+			<Select
+				bind:value={sortBy}
+				options={sortOptions}
+				size="small"
+				variant="minimal"
+				onchange={handleSortChange}
+			/>
 		{/snippet}
 	</AdminFilters>
 

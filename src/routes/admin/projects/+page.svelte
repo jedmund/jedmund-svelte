@@ -13,15 +13,16 @@
 
 	const { data, form } = $props<{ data: PageData; form?: { message?: string } }>()
 
-	let showDeleteModal = $state(false)
-	let projectToDelete = $state<AdminProject | null>(null)
+	let showDeleteModal = false
+	let projectToDelete: AdminProject | null = null
 
-	let selectedTypeFilter = $state<string>('all')
-	let selectedStatusFilter = $state<string>('all')
-	let sortBy = $state<string>('newest')
+	let selectedTypeFilter: string = 'all'
+	let selectedStatusFilter: string = 'all'
+	let sortBy: string = 'newest'
 
-	const actionError = $derived(form?.message ?? '')
-	const projects = $derived(data.items ?? [])
+	const actionError = form?.message ?? ''
+	const projects = data.items ?? []
+	let filteredProjects = $state<AdminProject[]>([...projects])
 
 	let toggleForm: HTMLFormElement | null = null
 	let toggleIdField: HTMLInputElement | null = null
@@ -31,17 +32,17 @@
 	let deleteForm: HTMLFormElement | null = null
 	let deleteIdField: HTMLInputElement | null = null
 
-	const typeFilterOptions = $derived([
+	const typeFilterOptions = [
 		{ value: 'all', label: 'All projects' },
 		{ value: 'work', label: 'Work' },
 		{ value: 'labs', label: 'Labs' }
-	])
+	]
 
-	const statusFilterOptions = $derived([
+	const statusFilterOptions = [
 		{ value: 'all', label: 'All statuses' },
 		{ value: 'published', label: 'Published' },
 		{ value: 'draft', label: 'Draft' }
-	])
+	]
 
 	const sortOptions = [
 		{ value: 'newest', label: 'Newest first' },
@@ -54,7 +55,7 @@
 		{ value: 'status-draft', label: 'Draft first' }
 	]
 
-	const filteredProjects = $derived(() => {
+	function applyFilterAndSort() {
 		let next = [...projects]
 
 		if (selectedStatusFilter !== 'all') {
@@ -99,8 +100,22 @@
 				break
 		}
 
-		return next
-	})
+		filteredProjects = next
+	}
+
+	applyFilterAndSort()
+
+	function handleTypeFilterChange() {
+		applyFilterAndSort()
+	}
+
+	function handleStatusFilterChange() {
+		applyFilterAndSort()
+	}
+
+	function handleSortChange() {
+		applyFilterAndSort()
+	}
 
 	onMount(() => {
 		document.addEventListener('click', handleOutsideClick)
@@ -169,21 +184,29 @@
 
 	<AdminFilters>
 		{#snippet left()}
-			<Select
-				bind:value={selectedTypeFilter}
-				options={typeFilterOptions}
-				size="small"
-				variant="minimal"
-			/>
-			<Select
-				bind:value={selectedStatusFilter}
-				options={statusFilterOptions}
-				size="small"
-				variant="minimal"
-			/>
+				<Select
+					bind:value={selectedTypeFilter}
+					options={typeFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleTypeFilterChange}
+				/>
+				<Select
+					bind:value={selectedStatusFilter}
+					options={statusFilterOptions}
+					size="small"
+					variant="minimal"
+					onchange={handleStatusFilterChange}
+				/>
 		{/snippet}
 		{#snippet right()}
-			<Select bind:value={sortBy} options={sortOptions} size="small" variant="minimal" />
+			<Select
+				bind:value={sortBy}
+				options={sortOptions}
+				size="small"
+				variant="minimal"
+				onchange={handleSortChange}
+			/>
 		{/snippet}
 	</AdminFilters>
 
