@@ -2,16 +2,30 @@
   import type { AutoSaveStatus } from '$lib/admin/autoSave'
 
   interface Props {
-    statusStore: { subscribe: (run: (v: AutoSaveStatus) => void) => () => void }
+    statusStore?: { subscribe: (run: (v: AutoSaveStatus) => void) => () => void }
     errorStore?: { subscribe: (run: (v: string | null) => void) => () => void }
+    status?: AutoSaveStatus
+    error?: string | null
     compact?: boolean
   }
 
-  let { statusStore, errorStore, compact = true }: Props = $props()
+  let { statusStore, errorStore, status: statusProp, error: errorProp, compact = true }: Props = $props()
+
+  // Support both old subscription-based stores and new reactive values
   let status = $state<AutoSaveStatus>('idle')
   let errorText = $state<string | null>(null)
 
   $effect(() => {
+    // If using direct props (new runes-based store)
+    if (statusProp !== undefined) {
+      status = statusProp
+      errorText = errorProp ?? null
+      return
+    }
+
+    // Otherwise use subscriptions (old store)
+    if (!statusStore) return
+
     const unsub = statusStore.subscribe((v) => (status = v))
     let unsubErr: (() => void) | null = null
     if (errorStore) unsubErr = errorStore.subscribe((v) => (errorText = v))
@@ -21,7 +35,7 @@
     }
   })
 
-  const label = $derived(() => {
+  const label = $derived.by(() => {
     switch (status) {
       case 'saving':
         return 'Saving…'

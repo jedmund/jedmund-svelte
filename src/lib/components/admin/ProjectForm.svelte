@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, beforeNavigate } from '$app/navigation'
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
@@ -14,8 +14,7 @@
 	import { toast } from '$lib/stores/toast'
 	import type { Project, ProjectFormData } from '$lib/types/project'
 	import { defaultProjectFormData } from '$lib/types/project'
-  import { beforeNavigate } from '$app/navigation'
-  import { createAutoSaveController } from '$lib/admin/autoSave'
+  import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
   import AutoSaveStatus from './AutoSaveStatus.svelte'
   import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 
@@ -28,6 +27,7 @@
 
 	// State
 	let isLoading = $state(mode === 'edit')
+	let hasLoaded = $state(false)
 	let isSaving = $state(false)
 	let activeTab = $state('metadata')
 	let validationErrors = $state<Record<string, string>>({})
@@ -45,7 +45,7 @@
 	let showDraftPrompt = $state(false)
 	let draftTimestamp = $state<number | null>(null)
 	let timeTicker = $state(0)
-	const draftTimeText = $derived(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+	const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
 
 	function buildPayload() {
 		return {
@@ -75,15 +75,16 @@
 
 	// Autosave (edit mode only)
 	let autoSave = mode === 'edit'
-		? createAutoSaveController({
+		? createAutoSaveStore({
 			debounceMs: 2000,
-			getPayload: () => (isLoading ? null : buildPayload()),
+			getPayload: () => (hasLoaded ? buildPayload() : null),
 			save: async (payload, { signal }) => {
 				return await api.put(`/api/projects/${project?.id}`, payload, { signal })
 			},
-			onSaved: (savedProject: any) => {
+			onSaved: (savedProject: any, { prime }) => {
 				// Update baseline updatedAt on successful save
 				project = savedProject
+				prime(buildPayload())
 				if (draftKey) clearDraft(draftKey)
 			}
 		})
@@ -94,12 +95,13 @@
 		{ value: 'case-study', label: 'Case Study' }
 	]
 
-	// Watch for project changes and populate form data
+	// Watch for project changes and populate form data (only on initial load)
 	$effect(() => {
-		if (project && mode === 'edit') {
+		if (project && mode === 'edit' && !hasLoaded) {
 			populateFormData(project)
 		} else if (mode === 'create') {
 			isLoading = false
+			hasLoaded = true
 		}
 	})
 
@@ -147,19 +149,63 @@
 			caseStudyContent: p.caseStudyContent ?? formData.caseStudyContent
 		}
 		showDraftPrompt = false
+		clearDraft(draftKey)
 	}
 
 	function dismissDraft() {
+		if (!draftKey) return
 		showDraftPrompt = false
+		clearDraft(draftKey)
 	}
 
 	// Trigger autosave and store local draft when formData changes (edit mode)
 	$effect(() => {
 		// Establish dependencies on fields
 		formData; activeTab
-		if (mode === 'edit' && !isLoading && autoSave) {
+		if (mode === 'edit' && hasLoaded && autoSave) {
 			autoSave.schedule()
 			if (draftKey) saveDraft(draftKey, buildPayload())
+		}
+	})
+
+	// Navigation guard: flush autosave before navigating away
+	beforeNavigate(async (navigation) => {
+		if (mode === 'edit' && hasLoaded && autoSave) {
+			navigation.cancel()
+			try {
+				await autoSave.flush()
+				navigation.retry()
+			} catch (error) {
+				console.error('Autosave flush failed:', error)
+				toast.error('Failed to save changes')
+			}
+		}
+	})
+
+	// Keyboard shortcut: Cmd/Ctrl+S to save immediately
+	$effect(() => {
+		if (mode !== 'edit' || !autoSave) return
+
+		function handleKeydown(event: KeyboardEvent) {
+			if (!hasLoaded) return
+			const key = event.key.toLowerCase()
+			const isModifier = event.metaKey || event.ctrlKey
+			if (!isModifier || key !== 's') return
+			event.preventDefault()
+			autoSave!.flush().catch((error) => {
+				console.error('Autosave flush failed:', error)
+				toast.error('Failed to save changes')
+			})
+		}
+
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Cleanup autosave on unmount
+	$effect(() => {
+		if (autoSave) {
+			return () => autoSave.destroy()
 		}
 	})
 
@@ -186,6 +232,12 @@
 			}
 		}
 		isLoading = false
+
+		// Prime autosave with initial data to prevent immediate save
+		if (autoSave) {
+			autoSave.prime(buildPayload())
+		}
+		hasLoaded = true
 	}
 
 	function validateForm() {
@@ -367,18 +419,25 @@
 					viewUrl={project?.slug ? `/work/${project.slug}` : undefined}
 				/>
 				{#if mode === 'edit' && autoSave}
-					<AutoSaveStatus statusStore={autoSave.status} errorStore={autoSave.lastError} />
+					<AutoSaveStatus status={autoSave.status} error={autoSave.lastError} />
 				{/if}
-			{#if mode === 'edit' && showDraftPrompt}
-				<div class="draft-prompt">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
-					<button class="link" onclick={restoreDraft}>Restore</button>
-					<button class="link" onclick={dismissDraft}>Dismiss</button>
-				</div>
-			{/if}
 			{/if}
 		</div>
 	</header>
+
+	{#if mode === 'edit' && showDraftPrompt}
+		<div class="draft-banner">
+			<div class="draft-banner-content">
+				<span class="draft-banner-text">
+					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+				</span>
+				<div class="draft-banner-actions">
+					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>
+					<button class="draft-banner-button dismiss" onclick={dismissDraft}>Dismiss</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<div class="admin-container">
 		{#if isLoading}
@@ -563,18 +622,69 @@
 		}
 	}
 
-	.draft-prompt {
-		margin-left: $unit-2x;
-		color: $gray-40;
-		font-size: 0.75rem;
+	.draft-banner {
+		background: $blue-95;
+		border-bottom: 1px solid $blue-80;
+		padding: $unit-2x $unit-5x;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		animation: slideDown 0.2s ease-out;
 
-		.button, .link {
-			background: none;
-			border: none;
-			color: $gray-20;
-			cursor: pointer;
-			margin-left: $unit;
-			padding: 0;
+		@keyframes slideDown {
+			from {
+				opacity: 0;
+				transform: translateY(-10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+	}
+
+	.draft-banner-content {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $unit-3x;
+		width: 100%;
+		max-width: 1200px;
+	}
+
+	.draft-banner-text {
+		color: $blue-20;
+		font-size: $font-size-small;
+		font-weight: $font-weight-med;
+	}
+
+	.draft-banner-actions {
+		display: flex;
+		gap: $unit-2x;
+	}
+
+	.draft-banner-button {
+		background: $blue-50;
+		border: none;
+		color: $white;
+		cursor: pointer;
+		padding: $unit-half $unit-2x;
+		border-radius: $corner-radius-sm;
+		font-size: $font-size-small;
+		font-weight: $font-weight-med;
+		transition: background $transition-fast;
+
+		&:hover {
+			background: $blue-40;
+		}
+
+		&.dismiss {
+			background: transparent;
+			color: $blue-30;
+
+			&:hover {
+				background: $blue-90;
+			}
 		}
 	}
 </style>
