@@ -66,19 +66,14 @@
 		selectedFiles.clear()
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				error = 'Not authenticated'
-				loading = false
-				return
-			}
-
 			const response = await fetch('/api/admin/cloudinary-audit', {
-				headers: {
-					Authorization: `Basic ${auth}`
-				}
+				credentials: 'same-origin'
 			})
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to fetch audit data')
 			}
 			auditData = await response.json()
@@ -119,26 +114,23 @@
 		deleteResults = null
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				error = 'Not authenticated'
-				deleting = false
-				return
-			}
-
 			const response = await fetch('/api/admin/cloudinary-audit', {
 				method: 'DELETE',
 				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Basic ${auth}`
+					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
 					publicIds: Array.from(selectedFiles),
 					dryRun
-				})
+				}),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to delete files')
 			}
 
@@ -175,25 +167,22 @@
 		cleanupResults = null
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				error = 'Not authenticated'
-				cleaningUp = false
-				return
-			}
-
 			const response = await fetch('/api/admin/cloudinary-audit', {
 				method: 'PATCH',
 				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Basic ${auth}`
+					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
 					publicIds: auditData.missingReferences
-				})
+				}),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to clean up broken references')
 			}
 

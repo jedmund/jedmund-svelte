@@ -7,8 +7,7 @@ export const GET: RequestHandler = async (event) => {
 		const mediaId = parseInt(event.params.id)
 
 		// Check if this is an admin request
-		const authCheck = await checkAdminAuth(event)
-		const isAdmin = authCheck.isAuthenticated
+		const isAdmin = checkAdminAuth(event)
 
 		// Get all albums associated with this media item
 		const albumMedia = await prisma.albumMedia.findMany({
@@ -55,8 +54,7 @@ export const GET: RequestHandler = async (event) => {
 
 export const PUT: RequestHandler = async (event) => {
 	// Check authentication
-	const authCheck = await checkAdminAuth(event)
-	if (!authCheck.isAuthenticated) {
+	if (!checkAdminAuth(event)) {
 		return errorResponse('Unauthorized', 401)
 	}
 
