@@ -1,6 +1,62 @@
 # Admin Autosave Completion Guide
 
-## Objectives
+> **Status: ✅ COMPLETED** (January 2025)
+>
+> All objectives have been achieved. This document is preserved for historical reference and implementation details.
+
+## Implementation Summary
+
+All admin forms now use the modernized runes-based autosave system (`createAutoSaveStore`):
+- ✅ **ProjectForm** - Migrated to runes with full lifecycle management
+- ✅ **Posts Editor** - Migrated with draft recovery banner
+- ✅ **EssayForm** - Added autosave from scratch
+- ✅ **PhotoPostForm** - Added autosave from scratch
+- ✅ **SimplePostForm** - Added autosave from scratch
+
+### New API (Svelte 5 Runes)
+
+```typescript
+import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
+
+const autoSave = createAutoSaveStore({
+  debounceMs: 2000,
+  idleResetMs: 2000,
+  getPayload: () => buildPayload(),
+  save: async (payload, { signal }) => {
+    const response = await fetch('/api/endpoint', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      credentials: 'same-origin',
+      signal
+    })
+    if (!response.ok) throw new Error('Failed to save')
+    return await response.json()
+  },
+  onSaved: (saved, { prime }) => {
+    updatedAt = saved.updatedAt
+    prime(buildPayload())
+    clearDraft(draftKey)
+  }
+})
+
+// Reactive state - no subscriptions needed!
+autoSave.status  // 'idle' | 'saving' | 'saved' | 'error' | 'offline'
+autoSave.lastError  // string | null
+```
+
+### Key Improvements
+
+1. **No autosaves on load**: `prime()` sets initial baseline
+2. **Auto-idle transition**: Status automatically resets to 'idle' after save
+3. **Smart navigation guards**: Only block if unsaved changes exist
+4. **Draft-on-failure**: localStorage only used when autosave fails
+5. **Proper cleanup**: `destroy()` called on unmount
+6. **Reactive API**: Direct property access instead of subscriptions
+
+---
+
+## Original Objectives
 - Eliminate redundant save requests triggered on initial page load.
 - Restore reliable local draft recovery, including clear-up of stale backups.
 - Deliver autosave status feedback that visibly transitions back to `idle` after successful saves.
