@@ -3,32 +3,18 @@
 	import { createEventDispatcher, onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
 
-	interface Project {
-		id: number
-		title: string
-		subtitle: string | null
-		year: number
-		client: string | null
-		status: string
-		projectType: string
-		logoUrl: string | null
-		backgroundColor: string | null
-		highlightColor: string | null
-		publishedAt: string | null
-		createdAt: string
-		updatedAt: string
-	}
+	import type { AdminProject } from '$lib/types/admin'
 
 	interface Props {
-		project: Project
+		project: AdminProject
 	}
 
 	let { project }: Props = $props()
 
 	const dispatch = createEventDispatcher<{
-		edit: { project: Project }
-		togglePublish: { project: Project }
-		delete: { project: Project }
+		edit: { project: AdminProject }
+		togglePublish: { project: AdminProject }
+		delete: { project: AdminProject }
 	}>()
 
 	let isDropdownOpen = $state(false)
@@ -114,7 +100,12 @@
 	</div>
 
 	<div class="dropdown-container">
-		<button class="action-button" onclick={handleToggleDropdown} aria-label="Project actions">
+		<button
+			class="action-button"
+			type="button"
+			onclick={handleToggleDropdown}
+			aria-label="Project actions"
+		>
 			<svg
 				width="20"
 				height="20"
@@ -130,12 +121,16 @@
 
 		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" onclick={handleEdit}>Edit project</button>
-				<button class="dropdown-item" onclick={handleTogglePublish}>
+				<button class="dropdown-item" type="button" onclick={handleEdit}>
+					Edit project
+				</button>
+				<button class="dropdown-item" type="button" onclick={handleTogglePublish}>
 					{project.status === 'published' ? 'Unpublish' : 'Publish'} project
 				</button>
 				<div class="dropdown-divider"></div>
-				<button class="dropdown-item danger" onclick={handleDelete}>Delete project</button>
+				<button class="dropdown-item danger" type="button" onclick={handleDelete}>
+					Delete project
+				</button>
 			</div>
 		{/if}
 	</div>
