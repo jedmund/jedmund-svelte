@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
 	import BaseSegmentedController from './BaseSegmentedController.svelte'
 
 	const currentPath = $derived($page.url.pathname)
@@ -34,11 +33,6 @@
 						? 'media'
 						: ''
 	)
-
-	function logout() {
-		localStorage.removeItem('admin_auth')
-		goto('/admin/login')
-	}
 
 	// Close dropdown when clicking outside
 	$effect(() => {
@@ -91,9 +85,11 @@
 
 		{#if showDropdown}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" onclick={logout}>
-					<span>Log out</span>
-				</button>
+				<form method="POST" action="/admin/logout">
+					<button class="dropdown-item" type="submit">
+						<span>Log out</span>
+					</button>
+				</form>
 			</div>
 		{/if}
 	</div>

@@ -15,9 +15,7 @@ export interface ApiError extends Error {
 }
 
 function getAuthHeader() {
-  if (typeof localStorage === 'undefined') return {}
-  const auth = localStorage.getItem('admin_auth')
-  return auth ? { Authorization: `Basic ${auth}` } : {}
+  return {}
 }
 
 async function handleResponse(res: Response) {
@@ -59,7 +57,8 @@ export async function request<TResponse = unknown, TBody = unknown>(
     method,
     headers: mergedHeaders,
     body: body ? (isFormData ? (body as any) : JSON.stringify(body)) : undefined,
-    signal
+    signal,
+    credentials: 'same-origin'
   })
 
   return handleResponse(res) as Promise<TResponse>
