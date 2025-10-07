@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
@@ -15,13 +14,16 @@
 	import ChevronDown from '$icons/chevron-down.svg?component'
 	import PlayIcon from '$icons/play.svg?component'
 	import type { Media } from '@prisma/client'
+	import type { PageData } from './$types'
 
-	let media = $state<Media[]>([])
-	let isLoading = $state(true)
+	const { data } = $props<{ data: PageData }>()
+
+	let media = $state<Media[]>(data.items ?? [])
+	let isLoading = $state(false)
 	let error = $state('')
-	let currentPage = $state(1)
-	let totalPages = $state(1)
-	let total = $state(0)
+	let currentPage = $state(data.pagination?.page ?? 1)
+	let totalPages = $state(data.pagination?.totalPages ?? 1)
+	let total = $state(data.pagination?.total ?? (data.items?.length ?? 0))
 	// Only using grid view
 
 	// Filter states
@@ -70,10 +72,6 @@
 	// Dropdown state
 	let isDropdownOpen = $state(false)
 
-	onMount(async () => {
-		await loadMedia()
-	})
-
 	// Watch for search query changes with debounce
 	$effect(() => {
 		if (searchQuery !== undefined) {
@@ -87,9 +85,6 @@
 	async function loadMedia(page = 1) {
 		try {
 			isLoading = true
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			let url = `/api/media?page=${page}&limit=24`
 			if (filterType !== 'all') {
 				url += `&mimeType=${filterType}`
@@ -105,7 +100,7 @@
 			}
 
 			const response = await fetch(url, {
-				headers: { Authorization: `Basic ${auth}` }
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) throw new Error('Failed to load media')
@@ -252,15 +247,12 @@
 
 		try {
 			isDeleting = true
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			const response = await fetch('/api/media/bulk-delete', {
 				method: 'DELETE',
 				headers: {
-					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
+				credentials: 'same-origin',
 				body: JSON.stringify({
 					mediaIds: Array.from(selectedMediaIds)
 				})
@@ -269,8 +261,7 @@
 			if (!response.ok) {
 				throw new Error('Failed to delete media files')
 			}
-
-			const result = await response.json()
+			await response.json()
 
 			// Remove deleted media from the list
 			media = media.filter((m) => !selectedMediaIds.has(m.id))
@@ -294,17 +285,14 @@
 		if (selectedMediaIds.size === 0) return
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			// Update each selected media item
 			const promises = Array.from(selectedMediaIds).map(async (mediaId) => {
 				const response = await fetch(`/api/media/${mediaId}`, {
 					method: 'PUT',
 					headers: {
-						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
+					credentials: 'same-origin',
 					body: JSON.stringify({ isPhotography: true })
 				})
 
@@ -335,17 +323,14 @@
 		if (selectedMediaIds.size === 0) return
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			// Update each selected media item
 			const promises = Array.from(selectedMediaIds).map(async (mediaId) => {
 				const response = await fetch(`/api/media/${mediaId}`, {
 					method: 'PUT',
 					headers: {
-						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
+					credentials: 'same-origin',
 					body: JSON.stringify({ isPhotography: false })
 				})
 
