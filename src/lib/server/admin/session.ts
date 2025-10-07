@@ -112,7 +112,7 @@ export function readSessionToken(token: string | undefined): SessionUser | null 
 export function setSessionCookie(cookies: Cookies, user: SessionUser) {
 	const token = createSessionToken(user)
 	cookies.set(SESSION_COOKIE_NAME, token, {
-		path: '/admin',
+		path: '/',
 		httpOnly: true,
 		secure: !dev,
 		sameSite: 'lax',
@@ -122,7 +122,7 @@ export function setSessionCookie(cookies: Cookies, user: SessionUser) {
 
 export function clearSessionCookie(cookies: Cookies) {
 	cookies.delete(SESSION_COOKIE_NAME, {
-		path: '/admin'
+		path: '/'
 	})
 }
 

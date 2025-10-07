@@ -14,7 +14,7 @@
 	const navItems: NavItem[] = [
 		{ value: 'dashboard', label: 'Dashboard', href: '/admin', icon: '📊' },
 		{ value: 'projects', label: 'Projects', href: '/admin/projects', icon: '💼' },
-		{ value: 'universe', label: 'Universe', href: '/admin/posts', icon: '🌟' },
+		{ value: 'universe', label: 'Universe', href: '/admin/universe', icon: '🌟' },
 		{ value: 'media', label: 'Media', href: '/admin/media', icon: '🖼️' }
 	]
 
@@ -27,9 +27,9 @@
 			? 'dashboard'
 			: currentPath.startsWith('/admin/projects')
 				? 'projects'
-				: currentPath.startsWith('/admin/posts')
-					? 'universe'
-					: currentPath.startsWith('/admin/media')
+			: currentPath.startsWith('/admin/posts') || currentPath.startsWith('/admin/universe')
+				? 'universe'
+				: currentPath.startsWith('/admin/media')
 						? 'media'
 						: ''
 	)

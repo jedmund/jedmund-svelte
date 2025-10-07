@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit'
 import type { LayoutServerLoad } from './$types'
-import { getSessionUser } from '$lib/server/admin/session'
+import { getSessionUser, setSessionCookie } from '$lib/server/admin/session'
 
 const LOGIN_PATH = '/admin/login'
 const DASHBOARD_PATH = '/admin'
@@ -12,6 +12,11 @@ function isLoginRoute(pathname: string) {
 export const load = (async (event) => {
 	const user = getSessionUser(event.cookies)
 	const pathname = event.url.pathname
+
+	if (user) {
+		// Refresh cookie with updated attributes (e.g., widened path)
+		setSessionCookie(event.cookies, user)
+	}
 
 	if (!user && !isLoginRoute(pathname)) {
 		throw redirect(303, LOGIN_PATH)
