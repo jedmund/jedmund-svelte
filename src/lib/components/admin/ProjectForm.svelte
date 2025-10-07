@@ -158,13 +158,22 @@
 		clearDraft(draftKey)
 	}
 
-	// Trigger autosave and store local draft when formData changes (edit mode)
+	// Trigger autosave when formData changes (edit mode)
 	$effect(() => {
 		// Establish dependencies on fields
 		formData; activeTab
 		if (mode === 'edit' && hasLoaded && autoSave) {
 			autoSave.schedule()
-			if (draftKey) saveDraft(draftKey, buildPayload())
+		}
+	})
+
+	// Save draft only when autosave fails
+	$effect(() => {
+		if (mode === 'edit' && autoSave && draftKey) {
+			const status = autoSave.status
+			if (status === 'error' || status === 'offline') {
+				saveDraft(draftKey, buildPayload())
+			}
 		}
 	})
 
