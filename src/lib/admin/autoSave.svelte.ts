@@ -1,15 +1,6 @@
 export type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'offline'
 
-export interface AutoSaveController {
-  status: { subscribe: (run: (v: AutoSaveStatus) => void) => () => void }
-  lastError: { subscribe: (run: (v: string | null) => void) => () => void }
-  schedule: () => void
-  flush: () => Promise<void>
-  destroy: () => void
-  prime: <T>(payload: T) => void
-}
-
-interface CreateAutoSaveControllerOptions<TPayload, TResponse = unknown> {
+export interface AutoSaveStoreOptions<TPayload, TResponse = unknown> {
   debounceMs?: number
   idleResetMs?: number
   getPayload: () => TPayload | null | undefined
@@ -17,9 +8,35 @@ interface CreateAutoSaveControllerOptions<TPayload, TResponse = unknown> {
   onSaved?: (res: TResponse, ctx: { prime: (payload: TPayload) => void }) => void
 }
 
-export function createAutoSaveController<TPayload, TResponse = unknown>(
-  opts: CreateAutoSaveControllerOptions<TPayload, TResponse>
-) {
+export interface AutoSaveStore<TPayload, TResponse = unknown> {
+  readonly status: AutoSaveStatus
+  readonly lastError: string | null
+  schedule: () => void
+  flush: () => Promise<void>
+  destroy: () => void
+  prime: (payload: TPayload) => void
+}
+
+/**
+ * Creates a reactive autosave store using Svelte 5 runes.
+ * Must be called within component context (.svelte or .svelte.ts files).
+ *
+ * @example
+ * const autoSave = createAutoSaveStore({
+ *   getPayload: () => formData,
+ *   save: async (payload) => api.put('/endpoint', payload),
+ *   onSaved: (response, { prime }) => {
+ *     formData = response
+ *     prime(response)
+ *   }
+ * })
+ *
+ * // In template: {autoSave.status}
+ * // Trigger save: autoSave.schedule()
+ */
+export function createAutoSaveStore<TPayload, TResponse = unknown>(
+  opts: AutoSaveStoreOptions<TPayload, TResponse>
+): AutoSaveStore<TPayload, TResponse> {
   const debounceMs = opts.debounceMs ?? 2000
   const idleResetMs = opts.idleResetMs ?? 2000
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -27,10 +44,8 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
   let controller: AbortController | null = null
   let lastSentHash: string | null = null
 
-  let _status: AutoSaveStatus = 'idle'
-  let _lastError: string | null = null
-  const statusSubs = new Set<(v: AutoSaveStatus) => void>()
-  const errorSubs = new Set<(v: string | null) => void>()
+  let status = $state<AutoSaveStatus>('idle')
+  let lastError = $state<string | null>(null)
 
   function setStatus(next: AutoSaveStatus) {
     if (idleResetTimer) {
@@ -38,14 +53,12 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
       idleResetTimer = null
     }
 
-    _status = next
-    statusSubs.forEach((fn) => fn(_status))
+    status = next
 
     // Auto-transition from 'saved' to 'idle' after idleResetMs
     if (next === 'saved') {
       idleResetTimer = setTimeout(() => {
-        _status = 'idle'
-        statusSubs.forEach((fn) => fn(_status))
+        status = 'idle'
         idleResetTimer = null
       }, idleResetMs)
     }
@@ -76,7 +89,7 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
     controller = new AbortController()
 
     setStatus('saving')
-    _lastError = null
+    lastError = null
     try {
       const res = await opts.save(payload, { signal: controller.signal })
       lastSentHash = hash
@@ -92,8 +105,7 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
       } else {
         setStatus('error')
       }
-      _lastError = e?.message || 'Auto-save failed'
-      errorSubs.forEach((fn) => fn(_lastError))
+      lastError = e?.message || 'Auto-save failed'
     }
   }
 
@@ -108,19 +120,11 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
   }
 
   return {
-    status: {
-      subscribe(run: (v: AutoSaveStatus) => void) {
-        run(_status)
-        statusSubs.add(run)
-        return () => statusSubs.delete(run)
-      }
+    get status() {
+      return status
     },
-    lastError: {
-      subscribe(run: (v: string | null) => void) {
-        run(_lastError)
-        errorSubs.add(run)
-        return () => errorSubs.delete(run)
-      }
+    get lastError() {
+      return lastError
     },
     schedule,
     flush,
