@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit'
 import type { RequestEvent } from '@sveltejs/kit'
-import { getSessionUser } from '$lib/server/admin/session'
+import { getSessionUser, setSessionCookie } from '$lib/server/admin/session'
 
 type FetchInput = Parameters<typeof fetch>[0]
 
@@ -8,23 +8,6 @@ export type AdminFetchOptions = RequestInit
 
 export interface AdminFetchJsonOptions extends AdminFetchOptions {
 	parse?: 'json' | 'text' | 'response'
-}
-
-function adminPassword(): string {
-	return process.env.ADMIN_PASSWORD ?? 'changeme'
-}
-
-function withAuthHeader(init: RequestInit = {}): RequestInit {
-	const headers = new Headers(init.headers ?? {})
-	if (!headers.has('Authorization')) {
-		const credentials = Buffer.from(`admin:${adminPassword()}`).toString('base64')
-		headers.set('Authorization', `Basic ${credentials}`)
-	}
-
-	return {
-		...init,
-		headers
-	}
 }
 
 export async function adminFetch(
@@ -37,8 +20,10 @@ export async function adminFetch(
 		throw redirect(303, '/admin/login')
 	}
 
-	const init = withAuthHeader(options)
-	const response = await event.fetch(input, init)
+	// Refresh cookie attributes for active sessions
+	setSessionCookie(event.cookies, user)
+
+	const response = await event.fetch(input, options)
 
 	if (response.status === 401) {
 		throw redirect(303, '/admin/login')

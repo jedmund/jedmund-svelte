@@ -11,18 +11,13 @@ interface SessionPayload {
 	exp: number
 }
 
-function adminPassword(): string {
-	return process.env.ADMIN_PASSWORD ?? 'changeme'
-}
-
 function sessionSecret(): string {
-	return process.env.ADMIN_SESSION_SECRET ?? process.env.ADMIN_PASSWORD ?? 'changeme'
+	return process.env.ADMIN_SESSION_SECRET ?? 'changeme'
 }
 
 function signPayload(payload: string): Buffer {
 	const hmac = createHmac('sha256', sessionSecret())
 	hmac.update(payload)
-	hmac.update(adminPassword())
 	return hmac.digest()
 }
 
@@ -75,7 +70,7 @@ function parseToken(token: string): SessionPayload | null {
 }
 
 export function validateAdminPassword(password: string): SessionUser | null {
-	const expected = adminPassword()
+	const expected = process.env.ADMIN_PASSWORD ?? 'changeme'
 	const providedBuf = Buffer.from(password)
 	const expectedBuf = Buffer.from(expected)
 
