@@ -1,4 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit'
+import { getSessionUser } from '$lib/server/admin/session'
 
 // Response helpers
 export function jsonResponse(data: any, status = 200): Response {
@@ -72,6 +73,11 @@ export function toISOString(date: Date | string | null | undefined): string | nu
 
 // Basic auth check (temporary until proper auth is implemented)
 export function checkAdminAuth(event: RequestEvent): boolean {
+	const sessionUser = getSessionUser(event.cookies)
+	if (sessionUser) {
+		return true
+	}
+
 	const authHeader = event.request.headers.get('Authorization')
 	if (!authHeader) return false
 
