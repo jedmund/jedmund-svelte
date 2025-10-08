@@ -170,13 +170,9 @@ $effect(() => {
 			if (autoSave.status === 'saved') {
 				return
 			}
-			navigation.cancel()
+			// Flush any pending changes before allowing navigation to proceed
 			try {
 				await autoSave.flush()
-				// Navigate to the intended destination after flush completes
-				if (navigation.to?.url) {
-					goto(navigation.to.url.pathname + navigation.to.url.search)
-				}
 			} catch (error) {
 				console.error('Autosave flush failed:', error)
 			}
