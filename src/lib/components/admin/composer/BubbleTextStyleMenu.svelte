@@ -71,7 +71,7 @@
 </script>
 
 {#if isOpen}
-	<div class="bubble-text-style-menu" use:clickOutside on:clickoutside={onClose}>
+	<div class="bubble-text-style-menu" use:clickOutside onclickoutside={onClose}>
 		{#each textStyles as style}
 			<button
 				class="text-style-option"

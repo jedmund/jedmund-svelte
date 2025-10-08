@@ -59,7 +59,7 @@
 	<div
 		class="dropdown-container"
 		use:clickOutside={{ enabled: showDropdown }}
-		on:clickoutside={handleClickOutside}
+		onclickoutside={handleClickOutside}
 	>
 		<button
 			class="dropdown-trigger"

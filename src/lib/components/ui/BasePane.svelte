@@ -117,7 +117,7 @@
 		role="dialog"
 		aria-modal="false"
 		use:clickOutside={{ enabled: closeOnBackdrop }}
-		on:clickoutside={handleClose}
+		onclickoutside={handleClose}
 	>
 		{#if children}
 			{@render children()}

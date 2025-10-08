@@ -41,7 +41,7 @@
 <div
 	class="dropdown-container {className}"
 	use:clickOutside={{ enabled: isOpen }}
-	on:clickoutside={handleClickOutside}
+	onclickoutside={handleClickOutside}
 >
 	<div class="dropdown-trigger">
 		{@render trigger()}

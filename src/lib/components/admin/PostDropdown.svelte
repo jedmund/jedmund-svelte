@@ -43,7 +43,7 @@
 	}
 </script>
 
-<div class="dropdown-container" use:clickOutside={{ enabled: isOpen }} on:clickoutside={handleClickOutside}>
+<div class="dropdown-container" use:clickOutside={{ enabled: isOpen }} onclickoutside={handleClickOutside}>
 	<Button
 		bind:this={buttonRef}
 		variant="primary"

@@ -347,7 +347,7 @@ $effect(() => {
 			<div
 				class="save-actions"
 				use:clickOutside={{ enabled: showPublishMenu }}
-				on:clickoutside={handleClickOutsideMenu}
+				onclickoutside={handleClickOutsideMenu}
 			>
 				<Button variant="primary" onclick={handleSave} disabled={isSaving} class="save-button">
 					{status === 'published' ? 'Save' : 'Save Draft'}

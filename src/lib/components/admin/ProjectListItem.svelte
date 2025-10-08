@@ -111,7 +111,7 @@
 	<div
 		class="dropdown-container"
 		use:clickOutside={{ enabled: isDropdownOpen }}
-		on:clickoutside={handleClickOutside}
+		onclickoutside={handleClickOutside}
 	>
 		<button
 			class="action-button"

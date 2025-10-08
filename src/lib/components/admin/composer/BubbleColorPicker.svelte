@@ -101,7 +101,7 @@
 </script>
 
 {#if isOpen}
-	<div class="bubble-color-picker" use:clickOutside on:clickoutside={onClose}>
+	<div class="bubble-color-picker" use:clickOutside onclickoutside={onClose}>
 		<div class="color-picker-header">
 			<span>{mode === 'text' ? 'Text Color' : 'Highlight Color'}</span>
 			<button class="remove-color-btn" onclick={removeColor}> Remove </button>
