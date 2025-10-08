@@ -1,22 +1,23 @@
 <script lang="ts">
-	import { goto, beforeNavigate } from '$app/navigation'
-	import { z } from 'zod'
+	import { goto } from '$app/navigation'
+	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
-	import FormField from './FormField.svelte'
 	import Composer from './composer'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
 	import ProjectImagesForm from './ProjectImagesForm.svelte'
-	import Button from './Button.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
-	import { projectSchema } from '$lib/schemas/project'
+	import AutoSaveStatus from './AutoSaveStatus.svelte'
+	import DraftPrompt from './DraftPrompt.svelte'
 	import { toast } from '$lib/stores/toast'
-	import type { Project, ProjectFormData } from '$lib/types/project'
-	import { defaultProjectFormData } from '$lib/types/project'
-  import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
-  import AutoSaveStatus from './AutoSaveStatus.svelte'
-  import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
+	import type { Project } from '$lib/types/project'
+	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
+	import { createProjectFormStore } from '$lib/stores/project-form.svelte'
+	import { useDraftRecovery } from '$lib/admin/useDraftRecovery.svelte'
+	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
+	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
+	import type { ProjectFormData } from '$lib/types/project'
 
 	interface Props {
 		project?: Project | null
@@ -25,143 +26,70 @@
 
 	let { project = null, mode }: Props = $props()
 
-	// State
+	// Form store - centralized state management
+	const formStore = createProjectFormStore(project)
+
+	// UI state
 	let isLoading = $state(mode === 'edit')
-	let hasLoaded = $state(false)
+	let hasLoaded = $state(mode === 'create')
 	let isSaving = $state(false)
 	let activeTab = $state('metadata')
-	let validationErrors = $state<Record<string, string>>({})
 	let error = $state<string | null>(null)
 	let successMessage = $state<string | null>(null)
-
-	// Form data
-	let formData = $state<ProjectFormData>({ ...defaultProjectFormData })
 
 	// Ref to the editor component
 	let editorRef: any
 
-	// Local draft recovery
+	// Draft key for autosave fallback
 	const draftKey = $derived(mode === 'edit' && project ? makeDraftKey('project', project.id) : null)
-	let showDraftPrompt = $state(false)
-	let draftTimestamp = $state<number | null>(null)
-	let timeTicker = $state(0)
-	const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
-
-	function buildPayload() {
-		return {
-			title: formData.title,
-			subtitle: formData.subtitle,
-			description: formData.description,
-			year: formData.year,
-			client: formData.client,
-			role: formData.role,
-			projectType: formData.projectType,
-			externalUrl: formData.externalUrl,
-			featuredImage: formData.featuredImage && formData.featuredImage !== '' ? formData.featuredImage : null,
-			logoUrl: formData.logoUrl && formData.logoUrl !== '' ? formData.logoUrl : null,
-			backgroundColor: formData.backgroundColor,
-			highlightColor: formData.highlightColor,
-			status: formData.status,
-			password: formData.status === 'password-protected' ? formData.password : null,
-			caseStudyContent:
-				formData.caseStudyContent &&
-				formData.caseStudyContent.content &&
-				formData.caseStudyContent.content.length > 0
-					? formData.caseStudyContent
-					: null,
-			updatedAt: project?.updatedAt
-		}
-	}
 
 	// Autosave (edit mode only)
-	let autoSave = mode === 'edit'
+	const autoSave = mode === 'edit'
 		? createAutoSaveStore({
 			debounceMs: 2000,
-			getPayload: () => (hasLoaded ? buildPayload() : null),
+			getPayload: () => (hasLoaded ? formStore.buildPayload() : null),
 			save: async (payload, { signal }) => {
 				return await api.put(`/api/projects/${project?.id}`, payload, { signal })
 			},
 			onSaved: (savedProject: any, { prime }) => {
-				// Update baseline updatedAt on successful save
 				project = savedProject
-				prime(buildPayload())
+				formStore.populateFromProject(savedProject)
+				prime(formStore.buildPayload())
 				if (draftKey) clearDraft(draftKey)
 			}
 		})
 		: null
+
+	// Draft recovery helper
+	const draftRecovery = useDraftRecovery<Partial<ProjectFormData>>({
+		draftKey: draftKey,
+		onRestore: (payload) => formStore.setFields(payload)
+	})
+
+	// Form guards (navigation protection, Cmd+S, beforeunload)
+	useFormGuards(autoSave)
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
 		{ value: 'case-study', label: 'Case Study' }
 	]
 
-	// Watch for project changes and populate form data (only on initial load)
+	// Initial load effect
 	$effect(() => {
 		if (project && mode === 'edit' && !hasLoaded) {
-			populateFormData(project)
-		} else if (mode === 'create') {
+			formStore.populateFromProject(project)
+			if (autoSave) {
+				autoSave.prime(formStore.buildPayload())
+			}
 			isLoading = false
 			hasLoaded = true
 		}
 	})
 
-	// Check for local draft to restore
-	$effect(() => {
-		if (mode === 'edit' && project && draftKey) {
-			const draft = loadDraft<any>(draftKey)
-			if (draft) {
-				// Show prompt; restoration is manual to avoid overwriting loaded data unintentionally
-				showDraftPrompt = true
-				draftTimestamp = draft.ts
-			}
-		}
-	})
-
-	// Auto-update draft time text every minute when prompt visible
-	$effect(() => {
-		if (showDraftPrompt) {
-			const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
-			return () => clearInterval(id)
-		}
-	})
-
-	function restoreDraft() {
-		if (!draftKey) return
-		const draft = loadDraft<any>(draftKey)
-		if (!draft) return
-		const p = draft.payload
-		// Apply payload fields to formData
-		formData = {
-			title: p.title ?? formData.title,
-			subtitle: p.subtitle ?? formData.subtitle,
-			description: p.description ?? formData.description,
-			year: p.year ?? formData.year,
-			client: p.client ?? formData.client,
-			role: p.role ?? formData.role,
-			projectType: p.projectType ?? formData.projectType,
-			externalUrl: p.externalUrl ?? formData.externalUrl,
-			featuredImage: p.featuredImage ?? formData.featuredImage,
-			logoUrl: p.logoUrl ?? formData.logoUrl,
-			backgroundColor: p.backgroundColor ?? formData.backgroundColor,
-			highlightColor: p.highlightColor ?? formData.highlightColor,
-			status: p.status ?? formData.status,
-			password: p.password ?? formData.password,
-			caseStudyContent: p.caseStudyContent ?? formData.caseStudyContent
-		}
-		showDraftPrompt = false
-		clearDraft(draftKey)
-	}
-
-	function dismissDraft() {
-		if (!draftKey) return
-		showDraftPrompt = false
-		clearDraft(draftKey)
-	}
-
 	// Trigger autosave when formData changes (edit mode)
 	$effect(() => {
 		// Establish dependencies on fields
-		formData; activeTab
+		formStore.fields; activeTab
 		if (mode === 'edit' && hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
@@ -172,63 +100,9 @@
 		if (mode === 'edit' && autoSave && draftKey) {
 			const status = autoSave.status
 			if (status === 'error' || status === 'offline') {
-				saveDraft(draftKey, buildPayload())
+				saveDraft(draftKey, formStore.buildPayload())
 			}
 		}
-	})
-
-	// Navigation guard: flush autosave before navigating away (only if there are unsaved changes)
-	beforeNavigate(async (navigation) => {
-		if (mode === 'edit' && hasLoaded && autoSave) {
-			// If status is 'saved', there are no unsaved changes - allow navigation
-			if (autoSave.status === 'saved') {
-				return
-			}
-
-			// Otherwise, flush any pending changes before allowing navigation to proceed
-			try {
-				await autoSave.flush()
-			} catch (error) {
-				console.error('Autosave flush failed:', error)
-				toast.error('Failed to save changes')
-			}
-		}
-	})
-
-	// Warn before closing browser tab/window if there are unsaved changes
-	$effect(() => {
-		if (mode !== 'edit' || !autoSave) return
-
-		function handleBeforeUnload(event: BeforeUnloadEvent) {
-			// Only warn if there are unsaved changes
-			if (autoSave!.status !== 'saved') {
-				event.preventDefault()
-				event.returnValue = '' // Required for Chrome
-			}
-		}
-
-		window.addEventListener('beforeunload', handleBeforeUnload)
-		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-	})
-
-	// Keyboard shortcut: Cmd/Ctrl+S to save immediately
-	$effect(() => {
-		if (mode !== 'edit' || !autoSave) return
-
-		function handleKeydown(event: KeyboardEvent) {
-			if (!hasLoaded) return
-			const key = event.key.toLowerCase()
-			const isModifier = event.metaKey || event.ctrlKey
-			if (!isModifier || key !== 's') return
-			event.preventDefault()
-			autoSave!.flush().catch((error) => {
-				console.error('Autosave flush failed:', error)
-				toast.error('Failed to save changes')
-			})
-		}
-
-		document.addEventListener('keydown', handleKeydown)
-		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
 	// Cleanup autosave on unmount
@@ -238,82 +112,20 @@
 		}
 	})
 
-	function populateFormData(data: Project) {
-		formData = {
-			title: data.title || '',
-			subtitle: data.subtitle || '',
-			description: data.description || '',
-			year: data.year || new Date().getFullYear(),
-			client: data.client || '',
-			role: data.role || '',
-			projectType: data.projectType || 'work',
-			externalUrl: data.externalUrl || '',
-			featuredImage:
-				data.featuredImage && data.featuredImage.trim() !== '' ? data.featuredImage : null,
-			backgroundColor: data.backgroundColor || '',
-			highlightColor: data.highlightColor || '',
-			logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '',
-			status: data.status || 'draft',
-			password: data.password || '',
-			caseStudyContent: data.caseStudyContent || {
-				type: 'doc',
-				content: [{ type: 'paragraph' }]
-			}
-		}
-		isLoading = false
-
-		// Prime autosave with initial data to prevent immediate save
-		if (autoSave) {
-			autoSave.prime(buildPayload())
-		}
-		hasLoaded = true
-	}
-
-	function validateForm() {
-		try {
-			projectSchema.parse({
-				title: formData.title,
-				description: formData.description || undefined,
-				year: formData.year,
-				client: formData.client || undefined,
-				externalUrl: formData.externalUrl || undefined,
-				backgroundColor: formData.backgroundColor || undefined,
-				highlightColor: formData.highlightColor || undefined,
-				status: formData.status,
-				password: formData.password || undefined
-			})
-			validationErrors = {}
-			return true
-		} catch (err) {
-			if (err instanceof z.ZodError) {
-				const errors: Record<string, string> = {}
-				err.errors.forEach((e) => {
-					if (e.path[0]) {
-						errors[e.path[0].toString()] = e.message
-					}
-				})
-				validationErrors = errors
-			}
-			return false
-		}
-	}
-
 	function handleEditorChange(content: any) {
-		formData.caseStudyContent = content
+		formStore.setField('caseStudyContent', content)
 	}
-
-	import { api } from '$lib/admin/api'
 
 	async function handleSave() {
 		// Check if we're on the case study tab and should save editor content
 		if (activeTab === 'case-study' && editorRef) {
 			const editorData = await editorRef.save()
 			if (editorData) {
-				formData.caseStudyContent = editorData
+				formStore.setField('caseStudyContent', editorData)
 			}
 		}
 
-		if (!validateForm()) {
+		if (!formStore.validate()) {
 			toast.error('Please fix the validation errors')
 			return
 		}
@@ -324,37 +136,16 @@
 			isSaving = true
 
 			const payload = {
-				title: formData.title,
-				subtitle: formData.subtitle,
-				description: formData.description,
-				year: formData.year,
-				client: formData.client,
-				role: formData.role,
-				projectType: formData.projectType,
-				externalUrl: formData.externalUrl,
-				featuredImage:
-					formData.featuredImage && formData.featuredImage !== '' ? formData.featuredImage : null,
-				logoUrl: formData.logoUrl && formData.logoUrl !== '' ? formData.logoUrl : null,
-				backgroundColor: formData.backgroundColor,
-				highlightColor: formData.highlightColor,
-				status: formData.status,
-				password: formData.status === 'password-protected' ? formData.password : null,
-				caseStudyContent:
-					formData.caseStudyContent &&
-					formData.caseStudyContent.content &&
-					formData.caseStudyContent.content.length > 0
-						? formData.caseStudyContent
-						: null
-				,
+				...formStore.buildPayload(),
 				// Include updatedAt for concurrency control in edit mode
 				updatedAt: mode === 'edit' ? project?.updatedAt : undefined
 			}
 
-			let savedProject
+			let savedProject: Project
 			if (mode === 'edit') {
-				savedProject = await api.put(`/api/projects/${project?.id}`, payload)
+				savedProject = await api.put(`/api/projects/${project?.id}`, payload) as Project
 			} else {
-				savedProject = await api.post('/api/projects', payload)
+				savedProject = await api.post('/api/projects', payload) as Project
 			}
 
 			toast.dismiss(loadingToastId)
@@ -379,29 +170,9 @@
 	}
 
 	async function handleStatusChange(newStatus: string) {
-		formData.status = newStatus as any
+		formStore.setField('status', newStatus)
 		await handleSave()
 	}
-
-	// Keyboard shortcut: Cmd/Ctrl+S flushes autosave
-	function handleKeydown(e: KeyboardEvent) {
-		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-			e.preventDefault()
-			if (mode === 'edit' && autoSave) autoSave.flush()
-		}
-	}
-
-	$effect(() => {
-		if (mode === 'edit') {
-			document.addEventListener('keydown', handleKeydown)
-			return () => document.removeEventListener('keydown', handleKeydown)
-		}
-	})
-
-	// Flush before navigating away
-	beforeNavigate(() => {
-		if (mode === 'edit' && autoSave) autoSave.flush()
-	})
 </script>
 
 <AdminPage>
@@ -429,20 +200,20 @@
 		<div class="header-actions">
 			{#if !isLoading}
 				<StatusDropdown
-					currentStatus={formData.status}
+					currentStatus={formStore.fields.status}
 					onStatusChange={handleStatusChange}
 					disabled={isSaving}
 					isLoading={isSaving}
-					primaryAction={formData.status === 'published'
+					primaryAction={formStore.fields.status === 'published'
 						? { label: 'Save', status: 'published' }
 						: { label: 'Publish', status: 'published' }}
 					dropdownActions={[
-						{ label: 'Save as Draft', status: 'draft', show: formData.status !== 'draft' },
-						{ label: 'List Only', status: 'list-only', show: formData.status !== 'list-only' },
+						{ label: 'Save as Draft', status: 'draft', show: formStore.fields.status !== 'draft' },
+						{ label: 'List Only', status: 'list-only', show: formStore.fields.status !== 'list-only' },
 						{
 							label: 'Password Protected',
 							status: 'password-protected',
-							show: formData.status !== 'password-protected'
+							show: formStore.fields.status !== 'password-protected'
 						}
 					]}
 					viewUrl={project?.slug ? `/work/${project.slug}` : undefined}
@@ -454,18 +225,12 @@
 		</div>
 	</header>
 
-	{#if mode === 'edit' && showDraftPrompt}
-		<div class="draft-banner">
-			<div class="draft-banner-content">
-				<span class="draft-banner-text">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
-				</span>
-				<div class="draft-banner-actions">
-					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>
-					<button class="draft-banner-button dismiss" onclick={dismissDraft}>Dismiss</button>
-				</div>
-			</div>
-		</div>
+	{#if draftRecovery.showPrompt}
+		<DraftPrompt
+			timeAgo={draftRecovery.draftTimeText}
+			onRestore={draftRecovery.restore}
+			onDismiss={draftRecovery.dismiss}
+		/>
 	{/if}
 
 	<div class="admin-container">
@@ -490,9 +255,9 @@
 								handleSave()
 							}}
 						>
-							<ProjectMetadataForm bind:formData {validationErrors} onSave={handleSave} />
-							<ProjectBrandingForm bind:formData {validationErrors} onSave={handleSave} />
-							<ProjectImagesForm bind:formData {validationErrors} onSave={handleSave} />
+							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
+							<ProjectBrandingForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
+							<ProjectImagesForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
 						</form>
 					</div>
 				</div>
@@ -501,7 +266,7 @@
 				<div class="panel panel-case-study" class:active={activeTab === 'case-study'}>
 					<Composer
 						bind:this={editorRef}
-						bind:data={formData.caseStudyContent}
+						bind:data={formStore.fields.caseStudyContent}
 						onChange={handleEditorChange}
 						placeholder="Write your case study here..."
 						minHeight={400}
@@ -648,72 +413,6 @@
 
 		@include breakpoint('phone') {
 			min-height: 600px;
-		}
-	}
-
-	.draft-banner {
-		background: $blue-95;
-		border-bottom: 1px solid $blue-80;
-		padding: $unit-2x $unit-5x;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		animation: slideDown 0.2s ease-out;
-
-		@keyframes slideDown {
-			from {
-				opacity: 0;
-				transform: translateY(-10px);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
-	}
-
-	.draft-banner-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: $unit-3x;
-		width: 100%;
-		max-width: 1200px;
-	}
-
-	.draft-banner-text {
-		color: $blue-20;
-		font-size: $font-size-small;
-		font-weight: $font-weight-med;
-	}
-
-	.draft-banner-actions {
-		display: flex;
-		gap: $unit-2x;
-	}
-
-	.draft-banner-button {
-		background: $blue-50;
-		border: none;
-		color: $white;
-		cursor: pointer;
-		padding: $unit-half $unit-2x;
-		border-radius: $corner-radius-sm;
-		font-size: $font-size-small;
-		font-weight: $font-weight-med;
-		transition: background $transition-fast;
-
-		&:hover {
-			background: $blue-40;
-		}
-
-		&.dismiss {
-			background: transparent;
-			color: $blue-30;
-
-			&:hover {
-				background: $blue-90;
-			}
 		}
 	}
 </style>
