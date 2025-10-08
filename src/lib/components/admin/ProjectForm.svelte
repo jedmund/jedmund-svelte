@@ -189,7 +189,10 @@
 			navigation.cancel()
 			try {
 				await autoSave.flush()
-				navigation.retry()
+				// Navigate to the intended destination after flush completes
+				if (navigation.to?.url) {
+					goto(navigation.to.url.pathname + navigation.to.url.search)
+				}
 			} catch (error) {
 				console.error('Autosave flush failed:', error)
 				toast.error('Failed to save changes')
