@@ -68,6 +68,8 @@ export function clickOutside(
 
 	return {
 		update(newOptions: ClickOutsideOptions | (() => void)) {
+			const wasEnabled = enabled
+
 			// Remove old listener
 			document.removeEventListener('click', handleClick, true)
 
@@ -80,11 +82,16 @@ export function clickOutside(
 				callback = newOptions.callback
 			}
 
-			// Add new listener if enabled
-			if (enabled) {
-				setTimeout(() => {
-					document.addEventListener('click', handleClick, true)
-				}, 0)
+			// Only modify listener if enabled state actually changed
+			if (wasEnabled !== enabled) {
+				if (enabled) {
+					setTimeout(() => {
+						document.addEventListener('click', handleClick, true)
+					}, 0)
+				}
+			} else if (enabled) {
+				// State didn't change but we're still enabled - re-add immediately
+				document.addEventListener('click', handleClick, true)
 			}
 		},
 		destroy() {
