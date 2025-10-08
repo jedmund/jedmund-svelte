@@ -9,6 +9,7 @@
 	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
+	import { clickOutside } from '$lib/actions/clickOutside'
 	import type { JSONContent } from '@tiptap/core'
 
 	interface Props {
@@ -315,22 +316,9 @@ $effect(() => {
 		showPublishMenu = !showPublishMenu
 	}
 
-	// Close menu when clicking outside
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target as HTMLElement
-		if (!target.closest('.save-actions')) {
-			showPublishMenu = false
-		}
+	function handleClickOutsideMenu() {
+		showPublishMenu = false
 	}
-
-	$effect(() => {
-		if (showPublishMenu) {
-			document.addEventListener('click', handleClickOutside)
-			return () => {
-				document.removeEventListener('click', handleClickOutside)
-			}
-		}
-	})
 </script>
 
 <AdminPage>
@@ -356,7 +344,11 @@ $effect(() => {
 			/>
 		</div>
 		<div class="header-actions">
-			<div class="save-actions">
+			<div
+				class="save-actions"
+				use:clickOutside={{ enabled: showPublishMenu }}
+				on:clickoutside={handleClickOutsideMenu}
+			>
 				<Button variant="primary" onclick={handleSave} disabled={isSaving} class="save-button">
 					{status === 'published' ? 'Save' : 'Save Draft'}
 				</Button>
