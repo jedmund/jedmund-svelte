@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
@@ -69,18 +68,6 @@
 		{ value: 'status-published', label: 'Published first' },
 		{ value: 'status-draft', label: 'Draft first' }
 	]
-
-	onMount(() => {
-		document.addEventListener('click', handleOutsideClick)
-		return () => document.removeEventListener('click', handleOutsideClick)
-	})
-
-	function handleOutsideClick(event: MouseEvent) {
-		const target = event.target as HTMLElement
-		if (!target.closest('.dropdown-container')) {
-			document.dispatchEvent(new CustomEvent('closeDropdowns'))
-		}
-	}
 
 	function handleEdit(event: CustomEvent<{ project: AdminProject }>) {
 		goto(`/admin/projects/${event.detail.project.id}/edit`)

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import BaseSegmentedController from './BaseSegmentedController.svelte'
+	import { clickOutside } from '$lib/actions/clickOutside'
 
 	const currentPath = $derived($page.url.pathname)
 
@@ -34,20 +35,9 @@
 						: ''
 	)
 
-	// Close dropdown when clicking outside
-	$effect(() => {
-		function handleClickOutside(e: MouseEvent) {
-			const target = e.target as HTMLElement
-			if (!target.closest('.dropdown-container')) {
-				showDropdown = false
-			}
-		}
-
-		if (showDropdown) {
-			document.addEventListener('click', handleClickOutside)
-			return () => document.removeEventListener('click', handleClickOutside)
-		}
-	})
+	function handleClickOutside() {
+		showDropdown = false
+	}
 </script>
 
 <nav class="admin-segmented-controller">
@@ -66,7 +56,11 @@
 		{/snippet}
 	</BaseSegmentedController>
 
-	<div class="dropdown-container">
+	<div
+		class="dropdown-container"
+		use:clickOutside={{ enabled: showDropdown }}
+		on:clickoutside={handleClickOutside}
+	>
 		<button
 			class="dropdown-trigger"
 			onclick={() => (showDropdown = !showDropdown)}

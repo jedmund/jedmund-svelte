@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Editor } from '@tiptap/core'
+	import { clickOutside } from '$lib/actions/clickOutside'
 
 	interface Props {
 		editor: Editor
@@ -67,29 +68,10 @@
 		action()
 		onClose()
 	}
-
-	function handleClickOutside(e: MouseEvent) {
-		if (isOpen) {
-			const menu = e.currentTarget as HTMLElement
-			if (!menu?.contains(e.target as Node)) {
-				onClose()
-			}
-		}
-	}
-
-	$effect(() => {
-		if (isOpen) {
-			// Small delay to prevent immediate closing
-			setTimeout(() => {
-				document.addEventListener('click', handleClickOutside)
-			}, 10)
-			return () => document.removeEventListener('click', handleClickOutside)
-		}
-	})
 </script>
 
 {#if isOpen}
-	<div class="bubble-text-style-menu">
+	<div class="bubble-text-style-menu" use:clickOutside on:clickoutside={onClose}>
 		{#each textStyles as style}
 			<button
 				class="text-style-option"

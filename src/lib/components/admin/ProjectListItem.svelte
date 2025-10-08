@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation'
 	import { createEventDispatcher, onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
+	import { clickOutside } from '$lib/actions/clickOutside'
 
 	import type { AdminProject } from '$lib/types/admin'
 
@@ -48,6 +49,10 @@
 
 	function handleToggleDropdown(event: MouseEvent) {
 		event.stopPropagation()
+		// Close all other dropdowns before toggling this one
+		if (!isDropdownOpen) {
+			document.dispatchEvent(new CustomEvent('closeDropdowns'))
+		}
 		isDropdownOpen = !isDropdownOpen
 	}
 
@@ -61,6 +66,10 @@
 
 	function handleDelete() {
 		dispatch('delete', { project })
+	}
+
+	function handleClickOutside() {
+		isDropdownOpen = false
 	}
 
 	onMount(() => {
@@ -99,7 +108,11 @@
 		/>
 	</div>
 
-	<div class="dropdown-container">
+	<div
+		class="dropdown-container"
+		use:clickOutside={{ enabled: isDropdownOpen }}
+		on:clickoutside={handleClickOutside}
+	>
 		<button
 			class="action-button"
 			type="button"
