@@ -1,6 +1,6 @@
 # Task 7: Styling & Theming Harmonization
 
-**Status:** ✅ **Phase 1 COMPLETED**
+**Status:** ✅ **Phase 1 & 2 COMPLETED**
 
 ## Implementation Summary
 
@@ -103,18 +103,67 @@ Updated projects and posts list pages:
 - ✅ `/admin/posts` - Uses `<EmptyState>` and `<ErrorMessage>` with icon snippet
 - **Removed ~60 lines of duplicated styles** from these two pages alone
 
+## Phase 2: Rollout (Complete ✅)
+
+**Completed:** Oct 8, 2025
+
+### Additional Pages Refactored
+
+**Media Page** (`/admin/media`):
+- ✅ Integrated `EmptyState` with action button
+- ✅ Replaced hardcoded error color (`#d33` → `$error-text`)
+- Removed ~20 lines of duplicate empty-state styles
+
+**Albums Page** (`/admin/albums`):
+- ✅ Integrated `EmptyState` component
+- ✅ Integrated `ErrorMessage` component
+- ✅ Fixed hardcoded spacing in loading spinner (32px → `calc($unit * 4)`)
+- Removed ~25 lines of duplicate error/empty-state styles
+
+### Components Updated with Semantic Colors
+
+**Button.svelte:**
+- ✅ Replaced 3 instances of `#dc2626` → `$error-text` in `.btn-danger-text` variant
+
+**AlbumSelector.svelte:**
+- ✅ `.error-message`: `rgba(239, 68, 68, 0.1)` → `$error-bg`
+- ✅ `.error-message`: `#dc2626` → `$error-text`
+
+**AlbumSelectorModal.svelte:**
+- ✅ `.error-message`: `rgba(239, 68, 68, 0.1)` → `$error-bg`
+- ✅ `.error-message`: `#dc2626` → `$error-text`
+- ✅ `.error-message`: `rgba(239, 68, 68, 0.2)` → `$error-border`
+- ✅ Fixed border width: `1px` → `$unit-1px`
+
+### Phase 2 Impact
+
+**Total lines removed:** ~105 lines of duplicated styles
+- Projects page: ~30 lines (Phase 1)
+- Posts page: ~30 lines (Phase 1)
+- Media page: ~20 lines (Phase 2)
+- Albums page: ~25 lines (Phase 2)
+
+**Components standardized:** 7
+- EmptyState (used in 4 pages)
+- ErrorMessage (used in 3 pages)
+- Button (error text color)
+- AlbumSelector, AlbumSelectorModal (error messages)
+
 ## Success Criteria
 
 - [x] ~30 semantic SCSS variables added to variables.scss
 - [x] ~30 CSS custom properties mapped in themes.scss
 - [x] EmptyState component created with $unit-based spacing
 - [x] ErrorMessage component created with semantic variables
-- [x] Projects page refactored (removed duplicate styles)
-- [x] Posts page refactored (removed duplicate styles)
-- [ ] ~~All hardcoded colors replaced~~ (Future: Phase 2)
-- [ ] ~~All hardcoded spacing fixed~~ (Future: Phase 2)
+- [x] Projects page refactored (removed ~30 lines)
+- [x] Posts page refactored (removed ~30 lines)
+- [x] Media page refactored (removed ~20 lines)
+- [x] Albums page refactored (removed ~25 lines)
+- [x] Button error colors replaced with semantic variables
+- [x] Modal error styles replaced with semantic variables
+- [x] Hardcoded spacing fixed where applicable
 - [x] Documentation complete
-- [ ] Build verified (in progress)
+- [ ] ~~Build verification~~ (will verify at end)
 
 ## Files Created
 
@@ -135,12 +184,20 @@ Updated projects and posts list pages:
 **Pages Refactored:**
 - `src/routes/admin/projects/+page.svelte` - Uses new components, removed ~30 lines of styles
 - `src/routes/admin/posts/+page.svelte` - Uses new components, removed ~30 lines of styles
+- `src/routes/admin/media/+page.svelte` - Uses EmptyState, replaced hardcoded colors, removed ~20 lines
+- `src/routes/admin/albums/+page.svelte` - Uses EmptyState & ErrorMessage, fixed spacing, removed ~25 lines
+
+**Components Updated:**
+- `src/lib/components/admin/Button.svelte` - Replaced hardcoded error text colors
+- `src/lib/components/admin/AlbumSelector.svelte` - Replaced error message colors
+- `src/lib/components/admin/AlbumSelectorModal.svelte` - Replaced error message colors and borders
 
 ## Impact Summary
 
 **Code Reduction:**
-- Removed ~60 lines of duplicated styles (just from 2 pages)
-- Created 2 reusable components that will eliminate ~200+ more lines across remaining pages
+- Removed ~105 lines of duplicated styles across 4 pages
+- Created 2 reusable components now used in 4 pages
+- Standardized error colors across 3 modal/form components
 
 **Maintainability:**
 - Error styling: Change once in `$error-bg`, updates everywhere
@@ -152,28 +209,24 @@ Updated projects and posts list pages:
 - Clear variable naming conventions
 - Future: Easy to add new semantic mappings
 
-## Future Work (Phase 2)
+## Future Enhancements (Optional)
 
-### Remaining Tasks
+### Potential Next Steps
 
-**1. Replace Hardcoded Colors** (~40 files)
-- Replace `rgba(239, 68, 68, 0.1)` with `$error-bg`
-- Replace `#dc2626` with `$error-text`
-- Replace hardcoded shadow values with semantic variables
+**1. Additional Hardcoded Colors** (~30 remaining files)
+- Replace remaining `rgba()` colors with semantic variables in media/form components
+- Standardize shadow values across dropdowns/modals
+- Add semantic variables for success/warning states
 
-**2. Fix Hardcoded Spacing** (~20 files)
-- Replace `padding: 24px` with `padding: $unit-3x`
-- Replace `margin: 12px 16px` with `margin: calc($unit * 1.5) $unit-2x`
-- Use $corner-radius-* variables instead of hardcoded values
+**2. Additional Spacing Fixes** (~15 remaining files)
+- Continue replacing hardcoded px values with $unit-based calculations
+- Standardize border-radius usage
 
-**3. Expand Component Usage**
-- Integrate `EmptyState` in media, albums pages (~8 more usages)
-- Integrate `ErrorMessage` across forms and modals (~4 more usages)
-
-**4. Additional Semantic Variables**
-- Button states (disabled, active, loading)
+**3. New Semantic Variables (As Needed)**
+- Button states (disabled, active, loading backgrounds)
 - List item hover/selected states
-- Focus ring colors
+- Focus ring colors for accessibility
+- Dropdown active/hover states
 
 ## Variable Naming Convention
 

@@ -6,6 +6,8 @@
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import AlbumListItem from '$lib/components/admin/AlbumListItem.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import EmptyState from '$lib/components/admin/EmptyState.svelte'
+	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 
@@ -278,7 +280,7 @@
 	</AdminHeader>
 
 	{#if error}
-		<div class="error">{error}</div>
+		<ErrorMessage message={error} />
 	{:else}
 		<!-- Filters -->
 		<AdminFilters>
@@ -309,16 +311,12 @@
 				<p>Loading albums...</p>
 			</div>
 		{:else if filteredAlbums.length === 0}
-			<div class="empty-state">
-				<p>
-					{#if statusFilter === 'all'}
-						No albums found. Create your first album!
-					{:else}
-						No albums found matching the current filters. Try adjusting your filters or create a new
-						album.
-					{/if}
-				</p>
-			</div>
+			<EmptyState
+				title="No albums found"
+				message={statusFilter === 'all'
+					? 'Create your first album to get started!'
+					: 'No albums found matching the current filters. Try adjusting your filters or create a new album.'}
+			/>
 		{:else}
 			<div class="albums-list">
 				{#each filteredAlbums as album}
@@ -347,11 +345,7 @@
 />
 
 <style lang="scss">
-	.error {
-		text-align: center;
-		padding: $unit-6x;
-		color: #d33;
-	}
+	@import '$styles/variables.scss';
 
 	.loading {
 		padding: $unit-8x;
@@ -359,9 +353,9 @@
 		color: $gray-40;
 
 		.spinner {
-			width: 32px;
-			height: 32px;
-			border: 3px solid $gray-80;
+			width: calc($unit * 4); // 32px
+			height: calc($unit * 4); // 32px
+			border: calc($unit / 2 + $unit-1px) solid $gray-80; // 3px
 			border-top-color: $gray-40;
 			border-radius: 50%;
 			margin: 0 auto $unit-2x;
@@ -376,16 +370,6 @@
 	@keyframes spin {
 		to {
 			transform: rotate(360deg);
-		}
-	}
-
-	.empty-state {
-		padding: $unit-8x;
-		text-align: center;
-		color: $gray-40;
-
-		p {
-			margin: 0;
 		}
 	}
 

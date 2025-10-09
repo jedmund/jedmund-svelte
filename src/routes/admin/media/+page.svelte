@@ -4,6 +4,7 @@
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
+	import EmptyState from '$lib/components/admin/EmptyState.svelte'
 	import Input from '$lib/components/admin/Input.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
@@ -468,10 +469,11 @@
 		{/if}
 
 		{#if media.length === 0}
-			<div class="empty-state">
-				<p>No media files found.</p>
-				<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
-			</div>
+			<EmptyState title="No media files found" message="Upload your first file to get started.">
+				{#snippet action()}
+					<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
+				{/snippet}
+			</EmptyState>
 		{:else}
 			<div class="media-grid">
 				{#each media as item}
@@ -660,23 +662,13 @@
 	.error {
 		text-align: center;
 		padding: $unit-6x;
-		color: #d33;
+		color: $error-text;
 	}
 
 	.loading {
 		text-align: center;
 		padding: $unit-6x;
 		color: $gray-40;
-	}
-
-	.empty-state {
-		text-align: center;
-		padding: $unit-8x;
-		color: $gray-40;
-
-		p {
-			margin-bottom: $unit-3x;
-		}
 	}
 
 	.media-grid {

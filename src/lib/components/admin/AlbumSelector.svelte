@@ -325,8 +325,8 @@
 	.error-message {
 		margin: $unit-2x $unit-3x 0;
 		padding: $unit-2x;
-		background: rgba(239, 68, 68, 0.1);
-		color: #dc2626;
+		background: $error-bg;
+		color: $error-text;
 		border-radius: $unit;
 		font-size: 0.875rem;
 	}

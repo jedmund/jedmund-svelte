@@ -188,11 +188,11 @@
 	}
 
 	.error-message {
-		background: rgba(239, 68, 68, 0.1);
-		color: #dc2626;
+		background: $error-bg;
+		color: $error-text;
 		padding: $unit-2x;
 		border-radius: $unit;
-		border: 1px solid rgba(239, 68, 68, 0.2);
+		border: $unit-1px solid $error-border;
 		margin-top: $unit-2x;
 	}
 
