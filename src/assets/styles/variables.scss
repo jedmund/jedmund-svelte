@@ -318,3 +318,51 @@ $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
 $shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 $shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 $shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+/* Admin Component-Specific Semantic Colors
+ * Two-layer system: base colors ($gray-80) → semantic mappings ($input-bg)
+ * These will be exposed as CSS custom properties in themes.scss for theming
+ * -------------------------------------------------------------------------- */
+
+// Inputs & Forms (extended semantics)
+$input-bg: $gray-90;
+$input-bg-hover: $gray-85;
+$input-bg-focus: $white;
+$input-text: $gray-20;
+$input-text-hover: $gray-10;
+$input-border: $gray-80;
+$input-border-focus: $blue-40;
+
+// State Messages (errors, success, warnings)
+$error-bg: rgba($red-60, 0.1);
+$error-text: $red-error; // Already defined as #dc2626
+$error-border: rgba($red-60, 0.2);
+
+$success-bg: rgba($green-40, 0.1);
+$success-text: $green-30;
+$success-border: rgba($green-40, 0.2);
+
+$warning-bg: rgba($yellow-50, 0.1);
+$warning-text: $yellow-10;
+$warning-border: rgba($yellow-50, 0.2);
+
+// Empty States
+$empty-state-text: $gray-40;
+$empty-state-heading: $gray-20;
+
+// Cards & Containers
+$card-bg: $white;
+$card-border: $gray-80;
+$card-shadow: rgba($black, 0.08);
+$card-shadow-hover: rgba($black, 0.12);
+
+// Dropdowns & Popovers
+$dropdown-bg: $white;
+$dropdown-border: $gray-80;
+$dropdown-shadow: rgba($black, 0.12);
+$dropdown-item-hover: $gray-95;
+
+// Modals
+$modal-overlay: rgba($black, 0.5);
+$modal-bg: $white;
+$modal-shadow: rgba($black, 0.15);

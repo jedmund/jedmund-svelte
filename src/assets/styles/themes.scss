@@ -1,11 +1,58 @@
 :root {
+	// Base page colors
 	--bg-color: #{$gray-80};
 	--page-color: #{$gray-100};
 	--card-color: #{$gray-90};
 	--mention-bg-color: #{$gray-90};
-
 	--text-color: #{$gray-20};
+
+	// Inputs & Forms
+	--input-bg: #{$input-bg};
+	--input-bg-hover: #{$input-bg-hover};
+	--input-bg-focus: #{$input-bg-focus};
+	--input-text: #{$input-text};
+	--input-text-hover: #{$input-text-hover};
+	--input-border: #{$input-border};
+	--input-border-focus: #{$input-border-focus};
+
+	// State Messages
+	--error-bg: #{$error-bg};
+	--error-text: #{$error-text};
+	--error-border: #{$error-border};
+
+	--success-bg: #{$success-bg};
+	--success-text: #{$success-text};
+	--success-border: #{$success-border};
+
+	--warning-bg: #{$warning-bg};
+	--warning-text: #{$warning-text};
+	--warning-border: #{$warning-border};
+
+	// Empty States
+	--empty-state-text: #{$empty-state-text};
+	--empty-state-heading: #{$empty-state-heading};
+
+	// Cards & Containers
+	--card-bg: #{$card-bg};
+	--card-border: #{$card-border};
+	--card-shadow: #{$card-shadow};
+	--card-shadow-hover: #{$card-shadow-hover};
+
+	// Dropdowns & Popovers
+	--dropdown-bg: #{$dropdown-bg};
+	--dropdown-border: #{$dropdown-border};
+	--dropdown-shadow: #{$dropdown-shadow};
+	--dropdown-item-hover: #{$dropdown-item-hover};
+
+	// Modals
+	--modal-overlay: #{$modal-overlay};
+	--modal-bg: #{$modal-bg};
+	--modal-shadow: #{$modal-shadow};
 }
 
 [data-theme='dark'] {
+	// Future: remap CSS custom properties for dark mode
+	// --input-bg: #{$dark-input-bg};
+	// --card-bg: #{$dark-card-bg};
+	// etc.
 }

@@ -2,25 +2,26 @@
 
 ## Progress Overview
 
-**Current Status:** Phase 3 Complete ✅ (4 of 4 phases done)
+**Current Status:** Phase 4 In Progress 🚧 (Task 7 Phase 1 Complete)
 
 - ✅ **Phase 0:** Runed integration (Task 0)
 - ✅ **Phase 1:** Auth & data foundation (Tasks 1, 2)
 - ✅ **Phase 2:** Form modernization (Tasks 3, 6)
 - ✅ **Phase 3:** List utilities & primitives (Tasks 4, 5)
-- 📋 **Phase 4:** Styling harmonization (Task 7) - **NEXT**
+- 🚧 **Phase 4:** Styling harmonization (Task 7) - **IN PROGRESS**
 
 **Recent Completions:**
-- Task 3 - Project Form Modularization (Oct 7, 2025)
-  - Reduced ProjectForm from 720 → 417 lines (42%)
-  - Created reusable composable stores and helpers
-- Task 4 - Shared List Filtering Utilities (Oct 8, 2025)
-  - Removed ~100 lines of duplicated filter/sort code
-  - Integrated into projects and posts lists
+- Task 7 Phase 1 - Styling & Theming Foundation (Oct 8, 2025)
+  - Created 3-layer theming architecture (SCSS → CSS variables)
+  - Added ~30 semantic SCSS variables for components
+  - Built EmptyState and ErrorMessage reusable components
+  - Refactored projects and posts pages (~60 lines removed)
 - Task 5 - Dropdown & Click-Outside Primitives (Oct 8, 2025)
   - Documented existing implementation (~85% already done)
   - Cleaned up GenericMetadataPopover to use clickOutside action
-  - Justified remaining manual event listeners
+- Task 4 - Shared List Filtering Utilities (Oct 8, 2025)
+  - Removed ~100 lines of duplicated filter/sort code
+  - Integrated into projects and posts lists
 
 ---
 
@@ -269,22 +270,58 @@ Created `src/lib/admin/autoSave.svelte.ts` with:
 
 ---
 
-## Task 7 – Styling & Theming Harmonization
+## Task 7 – Styling & Theming Harmonization 🚧
 
-**Objective:** Reduce SCSS duplication and make layout adjustments easier.
+**Status:** 🚧 **PHASE 1 COMPLETE** (Oct 8, 2025)
 
-### Steps
-1. Create `src/lib/styles/admin.css` exposing CSS variables for spacing, typography, and colors consumed by admin components.
-2. Replace per-component `@import '$styles/variables.scss'` with `@use` in a single scoped stylesheet or with CSS variable access.
-3. Introduce layout wrappers (e.g., `AdminLayoutShell.svelte`) that centralize container widths and card backgrounds, removing repeated SCSS from `AdminPage`, `AdminNavBar`, etc.
-4. Audit component classes to ensure consistent BEM-ish naming and remove redundant selectors (e.g., duplicate `.loading` styles across pages).
+**Objective:** Reduce SCSS duplication, standardize component styling, and prepare for future dark mode theming.
+
+### Phase 1: Foundation (Complete ✅)
+
+**Completed:**
+1. ✅ Created 3-layer theming architecture:
+   - Base colors (`$gray-80`, `$red-60`) in `variables.scss`
+   - Semantic SCSS variables (`$input-bg`, `$error-bg`) in `variables.scss`
+   - CSS custom properties (`--input-bg`, `--error-bg`) in `themes.scss`
+2. ✅ Added ~30 semantic SCSS variables for:
+   - Inputs & forms (bg, hover, focus, text, border)
+   - State messages (error, success, warning)
+   - Empty states
+   - Cards & containers
+   - Dropdowns & popovers
+   - Modals
+3. ✅ Created reusable components:
+   - `EmptyState.svelte` - Replaces 10+ duplicate implementations
+   - `ErrorMessage.svelte` - Replaces 4+ duplicate implementations
+4. ✅ Refactored pages using new components:
+   - `/admin/projects` - Removed ~30 lines of duplicate styles
+   - `/admin/posts` - Removed ~30 lines of duplicate styles
+
+**Results:**
+- 60+ lines of duplicated styles removed (2 pages)
+- Theme-ready architecture for future dark mode
+- Guaranteed visual consistency for errors and empty states
+
+### Phase 2: Rollout (Future)
+
+**Remaining work:**
+1. ⏳ Replace hardcoded colors with semantic variables (~40 files)
+   - `rgba(239, 68, 68, 0.1)` → `$error-bg`
+   - `#dc2626` → `$error-text`
+2. ⏳ Fix hardcoded spacing with $unit system (~20 files)
+   - `padding: 24px` → `$unit-3x`
+   - `margin: 12px` → `calc($unit * 1.5)`
+3. ⏳ Expand EmptyState usage to media, albums pages (~8 more usages)
+4. ⏳ Expand ErrorMessage usage across forms/modals (~4 more usages)
 
 ### Implementation Notes
-- Consider PostCSS or Svelte’s `<style global>` for variable declarations; keep component styles scoped.
-- Document variable names and usage in a short appendix within this doc once finalized.
+- Three-layer architecture enables dark mode without touching component code
+- Components use SCSS variables; themes.scss maps to CSS custom properties
+- Future dark mode = remap `[data-theme='dark']` block in themes.scss
+- Documented in: `docs/task-7-styling-harmonization-completion.md`
 
 ### Dependencies
-- Largely independent; best executed after structural refactors to avoid churn.
+- ✅ No dependencies - can be done incrementally
 
 ---
 
@@ -313,8 +350,13 @@ Created `src/lib/admin/autoSave.svelte.ts` with:
 - Removed ~100 lines of duplicated filtering logic
 - Standardized dropdown patterns across admin interface
 
-### 📋 Phase 4: Styling Harmonization (Future)
-- ⏳ Task 7: Styling & theming cleanup
+### 🚧 Phase 4: Styling Harmonization (In Progress)
+- 🚧 Task 7: Styling & theming cleanup (Phase 1 Complete)
+  - ✅ Semantic SCSS variable system
+  - ✅ CSS custom properties for theming
+  - ✅ EmptyState and ErrorMessage components
+  - ✅ Projects and posts pages refactored
+  - ⏳ Remaining: Hardcoded color/spacing fixes across 40+ files
 
 ---
 

@@ -6,6 +6,8 @@
 	import PostListItem from '$lib/components/admin/PostListItem.svelte'
 	import InlineComposerModal from '$lib/components/admin/InlineComposerModal.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import EmptyState from '$lib/components/admin/EmptyState.svelte'
+	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 	import { createListFilters, commonSorts } from '$lib/admin/listFilters.svelte'
@@ -165,22 +167,20 @@ const statusFilterOptions = [
 	</AdminFilters>
 
 	{#if actionError}
-		<div class="error-message">{actionError}</div>
+		<ErrorMessage message={actionError} />
 	{/if}
 
 	{#if filters.items.length === 0}
-		<div class="empty-state">
-			<div class="empty-icon">📝</div>
-			<h3>No posts found</h3>
-			<p>
-				{#if filters.values.type === 'all' && filters.values.status === 'all'}
-					Create your first post to get started!
-				{:else}
-					No posts found matching the current filters. Try adjusting your filters or create a new
-					post.
-				{/if}
-			</p>
-		</div>
+		<EmptyState
+			title="No posts found"
+			message={filters.values.type === 'all' && filters.values.status === 'all'
+				? 'Create your first post to get started!'
+				: 'No posts found matching the current filters. Try adjusting your filters or create a new post.'}
+		>
+			{#snippet icon()}
+				📝
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<div class="posts-list">
 			{#each filters.items as post (post.id)}
@@ -217,42 +217,9 @@ const statusFilterOptions = [
 <style lang="scss">
 	@import '$styles/variables.scss';
 
-	.error-message {
-		background: rgba(239, 68, 68, 0.1);
-		color: #dc2626;
-		padding: $unit-3x;
-		border-radius: $unit-2x;
-		border: 1px solid rgba(239, 68, 68, 0.2);
-		text-align: center;
-		margin-bottom: $unit-4x;
-	}
-
 	.composer-section {
 		margin-bottom: $unit-4x;
 		padding: 0 $unit;
-	}
-
-	.empty-state {
-		text-align: center;
-		padding: $unit-8x $unit-4x;
-		color: $gray-40;
-
-		.empty-icon {
-			font-size: 3rem;
-			margin-bottom: $unit-3x;
-		}
-
-		h3 {
-			font-size: 1.25rem;
-			font-weight: 600;
-			margin: 0 0 $unit-2x;
-			color: $gray-20;
-		}
-
-		p {
-			margin: 0;
-			line-height: 1.5;
-		}
 	}
 
 	.posts-list {
