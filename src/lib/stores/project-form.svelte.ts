@@ -37,7 +37,10 @@ export function createProjectFormStore(initialProject?: Project | null) {
 			caseStudyContent: project.caseStudyContent || {
 				type: 'doc',
 				content: [{ type: 'paragraph' }]
-			}
+			},
+			showFeaturedImageInHeader: project.showFeaturedImageInHeader ?? true,
+			showBackgroundColorInHeader: project.showBackgroundColorInHeader ?? true,
+			showLogoInHeader: project.showLogoInHeader ?? true
 		}
 		original = { ...fields }
 	}
@@ -104,7 +107,10 @@ export function createProjectFormStore(initialProject?: Project | null) {
 					fields.caseStudyContent.content &&
 					fields.caseStudyContent.content.length > 0
 						? fields.caseStudyContent
-						: null
+						: null,
+				showFeaturedImageInHeader: fields.showFeaturedImageInHeader,
+				showBackgroundColorInHeader: fields.showBackgroundColorInHeader,
+				showLogoInHeader: fields.showLogoInHeader
 			}
 		}
 	}

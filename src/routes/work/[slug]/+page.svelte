@@ -148,13 +148,21 @@
 			<div
 				bind:this={headerContainer}
 				class="project-header-container"
-				style="background-color: {project.backgroundColor || '#f5f5f5'}"
+				class:has-image={project.showFeaturedImageInHeader && project.featuredImage}
+				style:background-color={!project.showFeaturedImageInHeader || !project.featuredImage
+					? project.showBackgroundColorInHeader && project.backgroundColor
+						? project.backgroundColor
+						: '#f5f5f5'
+					: undefined}
+				style:background-image={project.showFeaturedImageInHeader && project.featuredImage
+					? `url(${project.featuredImage})`
+					: undefined}
 				onmousemove={handleMouseMove}
 				onmouseleave={handleMouseLeave}
 				role="presentation"
 				aria-hidden="true"
 			>
-				{#if project.logoUrl}
+				{#if project.showLogoInHeader && project.logoUrl}
 					<img
 						src={project.logoUrl}
 						alt="{project.title} logo"
@@ -249,6 +257,12 @@
 		border-top-right-radius: $card-corner-radius;
 		position: relative;
 		overflow: hidden;
+
+		&.has-image {
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+		}
 
 		@include breakpoint('phone') {
 			height: 250px;

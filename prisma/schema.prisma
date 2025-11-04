@@ -25,11 +25,14 @@ model Project {
   publishedAt      DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-  backgroundColor  String?   @db.VarChar(50)
-  highlightColor   String?   @db.VarChar(50)
-  logoUrl          String?   @db.VarChar(500)
-  password         String?   @db.VarChar(255)
-  projectType      String    @default("work") @db.VarChar(50)
+  backgroundColor              String?  @db.VarChar(50)
+  highlightColor               String?  @db.VarChar(50)
+  logoUrl                      String?  @db.VarChar(500)
+  password                     String?  @db.VarChar(255)
+  projectType                  String   @default("work") @db.VarChar(50)
+  showFeaturedImageInHeader    Boolean  @default(true)
+  showBackgroundColorInHeader  Boolean  @default(true)
+  showLogoInHeader             Boolean  @default(true)
 
   @@index([slug])
   @@index([status])
