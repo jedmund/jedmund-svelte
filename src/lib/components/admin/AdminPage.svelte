@@ -1,9 +1,22 @@
 <script lang="ts">
-	export let noHorizontalPadding = false
+	const { noHorizontalPadding = false } = $props<{ noHorizontalPadding?: boolean }>()
+
+	let scrollContainer: HTMLElement
+	let isScrolled = $state(false)
+
+	function handleScroll(e: Event) {
+		const target = e.target as HTMLElement
+		isScrolled = target.scrollTop > 0
+	}
 </script>
 
-<section class="admin-page" class:no-horizontal-padding={noHorizontalPadding}>
-	<div class="page-header">
+<section
+	class="admin-page"
+	class:no-horizontal-padding={noHorizontalPadding}
+	bind:this={scrollContainer}
+	onscroll={handleScroll}
+>
+	<div class="page-header" class:scrolled={isScrolled}>
 		<slot name="header" />
 	</div>
 
@@ -24,38 +37,34 @@
 
 	.admin-page {
 		background: white;
-		border-radius: $card-corner-radius;
+		border-radius: $corner-radius-lg;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		margin: 0 auto $unit-2x;
-		width: calc(100% - #{$unit-6x});
-		max-width: 900px; // Much wider for admin
-		min-height: calc(100vh - #{$unit-16x}); // Full height minus margins
-		overflow: visible;
-
-		&:first-child {
-			margin-top: 0;
-		}
-
-		@include breakpoint('phone') {
-			margin-bottom: $unit-3x;
-			width: calc(100% - #{$unit-4x});
-		}
-
-		@include breakpoint('small-phone') {
-			width: calc(100% - #{$unit-3x});
-		}
+		margin: 0;
+		width: 100%;
+		height: 100vh;
+		overflow-y: auto;
+		overflow-x: hidden;
 	}
 
 	.page-header {
+		position: sticky;
+		top: 0;
+		z-index: $z-index-sticky;
+		background: white;
 		box-sizing: border-box;
-		min-height: 110px;
-		padding: $unit-4x;
+		min-height: 90px;
+		padding: $unit-3x $unit-4x;
 		display: flex;
+		transition: box-shadow 0.2s ease;
+
+		&.scrolled {
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+		}
 
 		@include breakpoint('phone') {
-			padding: $unit-3x;
+			padding: $unit-2x;
 		}
 
 		@include breakpoint('small-phone') {
