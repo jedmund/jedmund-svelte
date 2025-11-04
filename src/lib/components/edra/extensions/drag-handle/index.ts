@@ -387,6 +387,10 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 						const slice = new Slice(Fragment.from(newList), 0, 0)
 						view.dragging = { slice, move: event.ctrlKey }
 					}
+
+					// Return false to let ProseMirror's default drop handler (from Dropcursor) take over
+					// This allows the actual node movement to happen
+					return false
 				},
 				dragend: (view) => {
 					view.dom.classList.remove('dragging')
