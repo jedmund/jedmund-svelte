@@ -5,11 +5,11 @@
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import DropdownSelectField from './DropdownSelectField.svelte'
 	import { toast } from '$lib/stores/toast'
 	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
-	import { clickOutside } from '$lib/actions/clickOutside'
 	import type { JSONContent } from '@tiptap/core'
 
 	interface Props {
@@ -32,7 +32,6 @@
 	let hasLoaded = $state(mode === 'create') // Create mode loads immediately
 	let isSaving = $state(false)
 	let activeTab = $state('metadata')
-	let showPublishMenu = $state(false)
 	let updatedAt = $state<string | undefined>(initialData?.updatedAt)
 
 	// Form data
@@ -92,6 +91,19 @@ let autoSave = mode === 'edit' && postId
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
 		{ value: 'content', label: 'Content' }
+	]
+
+	const statusOptions = [
+		{
+			value: 'draft',
+			label: 'Draft',
+			description: 'Only visible to you'
+		},
+		{
+			value: 'published',
+			label: 'Published',
+			description: 'Visible on your public site'
+		}
 	]
 
 	// Auto-generate slug from title
@@ -300,41 +312,12 @@ $effect(() => {
 		}
 	}
 
-	async function handlePublish() {
-		status = 'published'
-		await handleSave()
-		showPublishMenu = false
-	}
-
-	async function handleUnpublish() {
-		status = 'draft'
-		await handleSave()
-		showPublishMenu = false
-	}
-
-	function togglePublishMenu() {
-		showPublishMenu = !showPublishMenu
-	}
-
-	function handleClickOutsideMenu() {
-		showPublishMenu = false
-	}
 </script>
 
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">
-			<Button variant="ghost" iconOnly onclick={() => goto('/admin/posts')}>
-				<svg slot="icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-					<path
-						d="M12.5 15L7.5 10L12.5 5"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-			</Button>
+			<h1 class="form-title">{title || 'Untitled Essay'}</h1>
 		</div>
 		<div class="header-center">
 			<AdminSegmentedControl
@@ -344,56 +327,12 @@ $effect(() => {
 			/>
 		</div>
 		<div class="header-actions">
-			<div
-				class="save-actions"
-				use:clickOutside={{ enabled: showPublishMenu }}
-				onclickoutside={handleClickOutsideMenu}
-			>
-				<Button variant="primary" onclick={handleSave} disabled={isSaving} class="save-button">
-					{status === 'published' ? 'Save' : 'Save Draft'}
-				</Button>
-				<Button
-					variant="primary"
-					iconOnly
-					buttonSize="medium"
-					active={showPublishMenu}
-					onclick={togglePublishMenu}
-					disabled={isSaving}
-					class="chevron-button"
-				>
-					<svg
-						slot="icon"
-						width="12"
-						height="12"
-						viewBox="0 0 12 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M3 4.5L6 7.5L9 4.5"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-				</Button>
-				{#if showPublishMenu}
-					<div class="publish-menu">
-						{#if status === 'published'}
-							<Button variant="ghost" onclick={handleUnpublish} class="menu-item" fullWidth>
-								Unpublish
-							</Button>
-						{:else}
-							<Button variant="ghost" onclick={handlePublish} class="menu-item" fullWidth>
-								Publish
-							</Button>
-						{/if}
-					</div>
-				{/if}
-			</div>
 			{#if mode === 'edit' && autoSave}
-				<AutoSaveStatus status={autoSave.status} error={autoSave.lastError} />
+				<AutoSaveStatus
+					status={autoSave.status}
+					error={autoSave.lastError}
+					lastSavedAt={initialData?.updatedAt}
+				/>
 			{/if}
 		</div>
 	</header>
@@ -441,6 +380,12 @@ $effect(() => {
 							/>
 
 							<Input label="Slug" bind:value={slug} placeholder="essay-url-slug" />
+
+							<DropdownSelectField
+								label="Status"
+								bind:value={status}
+								options={statusOptions}
+							/>
 
 							<div class="tags-field">
 								<label class="input-label">Tags</label>
@@ -520,6 +465,16 @@ $effect(() => {
 			display: flex;
 			justify-content: flex-end;
 		}
+	}
+
+	.form-title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 500;
+		color: $gray-20;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.admin-container {

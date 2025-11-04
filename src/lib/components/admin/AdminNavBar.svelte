@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { onMount } from 'svelte'
 	import AvatarSimple from '$lib/components/AvatarSimple.svelte'
 	import WorkIcon from '$icons/work.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
@@ -8,20 +7,6 @@
 	import AlbumIcon from '$icons/album.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
-	let isScrolled = $state(false)
-
-	onMount(() => {
-		const handleScroll = () => {
-			isScrolled = window.scrollY > 0
-		}
-
-		window.addEventListener('scroll', handleScroll)
-		handleScroll() // Check initial scroll position
-
-		return () => {
-			window.removeEventListener('scroll', handleScroll)
-		}
-	})
 
 	interface NavItem {
 		text: string
@@ -50,166 +35,97 @@
 	)
 </script>
 
-<nav class="admin-nav-bar" class:scrolled={isScrolled}>
-	<div class="nav-container">
-		<div class="nav-content">
-			<a href="/" class="nav-brand">
-				<div class="brand-logo">
-					<AvatarSimple />
-				</div>
-				<span class="brand-text">Back to jedmund.com</span>
-			</a>
-
-			<div class="nav-links">
-				{#each navItems as item, index}
-					<a href={item.href} class="nav-link" class:active={index === activeIndex}>
-						<item.icon class="nav-icon" />
-						<span class="nav-text">{item.text}</span>
-					</a>
-				{/each}
-			</div>
+<nav class="admin-nav-rail">
+	<a href="/" class="nav-brand">
+		<div class="brand-logo">
+			<AvatarSimple />
 		</div>
+	</a>
+
+	<div class="nav-links">
+		{#each navItems as item, index}
+			<a href={item.href} class="nav-link" class:active={index === activeIndex}>
+				<item.icon class="nav-icon" />
+				<span class="nav-text">{item.text}</span>
+			</a>
+		{/each}
 	</div>
 </nav>
 
 <style lang="scss">
-	// Breakpoint variables
-	$phone-max: 639px;
-	$tablet-min: 640px;
-	$tablet-max: 1023px;
-	$laptop-min: 1024px;
-	$laptop-max: 1439px;
-	$monitor-min: 1440px;
-
-	.admin-nav-bar {
+	.admin-nav-rail {
 		position: sticky;
 		top: 0;
-		z-index: $z-index-admin-nav;
-		width: 100%;
+		align-self: flex-start;
+		width: 80px;
+		min-width: 80px;
+		height: 100vh;
 		background: $bg-color;
-		border-bottom: 1px solid transparent;
-		transition: border-bottom 0.2s ease;
-
-		&.scrolled {
-			border-bottom: 1px solid $gray-60;
-		}
-	}
-
-	.nav-container {
-		width: 100%;
-		padding: 0 $unit-3x;
-
-		// Phone: Full width with padding
-		@media (max-width: $phone-max) {
-			padding: 0 $unit-2x;
-		}
-
-		// Tablet: Constrained width
-		@media (min-width: $tablet-min) and (max-width: $tablet-max) {
-			max-width: 768px;
-			margin: 0 auto;
-			padding: 0 $unit-4x;
-		}
-
-		// Laptop: Wider constrained width
-		@media (min-width: $laptop-min) and (max-width: $laptop-max) {
-			max-width: 900px;
-			margin: 0 auto;
-			padding: 0 $unit-5x;
-		}
-
-		// Monitor: Maximum constrained width
-		@media (min-width: $monitor-min) {
-			max-width: 900px;
-			margin: 0 auto;
-			padding: 0 $unit-6x;
-		}
-	}
-
-	.nav-content {
+		border-right: 1px solid $gray-80;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		justify-content: space-between;
-		height: 64px;
-		gap: $unit-4x;
-
-		@media (max-width: $phone-max) {
-			height: 56px;
-			gap: $unit-2x;
-		}
+		padding: $unit $unit-2x;
+		gap: $unit-half;
 	}
 
 	.nav-brand {
 		display: flex;
 		align-items: center;
-		gap: $unit;
+		justify-content: center;
 		text-decoration: none;
-		color: $gray-30;
-		font-weight: 400;
-		font-size: 0.925rem;
-		transition: color 0.2s ease;
+		padding: $unit-2x $unit-half;
+		border-radius: $corner-radius-2xl;
+		transition: background-color 0.2s ease;
+		width: 100%;
 
 		&:hover {
-			color: $gray-20;
+			background-color: $gray-70;
 		}
 
 		.brand-logo {
-			height: 32px;
-			width: 32px;
+			height: 40px;
+			width: 40px;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			flex-shrink: 0;
 
 			:global(.face-container) {
-				--face-size: 32px;
-				width: 32px;
-				height: 32px;
+				--face-size: 40px;
+				width: 40px;
+				height: 40px;
 			}
 
 			:global(svg) {
-				width: 32px;
-				height: 32px;
-			}
-		}
-
-		.brand-text {
-			white-space: nowrap;
-
-			@media (max-width: $phone-max) {
-				display: none;
+				width: 40px;
+				height: 40px;
 			}
 		}
 	}
 
 	.nav-links {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: $unit;
-		flex: 1;
-		justify-content: right;
-
-		@media (max-width: $phone-max) {
-			gap: 0;
-		}
+		gap: $unit-half;
+		width: 100%;
 	}
 
 	.nav-link {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: $unit;
-		padding: $unit $unit-2x;
-		border-radius: $card-corner-radius;
+		justify-content: center;
+		gap: $unit-half;
+		padding: $unit-2x $unit-half;
+		border-radius: $corner-radius-2xl;
 		text-decoration: none;
-		font-size: 0.925rem;
+		font-size: 0.75rem;
 		font-weight: 500;
 		color: $gray-30;
 		transition: all 0.2s ease;
-		position: relative;
-
-		@media (max-width: $phone-max) {
-			padding: $unit-2x $unit;
-		}
+		width: 100%;
 
 		&:hover {
 			background-color: $gray-70;
@@ -221,22 +137,22 @@
 		}
 
 		.nav-icon {
-			font-size: 1.1rem;
+			font-size: 1.5rem;
 			line-height: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 
-			@media (max-width: $tablet-max) {
-				font-size: 1rem;
+			:global(svg) {
+				width: 24px;
+				height: 24px;
 			}
 		}
 
 		.nav-text {
-			@media (max-width: $phone-max) {
-				display: none;
-			}
+			text-align: center;
+			white-space: nowrap;
+			line-height: 1.2;
 		}
-	}
-
-	.nav-actions {
-		// Placeholder for future actions if needed
 	}
 </style>

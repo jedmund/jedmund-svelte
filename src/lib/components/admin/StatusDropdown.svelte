@@ -53,7 +53,7 @@
 	{#snippet trigger()}
 		<Button
 			variant="primary"
-			buttonSize="large"
+			buttonSize="medium"
 			onclick={handlePrimaryAction}
 			disabled={disabled || isLoading}
 		>

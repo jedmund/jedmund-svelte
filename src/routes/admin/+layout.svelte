@@ -47,14 +47,20 @@
 	}
 
 	.admin-container {
-		min-height: 100vh;
+		height: 100vh;
+		overflow: hidden;
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		background-color: $bg-color;
 	}
 
 	.admin-content {
 		flex: 1;
+		display: flex;
+		flex-direction: column;
+		padding-top: $unit;
+		padding-right: $unit;
+		padding-bottom: $unit;
 	}
 
 	.admin-card-layout {
@@ -63,7 +69,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: flex-start;
-		padding: $unit-6x $unit-4x;
-		min-height: calc(100vh - 60px); // Account for navbar
+		padding: 0;
+		height: 100vh;
 	}
 </style>

@@ -116,7 +116,7 @@
 		{#snippet actions()}
 			<Button
 				variant="primary"
-				buttonSize="large"
+				buttonSize="medium"
 				onclick={() => goto('/admin/projects/new')}
 			>
 				New project

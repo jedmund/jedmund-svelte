@@ -7,7 +7,6 @@
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
 	import ProjectImagesForm from './ProjectImagesForm.svelte'
-	import StatusDropdown from './StatusDropdown.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import DraftPrompt from './DraftPrompt.svelte'
 	import { toast } from '$lib/stores/toast'
@@ -71,6 +70,7 @@
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
+		{ value: 'branding', label: 'Branding' },
 		{ value: 'case-study', label: 'Case Study' }
 	]
 
@@ -169,26 +169,13 @@
 		}
 	}
 
-	async function handleStatusChange(newStatus: string) {
-		formStore.setField('status', newStatus)
-		await handleSave()
-	}
+
 </script>
 
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">
-			<button class="btn-icon" onclick={() => goto('/admin/projects')}>
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-					<path
-						d="M12.5 15L7.5 10L12.5 5"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-			</button>
+			<h1 class="form-title">{formStore.fields.title || 'Untitled Project'}</h1>
 		</div>
 		<div class="header-center">
 			<AdminSegmentedControl
@@ -198,29 +185,12 @@
 			/>
 		</div>
 		<div class="header-actions">
-			{#if !isLoading}
-				<StatusDropdown
-					currentStatus={formStore.fields.status}
-					onStatusChange={handleStatusChange}
-					disabled={isSaving}
-					isLoading={isSaving}
-					primaryAction={formStore.fields.status === 'published'
-						? { label: 'Save', status: 'published' }
-						: { label: 'Publish', status: 'published' }}
-					dropdownActions={[
-						{ label: 'Save as Draft', status: 'draft', show: formStore.fields.status !== 'draft' },
-						{ label: 'List Only', status: 'list-only', show: formStore.fields.status !== 'list-only' },
-						{
-							label: 'Password Protected',
-							status: 'password-protected',
-							show: formStore.fields.status !== 'password-protected'
-						}
-					]}
-					viewUrl={project?.slug ? `/work/${project.slug}` : undefined}
+			{#if !isLoading && mode === 'edit' && autoSave}
+				<AutoSaveStatus
+					status={autoSave.status}
+					error={autoSave.lastError}
+					lastSavedAt={project?.updatedAt}
 				/>
-				{#if mode === 'edit' && autoSave}
-					<AutoSaveStatus status={autoSave.status} error={autoSave.lastError} />
-				{/if}
 			{/if}
 		</div>
 	</header>
@@ -256,8 +226,20 @@
 							}}
 						>
 							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
+						</form>
+					</div>
+				</div>
+
+				<!-- Branding Panel -->
+				<div class="panel content-wrapper" class:active={activeTab === 'branding'}>
+					<div class="form-content">
+						<form
+							onsubmit={(e) => {
+								e.preventDefault()
+								handleSave()
+							}}
+						>
 							<ProjectBrandingForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
-							<ProjectImagesForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
 						</form>
 					</div>
 				</div>
@@ -306,6 +288,16 @@
 			justify-content: flex-end;
 			gap: $unit-2x;
 		}
+	}
+
+	.form-title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 500;
+		color: $gray-20;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.btn-icon {

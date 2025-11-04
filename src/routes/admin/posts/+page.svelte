@@ -120,7 +120,7 @@ const statusFilterOptions = [
 <AdminPage>
 	<AdminHeader title="Universe" slot="header">
 		{#snippet actions()}
-			<Button variant="primary" buttonSize="large" onclick={handleNewEssay}>
+			<Button variant="primary" buttonSize="medium" onclick={handleNewEssay}>
 				New Essay
 			</Button>
 		{/snippet}

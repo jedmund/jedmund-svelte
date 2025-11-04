@@ -30,11 +30,11 @@
 	}
 
 	.segment {
-		padding: $unit $unit-3x;
+		padding: $unit $unit-2x;
 		background: transparent;
 		border: none;
 		border-radius: 50px;
-		font-size: 0.925rem;
+		font-size: 0.875rem;
 		color: $gray-40;
 		cursor: pointer;
 		transition: all 0.2s ease;

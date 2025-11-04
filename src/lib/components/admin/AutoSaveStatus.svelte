@@ -1,19 +1,31 @@
 <script lang="ts">
   import type { AutoSaveStatus } from '$lib/admin/autoSave'
+  import { formatTimeAgo } from '$lib/utils/time'
 
   interface Props {
     statusStore?: { subscribe: (run: (v: AutoSaveStatus) => void) => () => void }
     errorStore?: { subscribe: (run: (v: string | null) => void) => () => void }
     status?: AutoSaveStatus
     error?: string | null
+    lastSavedAt?: Date | string | null
+    showTimestamp?: boolean
     compact?: boolean
   }
 
-  let { statusStore, errorStore, status: statusProp, error: errorProp, compact = true }: Props = $props()
+  let {
+    statusStore,
+    errorStore,
+    status: statusProp,
+    error: errorProp,
+    lastSavedAt,
+    showTimestamp = true,
+    compact = true
+  }: Props = $props()
 
   // Support both old subscription-based stores and new reactive values
   let status = $state<AutoSaveStatus>('idle')
   let errorText = $state<string | null>(null)
+  let refreshKey = $state(0) // Used to force re-render for time updates
 
   $effect(() => {
     // If using direct props (new runes-based store)
@@ -35,17 +47,33 @@
     }
   })
 
+  // Auto-refresh timestamp every 30 seconds
+  $effect(() => {
+    if (!lastSavedAt || !showTimestamp) return
+
+    const interval = setInterval(() => {
+      refreshKey++
+    }, 30000)
+
+    return () => clearInterval(interval)
+  })
+
   const label = $derived.by(() => {
+    // Force dependency on refreshKey to trigger re-computation
+    refreshKey
+
     switch (status) {
       case 'saving':
         return 'Saving…'
       case 'saved':
-        return 'All changes saved'
+      case 'idle':
+        return lastSavedAt && showTimestamp
+          ? `Saved ${formatTimeAgo(lastSavedAt)}`
+          : 'All changes saved'
       case 'offline':
         return 'Offline'
       case 'error':
         return errorText ? `Error — ${errorText}` : 'Save failed'
-      case 'idle':
       default:
         return ''
     }

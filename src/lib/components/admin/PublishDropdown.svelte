@@ -41,7 +41,7 @@
 	{#snippet trigger()}
 		<Button
 			variant="primary"
-			buttonSize="large"
+			buttonSize="medium"
 			onclick={handlePublishClick}
 			disabled={disabled || isLoading}
 		>

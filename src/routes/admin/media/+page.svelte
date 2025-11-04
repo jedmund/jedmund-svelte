@@ -338,8 +338,8 @@
 	<AdminHeader title="Media Library" slot="header">
 		{#snippet actions()}
 			<div class="actions-dropdown">
-				<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload</Button>
-				<Button variant="ghost" iconOnly buttonSize="large" onclick={handleDropdownToggle}>
+				<Button variant="primary" buttonSize="medium" onclick={openUploadModal}>Upload</Button>
+				<Button variant="ghost" iconOnly buttonSize="medium" onclick={handleDropdownToggle}>
 					{#snippet icon()}
 						<ChevronDown />
 					{/snippet}
