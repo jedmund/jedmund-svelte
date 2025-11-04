@@ -12,8 +12,6 @@
 	margin-top: 0;
 	margin-bottom: 1rem;
 	line-height: 1.6;
-	padding-left: 2.25rem;
-	padding-right: 2.25rem;
 }
 
 .tiptap p:last-child {
@@ -22,8 +20,6 @@
 
 @media (max-width: 768px) {
 	.tiptap p {
-		padding-left: 2rem;
-		padding-right: 2rem;
 	}
 }
 
@@ -47,8 +43,6 @@
 	margin-top: 1.5rem;
 	margin-bottom: 0.75rem;
 	text-wrap: pretty;
-	padding-left: 2.25rem;
-	padding-right: 2.25rem;
 }
 
 .tiptap h1,
@@ -74,8 +68,6 @@
 	.tiptap h4,
 	.tiptap h5,
 	.tiptap h6 {
-		padding-left: 2rem;
-		padding-right: 2rem;
 	}
 }
 
