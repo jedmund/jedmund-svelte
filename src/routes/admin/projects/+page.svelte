@@ -168,9 +168,9 @@
 			{#each filters.items as project (project.id)}
 				<ProjectListItem
 					{project}
-					on:edit={handleEdit}
-					on:togglePublish={handleTogglePublish}
-					on:delete={handleDelete}
+					onedit={handleEdit}
+					ontogglepublish={handleTogglePublish}
+					ondelete={handleDelete}
 				/>
 			{/each}
 		</div>

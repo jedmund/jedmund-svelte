@@ -133,7 +133,7 @@ const statusFilterOptions = [
 				initialMode="page"
 				initialPostType="post"
 				closeOnSave={false}
-				on:saved={handleComposerSaved}
+				onsaved={handleComposerSaved}
 			/>
 		</div>
 	{/if}
@@ -186,9 +186,9 @@ const statusFilterOptions = [
 			{#each filters.items as post (post.id)}
 				<PostListItem
 					{post}
-					on:edit={handleEdit}
-					on:togglePublish={handleTogglePublish}
-					on:delete={handleDelete}
+					onedit={handleEdit}
+					ontogglepublish={handleTogglePublish}
+					ondelete={handleDelete}
 				/>
 			{/each}
 		</div>

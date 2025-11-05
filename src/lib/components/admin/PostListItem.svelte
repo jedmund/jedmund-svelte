@@ -1,20 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { createEventDispatcher, onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
 	import type { AdminPost } from '$lib/types/admin'
 
 	interface Props {
 		post: AdminPost
+		onedit?: (event: CustomEvent<{ post: AdminPost }>) => void
+		ontogglepublish?: (event: CustomEvent<{ post: AdminPost }>) => void
+		ondelete?: (event: CustomEvent<{ post: AdminPost }>) => void
 	}
 
-	let { post }: Props = $props()
-
-	const dispatch = createEventDispatcher<{
-		edit: { post: AdminPost }
-		togglePublish: { post: AdminPost }
-		delete: { post: AdminPost }
-	}>()
+	let { post, onedit, ontogglepublish, ondelete }: Props = $props()
 
 	let isDropdownOpen = $state(false)
 
@@ -38,19 +35,19 @@
 
 	function handleEdit(event: MouseEvent) {
 		event.stopPropagation()
-		dispatch('edit', { post })
+		onedit?.(new CustomEvent('edit', { detail: { post } }))
 		goto(`/admin/posts/${post.id}/edit`)
 	}
 
 	function handleTogglePublish(event: MouseEvent) {
 		event.stopPropagation()
-		dispatch('togglePublish', { post })
+		ontogglepublish?.(new CustomEvent('togglepublish', { detail: { post } }))
 		isDropdownOpen = false
 	}
 
 	function handleDelete(event: MouseEvent) {
 		event.stopPropagation()
-		dispatch('delete', { post })
+		ondelete?.(new CustomEvent('delete', { detail: { post } }))
 		isDropdownOpen = false
 	}
 

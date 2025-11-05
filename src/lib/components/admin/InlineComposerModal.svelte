@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte'
 	import { goto } from '$app/navigation'
 	import Modal from './Modal.svelte'
 	import Composer from './composer'
@@ -13,11 +12,25 @@
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
-	export let isOpen = false
-	export let initialMode: 'modal' | 'page' = 'modal'
-	export let initialPostType: 'post' | 'essay' = 'post'
-	export let initialContent: JSONContent | undefined = undefined
-	export let closeOnSave = true
+	interface Props {
+		isOpen?: boolean
+		initialMode?: 'modal' | 'page'
+		initialPostType?: 'post' | 'essay'
+		initialContent?: JSONContent
+		closeOnSave?: boolean
+		onclose?: (event: CustomEvent) => void
+		onsaved?: (event: CustomEvent) => void
+	}
+
+	let {
+		isOpen = $bindable(false),
+		initialMode = 'modal',
+		initialPostType = 'post',
+		initialContent = undefined,
+		closeOnSave = true,
+		onclose,
+		onsaved
+	}: Props = $props()
 
 	type PostType = 'post' | 'essay'
 	type ComposerMode = 'modal' | 'page'
@@ -48,7 +61,6 @@
 	let isMediaDetailsOpen = false
 
 	const CHARACTER_LIMIT = 600
-	const dispatch = createEventDispatcher()
 
 	function handleClose() {
 		if (hasContent() && !confirm('Are you sure you want to close? Your changes will be lost.')) {
@@ -56,7 +68,7 @@
 		}
 		resetComposer()
 		isOpen = false
-		dispatch('close')
+		onclose?.(new CustomEvent('close'))
 	}
 
 	function hasContent(): boolean {
@@ -207,7 +219,7 @@
 				if (closeOnSave) {
 					isOpen = false
 				}
-				dispatch('saved')
+				onsaved?.(new CustomEvent('saved'))
 				if (postType === 'essay') {
 					goto('/admin/posts')
 				}

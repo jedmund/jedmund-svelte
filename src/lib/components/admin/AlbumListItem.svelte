@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { createEventDispatcher } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
 
 	interface Photo {
@@ -33,16 +32,13 @@
 	interface Props {
 		album: Album
 		isDropdownActive?: boolean
+		ontoggledropdown?: (event: CustomEvent<{ albumId: number; event: MouseEvent }>) => void
+		onedit?: (event: CustomEvent<{ album: Album; event: MouseEvent }>) => void
+		ontogglepublish?: (event: CustomEvent<{ album: Album; event: MouseEvent }>) => void
+		ondelete?: (event: CustomEvent<{ album: Album; event: MouseEvent }>) => void
 	}
 
-	let { album, isDropdownActive = false }: Props = $props()
-
-	const dispatch = createEventDispatcher<{
-		toggleDropdown: { albumId: number; event: MouseEvent }
-		edit: { album: Album; event: MouseEvent }
-		togglePublish: { album: Album; event: MouseEvent }
-		delete: { album: Album; event: MouseEvent }
-	}>()
+	let { album, isDropdownActive = false, ontoggledropdown, onedit, ontogglepublish, ondelete }: Props = $props()
 
 	function formatRelativeTime(dateString: string): string {
 		const date = new Date(dateString)
@@ -72,19 +68,19 @@
 	}
 
 	function handleToggleDropdown(event: MouseEvent) {
-		dispatch('toggleDropdown', { albumId: album.id, event })
+		ontoggledropdown?.(new CustomEvent('toggledropdown', { detail: { albumId: album.id, event } }))
 	}
 
 	function handleEdit(event: MouseEvent) {
-		dispatch('edit', { album, event })
+		onedit?.(new CustomEvent('edit', { detail: { album, event } }))
 	}
 
 	function handleTogglePublish(event: MouseEvent) {
-		dispatch('togglePublish', { album, event })
+		ontogglepublish?.(new CustomEvent('togglepublish', { detail: { album, event } }))
 	}
 
 	function handleDelete(event: MouseEvent) {
-		dispatch('delete', { album, event })
+		ondelete?.(new CustomEvent('delete', { detail: { album, event } }))
 	}
 
 	// Get thumbnail - try cover photo first, then first photo

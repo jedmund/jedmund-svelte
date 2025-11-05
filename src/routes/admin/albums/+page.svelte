@@ -323,10 +323,10 @@
 					<AlbumListItem
 						{album}
 						isDropdownActive={activeDropdown === album.id}
-						on:toggleDropdown={handleToggleDropdown}
-						on:edit={handleEdit}
-						on:togglePublish={handleTogglePublish}
-						on:delete={handleDelete}
+						ontoggledropdown={handleToggleDropdown}
+						onedit={handleEdit}
+						ontogglepublish={handleTogglePublish}
+						ondelete={handleDelete}
 					/>
 				{/each}
 			</div>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { createEventDispatcher, onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
 	import { clickOutside } from '$lib/actions/clickOutside'
 
@@ -8,15 +8,12 @@
 
 	interface Props {
 		project: AdminProject
+		onedit?: (event: CustomEvent<{ project: AdminProject }>) => void
+		ontogglepublish?: (event: CustomEvent<{ project: AdminProject }>) => void
+		ondelete?: (event: CustomEvent<{ project: AdminProject }>) => void
 	}
 
-	let { project }: Props = $props()
-
-	const dispatch = createEventDispatcher<{
-		edit: { project: AdminProject }
-		togglePublish: { project: AdminProject }
-		delete: { project: AdminProject }
-	}>()
+	let { project, onedit, ontogglepublish, ondelete }: Props = $props()
 
 	let isDropdownOpen = $state(false)
 
@@ -57,15 +54,15 @@
 	}
 
 	function handleEdit() {
-		dispatch('edit', { project })
+		onedit?.(new CustomEvent('edit', { detail: { project } }))
 	}
 
 	function handleTogglePublish() {
-		dispatch('togglePublish', { project })
+		ontogglepublish?.(new CustomEvent('togglepublish', { detail: { project } }))
 	}
 
 	function handleDelete() {
-		dispatch('delete', { project })
+		ondelete?.(new CustomEvent('delete', { detail: { project } }))
 	}
 
 	function handleClickOutside() {
