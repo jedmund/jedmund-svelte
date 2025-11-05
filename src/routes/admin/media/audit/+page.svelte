@@ -29,32 +29,33 @@
 		createdAt: string
 	}
 
-	let loading = true
-	let deleting = false
-	let auditData: {
+	let loading = $state(true)
+	let deleting = $state(false)
+	let auditData = $state<{
 		summary: AuditSummary
 		orphanedFiles: OrphanedFile[]
 		missingReferences: string[]
-	} | null = null
-	let error: string | null = null
-	let selectedFiles = new Set<string>()
-	let showDeleteModal = false
-	let deleteResults: { succeeded: number; failed: string[] } | null = null
-	let cleanupResults: {
+	} | null>(null)
+	let error = $state<string | null>(null)
+	let selectedFiles = $state(new Set<string>())
+	let showDeleteModal = $state(false)
+	let deleteResults = $state<{ succeeded: number; failed: string[] } | null>(null)
+	let cleanupResults = $state<{
 		cleanedMedia: number
 		cleanedProjects: number
 		cleanedPosts: number
 		errors: string[]
-	} | null = null
-	let showCleanupModal = false
-	let cleaningUp = false
+	} | null>(null)
+	let showCleanupModal = $state(false)
+	let cleaningUp = $state(false)
 
-	$: allSelected = auditData && selectedFiles.size >= Math.min(20, auditData.orphanedFiles.length)
-	$: hasSelection = selectedFiles.size > 0
-	$: selectedSize =
+	const allSelected = $derived(auditData && selectedFiles.size >= Math.min(20, auditData.orphanedFiles.length))
+	const hasSelection = $derived(selectedFiles.size > 0)
+	const selectedSize = $derived(
 		auditData?.orphanedFiles
 			.filter((f) => selectedFiles.has(f.publicId))
 			.reduce((sum, f) => sum + f.size, 0) || 0
+	)
 
 	onMount(() => {
 		runAudit()
