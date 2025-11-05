@@ -103,9 +103,11 @@
 			.replace(/^-+|-+$/g, '')
 	}
 
-	$: if (essayTitle && !essaySlug) {
-		essaySlug = generateSlug(essayTitle)
-	}
+	$effect(() => {
+		if (essayTitle && !essaySlug) {
+			essaySlug = generateSlug(essayTitle)
+		}
+	})
 
 	function handlePhotoUpload() {
 		fileInput.click()
@@ -231,10 +233,11 @@
 		}
 	}
 
-	$: isOverLimit = characterCount > CHARACTER_LIMIT
-	$: canSave =
+	const isOverLimit = $derived(characterCount > CHARACTER_LIMIT)
+	const canSave = $derived(
 		(postType === 'post' && (characterCount > 0 || attachedPhotos.length > 0) && !isOverLimit) ||
 		(postType === 'essay' && essayTitle.length > 0 && content)
+	)
 </script>
 
 {#if mode === 'modal'}
