@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { logger } from '$lib/server/logger'
+import { renderEdraContent } from '$lib/utils/content'
 
 // Helper function to escape XML special characters
 function escapeXML(str: string): string {
@@ -14,27 +15,13 @@ function escapeXML(str: string): string {
 }
 
 // Helper function to convert content to HTML for full content
+// Uses the same rendering logic as the website for consistency
 function convertContentToHTML(content: any): string {
-	if (!content || !content.blocks) return ''
+	if (!content) return ''
 
-	return content.blocks
-		.map((block: any) => {
-			switch (block.type) {
-				case 'paragraph':
-					return `<p>${escapeXML(block.content || '')}</p>`
-				case 'heading':
-					const level = block.level || 2
-					return `<h${level}>${escapeXML(block.content || '')}</h${level}>`
-				case 'list':
-					const items = (block.content || [])
-						.map((item: any) => `<li>${escapeXML(item)}</li>`)
-						.join('')
-					return block.listType === 'ordered' ? `<ol>${items}</ol>` : `<ul>${items}</ul>`
-				default:
-					return `<p>${escapeXML(block.content || '')}</p>`
-			}
-		})
-		.join('\n')
+	// Use the existing renderEdraContent function which properly handles TipTap marks
+	// including links, bold, italic, etc.
+	return renderEdraContent(content)
 }
 
 // Helper function to extract text summary from content

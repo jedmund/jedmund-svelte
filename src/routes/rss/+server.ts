@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { logger } from '$lib/server/logger'
+import { renderEdraContent } from '$lib/utils/content'
 
 // Helper function to escape XML special characters
 function escapeXML(str: string): string {
@@ -14,159 +15,18 @@ function escapeXML(str: string): string {
 }
 
 // Helper function to convert content to HTML for full content
+// Uses the same rendering logic as the website for consistency
 function convertContentToHTML(content: any): string {
 	if (!content) return ''
-	
+
 	// Handle legacy content format (if it's just a string)
 	if (typeof content === 'string') {
 		return `<p>${escapeXML(content)}</p>`
 	}
-	
-	// Handle TipTap/Edra format with doc root
-	if (content.type === 'doc' && content.content && Array.isArray(content.content)) {
-		return content.content
-			.map((node: any) => {
-				switch (node.type) {
-					case 'paragraph':
-						const text = extractTextFromNode(node)
-						return text ? `<p>${text}</p>` : ''
-					case 'heading':
-						const headingText = extractTextFromNode(node)
-						const level = node.attrs?.level || 2
-						return headingText ? `<h${level}>${headingText}</h${level}>` : ''
-					case 'bulletList':
-					case 'orderedList':
-						const listItems = (node.content || [])
-							.map((item: any) => {
-								if (item.type === 'listItem') {
-									const itemText = extractTextFromNode(item)
-									return itemText ? `<li>${itemText}</li>` : ''
-								}
-								return ''
-							})
-							.filter((item: string) => item)
-							.join('')
-						if (!listItems) return ''
-						return node.type === 'orderedList' ? `<ol>${listItems}</ol>` : `<ul>${listItems}</ul>`
-					case 'blockquote':
-						const quoteText = extractTextFromNode(node)
-						return quoteText ? `<blockquote>${quoteText}</blockquote>` : ''
-					case 'codeBlock':
-						const code = extractTextFromNode(node)
-						return code ? `<pre><code>${code}</code></pre>` : ''
-					case 'image':
-						const src = node.attrs?.src || ''
-						const alt = node.attrs?.alt || ''
-						return src ? `<figure><img src="${escapeXML(src)}" alt="${escapeXML(alt)}" /></figure>` : ''
-					case 'video':
-						const videoSrc = node.attrs?.src || ''
-						if (!videoSrc) return ''
-						// Check if it's a YouTube URL
-						const youtubeMatch = videoSrc.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)
-						if (youtubeMatch) {
-							const videoId = youtubeMatch[1]
-							return `<div class="video-embed"><iframe width="560" height="315" src="https://www.youtube.com/embed/${escapeXML(videoId)}" frameborder="0" allowfullscreen></iframe><p><a href="${escapeXML(videoSrc)}">Watch on YouTube</a></p></div>`
-						}
-						// For other video sources, include a video tag
-						return `<video controls><source src="${escapeXML(videoSrc)}" type="video/mp4">Your browser does not support the video tag. <a href="${escapeXML(videoSrc)}">Download video</a></video>`
-					case 'urlEmbed':
-						const embedUrl = node.attrs?.url || ''
-						const embedTitle = node.attrs?.title || ''
-						const embedDescription = node.attrs?.description || ''
-						const embedImage = node.attrs?.image || ''
-						const embedSiteName = node.attrs?.siteName || ''
-						
-						if (!embedUrl) return ''
-						
-						// Check if it's a YouTube URL
-						const ytMatch = embedUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)
-						if (ytMatch) {
-							const videoId = ytMatch[1]
-							let html = '<div class="url-embed youtube-embed">'
-							html += `<iframe width="560" height="315" src="https://www.youtube.com/embed/${escapeXML(videoId)}" frameborder="0" allowfullscreen></iframe>`
-							if (embedTitle) {
-								html += `<h3><a href="${escapeXML(embedUrl)}">${escapeXML(embedTitle)}</a></h3>`
-							}
-							if (embedDescription) {
-								html += `<p>${escapeXML(embedDescription)}</p>`
-							}
-							html += '</div>'
-							return html
-						}
-						
-						// Check if it's a Twitter/X URL
-						const twitterMatch = embedUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/)
-						if (twitterMatch) {
-							// For Twitter/X, we can't embed the actual tweet in RSS, but we can provide a nice preview
-							let html = '<div class="url-embed twitter-embed">'
-							if (embedImage) {
-								html += `<img src="${escapeXML(embedImage)}" alt="Tweet preview" />`
-							}
-							html += '<div class="embed-content">'
-							html += `<span class="site-name">𝕏 (Twitter)</span>`
-							if (embedTitle || embedDescription) {
-								html += `<p>${escapeXML(embedDescription || embedTitle || '')}</p>`
-							}
-							html += `<p><a href="${escapeXML(embedUrl)}">View on 𝕏</a></p>`
-							html += '</div></div>'
-							return html
-						}
-						
-						// For other URL embeds, create a rich preview
-						let html = '<div class="url-embed">'
-						if (embedImage) {
-							html += `<img src="${escapeXML(embedImage)}" alt="${escapeXML(embedTitle || '')}" />`
-						}
-						html += '<div class="embed-content">'
-						if (embedSiteName) {
-							html += `<span class="site-name">${escapeXML(embedSiteName)}</span>`
-						}
-						if (embedTitle) {
-							html += `<h3><a href="${escapeXML(embedUrl)}">${escapeXML(embedTitle)}</a></h3>`
-						}
-						if (embedDescription) {
-							html += `<p>${escapeXML(embedDescription)}</p>`
-						}
-						html += '</div></div>'
-						return html
-					case 'iframe':
-						const iframeSrc = node.attrs?.src || ''
-						const iframeWidth = node.attrs?.width || 560
-						const iframeHeight = node.attrs?.height || 315
-						if (!iframeSrc) return ''
-						return `<iframe src="${escapeXML(iframeSrc)}" width="${iframeWidth}" height="${iframeHeight}" frameborder="0" allowfullscreen></iframe>`
-					default:
-						const defaultText = extractTextFromNode(node)
-						return defaultText ? `<p>${defaultText}</p>` : ''
-				}
-			})
-			.filter((html: string) => html)
-			.join('\n')
-	}
-	
-	return ''
-}
 
-// Helper to extract text from TipTap nodes
-function extractTextFromNode(node: any): string {
-	if (!node) return ''
-	
-	// Direct text content
-	if (node.text) return escapeXML(node.text)
-	
-	// Nested content
-	if (node.content && Array.isArray(node.content)) {
-		return node.content
-			.map((child: any) => {
-				if (child.type === 'text') {
-					return escapeXML(child.text || '')
-				}
-				return extractTextFromNode(child)
-			})
-			.join('')
-	}
-	
-	return ''
+	// Use the existing renderEdraContent function which properly handles TipTap marks
+	// including links, bold, italic, etc.
+	return renderEdraContent(content)
 }
 
 // Helper function to extract text summary from content
