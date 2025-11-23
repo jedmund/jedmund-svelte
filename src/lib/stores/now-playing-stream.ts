@@ -15,7 +15,7 @@ interface NowPlayingState {
 }
 
 function createNowPlayingStream() {
-	const { subscribe, set, update } = writable<NowPlayingState>({
+	const { subscribe, update } = writable<NowPlayingState>({
 		connected: false,
 		updates: new Map(),
 		lastUpdate: null

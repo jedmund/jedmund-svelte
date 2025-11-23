@@ -1,4 +1,4 @@
-import { writable, derived, get } from 'svelte/store'
+import { writable } from 'svelte/store'
 
 interface AudioPreviewState {
 	currentAudio: HTMLAudioElement | null
@@ -7,7 +7,7 @@ interface AudioPreviewState {
 }
 
 function createAudioPreviewStore() {
-	const { subscribe, set, update } = writable<AudioPreviewState>({
+	const { subscribe, update } = writable<AudioPreviewState>({
 		currentAudio: null,
 		currentAlbumId: null,
 		isPlaying: false
