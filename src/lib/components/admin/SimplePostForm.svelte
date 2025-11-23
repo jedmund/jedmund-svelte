@@ -292,7 +292,7 @@ $effect(() => {
 				throw new Error(`Failed to ${mode === 'edit' ? 'save' : 'create'} post`)
 			}
 
-    const savedPost = await response.json()
+    await response.json()
 
     toast.dismiss(loadingToastId)
     toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)

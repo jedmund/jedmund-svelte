@@ -50,10 +50,8 @@
 	{/snippet}
 
 	{#if showDropdown}
-		{#snippet dropdown()}
-			<DropdownItem onclick={handleSaveDraftClick}>
-				{saveDraftText}
-			</DropdownItem>
-		{/snippet}
+		<DropdownItem onclick={handleSaveDraftClick}>
+			{saveDraftText}
+		</DropdownItem>
 	{/if}
 </BaseDropdown>

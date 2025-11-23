@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Input from './Input.svelte'
 	import ImageUploader from './ImageUploader.svelte'
 	import Button from './Button.svelte'
 	import type { ProjectFormData } from '$lib/types/project'
@@ -7,11 +6,10 @@
 
 	interface Props {
 		formData: ProjectFormData
-		validationErrors: Record<string, string>
 		onSave?: () => Promise<void>
 	}
 
-	let { formData = $bindable(), validationErrors, onSave }: Props = $props()
+	let { formData = $bindable(), onSave }: Props = $props()
 
 	// State for collapsible featured image section
 	let showFeaturedImage = $state(
