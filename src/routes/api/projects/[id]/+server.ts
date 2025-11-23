@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
@@ -14,6 +15,28 @@ import {
 	extractMediaIds,
 	type MediaUsageReference
 } from '$lib/server/media-usage.js'
+
+// Type for project update request body (partial of ProjectCreateBody)
+interface ProjectUpdateBody {
+	title?: string
+	subtitle?: string
+	description?: string
+	year?: number
+	client?: string
+	role?: string
+	featuredImage?: string
+	logoUrl?: string
+	gallery?: Prisma.JsonValue
+	externalUrl?: string
+	caseStudyContent?: Prisma.JsonValue
+	backgroundColor?: string
+	highlightColor?: string
+	projectType?: string
+	displayOrder?: number
+	status?: string
+	password?: string | null
+	slug?: string
+}
 
 // GET /api/projects/[id] - Get a single project
 export const GET: RequestHandler = async (event) => {
@@ -51,7 +74,7 @@ export const PUT: RequestHandler = async (event) => {
 	}
 
 	try {
-		const body = await parseRequestBody<any>(event.request)
+		const body = await parseRequestBody<ProjectUpdateBody>(event.request)
 		if (!body) {
 			return errorResponse('Invalid request body', 400)
 		}
@@ -191,7 +214,7 @@ export const PATCH: RequestHandler = async (event) => {
 	}
 
 	try {
-		const body = await parseRequestBody<any>(event.request)
+		const body = await parseRequestBody<ProjectUpdateBody>(event.request)
 		if (!body) {
 			return errorResponse('Invalid request body', 400)
 		}
@@ -214,7 +237,7 @@ export const PATCH: RequestHandler = async (event) => {
 		}
 
 		// Build update data object with only provided fields
-		const updateData: any = {}
+		const updateData: Prisma.ProjectUpdateInput = {}
 
 		// Handle status update specially
 		if (body.status !== undefined) {
