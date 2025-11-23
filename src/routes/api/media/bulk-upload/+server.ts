@@ -51,7 +51,7 @@ async function extractExifData(file: File) {
 		if (!exif) return null
 
 		// Format EXIF data
-		const formattedExif: any = {}
+		const formattedExif: ExifData = {}
 
 		// Camera info
 		if (exif.Make && exif.Model) {

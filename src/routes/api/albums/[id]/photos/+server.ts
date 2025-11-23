@@ -143,7 +143,7 @@ export const PUT: RequestHandler = async (event) => {
 		}>(event.request)
 
 		// Also support legacy photoId parameter
-		const mediaId = body?.mediaId || (body as any)?.photoId
+		const mediaId = body?.mediaId || (body as Record<string, unknown>)?.photoId
 		if (!mediaId || body?.displayOrder === undefined) {
 			return errorResponse('Media ID and display order are required', 400)
 		}

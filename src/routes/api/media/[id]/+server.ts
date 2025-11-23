@@ -128,7 +128,7 @@ export const DELETE: RequestHandler = async (event) => {
 		}
 
 		// Check if media is in use
-		if (media.usedIn && (media.usedIn as any[]).length > 0) {
+		if (media.usedIn && Array.isArray(media.usedIn) && media.usedIn.length > 0) {
 			return errorResponse('Cannot delete media that is in use', 409)
 		}
 
