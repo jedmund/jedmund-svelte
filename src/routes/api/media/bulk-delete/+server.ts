@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
@@ -10,6 +11,20 @@ import { logger } from '$lib/server/logger'
 import { removeMediaUsage, extractMediaIds } from '$lib/server/media-usage.js'
 import { deleteFile, extractPublicId, isCloudinaryConfigured } from '$lib/server/cloudinary'
 import { deleteFileLocally } from '$lib/server/local-storage'
+
+// Type for content node structure
+interface ContentNode {
+	type: string
+	attrs?: Record<string, unknown>
+	content?: ContentNode[]
+}
+
+// Type for gallery item in JSON fields
+interface GalleryItem {
+	id?: number
+	mediaId?: number
+	[key: string]: unknown
+}
 
 // DELETE /api/media/bulk-delete - Delete multiple media files and clean up references
 export const DELETE: RequestHandler = async (event) => {
@@ -165,7 +180,7 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 
 	for (const project of projects) {
 		let needsUpdate = false
-		const updateData: any = {}
+		const updateData: Prisma.ProjectUpdateInput = {}
 
 		// Check featured image
 		if (project.featuredImage && urlsToRemove.includes(project.featuredImage)) {
@@ -181,9 +196,9 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 
 		// Check gallery
 		if (project.gallery && Array.isArray(project.gallery)) {
-			const filteredGallery = project.gallery.filter((item: any) => {
-				const itemId = typeof item === 'object' ? item.id : parseInt(item)
-				return !mediaIds.includes(itemId)
+			const filteredGallery = (project.gallery as GalleryItem[]).filter((item) => {
+				const itemId = item.id || item.mediaId
+				return itemId ? !mediaIds.includes(Number(itemId)) : true
 			})
 			if (filteredGallery.length !== project.gallery.length) {
 				updateData.gallery = filteredGallery.length > 0 ? filteredGallery : null
@@ -221,7 +236,7 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 
 	for (const post of posts) {
 		let needsUpdate = false
-		const updateData: any = {}
+		const updateData: Prisma.PostUpdateInput = {}
 
 		// Check featured image
 		if (post.featuredImage && urlsToRemove.includes(post.featuredImage)) {
@@ -231,9 +246,9 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 
 		// Check attachments
 		if (post.attachments && Array.isArray(post.attachments)) {
-			const filteredAttachments = post.attachments.filter((item: any) => {
-				const itemId = typeof item === 'object' ? item.id : parseInt(item)
-				return !mediaIds.includes(itemId)
+			const filteredAttachments = (post.attachments as GalleryItem[]).filter((item) => {
+				const itemId = item.id || item.mediaId
+				return itemId ? !mediaIds.includes(Number(itemId)) : true
 			})
 			if (filteredAttachments.length !== post.attachments.length) {
 				updateData.attachments = filteredAttachments.length > 0 ? filteredAttachments : null
@@ -263,27 +278,30 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 /**
  * Remove media references from rich text content
  */
-function cleanContentFromMedia(content: any, mediaIds: number[], urlsToRemove: string[]): any {
+function cleanContentFromMedia(content: Prisma.JsonValue, mediaIds: number[], urlsToRemove: string[]): Prisma.JsonValue {
 	if (!content || typeof content !== 'object') return content
 
-	function cleanNode(node: any): any {
+	function cleanNode(node: ContentNode | null): ContentNode | null {
 		if (!node) return node
 
 		// Remove image nodes that reference deleted media
 		if (node.type === 'image' && node.attrs?.src) {
-			const shouldRemove = urlsToRemove.some((url) => node.attrs.src.includes(url))
+			const shouldRemove = urlsToRemove.some((url) => String(node.attrs?.src).includes(url))
 			if (shouldRemove) {
 				return null // Mark for removal
 			}
 		}
 
 		// Clean gallery nodes
-		if (node.type === 'gallery' && node.attrs?.images) {
-			const filteredImages = node.attrs.images.filter((image: any) => !mediaIds.includes(image.id))
+		if (node.type === 'gallery' && node.attrs?.images && Array.isArray(node.attrs.images)) {
+			const filteredImages = (node.attrs.images as GalleryItem[]).filter((image) => {
+				const imageId = image.id || image.mediaId
+				return imageId ? !mediaIds.includes(Number(imageId)) : true
+			})
 
 			if (filteredImages.length === 0) {
 				return null // Remove empty gallery
-			} else if (filteredImages.length !== node.attrs.images.length) {
+			} else if (filteredImages.length !== (node.attrs.images as unknown[]).length) {
 				return {
 					...node,
 					attrs: {
@@ -296,7 +314,7 @@ function cleanContentFromMedia(content: any, mediaIds: number[], urlsToRemove: s
 
 		// Recursively clean child nodes
 		if (node.content) {
-			const cleanedContent = node.content.map(cleanNode).filter((child: any) => child !== null)
+			const cleanedContent = node.content.map(cleanNode).filter((child): child is ContentNode => child !== null)
 
 			return {
 				...node,
