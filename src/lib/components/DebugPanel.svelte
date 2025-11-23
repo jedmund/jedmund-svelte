@@ -5,11 +5,9 @@
 	import { toast } from 'svelte-sonner'
 	
 	// Import SVG icons
-	import SettingsIcon from '$icons/settings.svg'
 	import CheckIcon from '$icons/check.svg'
 	import XIcon from '$icons/x.svg'
 	import TrashIcon from '$icons/trash.svg'
-	import ClockIcon from '$icons/clock.svg'
 	import LoaderIcon from '$icons/loader.svg'
 	import AppleMusicSearchModal from './AppleMusicSearchModal.svelte'
 

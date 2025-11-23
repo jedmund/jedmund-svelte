@@ -13,7 +13,6 @@
 		items = [],
 		alt = 'Image',
 		showThumbnails = true,
-		aspectRatio = '4/3',
 		maxThumbnails,
 		totalCount,
 		showMoreLink
@@ -118,7 +117,7 @@
 
 		{#if showThumbnails}
 			<div class="thumbnails">
-				{#each Array(totalSlots) as _, index}
+				{#each Array(totalSlots) as _slot, index}
 					{#if index < displayItems.length}
 						<button
 							class="thumbnail"

@@ -31,7 +31,7 @@
 <section class="recent-albums">
 	{#if albums.length > 0}
 		<ul>
-			{#each albums.slice(0, 4) as album, index}
+			{#each albums.slice(0, 4) as album}
 				<li>
 					<Album
 						{album}

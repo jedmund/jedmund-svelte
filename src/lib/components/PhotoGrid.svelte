@@ -98,7 +98,7 @@
 		</Masonry>
 	{:else if (columns === 1 || columns === 2 || columns === 3) && !masonry}
 		<!-- Column-based layout for square thumbnails -->
-		{#each columnPhotos as column, colIndex}
+		{#each columnPhotos as column}
 			<div class="photo-grid__column">
 				{#each column as photo}
 					<div class="photo-grid__item">
