@@ -1,39 +1,11 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
 	import Input from '$lib/components/admin/Input.svelte'
+	import type { PageData } from './$types'
+
+	const { form } = $props<{ form: PageData['form'] | undefined }>()
 
 	let password = $state('')
-	let error = $state('')
-	let isLoading = $state(false)
-
-	async function handleLogin(e: Event) {
-		e.preventDefault()
-		error = ''
-		isLoading = true
-
-		try {
-			// Test the password by making an authenticated request
-			const response = await fetch('/api/media', {
-				headers: {
-					Authorization: `Basic ${btoa(`admin:${password}`)}`
-				}
-			})
-
-			if (response.ok) {
-				// Store auth in localStorage
-				localStorage.setItem('admin_auth', btoa(`admin:${password}`))
-				goto('/admin')
-			} else if (response.status === 401) {
-				error = 'Invalid password'
-			} else {
-				error = 'Something went wrong'
-			}
-		} catch (err) {
-			error = 'Failed to connect to server'
-		} finally {
-			isLoading = false
-		}
-	}
+	const errorMessage = $derived(form?.message ?? null)
 </script>
 
 <svelte:head>
@@ -42,24 +14,23 @@
 
 <div class="login-page">
 	<div class="login-card">
-		<form onsubmit={handleLogin}>
+		<form method="POST">
 			<Input
 				type="password"
 				label="Password"
+				name="password"
 				bind:value={password}
 				required
 				autofocus
 				placeholder="Enter password"
-				disabled={isLoading}
+				autocomplete="current-password"
 			/>
 
-			{#if error}
-				<div class="error-message">{error}</div>
+			{#if errorMessage}
+				<div class="error-message">{errorMessage}</div>
 			{/if}
 
-			<button type="submit" disabled={isLoading} class="login-btn">
-				{isLoading ? 'Logging in...' : 'Login'}
-			</button>
+			<button type="submit" class="login-btn">Login</button>
 		</form>
 	</div>
 </div>

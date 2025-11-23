@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
+	import { clickOutside } from '$lib/actions/clickOutside'
 	import Input from './Input.svelte'
 	import FormField from './FormField.svelte'
 	import Button from './Button.svelte'
@@ -114,6 +115,15 @@
 		onUpdate(key, value)
 	}
 
+	function handleClickOutside(event: CustomEvent<{ target: Node }>) {
+		const target = event.detail.target
+		// Don't close if clicking inside the trigger button
+		if (triggerElement?.contains(target)) {
+			return
+		}
+		onClose()
+	}
+
 	onMount(() => {
 		// Create portal target
 		portalTarget = document.createElement('div')
@@ -131,23 +141,9 @@
 		window.addEventListener('scroll', handleUpdate, true)
 		window.addEventListener('resize', handleUpdate)
 
-		// Click outside handler
-		const handleClickOutside = (event: MouseEvent) => {
-			const target = event.target as Node
-			// Don't close if clicking inside the trigger button or the popover itself
-			if (triggerElement?.contains(target) || popoverElement?.contains(target)) {
-				return
-			}
-			onClose()
-		}
-
-		// Add click outside listener
-		document.addEventListener('click', handleClickOutside)
-
 		return () => {
 			window.removeEventListener('scroll', handleUpdate, true)
 			window.removeEventListener('resize', handleUpdate)
-			document.removeEventListener('click', handleClickOutside)
 			if (portalTarget) {
 				document.body.removeChild(portalTarget)
 			}
@@ -163,7 +159,12 @@
 	})
 </script>
 
-<div class="metadata-popover" bind:this={popoverElement}>
+<div
+	class="metadata-popover"
+	bind:this={popoverElement}
+	use:clickOutside
+	onclickoutside={handleClickOutside}
+>
 	<div class="popover-content">
 		<h3>{config.title}</h3>
 

@@ -58,11 +58,11 @@
 	let charsRemaining = $derived(maxLength ? maxLength - charCount : 0)
 
 	// Color swatch validation and display
-	const isValidHexColor = $derived(() => {
+	function isValidHexColor() {
 		if (!colorSwatch || !value) return false
 		const hexRegex = /^#[0-9A-Fa-f]{6}$/
 		return hexRegex.test(String(value))
-	})
+	}
 
 	// Color picker functionality
 	let colorPickerInput: HTMLInputElement
@@ -81,7 +81,7 @@
 	}
 
 	// Compute classes
-	const wrapperClasses = $derived(() => {
+	function wrapperClasses() {
 		const classes = ['input-wrapper']
 		if (size) classes.push(`input-wrapper-${size}`)
 		if (fullWidth) classes.push('full-width')
@@ -93,15 +93,15 @@
 		if (wrapperClass) classes.push(wrapperClass)
 		if (className) classes.push(className)
 		return classes.join(' ')
-	})
+	}
 
-	const inputClasses = $derived(() => {
+	function inputClasses() {
 		const classes = ['input']
 		classes.push(`input-${size}`)
 		if (pill) classes.push('input-pill')
 		if (inputClass) classes.push(inputClass)
 		return classes.join(' ')
-	})
+	}
 </script>
 
 <div class={wrapperClasses()}>
@@ -121,7 +121,7 @@
 			</span>
 		{/if}
 
-		{#if colorSwatch && isValidHexColor}
+		{#if colorSwatch && isValidHexColor()}
 			<span
 				class="color-swatch"
 				style="background-color: {value}"
@@ -154,7 +154,7 @@
 			<input
 				bind:this={colorPickerInput}
 				type="color"
-				value={isValidHexColor ? String(value) : '#000000'}
+				value={isValidHexColor() ? String(value) : '#000000'}
 				oninput={handleColorPickerChange}
 				onchange={handleColorPickerChange}
 				style="position: absolute; visibility: hidden; pointer-events: none;"

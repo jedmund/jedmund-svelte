@@ -1,42 +1,24 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
 	import AdminNavBar from '$lib/components/admin/AdminNavBar.svelte'
+	import type { LayoutData } from './$types'
 
-	let { children } = $props()
-
-	// Check if user is authenticated
-	let isAuthenticated = $state(false)
-	let isLoading = $state(true)
-
-	onMount(() => {
-		// Check localStorage for auth token
-		const auth = localStorage.getItem('admin_auth')
-		if (auth) {
-			isAuthenticated = true
-		} else if ($page.url.pathname !== '/admin/login') {
-			// Redirect to login if not authenticated
-			goto('/admin/login')
-		}
-		isLoading = false
-	})
+	const { children, data } = $props<{ children: any; data: LayoutData }>()
 
 	const currentPath = $derived($page.url.pathname)
+	const isLoginRoute = $derived(currentPath === '/admin/login')
 
 	// Pages that should use the card metaphor (no .admin-content wrapper)
 	const cardLayoutPages = ['/admin']
 	const useCardLayout = $derived(cardLayoutPages.includes(currentPath))
 </script>
 
-{#if isLoading}
-	<div class="loading">Loading...</div>
-{:else if !isAuthenticated && currentPath !== '/admin/login'}
-	<!-- Not authenticated and not on login page, redirect will happen in onMount -->
-	<div class="loading">Redirecting to login...</div>
-{:else if currentPath === '/admin/login'}
+{#if isLoginRoute}
 	<!-- On login page, show children without layout -->
 	{@render children()}
+{:else if !data.user}
+	<!-- Server loader should redirect, but provide fallback -->
+	<div class="loading">Redirecting to login...</div>
 {:else}
 	<!-- Authenticated, show admin layout -->
 	<div class="admin-container">
@@ -65,14 +47,20 @@
 	}
 
 	.admin-container {
-		min-height: 100vh;
+		height: 100vh;
+		overflow: hidden;
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		background-color: $bg-color;
 	}
 
 	.admin-content {
 		flex: 1;
+		display: flex;
+		flex-direction: column;
+		padding-top: $unit;
+		padding-right: $unit;
+		padding-bottom: $unit;
 	}
 
 	.admin-card-layout {
@@ -81,7 +69,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: flex-start;
-		padding: $unit-6x $unit-4x;
-		min-height: calc(100vh - 60px); // Account for navbar
+		padding: 0;
+		height: 100vh;
 	}
 </style>

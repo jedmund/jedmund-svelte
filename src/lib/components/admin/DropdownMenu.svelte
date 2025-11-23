@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import { browser } from '$app/environment'
 	import { computePosition, flip, shift, offset, autoUpdate } from '@floating-ui/dom'
 	import ChevronRight from '$icons/chevron-right.svg?component'
@@ -26,7 +26,6 @@
 
 	let dropdownElement: HTMLDivElement
 	let cleanup: (() => void) | null = null
-	const dispatch = createEventDispatcher()
 
 	// Track which submenu is open
 	let openSubmenuId = $state<string | null>(null)

@@ -20,6 +20,9 @@ export interface Project {
 	displayOrder: number
 	status: ProjectStatus
 	password: string | null
+	showFeaturedImageInHeader: boolean
+	showBackgroundColorInHeader: boolean
+	showLogoInHeader: boolean
 	createdAt?: string
 	updatedAt?: string
 	publishedAt?: string | null
@@ -41,6 +44,9 @@ export interface ProjectFormData {
 	status: ProjectStatus
 	password: string
 	caseStudyContent: any
+	showFeaturedImageInHeader: boolean
+	showBackgroundColorInHeader: boolean
+	showLogoInHeader: boolean
 }
 
 export const defaultProjectFormData: ProjectFormData = {
@@ -61,5 +67,8 @@ export const defaultProjectFormData: ProjectFormData = {
 	caseStudyContent: {
 		type: 'doc',
 		content: [{ type: 'paragraph' }]
-	}
+	},
+	showFeaturedImageInHeader: true,
+	showBackgroundColorInHeader: true,
+	showLogoInHeader: true
 }

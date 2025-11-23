@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte'
 	import { goto } from '$app/navigation'
 	import Modal from './Modal.svelte'
 	import Composer from './composer'
@@ -13,11 +12,25 @@
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
-	export let isOpen = false
-	export let initialMode: 'modal' | 'page' = 'modal'
-	export let initialPostType: 'post' | 'essay' = 'post'
-	export let initialContent: JSONContent | undefined = undefined
-	export let closeOnSave = true
+	interface Props {
+		isOpen?: boolean
+		initialMode?: 'modal' | 'page'
+		initialPostType?: 'post' | 'essay'
+		initialContent?: JSONContent
+		closeOnSave?: boolean
+		onclose?: (event: CustomEvent) => void
+		onsaved?: (event: CustomEvent) => void
+	}
+
+	let {
+		isOpen = $bindable(false),
+		initialMode = 'modal',
+		initialPostType = 'post',
+		initialContent = undefined,
+		closeOnSave = true,
+		onclose,
+		onsaved
+	}: Props = $props()
 
 	type PostType = 'post' | 'essay'
 	type ComposerMode = 'modal' | 'page'
@@ -48,7 +61,6 @@
 	let isMediaDetailsOpen = false
 
 	const CHARACTER_LIMIT = 600
-	const dispatch = createEventDispatcher()
 
 	function handleClose() {
 		if (hasContent() && !confirm('Are you sure you want to close? Your changes will be lost.')) {
@@ -56,7 +68,7 @@
 		}
 		resetComposer()
 		isOpen = false
-		dispatch('close')
+		onclose?.(new CustomEvent('close'))
 	}
 
 	function hasContent(): boolean {
@@ -91,9 +103,11 @@
 			.replace(/^-+|-+$/g, '')
 	}
 
-	$: if (essayTitle && !essaySlug) {
-		essaySlug = generateSlug(essayTitle)
-	}
+	$effect(() => {
+		if (essayTitle && !essaySlug) {
+			essaySlug = generateSlug(essayTitle)
+		}
+	})
 
 	function handlePhotoUpload() {
 		fileInput.click()
@@ -111,18 +125,11 @@
 			formData.append('file', file)
 			formData.append('type', 'image')
 
-			// Add auth header if needed
-			const auth = localStorage.getItem('admin_auth')
-			const headers: Record<string, string> = {}
-			if (auth) {
-				headers.Authorization = `Basic ${auth}`
-			}
-
 			try {
 				const response = await fetch('/api/media/upload', {
 					method: 'POST',
-					headers,
-					body: formData
+					body: formData,
+					credentials: 'same-origin'
 				})
 
 				if (response.ok) {
@@ -200,16 +207,13 @@
 		}
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-			if (auth) {
-				headers.Authorization = `Basic ${auth}`
-			}
-
 			const response = await fetch('/api/posts', {
 				method: 'POST',
-				headers,
-				body: JSON.stringify(postData)
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(postData),
+				credentials: 'same-origin'
 			})
 
 			if (response.ok) {
@@ -217,7 +221,7 @@
 				if (closeOnSave) {
 					isOpen = false
 				}
-				dispatch('saved')
+				onsaved?.(new CustomEvent('saved'))
 				if (postType === 'essay') {
 					goto('/admin/posts')
 				}
@@ -229,10 +233,11 @@
 		}
 	}
 
-	$: isOverLimit = characterCount > CHARACTER_LIMIT
-	$: canSave =
+	const isOverLimit = $derived(characterCount > CHARACTER_LIMIT)
+	const canSave = $derived(
 		(postType === 'post' && (characterCount > 0 || attachedPhotos.length > 0) && !isOverLimit) ||
 		(postType === 'essay' && essayTitle.length > 0 && content)
+	)
 </script>
 
 {#if mode === 'modal'}

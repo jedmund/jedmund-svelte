@@ -3,6 +3,7 @@
 	import InlineComposerModal from './InlineComposerModal.svelte'
 	import Button from './Button.svelte'
 	import ChevronDownIcon from '$icons/chevron-down.svg?raw'
+	import { clickOutside } from '$lib/actions/clickOutside'
 
 	let isOpen = $state(false)
 	let buttonRef: HTMLElement
@@ -37,25 +38,16 @@
 		window.location.reload()
 	}
 
-	function handleClickOutside(event: MouseEvent) {
-		if (!buttonRef?.contains(event.target as Node)) {
-			isOpen = false
-		}
+	function handleClickOutside() {
+		isOpen = false
 	}
-
-	$effect(() => {
-		if (isOpen) {
-			document.addEventListener('click', handleClickOutside)
-			return () => document.removeEventListener('click', handleClickOutside)
-		}
-	})
 </script>
 
-<div class="dropdown-container">
+<div class="dropdown-container" use:clickOutside={{ enabled: isOpen }} onclickoutside={handleClickOutside}>
 	<Button
 		bind:this={buttonRef}
 		variant="primary"
-		buttonSize="large"
+		buttonSize="medium"
 		onclick={(e) => {
 			e.stopPropagation()
 			isOpen = !isOpen

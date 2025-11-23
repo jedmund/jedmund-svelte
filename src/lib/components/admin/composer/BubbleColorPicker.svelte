@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Editor } from '@tiptap/core'
 	import ColorPicker, { ChromeVariant } from 'svelte-awesome-color-picker'
+	import { clickOutside } from '$lib/actions/clickOutside'
 
 	interface Props {
 		editor: Editor
@@ -97,30 +98,10 @@
 		applyColor(color)
 		onClose()
 	}
-
-	function handleClickOutside(e: MouseEvent) {
-		if (isOpen) {
-			// Check if click is inside the color picker popup
-			const pickerElement = document.querySelector('.bubble-color-picker')
-			if (pickerElement && !pickerElement.contains(e.target as Node)) {
-				onClose()
-			}
-		}
-	}
-
-	$effect(() => {
-		if (isOpen) {
-			// Add a small delay to prevent immediate closing
-			setTimeout(() => {
-				document.addEventListener('click', handleClickOutside)
-			}, 10)
-			return () => document.removeEventListener('click', handleClickOutside)
-		}
-	})
 </script>
 
 {#if isOpen}
-	<div class="bubble-color-picker">
+	<div class="bubble-color-picker" use:clickOutside onclickoutside={onClose}>
 		<div class="color-picker-header">
 			<span>{mode === 'text' ? 'Text Color' : 'Highlight Color'}</span>
 			<button class="remove-color-btn" onclick={removeColor}> Remove </button>

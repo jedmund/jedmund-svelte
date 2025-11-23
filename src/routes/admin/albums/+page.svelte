@@ -6,6 +6,8 @@
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import AlbumListItem from '$lib/components/admin/AlbumListItem.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import EmptyState from '$lib/components/admin/EmptyState.svelte'
+	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 
@@ -85,14 +87,8 @@
 
 	async function loadAlbums() {
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-
 			const response = await fetch('/api/albums', {
-				headers: { Authorization: `Basic ${auth}` }
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
@@ -200,20 +196,21 @@
 		const album = event.detail.album
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
 			const newStatus = album.status === 'published' ? 'draft' : 'published'
 
 			const response = await fetch(`/api/albums/${album.id}`, {
 				method: 'PATCH',
 				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Basic ${auth}`
+					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ status: newStatus })
+				body: JSON.stringify({ status: newStatus }),
+				credentials: 'same-origin'
 			})
 
 			if (response.ok) {
 				await loadAlbums()
+			} else if (response.status === 401) {
+				goto('/admin/login')
 			}
 		} catch (err) {
 			console.error('Failed to update album status:', err)
@@ -231,15 +228,15 @@
 		if (!albumToDelete) return
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-
 			const response = await fetch(`/api/albums/${albumToDelete.id}`, {
 				method: 'DELETE',
-				headers: { Authorization: `Basic ${auth}` }
+				credentials: 'same-origin'
 			})
 
 			if (response.ok) {
 				await loadAlbums()
+			} else if (response.status === 401) {
+				goto('/admin/login')
 			} else {
 				const errorData = await response.json()
 				error = errorData.error || 'Failed to delete album'
@@ -278,12 +275,12 @@
 <AdminPage>
 	<AdminHeader title="Albums" slot="header">
 		{#snippet actions()}
-			<Button variant="primary" buttonSize="large" onclick={handleNewAlbum}>New Album</Button>
+			<Button variant="primary" buttonSize="medium" onclick={handleNewAlbum}>New Album</Button>
 		{/snippet}
 	</AdminHeader>
 
 	{#if error}
-		<div class="error">{error}</div>
+		<ErrorMessage message={error} />
 	{:else}
 		<!-- Filters -->
 		<AdminFilters>
@@ -314,26 +311,22 @@
 				<p>Loading albums...</p>
 			</div>
 		{:else if filteredAlbums.length === 0}
-			<div class="empty-state">
-				<p>
-					{#if statusFilter === 'all'}
-						No albums found. Create your first album!
-					{:else}
-						No albums found matching the current filters. Try adjusting your filters or create a new
-						album.
-					{/if}
-				</p>
-			</div>
+			<EmptyState
+				title="No albums found"
+				message={statusFilter === 'all'
+					? 'Create your first album to get started!'
+					: 'No albums found matching the current filters. Try adjusting your filters or create a new album.'}
+			/>
 		{:else}
 			<div class="albums-list">
 				{#each filteredAlbums as album}
 					<AlbumListItem
 						{album}
 						isDropdownActive={activeDropdown === album.id}
-						on:toggleDropdown={handleToggleDropdown}
-						on:edit={handleEdit}
-						on:togglePublish={handleTogglePublish}
-						on:delete={handleDelete}
+						ontoggledropdown={handleToggleDropdown}
+						onedit={handleEdit}
+						ontogglepublish={handleTogglePublish}
+						ondelete={handleDelete}
 					/>
 				{/each}
 			</div>
@@ -352,11 +345,7 @@
 />
 
 <style lang="scss">
-	.error {
-		text-align: center;
-		padding: $unit-6x;
-		color: #d33;
-	}
+	@import '$styles/variables.scss';
 
 	.loading {
 		padding: $unit-8x;
@@ -364,9 +353,9 @@
 		color: $gray-40;
 
 		.spinner {
-			width: 32px;
-			height: 32px;
-			border: 3px solid $gray-80;
+			width: calc($unit * 4); // 32px
+			height: calc($unit * 4); // 32px
+			border: calc($unit / 2 + $unit-1px) solid $gray-80; // 3px
 			border-top-color: $gray-40;
 			border-radius: 50%;
 			margin: 0 auto $unit-2x;
@@ -381,16 +370,6 @@
 	@keyframes spin {
 		to {
 			transform: rotate(360deg);
-		}
-	}
-
-	.empty-state {
-		padding: $unit-8x;
-		text-align: center;
-		color: $gray-40;
-
-		p {
-			margin: 0;
 		}
 	}
 

@@ -114,16 +114,10 @@
 				formData.append('albumId', albumId.toString())
 			}
 
-			const auth = localStorage.getItem('admin_auth')
-			const headers: Record<string, string> = {}
-			if (auth) {
-				headers.Authorization = `Basic ${auth}`
-			}
-
 			const response = await fetch('/api/media/upload', {
 				method: 'POST',
-				headers,
-				body: formData
+				body: formData,
+				credentials: 'same-origin'
 			})
 
 			if (response.ok) {

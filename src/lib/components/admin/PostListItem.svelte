@@ -1,34 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { createEventDispatcher, onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
-
-	interface Post {
-		id: number
-		slug: string
-		postType: string
-		title: string | null
-		content: any // JSON content
-		excerpt: string | null
-		status: string
-		tags: string[] | null
-		featuredImage: string | null
-		publishedAt: string | null
-		createdAt: string
-		updatedAt: string
-	}
+	import type { AdminPost } from '$lib/types/admin'
 
 	interface Props {
-		post: Post
+		post: AdminPost
+		onedit?: (event: CustomEvent<{ post: AdminPost }>) => void
+		ontogglepublish?: (event: CustomEvent<{ post: AdminPost }>) => void
+		ondelete?: (event: CustomEvent<{ post: AdminPost }>) => void
 	}
 
-	let { post }: Props = $props()
-
-	const dispatch = createEventDispatcher<{
-		edit: { post: Post }
-		togglePublish: { post: Post }
-		delete: { post: Post }
-	}>()
+	let { post, onedit, ontogglepublish, ondelete }: Props = $props()
 
 	let isDropdownOpen = $state(false)
 
@@ -52,19 +35,19 @@
 
 	function handleEdit(event: MouseEvent) {
 		event.stopPropagation()
-		dispatch('edit', { post })
+		onedit?.(new CustomEvent('edit', { detail: { post } }))
 		goto(`/admin/posts/${post.id}/edit`)
 	}
 
 	function handleTogglePublish(event: MouseEvent) {
 		event.stopPropagation()
-		dispatch('togglePublish', { post })
+		ontogglepublish?.(new CustomEvent('togglepublish', { detail: { post } }))
 		isDropdownOpen = false
 	}
 
 	function handleDelete(event: MouseEvent) {
 		event.stopPropagation()
-		dispatch('delete', { post })
+		ondelete?.(new CustomEvent('delete', { detail: { post } }))
 		isDropdownOpen = false
 	}
 
@@ -77,7 +60,7 @@
 		return () => document.removeEventListener('closeDropdowns', handleCloseDropdowns)
 	})
 
-	function getPostSnippet(post: Post): string {
+	function getPostSnippet(post: AdminPost): string {
 		// Try excerpt first
 		if (post.excerpt) {
 			return post.excerpt.length > 150 ? post.excerpt.substring(0, 150) + '...' : post.excerpt
@@ -161,7 +144,12 @@
 	</div>
 
 	<div class="dropdown-container">
-		<button class="action-button" onclick={handleToggleDropdown} aria-label="Post actions">
+		<button
+			class="action-button"
+			type="button"
+			onclick={handleToggleDropdown}
+			aria-label="Post actions"
+		>
 			<svg
 				width="20"
 				height="20"
@@ -177,12 +165,16 @@
 
 		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" onclick={handleEdit}>Edit post</button>
-				<button class="dropdown-item" onclick={handleTogglePublish}>
+				<button class="dropdown-item" type="button" onclick={handleEdit}>
+					Edit post
+				</button>
+				<button class="dropdown-item" type="button" onclick={handleTogglePublish}>
 					{post.status === 'published' ? 'Unpublish' : 'Publish'} post
 				</button>
 				<div class="dropdown-divider"></div>
-				<button class="dropdown-item danger" onclick={handleDelete}>Delete post</button>
+				<button class="dropdown-item danger" type="button" onclick={handleDelete}>
+					Delete post
+				</button>
 			</div>
 		{/if}
 	</div>

@@ -17,17 +17,15 @@
 
 	async function loadAlbum() {
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				goto('/admin/login')
-				return
-			}
-
 			const response = await fetch(`/api/albums/${albumId}`, {
-				headers: { Authorization: `Basic ${auth}` }
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to load album')
 			}
 

@@ -3,6 +3,7 @@
 	import Textarea from './Textarea.svelte'
 	import SelectField from './SelectField.svelte'
 	import SegmentedControlField from './SegmentedControlField.svelte'
+	import DropdownSelectField from './DropdownSelectField.svelte'
 	import type { ProjectFormData } from '$lib/types/project'
 
 	interface Props {
@@ -12,6 +13,29 @@
 	}
 
 	let { formData = $bindable(), validationErrors, onSave }: Props = $props()
+
+	const statusOptions = [
+		{
+			value: 'draft',
+			label: 'Draft',
+			description: 'Only visible to you'
+		},
+		{
+			value: 'published',
+			label: 'Published',
+			description: 'Visible on your public site'
+		},
+		{
+			value: 'list-only',
+			label: 'List Only',
+			description: 'Shows in lists but detail page is hidden'
+		},
+		{
+			value: 'password-protected',
+			label: 'Password Protected',
+			description: 'Requires password to view'
+		}
+	]
 </script>
 
 <div class="form-section">
@@ -34,14 +58,22 @@
 	/>
 
 	<Input
-		type="url"
+		size="jumbo"
 		label="External URL"
+		type="url"
 		error={validationErrors.externalUrl}
 		bind:value={formData.externalUrl}
 		placeholder="https://example.com"
 	/>
 
-	<div class="form-row three-column">
+	<div class="form-row two-column">
+		<DropdownSelectField
+			label="Status"
+			bind:value={formData.status}
+			options={statusOptions}
+			error={validationErrors.status}
+		/>
+
 		<SegmentedControlField
 			label="Project Type"
 			bind:value={formData.projectType}
@@ -51,10 +83,13 @@
 				{ value: 'labs', label: 'Labs' }
 			]}
 		/>
+	</div>
 
+	<div class="form-row two-column">
 		<Input
 			type="number"
 			label="Year"
+			size="jumbo"
 			required
 			error={validationErrors.year}
 			bind:value={formData.year}
@@ -64,6 +99,7 @@
 
 		<Input
 			label="Client"
+			size="jumbo"
 			error={validationErrors.client}
 			bind:value={formData.client}
 			placeholder="Client or company name"

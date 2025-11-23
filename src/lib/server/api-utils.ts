@@ -1,4 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit'
+import { getSessionUser } from '$lib/server/admin/session'
 
 // Response helpers
 export function jsonResponse(data: any, status = 200): Response {
@@ -70,25 +71,9 @@ export function toISOString(date: Date | string | null | undefined): string | nu
 	return new Date(date).toISOString()
 }
 
-// Basic auth check (temporary until proper auth is implemented)
+// Session-based admin auth check
 export function checkAdminAuth(event: RequestEvent): boolean {
-	const authHeader = event.request.headers.get('Authorization')
-	if (!authHeader) return false
-
-	const [type, credentials] = authHeader.split(' ')
-	if (type !== 'Basic') return false
-
-	try {
-		const decoded = atob(credentials)
-		const [username, password] = decoded.split(':')
-
-		// For now, simple password check
-		// TODO: Implement proper authentication
-		const adminPassword = process.env.ADMIN_PASSWORD || 'changeme'
-		return username === 'admin' && password === adminPassword
-	} catch {
-		return false
-	}
+	return Boolean(getSessionUser(event.cookies))
 }
 
 // CORS headers for API routes

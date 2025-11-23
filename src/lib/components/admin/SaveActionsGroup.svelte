@@ -47,12 +47,12 @@
 		{isLoading}
 	/>
 {:else if status === 'published'}
-	<Button variant="primary" buttonSize="large" onclick={handleSave} disabled={isDisabled}>
+	<Button variant="primary" buttonSize="medium" onclick={handleSave} disabled={isDisabled}>
 		{isLoading ? 'Saving...' : 'Save'}
 	</Button>
 {:else}
 	<!-- For other statuses like 'list-only', 'password-protected', etc. -->
-	<Button variant="primary" buttonSize="large" onclick={handleSave} disabled={isDisabled}>
+	<Button variant="primary" buttonSize="medium" onclick={handleSave} disabled={isDisabled}>
 		{isLoading ? 'Saving...' : 'Save'}
 	</Button>
 {/if}

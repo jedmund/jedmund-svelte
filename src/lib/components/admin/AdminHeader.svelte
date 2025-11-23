@@ -24,7 +24,7 @@
 		width: 100%;
 
 		h1 {
-			font-size: 1.75rem;
+			font-size: $font-size-large;
 			font-weight: 700;
 			margin: 0;
 			color: $gray-10;

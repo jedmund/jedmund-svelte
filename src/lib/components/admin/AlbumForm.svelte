@@ -5,11 +5,11 @@
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import Input from './Input.svelte'
 	import Button from './Button.svelte'
-	import StatusDropdown from './StatusDropdown.svelte'
+	import DropdownSelectField from './DropdownSelectField.svelte'
+	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import Composer from './composer'
-	import { authenticatedFetch } from '$lib/admin-auth'
 	import { toast } from '$lib/stores/toast'
 	import type { Album, Media } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
@@ -45,6 +45,19 @@
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
 		{ value: 'content', label: 'Content' }
+	]
+
+	const statusOptions = [
+		{
+			value: 'draft',
+			label: 'Draft',
+			description: 'Only visible to you'
+		},
+		{
+			value: 'published',
+			label: 'Published',
+			description: 'Visible on your public site'
+		}
 	]
 
 	// Form data
@@ -99,7 +112,9 @@
 		if (!album) return
 
 		try {
-			const response = await authenticatedFetch(`/api/albums/${album.id}`)
+		const response = await fetch(`/api/albums/${album.id}`, {
+			credentials: 'same-origin'
+		})
 			if (response.ok) {
 				const data = await response.json()
 				albumMedia = data.media || []
@@ -158,12 +173,13 @@
 			const url = mode === 'edit' ? `/api/albums/${album?.id}` : '/api/albums'
 			const method = mode === 'edit' ? 'PUT' : 'POST'
 
-			const response = await authenticatedFetch(url, {
+			const response = await fetch(url, {
 				method,
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(payload)
+				body: JSON.stringify(payload),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
@@ -181,12 +197,13 @@
 			if (mode === 'create' && pendingMediaIds.length > 0) {
 				const photoToastId = toast.loading('Adding selected photos to album...')
 				try {
-					const photoResponse = await authenticatedFetch(`/api/albums/${savedAlbum.id}/media`, {
+					const photoResponse = await fetch(`/api/albums/${savedAlbum.id}/media`, {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json'
 						},
-						body: JSON.stringify({ mediaIds: pendingMediaIds })
+						body: JSON.stringify({ mediaIds: pendingMediaIds }),
+						credentials: 'same-origin'
 					})
 
 					if (!photoResponse.ok) {
@@ -228,11 +245,6 @@
 		}
 	}
 
-	async function handleStatusChange(newStatus: string) {
-		formData.status = newStatus as any
-		await handleSave()
-	}
-
 	async function handleBulkAlbumSave() {
 		// Reload album to get updated photo count
 		if (album && mode === 'edit') {
@@ -252,17 +264,7 @@
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">
-			<button class="btn-icon" onclick={() => goto('/admin/albums')} aria-label="Back to albums">
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-					<path
-						d="M12.5 15L7.5 10L12.5 5"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-			</button>
+			<h1 class="form-title">{formData.title || 'Untitled Album'}</h1>
 		</div>
 		<div class="header-center">
 			<AdminSegmentedControl
@@ -273,18 +275,9 @@
 		</div>
 		<div class="header-actions">
 			{#if !isLoading}
-				<StatusDropdown
-					currentStatus={formData.status}
-					onStatusChange={handleStatusChange}
-					disabled={isSaving || (mode === 'create' && (!formData.title || !formData.slug))}
-					isLoading={isSaving}
-					primaryAction={formData.status === 'published'
-						? { label: 'Save', status: 'published' }
-						: { label: 'Publish', status: 'published' }}
-					dropdownActions={[
-						{ label: 'Save as Draft', status: 'draft', show: formData.status !== 'draft' }
-					]}
-					viewUrl={album?.slug ? `/albums/${album.slug}` : undefined}
+				<AutoSaveStatus
+					status="idle"
+					lastSavedAt={album?.updatedAt}
 				/>
 			{/if}
 		</div>
@@ -335,6 +328,13 @@
 								disabled={isSaving}
 							/>
 						</div>
+
+						<DropdownSelectField
+							label="Status"
+							bind:value={formData.status}
+							options={statusOptions}
+							disabled={isSaving}
+						/>
 					</div>
 
 					<!-- Display Settings -->
@@ -450,6 +450,16 @@
 			justify-content: flex-end;
 			gap: $unit-2x;
 		}
+	}
+
+	.form-title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 500;
+		color: $gray-20;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.btn-icon {

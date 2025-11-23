@@ -1,6 +1,7 @@
 import { beforeNavigate } from '$app/navigation'
 import { onDestroy } from 'svelte'
 import type { AutoSaveController } from './autoSave'
+import type { AutoSaveStore } from './autoSave.svelte'
 
 interface AutoSaveLifecycleOptions {
   isReady?: () => boolean
@@ -9,7 +10,7 @@ interface AutoSaveLifecycleOptions {
 }
 
 export function initAutoSaveLifecycle(
-  controller: AutoSaveController,
+  controller: AutoSaveController | AutoSaveStore<any, any>,
   options: AutoSaveLifecycleOptions = {}
 ) {
   const { isReady = () => true, onFlushError, enableShortcut = true } = options

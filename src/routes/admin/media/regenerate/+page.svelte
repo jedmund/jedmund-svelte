@@ -40,27 +40,20 @@
 	} | null>(null)
 
 	onMount(() => {
-		// Check authentication
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-		} else {
-			fetchMediaStats()
-		}
+		fetchMediaStats()
 	})
 
 	async function fetchMediaStats() {
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			const response = await fetch('/api/admin/media-stats', {
-				headers: {
-					Authorization: `Basic ${auth}`
-				}
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to fetch media stats')
 			}
 
@@ -76,20 +69,16 @@
 		colorExtractionResults = null
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				error = 'Not authenticated'
-				return
-			}
-
 			const response = await fetch('/api/admin/cloudinary-extract-colors', {
 				method: 'POST',
-				headers: {
-					Authorization: `Basic ${auth}`
-				}
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to extract colors')
 			}
 
@@ -111,20 +100,16 @@
 		thumbnailResults = null
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				error = 'Not authenticated'
-				return
-			}
-
 			const response = await fetch('/api/admin/regenerate-thumbnails', {
 				method: 'POST',
-				headers: {
-					Authorization: `Basic ${auth}`
-				}
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to regenerate thumbnails')
 			}
 
@@ -146,20 +131,16 @@
 		reanalysisResults = null
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) {
-				error = 'Not authenticated'
-				return
-			}
-
 			const response = await fetch('/api/admin/reanalyze-colors', {
 				method: 'POST',
-				headers: {
-					Authorization: `Basic ${auth}`
-				}
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto('/admin/login')
+					return
+				}
 				throw new Error('Failed to reanalyze colors')
 			}
 

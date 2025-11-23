@@ -73,13 +73,6 @@
 		successCount = 0
 		uploadProgress = {}
 
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			uploadErrors = ['Authentication required']
-			isUploading = false
-			return
-		}
-
 		// Upload files individually to show progress
 		for (const file of files) {
 			try {
@@ -88,10 +81,8 @@
 
 				const response = await fetch('/api/media/upload', {
 					method: 'POST',
-					headers: {
-						Authorization: `Basic ${auth}`
-					},
-					body: formData
+					body: formData,
+					credentials: 'same-origin'
 				})
 
 				if (!response.ok) {

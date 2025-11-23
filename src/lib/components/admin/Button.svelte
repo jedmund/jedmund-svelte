@@ -350,18 +350,18 @@
 
 	.btn-danger-text {
 		background: none;
-		color: #dc2626;
+		color: $error-text;
 		padding: $unit;
 		font-weight: 600;
 
 		&:hover:not(:disabled) {
 			background-color: $gray-90;
-			color: #dc2626;
+			color: $error-text;
 		}
 
 		&:active:not(:disabled) {
 			background-color: $gray-80;
-			color: #dc2626;
+			color: $error-text;
 		}
 	}
 

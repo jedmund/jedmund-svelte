@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
+	import { goto, invalidate } from '$app/navigation'
+	import { page } from '$app/stores'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
+	import EmptyState from '$lib/components/admin/EmptyState.svelte'
 	import Input from '$lib/components/admin/Input.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
@@ -14,22 +15,24 @@
 	import AlbumSelectorModal from '$lib/components/admin/AlbumSelectorModal.svelte'
 	import ChevronDown from '$icons/chevron-down.svg?component'
 	import PlayIcon from '$icons/play.svg?component'
+	import { toast } from '$lib/stores/toast'
 	import type { Media } from '@prisma/client'
+	import type { PageData } from './$types'
 
-	let media = $state<Media[]>([])
-	let isLoading = $state(true)
-	let error = $state('')
-	let currentPage = $state(1)
-	let totalPages = $state(1)
-	let total = $state(0)
-	// Only using grid view
+	const { data } = $props<{ data: PageData }>()
 
-	// Filter states
-	let filterType = $state<string>('all')
-	let publishedFilter = $state<string>('all')
-	let searchQuery = $state('')
+	const media = $derived(data.items ?? [])
+	const currentPage = $derived(data.pagination?.page ?? 1)
+	const totalPages = $derived(data.pagination?.totalPages ?? 1)
+	const total = $derived(data.pagination?.total ?? 0)
+
+	// Read filter states from URL
+	const filterType = $derived($page.url.searchParams.get('mimeType') ?? 'all')
+	const publishedFilter = $derived($page.url.searchParams.get('publishedFilter') ?? 'all')
+	const sortBy = $derived($page.url.searchParams.get('sort') ?? 'newest')
+
+	let searchQuery = $state($page.url.searchParams.get('search') ?? '')
 	let searchTimeout: ReturnType<typeof setTimeout>
-	let sortBy = $state<string>('newest')
 
 	// Filter options
 	const typeFilterOptions = [
@@ -70,76 +73,50 @@
 	// Dropdown state
 	let isDropdownOpen = $state(false)
 
-	onMount(async () => {
-		await loadMedia()
-	})
-
 	// Watch for search query changes with debounce
 	$effect(() => {
 		if (searchQuery !== undefined) {
 			clearTimeout(searchTimeout)
 			searchTimeout = setTimeout(() => {
-				handleSearch()
+				updateURL({ search: searchQuery || undefined })
 			}, 300)
 		}
 	})
 
-	async function loadMedia(page = 1) {
-		try {
-			isLoading = true
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
+	function updateURL(params: Record<string, string | undefined>) {
+		const url = new URL($page.url)
 
-			let url = `/api/media?page=${page}&limit=24`
-			if (filterType !== 'all') {
-				url += `&mimeType=${filterType}`
+		// Update or remove params
+		Object.entries(params).forEach(([key, value]) => {
+			if (value && value !== 'all') {
+				url.searchParams.set(key, value)
+			} else {
+				url.searchParams.delete(key)
 			}
-			if (publishedFilter !== 'all') {
-				url += `&publishedFilter=${publishedFilter}`
-			}
-			if (searchQuery) {
-				url += `&search=${encodeURIComponent(searchQuery)}`
-			}
-			if (sortBy) {
-				url += `&sort=${sortBy}`
-			}
+		})
 
-			const response = await fetch(url, {
-				headers: { Authorization: `Basic ${auth}` }
-			})
-
-			if (!response.ok) throw new Error('Failed to load media')
-
-			const data = await response.json()
-			media = data.media
-			currentPage = data.pagination.page
-			totalPages = data.pagination.totalPages
-			total = data.pagination.total
-		} catch (err) {
-			error = 'Failed to load media'
-			console.error(err)
-		} finally {
-			isLoading = false
+		// Reset to page 1 if filters changed (not page navigation)
+		if (!params.page) {
+			url.searchParams.delete('page')
 		}
+
+		goto(url.toString(), { replaceState: false, keepFocus: true })
 	}
 
 	function handlePageChange(page: number) {
-		loadMedia(page)
+		updateURL({ page: String(page) })
 	}
 
-	function handleFilterChange() {
-		currentPage = 1
-		loadMedia(1)
+	function handleTypeFilterChange(value: string) {
+		updateURL({ mimeType: value })
 	}
 
-	function handleSearch() {
-		currentPage = 1
-		loadMedia(1)
+	function handlePublishedFilterChange(value: string) {
+		updateURL({ publishedFilter: value })
 	}
 
-	function handleSortChange() {
-		currentPage = 1
-		loadMedia(1)
+	function handleSortChange(value: string) {
+		updateURL({ sort: value })
 	}
 
 	function formatFileSize(bytes: number): string {
@@ -172,17 +149,14 @@
 		isDetailsModalOpen = false
 	}
 
-	function handleMediaUpdate(updatedMedia: Media) {
-		// Update the media item in the list
-		const index = media.findIndex((m) => m.id === updatedMedia.id)
-		if (index !== -1) {
-			media[index] = updatedMedia
-		}
+	async function handleMediaUpdate(updatedMedia: Media) {
+		// Invalidate to reload from server
+		await invalidate('admin:media')
 	}
 
-	function handleUploadComplete() {
+	async function handleUploadComplete() {
 		// Reload media list after successful upload
-		loadMedia(currentPage)
+		await invalidate('admin:media')
 	}
 
 	function openUploadModal() {
@@ -252,15 +226,12 @@
 
 		try {
 			isDeleting = true
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			const response = await fetch('/api/media/bulk-delete', {
 				method: 'DELETE',
 				headers: {
-					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
+				credentials: 'same-origin',
 				body: JSON.stringify({
 					mediaIds: Array.from(selectedMediaIds)
 				})
@@ -269,21 +240,17 @@
 			if (!response.ok) {
 				throw new Error('Failed to delete media files')
 			}
-
-			const result = await response.json()
-
-			// Remove deleted media from the list
-			media = media.filter((m) => !selectedMediaIds.has(m.id))
+			await response.json()
 
 			// Clear selection and exit multiselect mode
 			selectedMediaIds.clear()
 			selectedMediaIds = new Set()
 			isMultiSelectMode = false
 
-			// Reload to get updated total count
-			await loadMedia(currentPage)
+			// Reload to get updated data
+			await invalidate('admin:media')
 		} catch (err) {
-			error = 'Failed to delete media files. Please try again.'
+			toast.error('Failed to delete media files. Please try again.')
 			console.error('Failed to delete media:', err)
 		} finally {
 			isDeleting = false
@@ -294,17 +261,14 @@
 		if (selectedMediaIds.size === 0) return
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			// Update each selected media item
 			const promises = Array.from(selectedMediaIds).map(async (mediaId) => {
 				const response = await fetch(`/api/media/${mediaId}`, {
 					method: 'PUT',
 					headers: {
-						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
+					credentials: 'same-origin',
 					body: JSON.stringify({ isPhotography: true })
 				})
 
@@ -316,17 +280,15 @@
 
 			await Promise.all(promises)
 
-			// Update local media items
-			media = media.map((item) =>
-				selectedMediaIds.has(item.id) ? { ...item, isPhotography: true } : item
-			)
-
 			// Clear selection
 			selectedMediaIds.clear()
 			selectedMediaIds = new Set()
 			isMultiSelectMode = false
+
+			// Reload to get updated data
+			await invalidate('admin:media')
 		} catch (err) {
-			error = 'Failed to mark items as photography. Please try again.'
+			toast.error('Failed to mark items as photography. Please try again.')
 			console.error('Failed to mark as photography:', err)
 		}
 	}
@@ -335,17 +297,14 @@
 		if (selectedMediaIds.size === 0) return
 
 		try {
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
-
 			// Update each selected media item
 			const promises = Array.from(selectedMediaIds).map(async (mediaId) => {
 				const response = await fetch(`/api/media/${mediaId}`, {
 					method: 'PUT',
 					headers: {
-						Authorization: `Basic ${auth}`,
 						'Content-Type': 'application/json'
 					},
+					credentials: 'same-origin',
 					body: JSON.stringify({ isPhotography: false })
 				})
 
@@ -357,17 +316,15 @@
 
 			await Promise.all(promises)
 
-			// Update local media items
-			media = media.map((item) =>
-				selectedMediaIds.has(item.id) ? { ...item, isPhotography: false } : item
-			)
-
 			// Clear selection
 			selectedMediaIds.clear()
 			selectedMediaIds = new Set()
 			isMultiSelectMode = false
+
+			// Reload to get updated data
+			await invalidate('admin:media')
 		} catch (err) {
-			error = 'Failed to remove photography status. Please try again.'
+			toast.error('Failed to remove photography status. Please try again.')
 			console.error('Failed to unmark photography:', err)
 		}
 	}
@@ -381,8 +338,8 @@
 	<AdminHeader title="Media Library" slot="header">
 		{#snippet actions()}
 			<div class="actions-dropdown">
-				<Button variant="primary" buttonSize="large" onclick={openUploadModal}>Upload</Button>
-				<Button variant="ghost" iconOnly buttonSize="large" onclick={handleDropdownToggle}>
+				<Button variant="primary" buttonSize="medium" onclick={openUploadModal}>Upload</Button>
+				<Button variant="ghost" iconOnly buttonSize="medium" onclick={handleDropdownToggle}>
 					{#snippet icon()}
 						<ChevronDown />
 					{/snippet}
@@ -403,39 +360,35 @@
 		{/snippet}
 	</AdminHeader>
 
-	{#if error}
-		<div class="error">{error}</div>
-	{:else}
-		<!-- Filters -->
+	<!-- Filters -->
 		<AdminFilters>
 			{#snippet left()}
 				<Select
-					bind:value={filterType}
+					value={filterType}
 					options={typeFilterOptions}
 					size="small"
 					variant="minimal"
-					onchange={handleFilterChange}
+					onchange={(e) => handleTypeFilterChange((e.target as HTMLSelectElement).value)}
 				/>
 				<Select
-					bind:value={publishedFilter}
+					value={publishedFilter}
 					options={publishedFilterOptions}
 					size="small"
 					variant="minimal"
-					onchange={handleFilterChange}
+					onchange={(e) => handlePublishedFilterChange((e.target as HTMLSelectElement).value)}
 				/>
 			{/snippet}
 			{#snippet right()}
 				<Select
-					bind:value={sortBy}
+					value={sortBy}
 					options={sortOptions}
 					size="small"
 					variant="minimal"
-					onchange={handleSortChange}
+					onchange={(e) => handleSortChange((e.target as HTMLSelectElement).value)}
 				/>
 				<Input
 					type="search"
 					bind:value={searchQuery}
-					onkeydown={(e) => e.key === 'Enter' && handleSearch()}
 					placeholder="Search files..."
 					buttonSize="small"
 					fullWidth={false}
@@ -515,13 +468,12 @@
 			</div>
 		{/if}
 
-		{#if isLoading}
-			<div class="loading">Loading media...</div>
-		{:else if media.length === 0}
-			<div class="empty-state">
-				<p>No media files found.</p>
-				<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
-			</div>
+		{#if media.length === 0}
+			<EmptyState title="No media files found" message="Upload your first file to get started.">
+				{#snippet action()}
+					<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
+				{/snippet}
+			</EmptyState>
 		{:else}
 			<div class="media-grid">
 				{#each media as item}
@@ -616,7 +568,6 @@
 				</button>
 			</div>
 		{/if}
-	{/if}
 </AdminPage>
 
 <!-- Media Details Modal -->
@@ -711,23 +662,13 @@
 	.error {
 		text-align: center;
 		padding: $unit-6x;
-		color: #d33;
+		color: $error-text;
 	}
 
 	.loading {
 		text-align: center;
 		padding: $unit-6x;
 		color: $gray-40;
-	}
-
-	.empty-state {
-		text-align: center;
-		padding: $unit-8x;
-		color: $gray-40;
-
-		p {
-			margin-bottom: $unit-3x;
-		}
 	}
 
 	.media-grid {

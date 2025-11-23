@@ -14,6 +14,10 @@
 		variant?: 'default' | 'minimal'
 		fullWidth?: boolean
 		pill?: boolean
+		onchange?: (event: Event) => void
+		oninput?: (event: Event) => void
+		onfocus?: (event: FocusEvent) => void
+		onblur?: (event: FocusEvent) => void
 	}
 
 	let {
@@ -23,6 +27,10 @@
 		variant = 'default',
 		fullWidth = false,
 		pill = true,
+		onchange,
+		oninput,
+		onfocus,
+		onblur,
 		class: className = '',
 		...restProps
 	}: Props = $props()
@@ -34,6 +42,10 @@
 		class="select select-{size} select-{variant} {className}"
 		class:select-full-width={fullWidth}
 		class:select-pill={pill}
+		onchange={(e) => onchange?.(e)}
+		oninput={(e) => oninput?.(e)}
+		onfocus={(e) => onfocus?.(e)}
+		onblur={(e) => onblur?.(e)}
 		{...restProps}
 	>
 		{#each options as option}

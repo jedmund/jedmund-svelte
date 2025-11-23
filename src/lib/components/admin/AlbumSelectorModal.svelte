@@ -34,16 +34,14 @@
 		try {
 			isSaving = true
 			error = ''
-			const auth = localStorage.getItem('admin_auth')
-			if (!auth) return
 
 			const response = await fetch(`/api/albums/${selectedAlbumId}/media`, {
 				method: 'POST',
 				headers: {
-					Authorization: `Basic ${auth}`,
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ mediaIds: selectedMediaIds })
+				body: JSON.stringify({ mediaIds: selectedMediaIds }),
+				credentials: 'same-origin'
 			})
 
 			if (!response.ok) {
@@ -190,11 +188,11 @@
 	}
 
 	.error-message {
-		background: rgba(239, 68, 68, 0.1);
-		color: #dc2626;
+		background: $error-bg;
+		color: $error-text;
 		padding: $unit-2x;
 		border-radius: $unit;
-		border: 1px solid rgba(239, 68, 68, 0.2);
+		border: $unit-1px solid $error-border;
 		margin-top: $unit-2x;
 	}
 

@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte'
 	import Button from './Button.svelte'
 	import DropdownMenuContainer from './DropdownMenuContainer.svelte'
+	import { clickOutside } from '$lib/actions/clickOutside'
 
 	interface Props {
 		isOpen?: boolean
@@ -31,26 +32,17 @@
 		onToggle?.(isOpen)
 	}
 
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target as HTMLElement
-		if (!target.closest(`.${className}`) && !target.closest('.dropdown-container')) {
-			isOpen = false
-			onToggle?.(false)
-		}
+	function handleClickOutside() {
+		isOpen = false
+		onToggle?.(false)
 	}
-
-	$effect(() => {
-		if (isOpen) {
-			// Use setTimeout to avoid immediate closing when clicking the trigger
-			setTimeout(() => {
-				document.addEventListener('click', handleClickOutside)
-			}, 0)
-			return () => document.removeEventListener('click', handleClickOutside)
-		}
-	})
 </script>
 
-<div class="dropdown-container {className}">
+<div
+	class="dropdown-container {className}"
+	use:clickOutside={{ enabled: isOpen }}
+	onclickoutside={handleClickOutside}
+>
 	<div class="dropdown-trigger">
 		{@render trigger()}
 

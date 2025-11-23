@@ -290,9 +290,6 @@
 			try {
 				isSaving = true
 				error = ''
-				const auth = localStorage.getItem('admin_auth')
-				if (!auth) return
-
 				const toAdd = Array.from(mediaToAdd())
 				const toRemove = Array.from(mediaToRemove())
 
@@ -301,10 +298,10 @@
 					const response = await fetch(`/api/albums/${albumId}/media`, {
 						method: 'POST',
 						headers: {
-							Authorization: `Basic ${auth}`,
 							'Content-Type': 'application/json'
 						},
-						body: JSON.stringify({ mediaIds: toAdd })
+						body: JSON.stringify({ mediaIds: toAdd }),
+						credentials: 'same-origin'
 					})
 
 					if (!response.ok) {
@@ -317,10 +314,10 @@
 					const response = await fetch(`/api/albums/${albumId}/media`, {
 						method: 'DELETE',
 						headers: {
-							Authorization: `Basic ${auth}`,
 							'Content-Type': 'application/json'
 						},
-						body: JSON.stringify({ mediaIds: toRemove })
+						body: JSON.stringify({ mediaIds: toRemove }),
+						credentials: 'same-origin'
 					})
 
 					if (!response.ok) {

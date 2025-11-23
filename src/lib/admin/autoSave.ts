@@ -1,17 +1,29 @@
 export type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'offline'
 
+export interface AutoSaveController {
+  status: { subscribe: (run: (v: AutoSaveStatus) => void) => () => void }
+  lastError: { subscribe: (run: (v: string | null) => void) => () => void }
+  schedule: () => void
+  flush: () => Promise<void>
+  destroy: () => void
+  prime: <T>(payload: T) => void
+}
+
 interface CreateAutoSaveControllerOptions<TPayload, TResponse = unknown> {
   debounceMs?: number
+  idleResetMs?: number
   getPayload: () => TPayload | null | undefined
   save: (payload: TPayload, ctx: { signal: AbortSignal }) => Promise<TResponse>
-  onSaved?: (res: TResponse) => void
+  onSaved?: (res: TResponse, ctx: { prime: (payload: TPayload) => void }) => void
 }
 
 export function createAutoSaveController<TPayload, TResponse = unknown>(
   opts: CreateAutoSaveControllerOptions<TPayload, TResponse>
 ) {
   const debounceMs = opts.debounceMs ?? 2000
+  const idleResetMs = opts.idleResetMs ?? 2000
   let timer: ReturnType<typeof setTimeout> | null = null
+  let idleResetTimer: ReturnType<typeof setTimeout> | null = null
   let controller: AbortController | null = null
   let lastSentHash: string | null = null
 
@@ -21,8 +33,26 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
   const errorSubs = new Set<(v: string | null) => void>()
 
   function setStatus(next: AutoSaveStatus) {
+    if (idleResetTimer) {
+      clearTimeout(idleResetTimer)
+      idleResetTimer = null
+    }
+
     _status = next
     statusSubs.forEach((fn) => fn(_status))
+
+    // Auto-transition from 'saved' to 'idle' after idleResetMs
+    if (next === 'saved') {
+      idleResetTimer = setTimeout(() => {
+        _status = 'idle'
+        statusSubs.forEach((fn) => fn(_status))
+        idleResetTimer = null
+      }, idleResetMs)
+    }
+  }
+
+  function prime(payload: TPayload) {
+    lastSentHash = safeHash(payload)
   }
 
   function schedule() {
@@ -51,7 +81,7 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
       const res = await opts.save(payload, { signal: controller.signal })
       lastSentHash = hash
       setStatus('saved')
-      if (opts.onSaved) opts.onSaved(res)
+      if (opts.onSaved) opts.onSaved(res, { prime })
     } catch (e: any) {
       if (e?.name === 'AbortError') {
         // Newer save superseded this one
@@ -73,6 +103,7 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
 
   function destroy() {
     if (timer) clearTimeout(timer)
+    if (idleResetTimer) clearTimeout(idleResetTimer)
     if (controller) controller.abort()
   }
 
@@ -93,7 +124,8 @@ export function createAutoSaveController<TPayload, TResponse = unknown>(
     },
     schedule,
     flush,
-    destroy
+    destroy,
+    prime
   }
 }
 

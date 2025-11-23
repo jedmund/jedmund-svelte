@@ -4,10 +4,12 @@
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 
 	// Get initial state from URL params
-	$: postType = ($page.url.searchParams.get('type') as 'post' | 'essay') || 'essay'
-	$: initialContent = $page.url.searchParams.get('content')
-		? JSON.parse($page.url.searchParams.get('content')!)
-		: undefined
+	const postType = $derived(($page.url.searchParams.get('type') as 'post' | 'essay') || 'essay')
+	const initialContent = $derived(
+		$page.url.searchParams.get('content')
+			? JSON.parse($page.url.searchParams.get('content')!)
+			: undefined
+	)
 </script>
 
 <svelte:head>

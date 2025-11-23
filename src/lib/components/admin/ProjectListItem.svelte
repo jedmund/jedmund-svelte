@@ -1,35 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { createEventDispatcher, onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
+	import { clickOutside } from '$lib/actions/clickOutside'
 
-	interface Project {
-		id: number
-		title: string
-		subtitle: string | null
-		year: number
-		client: string | null
-		status: string
-		projectType: string
-		logoUrl: string | null
-		backgroundColor: string | null
-		highlightColor: string | null
-		publishedAt: string | null
-		createdAt: string
-		updatedAt: string
-	}
+	import type { AdminProject } from '$lib/types/admin'
 
 	interface Props {
-		project: Project
+		project: AdminProject
+		onedit?: (event: CustomEvent<{ project: AdminProject }>) => void
+		ontogglepublish?: (event: CustomEvent<{ project: AdminProject }>) => void
+		ondelete?: (event: CustomEvent<{ project: AdminProject }>) => void
 	}
 
-	let { project }: Props = $props()
-
-	const dispatch = createEventDispatcher<{
-		edit: { project: Project }
-		togglePublish: { project: Project }
-		delete: { project: Project }
-	}>()
+	let { project, onedit, ontogglepublish, ondelete }: Props = $props()
 
 	let isDropdownOpen = $state(false)
 
@@ -62,19 +46,27 @@
 
 	function handleToggleDropdown(event: MouseEvent) {
 		event.stopPropagation()
+		// Close all other dropdowns before toggling this one
+		if (!isDropdownOpen) {
+			document.dispatchEvent(new CustomEvent('closeDropdowns'))
+		}
 		isDropdownOpen = !isDropdownOpen
 	}
 
 	function handleEdit() {
-		dispatch('edit', { project })
+		onedit?.(new CustomEvent('edit', { detail: { project } }))
 	}
 
 	function handleTogglePublish() {
-		dispatch('togglePublish', { project })
+		ontogglepublish?.(new CustomEvent('togglepublish', { detail: { project } }))
 	}
 
 	function handleDelete() {
-		dispatch('delete', { project })
+		ondelete?.(new CustomEvent('delete', { detail: { project } }))
+	}
+
+	function handleClickOutside() {
+		isDropdownOpen = false
 	}
 
 	onMount(() => {
@@ -113,8 +105,17 @@
 		/>
 	</div>
 
-	<div class="dropdown-container">
-		<button class="action-button" onclick={handleToggleDropdown} aria-label="Project actions">
+	<div
+		class="dropdown-container"
+		use:clickOutside={{ enabled: isDropdownOpen }}
+		onclickoutside={handleClickOutside}
+	>
+		<button
+			class="action-button"
+			type="button"
+			onclick={handleToggleDropdown}
+			aria-label="Project actions"
+		>
 			<svg
 				width="20"
 				height="20"
@@ -130,12 +131,16 @@
 
 		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" onclick={handleEdit}>Edit project</button>
-				<button class="dropdown-item" onclick={handleTogglePublish}>
+				<button class="dropdown-item" type="button" onclick={handleEdit}>
+					Edit project
+				</button>
+				<button class="dropdown-item" type="button" onclick={handleTogglePublish}>
 					{project.status === 'published' ? 'Unpublish' : 'Publish'} project
 				</button>
 				<div class="dropdown-divider"></div>
-				<button class="dropdown-item danger" onclick={handleDelete}>Delete project</button>
+				<button class="dropdown-item danger" type="button" onclick={handleDelete}>
+					Delete project
+				</button>
 			</div>
 		{/if}
 	</div>

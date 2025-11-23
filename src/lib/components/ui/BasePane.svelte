@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition'
+	import { clickOutside } from '$lib/actions/clickOutside'
 	import type { Snippet } from 'svelte'
 
 	interface BasePaneProps {
@@ -38,24 +39,6 @@
 
 		window.addEventListener('keydown', handleKeydown)
 		return () => window.removeEventListener('keydown', handleKeydown)
-	})
-
-	// Handle click outside
-	$effect(() => {
-		if (!isOpen || !closeOnBackdrop) return
-
-		function handleClickOutside(e: MouseEvent) {
-			if (paneElement && !paneElement.contains(e.target as Node)) {
-				handleClose()
-			}
-		}
-
-		// Use capture phase to ensure we catch the click before other handlers
-		setTimeout(() => {
-			document.addEventListener('click', handleClickOutside, true)
-		}, 0)
-
-		return () => document.removeEventListener('click', handleClickOutside, true)
 	})
 
 	function handleClose() {
@@ -133,6 +116,8 @@
 		transition:fade={{ duration: 150 }}
 		role="dialog"
 		aria-modal="false"
+		use:clickOutside={{ enabled: closeOnBackdrop }}
+		onclickoutside={handleClose}
 	>
 		{#if children}
 			{@render children()}

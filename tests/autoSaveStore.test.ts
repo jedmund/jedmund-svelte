@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { createAutoSaveController } from '../src/lib/admin/autoSave'
 
-describe('createAutoSaveController', () => {
+describe('createAutoSaveStore', () => {
 	beforeEach(() => {
 		if (typeof navigator === 'undefined') {
 			// @ts-expect-error add minimal navigator shim for tests

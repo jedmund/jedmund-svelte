@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
-	import { onMount } from 'svelte'
 
 	let files = $state<File[]>([])
 	let dragActive = $state(false)
@@ -11,14 +10,6 @@
 	let uploadErrors = $state<string[]>([])
 	let successCount = $state(0)
 	let fileInput: HTMLInputElement
-
-	onMount(() => {
-		// Check authentication
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			goto('/admin/login')
-		}
-	})
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault()
@@ -86,13 +77,6 @@
 		successCount = 0
 		uploadProgress = {}
 
-		const auth = localStorage.getItem('admin_auth')
-		if (!auth) {
-			uploadErrors = ['Authentication required']
-			isUploading = false
-			return
-		}
-
 		// Upload files individually to show progress
 		for (const file of files) {
 			try {
@@ -101,10 +85,8 @@
 
 				const response = await fetch('/api/media/upload', {
 					method: 'POST',
-					headers: {
-						Authorization: `Basic ${auth}`
-					},
-					body: formData
+					body: formData,
+					credentials: 'same-origin'
 				})
 
 				if (!response.ok) {
