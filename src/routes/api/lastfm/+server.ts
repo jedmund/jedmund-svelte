@@ -19,6 +19,30 @@ interface TrackPlayInfo {
 	durationMs?: number
 }
 
+// Type for Apple Music data
+interface AppleMusicTrack {
+	name: string
+	previewUrl?: string
+	durationMs?: number
+}
+
+interface AppleMusicData {
+	tracks?: AppleMusicTrack[]
+	artwork?: {
+		url: string
+		width: number
+		height: number
+		bgColor?: string
+		textColor1?: string
+		textColor2?: string
+		textColor3?: string
+		textColor4?: string
+	}
+	previewUrl?: string
+	appleMusicUrl?: string
+	releaseDate?: string
+}
+
 let recentTracks: TrackPlayInfo[] = []
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -310,7 +334,7 @@ function transformImages(images: LastfmImage[]): AlbumImages {
 	return transformedImages
 }
 
-function checkNowPlaying(album: Album, appleMusicData: any): Album {
+function checkNowPlaying(album: Album, appleMusicData: AppleMusicData | null): Album {
 	// Don't override if already marked as now playing by Last.fm
 	if (album.isNowPlaying) {
 		return album
@@ -324,8 +348,8 @@ function checkNowPlaying(album: Album, appleMusicData: any): Album {
 		if (trackInfo.albumName !== album.name) continue
 
 		// Find the track duration from Apple Music data
-		const trackData = appleMusicData.tracks?.find(
-			(t: any) => t.name.toLowerCase() === trackInfo.trackName.toLowerCase()
+		const trackData = appleMusicData?.tracks?.find(
+			(t) => t.name.toLowerCase() === trackInfo.trackName.toLowerCase()
 		)
 
 		if (trackData?.durationMs) {

@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
@@ -15,6 +16,28 @@ import {
 	extractMediaIds,
 	type MediaUsageReference
 } from '$lib/server/media-usage.js'
+
+// Type for project creation request body
+interface ProjectCreateBody {
+	title: string
+	subtitle?: string
+	description?: string
+	year: number
+	client?: string
+	role?: string
+	featuredImage?: string
+	logoUrl?: string
+	gallery?: Prisma.JsonValue
+	externalUrl?: string
+	caseStudyContent?: Prisma.JsonValue
+	backgroundColor?: string
+	highlightColor?: string
+	projectType?: string
+	displayOrder?: number
+	status?: string
+	password?: string | null
+	slug?: string
+}
 
 // GET /api/projects - List all projects
 export const GET: RequestHandler = async (event) => {
@@ -33,7 +56,7 @@ export const GET: RequestHandler = async (event) => {
 			event.url.searchParams.get('includePasswordProtected') === 'true'
 
 		// Build where clause
-		const where: any = {}
+		const where: Prisma.ProjectWhereInput = {}
 
 		if (status) {
 			where.status = status
@@ -90,7 +113,7 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const body = await parseRequestBody<any>(event.request)
+		const body = await parseRequestBody<ProjectCreateBody>(event.request)
 		if (!body) {
 			return errorResponse('Invalid request body', 400)
 		}

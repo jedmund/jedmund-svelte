@@ -1,7 +1,16 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { logger } from '$lib/server/logger'
 import { renderEdraContent } from '$lib/utils/content'
+
+// Type for legacy block content format
+interface BlockContent {
+	blocks: Array<{
+		type: string
+		content?: string
+	}>
+}
 
 // Helper function to escape XML special characters
 function escapeXML(str: string): string {
@@ -16,7 +25,7 @@ function escapeXML(str: string): string {
 
 // Helper function to convert content to HTML for full content
 // Uses the same rendering logic as the website for consistency
-function convertContentToHTML(content: any): string {
+function convertContentToHTML(content: Prisma.JsonValue): string {
 	if (!content) return ''
 
 	// Use the existing renderEdraContent function which properly handles TipTap marks
@@ -25,12 +34,19 @@ function convertContentToHTML(content: any): string {
 }
 
 // Helper function to extract text summary from content
-function extractTextSummary(content: any, maxLength: number = 300): string {
-	if (!content || !content.blocks) return ''
+function extractTextSummary(content: Prisma.JsonValue, maxLength: number = 300): string {
+	if (!content) return ''
+
+	// Type guard for block content
+	const isBlockContent = (val: unknown): val is BlockContent => {
+		return typeof val === 'object' && val !== null && 'blocks' in val && Array.isArray((val as BlockContent).blocks)
+	}
+
+	if (!isBlockContent(content)) return ''
 
 	const text = content.blocks
-		.filter((block: any) => block.type === 'paragraph' && block.content)
-		.map((block: any) => block.content)
+		.filter((block) => block.type === 'paragraph' && block.content)
+		.map((block) => block.content || '')
 		.join(' ')
 
 	return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
