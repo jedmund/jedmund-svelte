@@ -30,7 +30,6 @@
 		aspectRatio,
 		required = false,
 		error,
-		allowAltText = true,
 		maxFileSize = 10,
 		placeholder = 'Drag and drop an image here, or click to browse',
 		helpText,

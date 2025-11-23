@@ -182,12 +182,12 @@
 		try {
 			const response = await fetch('/api/admin/debug/clear-cache', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ key: albumKey })
 			})
 			
 			if (response.ok) {
-				const result = await response.json()
+				await response.json()
 				toast.success(`Cleared cache for "${album.name}"`)
 			} else {
 				toast.error(`Failed to clear cache for "${album.name}"`)

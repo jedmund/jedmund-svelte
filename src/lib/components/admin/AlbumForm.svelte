@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
@@ -9,7 +8,6 @@
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import Composer from './composer'
-	import { toast } from '$lib/stores/toast'
 	import type { Album, Media } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
 
@@ -33,8 +31,6 @@
 
 	// State
 	let isLoading = $state(mode === 'edit')
-	let isSaving = $state(false)
-	let validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
 	let editorInstance = $state<{ save: () => Promise<JSONContent>; clear: () => void } | undefined>()
@@ -123,30 +119,6 @@
 		}
 	}
 
-	function validateForm() {
-		try {
-			albumSchema.parse({
-				title: formData.title,
-				slug: formData.slug,
-				location: formData.location || undefined,
-				year: formData.year || undefined
-			})
-			validationErrors = {}
-			return true
-		} catch (err) {
-			if (err instanceof z.ZodError) {
-				const errors: Record<string, string> = {}
-				err.errors.forEach((e) => {
-					if (e.path[0]) {
-						errors[e.path[0].toString()] = e.message
-					}
-				})
-				validationErrors = errors
-			}
-			return false
-		}
-	}
-
 	async function handleBulkAlbumSave() {
 		// Reload album to get updated photo count
 		if (album && mode === 'edit') {
@@ -200,8 +172,6 @@
 							bind:value={formData.title}
 							placeholder="Album title"
 							required
-							error={validationErrors.title}
-							disabled={isSaving}
 						/>
 
 						<Input
@@ -209,8 +179,7 @@
 							bind:value={formData.slug}
 							placeholder="url-friendly-name"
 							required
-							error={validationErrors.slug}
-							disabled={isSaving || mode === 'edit'}
+							disabled={mode === 'edit'}
 						/>
 
 						<div class="form-grid">
@@ -218,16 +187,12 @@
 								label="Location"
 								bind:value={formData.location}
 								placeholder="e.g. Tokyo, Japan"
-								error={validationErrors.location}
-								disabled={isSaving}
 							/>
 							<Input
 								label="Year"
 								type="text"
 								bind:value={formData.year}
 								placeholder="e.g. 2023 or 2023-2025"
-								error={validationErrors.year}
-								disabled={isSaving}
 							/>
 						</div>
 
@@ -235,7 +200,6 @@
 							label="Status"
 							bind:value={formData.status}
 							options={statusOptions}
-							disabled={isSaving}
 						/>
 					</div>
 
@@ -245,7 +209,6 @@
 							<input
 								type="checkbox"
 								bind:checked={formData.showInUniverse}
-								disabled={isSaving}
 								class="toggle-input"
 							/>
 							<div class="toggle-content">
@@ -302,7 +265,6 @@
 						bind:data={formData.content}
 						placeholder="Add album content..."
 						onChange={handleContentUpdate}
-						editable={!isSaving}
 						albumId={album?.id}
 						variant="full"
 					/>

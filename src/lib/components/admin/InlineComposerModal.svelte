@@ -3,12 +3,10 @@
 	import Modal from './Modal.svelte'
 	import Composer from './composer'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
-	import FormField from './FormField.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
-	import SmartImage from '../SmartImage.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
