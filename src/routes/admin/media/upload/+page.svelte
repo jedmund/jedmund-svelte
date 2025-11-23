@@ -37,8 +37,8 @@
 
 	function addFiles(newFiles: File[]) {
 		// Filter for supported file types (images and videos)
-		const supportedFiles = newFiles.filter((file) => 
-			file.type.startsWith('image/') || file.type.startsWith('video/')
+		const supportedFiles = newFiles.filter(
+			(file) => file.type.startsWith('image/') || file.type.startsWith('video/')
 		)
 
 		if (supportedFiles.length !== newFiles.length) {
@@ -305,7 +305,9 @@
 					</div>
 					<h3>Drop media files here</h3>
 					<p>or click to browse and select files</p>
-					<p class="upload-hint">Images: JPG, PNG, GIF, WebP, SVG | Videos: WebM, MP4, OGG, MOV, AVI</p>
+					<p class="upload-hint">
+						Images: JPG, PNG, GIF, WebP, SVG | Videos: WebM, MP4, OGG, MOV, AVI
+					</p>
 				{:else}
 					<div class="compact-content">
 						<svg

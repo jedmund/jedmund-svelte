@@ -9,12 +9,38 @@ export interface CacheConfig {
 
 export class CacheManager {
 	private static cacheTypes: Map<string, CacheConfig> = new Map([
-		['lastfm-recent', { prefix: 'lastfm:recent:', defaultTTL: 30, description: 'Last.fm recent tracks' }],
-		['lastfm-album', { prefix: 'lastfm:albuminfo:', defaultTTL: 3600, description: 'Last.fm album info' }],
-		['apple-album', { prefix: 'apple:album:', defaultTTL: 86400, description: 'Apple Music album data' }],
-		['apple-notfound', { prefix: 'notfound:apple-music:', defaultTTL: 3600, description: 'Apple Music not found records' }],
-		['apple-failure', { prefix: 'failure:apple-music:', defaultTTL: 86400, description: 'Apple Music API failures' }],
-		['apple-ratelimit', { prefix: 'ratelimit:apple-music:', defaultTTL: 3600, description: 'Apple Music rate limit state' }]
+		[
+			'lastfm-recent',
+			{ prefix: 'lastfm:recent:', defaultTTL: 30, description: 'Last.fm recent tracks' }
+		],
+		[
+			'lastfm-album',
+			{ prefix: 'lastfm:albuminfo:', defaultTTL: 3600, description: 'Last.fm album info' }
+		],
+		[
+			'apple-album',
+			{ prefix: 'apple:album:', defaultTTL: 86400, description: 'Apple Music album data' }
+		],
+		[
+			'apple-notfound',
+			{
+				prefix: 'notfound:apple-music:',
+				defaultTTL: 3600,
+				description: 'Apple Music not found records'
+			}
+		],
+		[
+			'apple-failure',
+			{ prefix: 'failure:apple-music:', defaultTTL: 86400, description: 'Apple Music API failures' }
+		],
+		[
+			'apple-ratelimit',
+			{
+				prefix: 'ratelimit:apple-music:',
+				defaultTTL: 3600,
+				description: 'Apple Music rate limit state'
+			}
+		]
 	])
 
 	/**
@@ -43,7 +69,7 @@ export class CacheManager {
 
 		const fullKey = `${config.prefix}${key}`
 		const expiry = ttl || config.defaultTTL
-		
+
 		await redis.set(fullKey, value, 'EX', expiry)
 		logger.music('debug', `Cached ${type} for key: ${key} (TTL: ${expiry}s)`)
 	}
@@ -75,9 +101,9 @@ export class CacheManager {
 
 		const pattern = `${config.prefix}*`
 		const keys = await redis.keys(pattern)
-		
+
 		if (keys.length === 0) return 0
-		
+
 		const deleted = await redis.del(...keys)
 		logger.music('info', `Cleared ${deleted} entries from ${type} cache`)
 		return deleted
@@ -95,9 +121,9 @@ export class CacheManager {
 
 		const searchPattern = `${config.prefix}*${pattern}*`
 		const keys = await redis.keys(searchPattern)
-		
+
 		if (keys.length === 0) return 0
-		
+
 		const deleted = await redis.del(...keys)
 		logger.music('info', `Cleared ${deleted} entries matching "${pattern}" from ${type} cache`)
 		return deleted
@@ -118,7 +144,10 @@ export class CacheManager {
 			}
 		}
 
-		logger.music('info', `Cleared ${totalDeleted} cache entries for album "${album}" by "${artist}"`)
+		logger.music(
+			'info',
+			`Cleared ${totalDeleted} cache entries for album "${album}" by "${artist}"`
+		)
 		return totalDeleted
 	}
 
@@ -134,7 +163,7 @@ export class CacheManager {
 	 */
 	static async getStats(): Promise<Array<{ type: string; count: number; description: string }>> {
 		const stats = []
-		
+
 		for (const [type, config] of this.cacheTypes) {
 			const keys = await redis.keys(`${config.prefix}*`)
 			stats.push({
@@ -143,7 +172,7 @@ export class CacheManager {
 				description: config.description
 			})
 		}
-		
+
 		return stats
 	}
 }
@@ -152,14 +181,21 @@ export class CacheManager {
 export const cache = {
 	lastfm: {
 		getRecent: (username: string) => CacheManager.get('lastfm-recent', username),
-		setRecent: (username: string, data: string) => CacheManager.set('lastfm-recent', username, data),
-		getAlbum: (artist: string, album: string) => CacheManager.get('lastfm-album', `${artist}:${album}`),
-		setAlbum: (artist: string, album: string, data: string) => CacheManager.set('lastfm-album', `${artist}:${album}`, data)
+		setRecent: (username: string, data: string) =>
+			CacheManager.set('lastfm-recent', username, data),
+		getAlbum: (artist: string, album: string) =>
+			CacheManager.get('lastfm-album', `${artist}:${album}`),
+		setAlbum: (artist: string, album: string, data: string) =>
+			CacheManager.set('lastfm-album', `${artist}:${album}`, data)
 	},
 	apple: {
-		getAlbum: (artist: string, album: string) => CacheManager.get('apple-album', `${artist}:${album}`),
-		setAlbum: (artist: string, album: string, data: string, ttl?: number) => CacheManager.set('apple-album', `${artist}:${album}`, data, ttl),
-		isNotFound: (artist: string, album: string) => CacheManager.get('apple-notfound', `${artist}:${album}`),
-		markNotFound: (artist: string, album: string, ttl?: number) => CacheManager.set('apple-notfound', `${artist}:${album}`, '1', ttl)
+		getAlbum: (artist: string, album: string) =>
+			CacheManager.get('apple-album', `${artist}:${album}`),
+		setAlbum: (artist: string, album: string, data: string, ttl?: number) =>
+			CacheManager.set('apple-album', `${artist}:${album}`, data, ttl),
+		isNotFound: (artist: string, album: string) =>
+			CacheManager.get('apple-notfound', `${artist}:${album}`),
+		markNotFound: (artist: string, album: string, ttl?: number) =>
+			CacheManager.set('apple-notfound', `${artist}:${album}`, '1', ttl)
 	}
 }

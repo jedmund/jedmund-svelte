@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import { goto, beforeNavigate } from '$app/navigation'
-import { onMount } from 'svelte'
-import { api } from '$lib/admin/api'
-import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
+	import { onMount } from 'svelte'
+	import { api } from '$lib/admin/api'
+	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
@@ -32,14 +32,16 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	let tagInput = $state('')
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement
-let showDeleteConfirmation = $state(false)
+	let showDeleteConfirmation = $state(false)
 
-// Draft backup
-const draftKey = $derived(makeDraftKey('post', $page.params.id))
-let showDraftPrompt = $state(false)
-let draftTimestamp = $state<number | null>(null)
-let timeTicker = $state(0)
-const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+	// Draft backup
+	const draftKey = $derived(makeDraftKey('post', $page.params.id))
+	let showDraftPrompt = $state(false)
+	let draftTimestamp = $state<number | null>(null)
+	let timeTicker = $state(0)
+	const draftTimeText = $derived.by(() =>
+		draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null
+	)
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -183,16 +185,16 @@ const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(d
 		}
 	}
 
-onMount(async () => {
-  // Wait a tick to ensure page params are loaded
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  await loadPost()
-  const draft = loadDraft<any>(draftKey)
-  if (draft) {
-    showDraftPrompt = true
-    draftTimestamp = draft.ts
-  }
-})
+	onMount(async () => {
+		// Wait a tick to ensure page params are loaded
+		await new Promise((resolve) => setTimeout(resolve, 0))
+		await loadPost()
+		const draft = loadDraft<any>(draftKey)
+		if (draft) {
+			showDraftPrompt = true
+			draftTimestamp = draft.ts
+		}
+	})
 
 	async function loadPost() {
 		const postId = $page.params.id
@@ -243,7 +245,7 @@ onMount(async () => {
 				hasLoaded = true
 			} else {
 				// Fallback error messaging
-					loadError = 'Post not found'
+				loadError = 'Post not found'
 			}
 		} catch (error) {
 			loadError = 'Network error occurred while loading post'
@@ -353,7 +355,13 @@ onMount(async () => {
 	// Trigger autosave when form data changes
 	$effect(() => {
 		// Establish dependencies
-		title; slug; status; content; tags; excerpt; postType
+		title
+		slug
+		status
+		content
+		tags
+		excerpt
+		postType
 		if (hasLoaded) {
 			autoSave.schedule()
 		}
@@ -433,13 +441,13 @@ onMount(async () => {
 		return () => autoSave.destroy()
 	})
 
-// Auto-update draft time text every minute when prompt visible
-$effect(() => {
-  if (showDraftPrompt) {
-    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
-    return () => clearInterval(id)
-  }
-})
+	// Auto-update draft time text every minute when prompt visible
+	$effect(() => {
+		if (showDraftPrompt) {
+			const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+			return () => clearInterval(id)
+		}
+	})
 </script>
 
 <svelte:head>
@@ -521,7 +529,8 @@ $effect(() => {
 		<div class="draft-banner">
 			<div class="draft-banner-content">
 				<span class="draft-banner-text">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+					Unsaved draft found{#if draftTimeText}
+						(saved {draftTimeText}){/if}.
 				</span>
 				<div class="draft-banner-actions">
 					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>

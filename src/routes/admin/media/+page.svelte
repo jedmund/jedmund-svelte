@@ -361,213 +361,207 @@
 	</AdminHeader>
 
 	<!-- Filters -->
-		<AdminFilters>
-			{#snippet left()}
-				<Select
-					value={filterType}
-					options={typeFilterOptions}
-					size="small"
-					variant="minimal"
-					onchange={(e) => handleTypeFilterChange((e.target as HTMLSelectElement).value)}
-				/>
-				<Select
-					value={publishedFilter}
-					options={publishedFilterOptions}
-					size="small"
-					variant="minimal"
-					onchange={(e) => handlePublishedFilterChange((e.target as HTMLSelectElement).value)}
-				/>
-			{/snippet}
-			{#snippet right()}
-				<Select
-					value={sortBy}
-					options={sortOptions}
-					size="small"
-					variant="minimal"
-					onchange={(e) => handleSortChange((e.target as HTMLSelectElement).value)}
-				/>
-				<Input
-					type="search"
-					bind:value={searchQuery}
-					placeholder="Search files..."
-					buttonSize="small"
-					fullWidth={false}
-					pill={true}
-					prefixIcon
+	<AdminFilters>
+		{#snippet left()}
+			<Select
+				value={filterType}
+				options={typeFilterOptions}
+				size="small"
+				variant="minimal"
+				onchange={(e) => handleTypeFilterChange((e.target as HTMLSelectElement).value)}
+			/>
+			<Select
+				value={publishedFilter}
+				options={publishedFilterOptions}
+				size="small"
+				variant="minimal"
+				onchange={(e) => handlePublishedFilterChange((e.target as HTMLSelectElement).value)}
+			/>
+		{/snippet}
+		{#snippet right()}
+			<Select
+				value={sortBy}
+				options={sortOptions}
+				size="small"
+				variant="minimal"
+				onchange={(e) => handleSortChange((e.target as HTMLSelectElement).value)}
+			/>
+			<Input
+				type="search"
+				bind:value={searchQuery}
+				placeholder="Search files..."
+				buttonSize="small"
+				fullWidth={false}
+				pill={true}
+				prefixIcon
+			>
+				<svg
+					slot="prefix"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
 				>
-					<svg
-						slot="prefix"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-						/>
-					</svg>
-				</Input>
-			{/snippet}
-		</AdminFilters>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+					/>
+				</svg>
+			</Input>
+		{/snippet}
+	</AdminFilters>
 
-		{#if isMultiSelectMode && media.length > 0}
-			<div class="bulk-actions">
-				<div class="bulk-actions-left">
-					<button
-						onclick={selectAllMedia}
-						class="btn btn-secondary btn-small"
-						disabled={selectedMediaIds.size === media.length}
-					>
-						Select All ({media.length})
-					</button>
-					<button
-						onclick={clearSelection}
-						class="btn btn-secondary btn-small"
-						disabled={selectedMediaIds.size === 0}
-					>
-						Clear Selection
-					</button>
-				</div>
-				<div class="bulk-actions-right">
-					{#if selectedMediaIds.size > 0}
-						<button
-							onclick={handleBulkMarkPhotography}
-							class="btn btn-secondary btn-small"
-							title="Mark selected items as photography"
-						>
-							Mark Photography
-						</button>
-						<button
-							onclick={handleBulkUnmarkPhotography}
-							class="btn btn-secondary btn-small"
-							title="Remove photography status from selected items"
-						>
-							Remove Photography
-						</button>
-						<button
-							onclick={() => (showBulkAlbumModal = true)}
-							class="btn btn-secondary btn-small"
-							title="Add or remove selected items from albums"
-						>
-							Manage Albums
-						</button>
-						<button
-							onclick={handleBulkDelete}
-							class="btn btn-danger btn-small"
-							disabled={isDeleting}
-						>
-							{isDeleting
-								? 'Deleting...'
-								: `Delete ${selectedMediaIds.size} file${selectedMediaIds.size > 1 ? 's' : ''}`}
-						</button>
-					{/if}
-				</div>
+	{#if isMultiSelectMode && media.length > 0}
+		<div class="bulk-actions">
+			<div class="bulk-actions-left">
+				<button
+					onclick={selectAllMedia}
+					class="btn btn-secondary btn-small"
+					disabled={selectedMediaIds.size === media.length}
+				>
+					Select All ({media.length})
+				</button>
+				<button
+					onclick={clearSelection}
+					class="btn btn-secondary btn-small"
+					disabled={selectedMediaIds.size === 0}
+				>
+					Clear Selection
+				</button>
 			</div>
-		{/if}
+			<div class="bulk-actions-right">
+				{#if selectedMediaIds.size > 0}
+					<button
+						onclick={handleBulkMarkPhotography}
+						class="btn btn-secondary btn-small"
+						title="Mark selected items as photography"
+					>
+						Mark Photography
+					</button>
+					<button
+						onclick={handleBulkUnmarkPhotography}
+						class="btn btn-secondary btn-small"
+						title="Remove photography status from selected items"
+					>
+						Remove Photography
+					</button>
+					<button
+						onclick={() => (showBulkAlbumModal = true)}
+						class="btn btn-secondary btn-small"
+						title="Add or remove selected items from albums"
+					>
+						Manage Albums
+					</button>
+					<button onclick={handleBulkDelete} class="btn btn-danger btn-small" disabled={isDeleting}>
+						{isDeleting
+							? 'Deleting...'
+							: `Delete ${selectedMediaIds.size} file${selectedMediaIds.size > 1 ? 's' : ''}`}
+					</button>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
-		{#if media.length === 0}
-			<EmptyState title="No media files found" message="Upload your first file to get started.">
-				{#snippet action()}
-					<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
-				{/snippet}
-			</EmptyState>
-		{:else}
-			<div class="media-grid">
-				{#each media as item}
-					<div class="media-item-wrapper" class:multiselect={isMultiSelectMode}>
-						{#if isMultiSelectMode}
-							<div class="selection-checkbox">
-								<input
-									type="checkbox"
-									checked={selectedMediaIds.has(item.id)}
-									onchange={() => toggleMediaSelection(item.id)}
-									id="media-{item.id}"
-								/>
-								<label for="media-{item.id}" class="checkbox-label"></label>
-							</div>
-						{/if}
-						<button
-							class="media-item"
-							type="button"
-							onclick={() =>
-								isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
-							title="{isMultiSelectMode ? 'Click to select' : 'Click to edit'} {item.filename}"
-							class:selected={isMultiSelectMode && selectedMediaIds.has(item.id)}
-						>
-							{#if item.mimeType.startsWith('image/')}
-								<img
-									src={item.mimeType === 'image/svg+xml' ? item.url : item.thumbnailUrl || item.url}
-									alt={item.description || item.filename}
-								/>
-							{:else if isVideoFile(item.mimeType)}
-								{#if item.thumbnailUrl}
-									<div class="video-thumbnail-wrapper">
-										<img src={item.thumbnailUrl} alt={item.description || item.filename} />
-										<div class="video-overlay">
-											<PlayIcon class="play-icon" />
-										</div>
+	{#if media.length === 0}
+		<EmptyState title="No media files found" message="Upload your first file to get started.">
+			{#snippet action()}
+				<Button variant="primary" onclick={openUploadModal}>Upload your first file</Button>
+			{/snippet}
+		</EmptyState>
+	{:else}
+		<div class="media-grid">
+			{#each media as item}
+				<div class="media-item-wrapper" class:multiselect={isMultiSelectMode}>
+					{#if isMultiSelectMode}
+						<div class="selection-checkbox">
+							<input
+								type="checkbox"
+								checked={selectedMediaIds.has(item.id)}
+								onchange={() => toggleMediaSelection(item.id)}
+								id="media-{item.id}"
+							/>
+							<label for="media-{item.id}" class="checkbox-label"></label>
+						</div>
+					{/if}
+					<button
+						class="media-item"
+						type="button"
+						onclick={() =>
+							isMultiSelectMode ? toggleMediaSelection(item.id) : handleMediaClick(item)}
+						title="{isMultiSelectMode ? 'Click to select' : 'Click to edit'} {item.filename}"
+						class:selected={isMultiSelectMode && selectedMediaIds.has(item.id)}
+					>
+						{#if item.mimeType.startsWith('image/')}
+							<img
+								src={item.mimeType === 'image/svg+xml' ? item.url : item.thumbnailUrl || item.url}
+								alt={item.description || item.filename}
+							/>
+						{:else if isVideoFile(item.mimeType)}
+							{#if item.thumbnailUrl}
+								<div class="video-thumbnail-wrapper">
+									<img src={item.thumbnailUrl} alt={item.description || item.filename} />
+									<div class="video-overlay">
+										<PlayIcon class="play-icon" />
 									</div>
-								{:else}
-									<div class="file-placeholder video-placeholder">
-										<PlayIcon class="video-icon" />
-										<span class="file-type">Video</span>
-									</div>
-								{/if}
+								</div>
 							{:else}
-								<div class="file-placeholder">
-									<span class="file-type">{getFileType(item.mimeType)}</span>
+								<div class="file-placeholder video-placeholder">
+									<PlayIcon class="video-icon" />
+									<span class="file-type">Video</span>
 								</div>
 							{/if}
-							<div class="media-info">
-								<span class="filename">{item.filename}</span>
-								<div class="media-info-bottom">
-									<div class="media-indicators">
-										{#if item.isPhotography}
-											<span class="indicator-pill photography" title="Photography"> Photo </span>
-										{/if}
-										{#if item.description}
-											<span class="indicator-pill alt-text" title="Description: {item.description}">
-												Alt
-											</span>
-										{:else}
-											<span class="indicator-pill no-alt-text" title="No description">
-												No Alt
-											</span>
-										{/if}
-									</div>
-									<span class="filesize">{formatFileSize(item.size)}</span>
-								</div>
+						{:else}
+							<div class="file-placeholder">
+								<span class="file-type">{getFileType(item.mimeType)}</span>
 							</div>
-						</button>
-					</div>
-				{/each}
-			</div>
-		{/if}
+						{/if}
+						<div class="media-info">
+							<span class="filename">{item.filename}</span>
+							<div class="media-info-bottom">
+								<div class="media-indicators">
+									{#if item.isPhotography}
+										<span class="indicator-pill photography" title="Photography"> Photo </span>
+									{/if}
+									{#if item.description}
+										<span class="indicator-pill alt-text" title="Description: {item.description}">
+											Alt
+										</span>
+									{:else}
+										<span class="indicator-pill no-alt-text" title="No description"> No Alt </span>
+									{/if}
+								</div>
+								<span class="filesize">{formatFileSize(item.size)}</span>
+							</div>
+						</div>
+					</button>
+				</div>
+			{/each}
+		</div>
+	{/if}
 
-		{#if totalPages > 1}
-			<div class="pagination">
-				<button
-					onclick={() => handlePageChange(currentPage - 1)}
-					disabled={currentPage === 1}
-					class="pagination-btn"
-				>
-					Previous
-				</button>
-				<span class="pagination-info">
-					Page {currentPage} of {totalPages}
-				</span>
-				<button
-					onclick={() => handlePageChange(currentPage + 1)}
-					disabled={currentPage === totalPages}
-					class="pagination-btn"
-				>
-					Next
-				</button>
-			</div>
-		{/if}
+	{#if totalPages > 1}
+		<div class="pagination">
+			<button
+				onclick={() => handlePageChange(currentPage - 1)}
+				disabled={currentPage === 1}
+				class="pagination-btn"
+			>
+				Previous
+			</button>
+			<span class="pagination-info">
+				Page {currentPage} of {totalPages}
+			</span>
+			<button
+				onclick={() => handlePageChange(currentPage + 1)}
+				disabled={currentPage === totalPages}
+				class="pagination-btn"
+			>
+				Next
+			</button>
+		</div>
+	{/if}
 </AdminPage>
 
 <!-- Media Details Modal -->

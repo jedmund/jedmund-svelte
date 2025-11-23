@@ -165,9 +165,7 @@
 
 		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" type="button" onclick={handleEdit}>
-					Edit post
-				</button>
+				<button class="dropdown-item" type="button" onclick={handleEdit}> Edit post </button>
 				<button class="dropdown-item" type="button" onclick={handleTogglePublish}>
 					{post.status === 'published' ? 'Unpublish' : 'Publish'} post
 				</button>

@@ -112,9 +112,9 @@
 		if (!album) return
 
 		try {
-		const response = await fetch(`/api/albums/${album.id}`, {
-			credentials: 'same-origin'
-		})
+			const response = await fetch(`/api/albums/${album.id}`, {
+				credentials: 'same-origin'
+			})
 			if (response.ok) {
 				const data = await response.json()
 				albumMedia = data.media || []
@@ -275,10 +275,7 @@
 		</div>
 		<div class="header-actions">
 			{#if !isLoading}
-				<AutoSaveStatus
-					status="idle"
-					lastSavedAt={album?.updatedAt}
-				/>
+				<AutoSaveStatus status="idle" lastSavedAt={album?.updatedAt} />
 			{/if}
 		</div>
 	</header>

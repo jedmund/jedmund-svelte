@@ -1,6 +1,12 @@
 <script lang="ts">
 	import Button from './Button.svelte'
-	import { formatFileSize, getFileType, isVideoFile, formatDuration, formatBitrate } from '$lib/utils/mediaHelpers'
+	import {
+		formatFileSize,
+		getFileType,
+		isVideoFile,
+		formatDuration,
+		formatBitrate
+	} from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface Props {

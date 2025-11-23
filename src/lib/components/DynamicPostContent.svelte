@@ -250,8 +250,8 @@
 			background: $gray-95;
 			padding: 2px 6px;
 			border-radius: 4px;
-			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
-				monospace;
+			font-family:
+				'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 			font-size: 0.9em;
 			color: $text-color;
 		}

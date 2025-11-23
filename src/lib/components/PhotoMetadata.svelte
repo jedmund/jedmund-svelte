@@ -229,8 +229,8 @@
 		.metadata-value {
 			font-size: 0.875rem;
 			color: $gray-10;
-			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
-				monospace;
+			font-family:
+				'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 		}
 	}
 

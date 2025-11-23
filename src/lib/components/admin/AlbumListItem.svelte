@@ -38,7 +38,14 @@
 		ondelete?: (event: CustomEvent<{ album: Album; event: MouseEvent }>) => void
 	}
 
-	let { album, isDropdownActive = false, ontoggledropdown, onedit, ontogglepublish, ondelete }: Props = $props()
+	let {
+		album,
+		isDropdownActive = false,
+		ontoggledropdown,
+		onedit,
+		ontogglepublish,
+		ondelete
+	}: Props = $props()
 
 	function formatRelativeTime(dateString: string): string {
 		const date = new Date(dateString)

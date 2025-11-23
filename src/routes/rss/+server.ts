@@ -32,9 +32,9 @@ function convertContentToHTML(content: any): string {
 // Helper function to extract text summary from content
 function extractTextSummary(content: any, maxLength: number = 300): string {
 	if (!content) return ''
-	
+
 	let text = ''
-	
+
 	// Handle string content
 	if (typeof content === 'string') {
 		text = content
@@ -55,7 +55,7 @@ function extractTextSummary(content: any, maxLength: number = 300): string {
 			.filter((t: string) => t)
 			.join(' ')
 	}
-	
+
 	// Clean up and truncate
 	text = text.replace(/\s+/g, ' ').trim()
 	return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
@@ -89,10 +89,11 @@ export const GET: RequestHandler = async (event) => {
 				section: 'universe',
 				id: post.id.toString(),
 				title:
-					post.title || new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', { 
-						year: 'numeric', 
-						month: 'long', 
-						day: 'numeric' 
+					post.title ||
+					new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', {
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric'
 					}),
 				description: extractTextSummary(post.content) || '',
 				content: convertContentToHTML(post.content),
@@ -177,13 +178,13 @@ ${
 	item.type === 'album' && item.coverPhoto
 		? `
 <enclosure url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg" length="${item.coverPhoto.size || 0}"/>
-<media:thumbnail url="${(item.coverPhoto.thumbnailUrl || item.coverPhoto.url).startsWith('http') ? (item.coverPhoto.thumbnailUrl || item.coverPhoto.url) : event.url.origin + (item.coverPhoto.thumbnailUrl || item.coverPhoto.url)}"/>
+<media:thumbnail url="${(item.coverPhoto.thumbnailUrl || item.coverPhoto.url).startsWith('http') ? item.coverPhoto.thumbnailUrl || item.coverPhoto.url : event.url.origin + (item.coverPhoto.thumbnailUrl || item.coverPhoto.url)}"/>
 <media:content url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg"/>`
 		: item.type === 'post' && item.featuredImage
-		? `
+			? `
 <enclosure url="${item.featuredImage.startsWith('http') ? item.featuredImage : event.url.origin + item.featuredImage}" type="image/jpeg" length="0"/>
 <media:content url="${item.featuredImage.startsWith('http') ? item.featuredImage : event.url.origin + item.featuredImage}" type="image/jpeg"/>`
-		: ''
+			: ''
 }
 ${item.location ? `<category domain="location">${escapeXML(item.location)}</category>` : ''}
 <author>noreply@jedmund.com (Justin Edmund)</author>
@@ -197,15 +198,15 @@ ${item.location ? `<category domain="location">${escapeXML(item.location)}</cate
 
 		// Generate ETag based on content
 		const etag = `W/"${Buffer.from(rssXml).length}-${Date.now()}"`
-		
+
 		// Check for conditional requests
 		const ifNoneMatch = event.request.headers.get('if-none-match')
 		const ifModifiedSince = event.request.headers.get('if-modified-since')
-		
+
 		if (ifNoneMatch === etag) {
 			return new Response(null, { status: 304 })
 		}
-		
+
 		if (ifModifiedSince && new Date(ifModifiedSince) >= new Date(lastBuildDate)) {
 			return new Response(null, { status: 304 })
 		}
@@ -215,9 +216,9 @@ ${item.location ? `<category domain="location">${escapeXML(item.location)}</cate
 				'Content-Type': 'application/rss+xml; charset=utf-8',
 				'Cache-Control': 'public, max-age=300, s-maxage=600, stale-while-revalidate=86400',
 				'Last-Modified': lastBuildDate,
-				'ETag': etag,
+				ETag: etag,
 				'X-Content-Type-Options': 'nosniff',
-				'Vary': 'Accept-Encoding',
+				Vary: 'Accept-Encoding',
 				'Access-Control-Allow-Origin': '*',
 				'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
 				'Access-Control-Max-Age': '86400'

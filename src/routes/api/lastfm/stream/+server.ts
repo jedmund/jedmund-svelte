@@ -48,27 +48,27 @@ export const GET: RequestHandler = async ({ request }) => {
 							// Check if music is playing and calculate smart interval
 							const nowPlayingAlbum = update.albums.find((a) => a.isNowPlaying)
 							const musicIsPlaying = !!nowPlayingAlbum
-							
+
 							// Calculate remaining time if we have track duration
 							let remainingMs = 0
 							if (nowPlayingAlbum?.nowPlayingTrack && nowPlayingAlbum.appleMusicData?.tracks) {
 								const track = nowPlayingAlbum.appleMusicData.tracks.find(
-									t => t.name === nowPlayingAlbum.nowPlayingTrack
+									(t) => t.name === nowPlayingAlbum.nowPlayingTrack
 								)
-								
+
 								if (track?.durationMs && nowPlayingAlbum.lastScrobbleTime) {
 									const elapsed = Date.now() - new Date(nowPlayingAlbum.lastScrobbleTime).getTime()
 									remainingMs = Math.max(0, track.durationMs - elapsed)
 								}
 							}
-							
+
 							logger.music('debug', '📤 SSE: Sent album update:', {
 								totalAlbums: update.albums.length,
 								nowPlaying: nowPlayingAlbum
 									? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
 									: 'none',
 								remainingMs: remainingMs,
-								albumsWithStatus: update.albums.map(a => ({
+								albumsWithStatus: update.albums.map((a) => ({
 									name: a.name,
 									artist: a.artist.name,
 									isNowPlaying: a.isNowPlaying,
@@ -78,7 +78,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
 							// Smart interval adjustment based on remaining track time
 							let targetInterval = UPDATE_INTERVAL // Default 30s
-							
+
 							if (musicIsPlaying && remainingMs > 0) {
 								// If track is ending soon (within 20 seconds), check more frequently
 								if (remainingMs < 20000) {
@@ -96,12 +96,15 @@ export const GET: RequestHandler = async ({ request }) => {
 								// If playing but no duration info, use fast interval
 								targetInterval = FAST_UPDATE_INTERVAL
 							}
-							
+
 							// Apply new interval if it changed significantly (more than 1 second difference)
 							if (Math.abs(targetInterval - currentInterval) > 1000) {
 								currentInterval = targetInterval
-								logger.music('debug', `Adjusting interval to ${currentInterval}ms (playing: ${isPlaying}, remaining: ${Math.round(remainingMs/1000)}s)`)
-								
+								logger.music(
+									'debug',
+									`Adjusting interval to ${currentInterval}ms (playing: ${isPlaying}, remaining: ${Math.round(remainingMs / 1000)}s)`
+								)
+
 								// Reset interval with new timing
 								if (intervalId) {
 									clearInterval(intervalId)

@@ -12,7 +12,6 @@
 	let isBlinking = $state(false)
 	let isPlayingMusic = $state(forcePlayingMusic)
 
-
 	const scale = new Spring(1, {
 		stiffness: 0.1,
 		damping: 0.125

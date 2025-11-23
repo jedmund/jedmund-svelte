@@ -43,21 +43,22 @@
 	const draftKey = $derived(mode === 'edit' && project ? makeDraftKey('project', project.id) : null)
 
 	// Autosave (edit mode only)
-	const autoSave = mode === 'edit'
-		? createAutoSaveStore({
-			debounceMs: 2000,
-			getPayload: () => (hasLoaded ? formStore.buildPayload() : null),
-			save: async (payload, { signal }) => {
-				return await api.put(`/api/projects/${project?.id}`, payload, { signal })
-			},
-			onSaved: (savedProject: any, { prime }) => {
-				project = savedProject
-				formStore.populateFromProject(savedProject)
-				prime(formStore.buildPayload())
-				if (draftKey) clearDraft(draftKey)
-			}
-		})
-		: null
+	const autoSave =
+		mode === 'edit'
+			? createAutoSaveStore({
+					debounceMs: 2000,
+					getPayload: () => (hasLoaded ? formStore.buildPayload() : null),
+					save: async (payload, { signal }) => {
+						return await api.put(`/api/projects/${project?.id}`, payload, { signal })
+					},
+					onSaved: (savedProject: any, { prime }) => {
+						project = savedProject
+						formStore.populateFromProject(savedProject)
+						prime(formStore.buildPayload())
+						if (draftKey) clearDraft(draftKey)
+					}
+				})
+			: null
 
 	// Draft recovery helper
 	const draftRecovery = useDraftRecovery<Partial<ProjectFormData>>({
@@ -89,7 +90,8 @@
 	// Trigger autosave when formData changes (edit mode)
 	$effect(() => {
 		// Establish dependencies on fields
-		formStore.fields; activeTab
+		formStore.fields
+		activeTab
 		if (mode === 'edit' && hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
@@ -143,9 +145,9 @@
 
 			let savedProject: Project
 			if (mode === 'edit') {
-				savedProject = await api.put(`/api/projects/${project?.id}`, payload) as Project
+				savedProject = (await api.put(`/api/projects/${project?.id}`, payload)) as Project
 			} else {
-				savedProject = await api.post('/api/projects', payload) as Project
+				savedProject = (await api.post('/api/projects', payload)) as Project
 			}
 
 			toast.dismiss(loadingToastId)
@@ -168,8 +170,6 @@
 			isSaving = false
 		}
 	}
-
-
 </script>
 
 <AdminPage>
@@ -225,7 +225,11 @@
 								handleSave()
 							}}
 						>
-							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
+							<ProjectMetadataForm
+								bind:formData={formStore.fields}
+								validationErrors={formStore.validationErrors}
+								onSave={handleSave}
+							/>
 						</form>
 					</div>
 				</div>
@@ -239,7 +243,11 @@
 								handleSave()
 							}}
 						>
-							<ProjectBrandingForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
+							<ProjectBrandingForm
+								bind:formData={formStore.fields}
+								validationErrors={formStore.validationErrors}
+								onSave={handleSave}
+							/>
 						</form>
 					</div>
 				</div>

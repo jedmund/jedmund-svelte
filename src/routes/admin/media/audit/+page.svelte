@@ -49,7 +49,9 @@
 	let showCleanupModal = $state(false)
 	let cleaningUp = $state(false)
 
-	const allSelected = $derived(auditData && selectedFiles.size >= Math.min(20, auditData.orphanedFiles.length))
+	const allSelected = $derived(
+		auditData && selectedFiles.size >= Math.min(20, auditData.orphanedFiles.length)
+	)
 	const hasSelection = $derived(selectedFiles.size > 0)
 	const selectedSize = $derived(
 		auditData?.orphanedFiles

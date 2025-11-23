@@ -81,7 +81,9 @@
 	const hasFeaturedImage = $derived(
 		!!(formData.featuredImage && featuredImageMedia) || !!featuredImageMedia
 	)
-	const hasBackgroundColor = $derived(!!(formData.backgroundColor && formData.backgroundColor?.trim()))
+	const hasBackgroundColor = $derived(
+		!!(formData.backgroundColor && formData.backgroundColor?.trim())
+	)
 	const hasLogo = $derived(!!(formData.logoUrl && logoMedia) || !!logoMedia)
 
 	// Auto-disable toggles when content is removed

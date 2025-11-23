@@ -11,7 +11,8 @@
 <div class="draft-banner">
 	<div class="draft-banner-content">
 		<span class="draft-banner-text">
-			Unsaved draft found{#if timeAgo} (saved {timeAgo}){/if}.
+			Unsaved draft found{#if timeAgo}
+				(saved {timeAgo}){/if}.
 		</span>
 		<div class="draft-banner-actions">
 			<button class="draft-banner-button" type="button" onclick={onRestore}>Restore</button>

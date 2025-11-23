@@ -350,7 +350,7 @@
 		if (!nodeToUse) return
 
 		const { node, pos } = nodeToUse
-		
+
 		// Create a copy of the node
 		const nodeCopy = node.toJSON()
 
@@ -358,27 +358,24 @@
 		// We need to find the actual position of the node in the document
 		const resolvedPos = editor.state.doc.resolve(pos)
 		let nodePos = pos
-		
+
 		// If we're inside a node, get the position before it
 		if (resolvedPos.depth > 0) {
 			nodePos = resolvedPos.before(resolvedPos.depth)
 		}
-		
+
 		// Get the actual node at this position
 		const actualNode = editor.state.doc.nodeAt(nodePos)
 		if (!actualNode) {
 			console.error('Could not find node at position', nodePos)
 			return
 		}
-		
+
 		// Calculate the position after the node
 		const afterPos = nodePos + actualNode.nodeSize
 
 		// Insert the duplicated node
-		editor.chain()
-			.focus()
-			.insertContentAt(afterPos, nodeCopy)
-			.run()
+		editor.chain().focus().insertContentAt(afterPos, nodeCopy).run()
 
 		isMenuOpen = false
 	}
@@ -388,23 +385,23 @@
 		if (!nodeToUse) return
 
 		const { node, pos } = nodeToUse
-		
+
 		// Find the actual position of the node
 		const resolvedPos = editor.state.doc.resolve(pos)
 		let nodePos = pos
-		
+
 		// If we're inside a node, get the position before it
 		if (resolvedPos.depth > 0) {
 			nodePos = resolvedPos.before(resolvedPos.depth)
 		}
-		
+
 		// Get the actual node at this position
 		const actualNode = editor.state.doc.nodeAt(nodePos)
 		if (!actualNode) {
 			console.error('Could not find node at position', nodePos)
 			return
 		}
-		
+
 		const nodeEnd = nodePos + actualNode.nodeSize
 
 		// Set selection to the entire block
@@ -413,7 +410,7 @@
 		// Execute copy command
 		setTimeout(() => {
 			const success = document.execCommand('copy')
-			
+
 			// Clear selection after copy
 			editor.chain().focus().setTextSelection(nodeEnd).run()
 

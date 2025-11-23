@@ -245,7 +245,7 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 		} else {
 			// Store search metadata for failed searches
 			searchMetadata.error = 'No matching album found'
-			
+
 			// Cache the failed search metadata for 1 hour
 			const failedSearchData = {
 				searchMetadata,
@@ -259,13 +259,18 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 			`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}":`,
 			error
 		)
-		
+
 		// Cache the error metadata for 30 minutes
 		const errorData = {
 			searchMetadata,
 			error: true
 		}
-		await redis.set(`apple:album:${album.artist.name}:${album.name}`, JSON.stringify(errorData), 'EX', 1800)
+		await redis.set(
+			`apple:album:${album.artist.name}:${album.name}`,
+			JSON.stringify(errorData),
+			'EX',
+			1800
+		)
 	}
 
 	// Return album with search metadata if Apple Music search fails

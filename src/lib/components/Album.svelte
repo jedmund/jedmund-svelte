@@ -101,10 +101,10 @@
 	// Use the album's isNowPlaying status directly - single source of truth
 	const isNowPlaying = $derived(album?.isNowPlaying ?? false)
 	const nowPlayingTrack = $derived(album?.nowPlayingTrack)
-	
+
 	// Use Apple Music URL if available, otherwise fall back to Last.fm
 	const albumUrl = $derived(album?.appleMusicData?.url || album?.url || '#')
-	
+
 	// Debug logging
 	$effect(() => {
 		if (album && (isNowPlaying || album.isNowPlaying)) {

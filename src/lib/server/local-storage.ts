@@ -95,26 +95,26 @@ export async function uploadFileLocally(
 					}
 
 					// Extract video metadata
-					const videoStream = metadata.streams.find(s => s.codec_type === 'video')
-					const audioStream = metadata.streams.find(s => s.codec_type === 'audio')
-					
+					const videoStream = metadata.streams.find((s) => s.codec_type === 'video')
+					const audioStream = metadata.streams.find((s) => s.codec_type === 'audio')
+
 					if (videoStream) {
 						width = videoStream.width || 0
 						height = videoStream.height || 0
 						videoCodec = videoStream.codec_name
 					}
-					
+
 					if (audioStream) {
 						audioCodec = audioStream.codec_name
 					}
-					
+
 					duration = metadata.format.duration
 					bitrate = metadata.format.bit_rate ? parseInt(metadata.format.bit_rate) : undefined
 
 					// Generate thumbnail
 					ffmpeg(filepath)
 						.on('end', () => {
-							logger.info('Video thumbnail generated', { 
+							logger.info('Video thumbnail generated', {
 								filename: thumbnailFilename,
 								duration,
 								videoCodec,
@@ -166,7 +166,7 @@ export async function uploadFileLocally(
 
 		// Construct URLs
 		const url = `${PUBLIC_PATH}/${type}/${filename}`
-		const thumbnailUrl = existsSync(thumbnailPath) 
+		const thumbnailUrl = existsSync(thumbnailPath)
 			? `${PUBLIC_PATH}/thumbnails/${thumbnailFilename}`
 			: null
 

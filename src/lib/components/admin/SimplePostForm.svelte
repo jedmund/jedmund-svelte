@@ -24,7 +24,7 @@
 		mode: 'create' | 'edit'
 	}
 
-let { postType, postId, initialData, mode }: Props = $props()
+	let { postType, postId, initialData, mode }: Props = $props()
 
 	// State
 	let isSaving = $state(false)
@@ -38,7 +38,7 @@ let { postType, postId, initialData, mode }: Props = $props()
 	let linkDescription = $state(initialData?.linkDescription || '')
 	let title = $state(initialData?.title || '')
 
-// Character count for posts
+	// Character count for posts
 	const maxLength = 280
 	const textContent = $derived.by(() => {
 		if (!content.content) return ''
@@ -50,178 +50,185 @@ let { postType, postId, initialData, mode }: Props = $props()
 	const isOverLimit = $derived(charCount > maxLength)
 
 	// Check if form has content
-const hasContent = $derived.by(() => {
+	const hasContent = $derived.by(() => {
 		// For posts, check if either content exists or it's a link with URL
 		const hasTextContent = textContent.trim().length > 0
 		const hasLinkContent = linkUrl && linkUrl.trim().length > 0
 		return hasTextContent || hasLinkContent
-})
+	})
 
-// Draft backup
-const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
-let showDraftPrompt = $state(false)
-let draftTimestamp = $state<number | null>(null)
-let timeTicker = $state(0)
-const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+	// Draft backup
+	const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
+	let showDraftPrompt = $state(false)
+	let draftTimestamp = $state<number | null>(null)
+	let timeTicker = $state(0)
+	const draftTimeText = $derived.by(() =>
+		draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null
+	)
 
-function buildPayload() {
-  const payload: any = {
-    type: 'post',
-    status,
-    content,
-    updatedAt
-  }
-  if (linkUrl && linkUrl.trim()) {
-    payload.title = title || linkUrl
-    payload.link_url = linkUrl
-    payload.linkDescription = linkDescription
-  } else if (title) {
-    payload.title = title
-  }
-  return payload
-}
+	function buildPayload() {
+		const payload: any = {
+			type: 'post',
+			status,
+			content,
+			updatedAt
+		}
+		if (linkUrl && linkUrl.trim()) {
+			payload.title = title || linkUrl
+			payload.link_url = linkUrl
+			payload.linkDescription = linkDescription
+		} else if (title) {
+			payload.title = title
+		}
+		return payload
+	}
 
-// Autosave store (edit mode only)
-let autoSave = mode === 'edit' && postId
-	? createAutoSaveStore({
-			debounceMs: 2000,
-			getPayload: () => (hasLoaded ? buildPayload() : null),
-			save: async (payload, { signal }) => {
-				const response = await fetch(`/api/posts/${postId}`, {
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-					credentials: 'same-origin',
-					signal
+	// Autosave store (edit mode only)
+	let autoSave =
+		mode === 'edit' && postId
+			? createAutoSaveStore({
+					debounceMs: 2000,
+					getPayload: () => (hasLoaded ? buildPayload() : null),
+					save: async (payload, { signal }) => {
+						const response = await fetch(`/api/posts/${postId}`, {
+							method: 'PUT',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(payload),
+							credentials: 'same-origin',
+							signal
+						})
+						if (!response.ok) throw new Error('Failed to save')
+						return await response.json()
+					},
+					onSaved: (saved: any, { prime }) => {
+						updatedAt = saved.updatedAt
+						prime(buildPayload())
+						if (draftKey) clearDraft(draftKey)
+					}
 				})
-				if (!response.ok) throw new Error('Failed to save')
-				return await response.json()
-			},
-			onSaved: (saved: any, { prime }) => {
-				updatedAt = saved.updatedAt
-				prime(buildPayload())
-				if (draftKey) clearDraft(draftKey)
+			: null
+
+	// Prime autosave on initial load (edit mode only)
+	$effect(() => {
+		if (mode === 'edit' && initialData && !hasLoaded && autoSave) {
+			autoSave.prime(buildPayload())
+			hasLoaded = true
+		}
+	})
+
+	// Trigger autosave when form data changes
+	$effect(() => {
+		status
+		content
+		linkUrl
+		linkDescription
+		title
+		if (hasLoaded && autoSave) {
+			autoSave.schedule()
+		}
+	})
+
+	// Save draft only when autosave fails
+	$effect(() => {
+		if (hasLoaded && autoSave) {
+			const saveStatus = autoSave.status
+			if (saveStatus === 'error' || saveStatus === 'offline') {
+				saveDraft(draftKey, buildPayload())
 			}
-		})
-	: null
-
-// Prime autosave on initial load (edit mode only)
-$effect(() => {
-	if (mode === 'edit' && initialData && !hasLoaded && autoSave) {
-		autoSave.prime(buildPayload())
-		hasLoaded = true
-	}
-})
-
-// Trigger autosave when form data changes
-$effect(() => {
-	status; content; linkUrl; linkDescription; title
-	if (hasLoaded && autoSave) {
-		autoSave.schedule()
-	}
-})
-
-// Save draft only when autosave fails
-$effect(() => {
-	if (hasLoaded && autoSave) {
-		const saveStatus = autoSave.status
-		if (saveStatus === 'error' || saveStatus === 'offline') {
-			saveDraft(draftKey, buildPayload())
 		}
-	}
-})
+	})
 
-$effect(() => {
-  const draft = loadDraft<any>(draftKey)
-  if (draft) {
-    showDraftPrompt = true
-    draftTimestamp = draft.ts
-  }
-})
-
-function restoreDraft() {
-  const draft = loadDraft<any>(draftKey)
-  if (!draft) return
-  const p = draft.payload
-  status = p.status ?? status
-  content = p.content ?? content
-  if (p.link_url) {
-    linkUrl = p.link_url
-    linkDescription = p.linkDescription ?? linkDescription
-    title = p.title ?? title
-  } else {
-    title = p.title ?? title
-  }
-  showDraftPrompt = false
-  clearDraft(draftKey)
-}
-
-function dismissDraft() {
-  showDraftPrompt = false
-  clearDraft(draftKey)
-}
-
-// Auto-update draft time text every minute when prompt visible
-$effect(() => {
-  if (showDraftPrompt) {
-    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
-    return () => clearInterval(id)
-  }
-})
-
-// Navigation guard: flush autosave before navigating away (only if unsaved)
-beforeNavigate(async (navigation) => {
-	if (hasLoaded && autoSave) {
-		if (autoSave.status === 'saved') {
-			return
+	$effect(() => {
+		const draft = loadDraft<any>(draftKey)
+		if (draft) {
+			showDraftPrompt = true
+			draftTimestamp = draft.ts
 		}
-		// Flush any pending changes before allowing navigation to proceed
-		try {
-			await autoSave.flush()
-		} catch (error) {
-			console.error('Autosave flush failed:', error)
-		}
-	}
-})
+	})
 
-// Warn before closing browser tab/window if there are unsaved changes
-$effect(() => {
-	if (!hasLoaded || !autoSave) return
-
-	function handleBeforeUnload(event: BeforeUnloadEvent) {
-		if (autoSave!.status !== 'saved') {
-			event.preventDefault()
-			event.returnValue = ''
+	function restoreDraft() {
+		const draft = loadDraft<any>(draftKey)
+		if (!draft) return
+		const p = draft.payload
+		status = p.status ?? status
+		content = p.content ?? content
+		if (p.link_url) {
+			linkUrl = p.link_url
+			linkDescription = p.linkDescription ?? linkDescription
+			title = p.title ?? title
+		} else {
+			title = p.title ?? title
 		}
+		showDraftPrompt = false
+		clearDraft(draftKey)
 	}
 
-	window.addEventListener('beforeunload', handleBeforeUnload)
-	return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-})
+	function dismissDraft() {
+		showDraftPrompt = false
+		clearDraft(draftKey)
+	}
 
-// Keyboard shortcut: Cmd/Ctrl+S to save immediately
-$effect(() => {
-	if (!hasLoaded || !autoSave) return
+	// Auto-update draft time text every minute when prompt visible
+	$effect(() => {
+		if (showDraftPrompt) {
+			const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
+			return () => clearInterval(id)
+		}
+	})
 
-	function handleKeydown(e: KeyboardEvent) {
-		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-			e.preventDefault()
-			autoSave!.flush().catch((error) => {
+	// Navigation guard: flush autosave before navigating away (only if unsaved)
+	beforeNavigate(async (navigation) => {
+		if (hasLoaded && autoSave) {
+			if (autoSave.status === 'saved') {
+				return
+			}
+			// Flush any pending changes before allowing navigation to proceed
+			try {
+				await autoSave.flush()
+			} catch (error) {
 				console.error('Autosave flush failed:', error)
-			})
+			}
 		}
-	}
+	})
 
-	document.addEventListener('keydown', handleKeydown)
-	return () => document.removeEventListener('keydown', handleKeydown)
-})
+	// Warn before closing browser tab/window if there are unsaved changes
+	$effect(() => {
+		if (!hasLoaded || !autoSave) return
 
-// Cleanup autosave on unmount
-$effect(() => {
-	if (autoSave) {
-		return () => autoSave.destroy()
-	}
-})
+		function handleBeforeUnload(event: BeforeUnloadEvent) {
+			if (autoSave!.status !== 'saved') {
+				event.preventDefault()
+				event.returnValue = ''
+			}
+		}
+
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	})
+
+	// Keyboard shortcut: Cmd/Ctrl+S to save immediately
+	$effect(() => {
+		if (!hasLoaded || !autoSave) return
+
+		function handleKeydown(e: KeyboardEvent) {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+				e.preventDefault()
+				autoSave!.flush().catch((error) => {
+					console.error('Autosave flush failed:', error)
+				})
+			}
+		}
+
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Cleanup autosave on unmount
+	$effect(() => {
+		if (autoSave) {
+			return () => autoSave.destroy()
+		}
+	})
 
 	async function handleSave(publishStatus: 'draft' | 'published') {
 		if (isOverLimit) {
@@ -275,11 +282,11 @@ $effect(() => {
 				throw new Error(`Failed to ${mode === 'edit' ? 'save' : 'create'} post`)
 			}
 
-    const savedPost = await response.json()
+			const savedPost = await response.json()
 
-    toast.dismiss(loadingToastId)
-    toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
-    clearDraft(draftKey)
+			toast.dismiss(loadingToastId)
+			toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
+			clearDraft(draftKey)
 
 			// Redirect back to posts list after creation
 			goto('/admin/posts')
@@ -336,7 +343,8 @@ $effect(() => {
 		<div class="draft-banner">
 			<div class="draft-banner-content">
 				<span class="draft-banner-text">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+					Unsaved draft found{#if draftTimeText}
+						(saved {draftTimeText}){/if}.
 				</span>
 				<div class="draft-banner-actions">
 					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>

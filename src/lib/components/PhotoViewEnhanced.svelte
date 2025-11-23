@@ -28,9 +28,9 @@
 			const isSmallScreen = window.innerWidth <= 768
 			isMobile = hasTouch && isSmallScreen
 		}
-		
+
 		checkMobile()
-		
+
 		// Update on resize
 		window.addEventListener('resize', checkMobile)
 		return () => window.removeEventListener('resize', checkMobile)

@@ -50,43 +50,46 @@
 	let showDraftPrompt = $state(false)
 	let draftTimestamp = $state<number | null>(null)
 	let timeTicker = $state(0)
-	const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+	const draftTimeText = $derived.by(() =>
+		draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null
+	)
 
-function buildPayload() {
-  return {
-    title,
-    slug,
-    type: 'essay',
-    status,
-    content,
-    tags,
-    updatedAt
-  }
-}
+	function buildPayload() {
+		return {
+			title,
+			slug,
+			type: 'essay',
+			status,
+			content,
+			tags,
+			updatedAt
+		}
+	}
 
-// Autosave store (edit mode only)
-let autoSave = mode === 'edit' && postId
-	? createAutoSaveStore({
-			debounceMs: 2000,
-			getPayload: () => (hasLoaded ? buildPayload() : null),
-			save: async (payload, { signal }) => {
-				const response = await fetch(`/api/posts/${postId}`, {
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-					credentials: 'same-origin',
-					signal
+	// Autosave store (edit mode only)
+	let autoSave =
+		mode === 'edit' && postId
+			? createAutoSaveStore({
+					debounceMs: 2000,
+					getPayload: () => (hasLoaded ? buildPayload() : null),
+					save: async (payload, { signal }) => {
+						const response = await fetch(`/api/posts/${postId}`, {
+							method: 'PUT',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(payload),
+							credentials: 'same-origin',
+							signal
+						})
+						if (!response.ok) throw new Error('Failed to save')
+						return await response.json()
+					},
+					onSaved: (saved: any, { prime }) => {
+						updatedAt = saved.updatedAt
+						prime(buildPayload())
+						if (draftKey) clearDraft(draftKey)
+					}
 				})
-				if (!response.ok) throw new Error('Failed to save')
-				return await response.json()
-			},
-			onSaved: (saved: any, { prime }) => {
-				updatedAt = saved.updatedAt
-				prime(buildPayload())
-				if (draftKey) clearDraft(draftKey)
-			}
-		})
-	: null
+			: null
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -107,14 +110,14 @@ let autoSave = mode === 'edit' && postId
 	]
 
 	// Auto-generate slug from title
-$effect(() => {
-  if (title && !slug) {
+	$effect(() => {
+		if (title && !slug) {
 			slug = title
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, '-')
 				.replace(/^-+|-+$/g, '')
 		}
-})
+	})
 
 	// Prime autosave on initial load (edit mode only)
 	$effect(() => {
@@ -126,7 +129,12 @@ $effect(() => {
 
 	// Trigger autosave when form data changes
 	$effect(() => {
-		title; slug; status; content; tags; activeTab
+		title
+		slug
+		status
+		content
+		tags
+		activeTab
 		if (hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
@@ -142,14 +150,14 @@ $effect(() => {
 		}
 	})
 
-// Show restore prompt if a draft exists
-$effect(() => {
-  const draft = loadDraft<any>(draftKey)
-  if (draft) {
-    showDraftPrompt = true
-    draftTimestamp = draft.ts
-  }
-})
+	// Show restore prompt if a draft exists
+	$effect(() => {
+		const draft = loadDraft<any>(draftKey)
+		if (draft) {
+			showDraftPrompt = true
+			draftTimestamp = draft.ts
+		}
+	})
 
 	function restoreDraft() {
 		const draft = loadDraft<any>(draftKey)
@@ -297,8 +305,8 @@ $effect(() => {
 			const savedPost = await response.json()
 
 			toast.dismiss(loadingToastId)
-      toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
-      clearDraft(draftKey)
+			toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
+			clearDraft(draftKey)
 
 			if (mode === 'create') {
 				goto(`/admin/posts/${savedPost.id}/edit`)
@@ -311,7 +319,6 @@ $effect(() => {
 			isSaving = false
 		}
 	}
-
 </script>
 
 <AdminPage>
@@ -341,7 +348,8 @@ $effect(() => {
 		<div class="draft-banner">
 			<div class="draft-banner-content">
 				<span class="draft-banner-text">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+					Unsaved draft found{#if draftTimeText}
+						(saved {draftTimeText}){/if}.
 				</span>
 				<div class="draft-banner-actions">
 					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>
@@ -381,11 +389,7 @@ $effect(() => {
 
 							<Input label="Slug" bind:value={slug} placeholder="essay-url-slug" />
 
-							<DropdownSelectField
-								label="Status"
-								bind:value={status}
-								options={statusOptions}
-							/>
+							<DropdownSelectField label="Status" bind:value={status} options={statusOptions} />
 
 							<div class="tags-field">
 								<label class="input-label">Tags</label>

@@ -11,20 +11,20 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	try {
 		const { key, pattern } = await request.json()
-		
+
 		if (!key && !pattern) {
 			return new Response('Key or pattern is required', { status: 400 })
 		}
-		
+
 		let deleted = 0
-		
+
 		if (pattern) {
 			// Delete by pattern (e.g., "apple:album:*")
 			logger.music('debug', `Clearing cache by pattern: ${pattern}`)
-			
+
 			// Get all matching keys
 			const keys = await redis.keys(pattern)
-			
+
 			if (keys.length > 0) {
 				// Delete all matching keys
 				deleted = await redis.del(...keys)
@@ -35,14 +35,17 @@ export const POST: RequestHandler = async ({ request }) => {
 			logger.music('debug', `Clearing cache for key: ${key}`)
 			deleted = await redis.del(key)
 		}
-		
-		return new Response(JSON.stringify({ 
-			success: true, 
-			deleted,
-			key: key || pattern
-		}), {
-			headers: { 'Content-Type': 'application/json' }
-		})
+
+		return new Response(
+			JSON.stringify({
+				success: true,
+				deleted,
+				key: key || pattern
+			}),
+			{
+				headers: { 'Content-Type': 'application/json' }
+			}
+		)
 	} catch (error) {
 		logger.error('Failed to clear cache:', error as Error)
 		return new Response('Internal server error', { status: 500 })

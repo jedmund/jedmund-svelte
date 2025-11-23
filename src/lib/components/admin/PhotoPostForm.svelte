@@ -47,49 +47,52 @@
 	let showDraftPrompt = $state(false)
 	let draftTimestamp = $state<number | null>(null)
 	let timeTicker = $state(0)
-	const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+	const draftTimeText = $derived.by(() =>
+		draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null
+	)
 
-function buildPayload() {
-  return {
-    title: title.trim(),
-    slug: createSlug(title),
-    type: 'photo',
-    status,
-    content,
-    featuredImage: featuredImage ? featuredImage.url : null,
-    tags: tags
-      ? tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter(Boolean)
-      : [],
-    updatedAt
-  }
-}
+	function buildPayload() {
+		return {
+			title: title.trim(),
+			slug: createSlug(title),
+			type: 'photo',
+			status,
+			content,
+			featuredImage: featuredImage ? featuredImage.url : null,
+			tags: tags
+				? tags
+						.split(',')
+						.map((tag) => tag.trim())
+						.filter(Boolean)
+				: [],
+			updatedAt
+		}
+	}
 
-// Autosave store (edit mode only)
-let autoSave = mode === 'edit' && postId
-	? createAutoSaveStore({
-			debounceMs: 2000,
-			getPayload: () => (hasLoaded ? buildPayload() : null),
-			save: async (payload, { signal }) => {
-				const response = await fetch(`/api/posts/${postId}`, {
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-					credentials: 'same-origin',
-					signal
+	// Autosave store (edit mode only)
+	let autoSave =
+		mode === 'edit' && postId
+			? createAutoSaveStore({
+					debounceMs: 2000,
+					getPayload: () => (hasLoaded ? buildPayload() : null),
+					save: async (payload, { signal }) => {
+						const response = await fetch(`/api/posts/${postId}`, {
+							method: 'PUT',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(payload),
+							credentials: 'same-origin',
+							signal
+						})
+						if (!response.ok) throw new Error('Failed to save')
+						return await response.json()
+					},
+					onSaved: (saved: any, { prime }) => {
+						updatedAt = saved.updatedAt
+						prime(buildPayload())
+						if (draftKey) clearDraft(draftKey)
+					}
 				})
-				if (!response.ok) throw new Error('Failed to save')
-				return await response.json()
-			},
-			onSaved: (saved: any, { prime }) => {
-				updatedAt = saved.updatedAt
-				prime(buildPayload())
-				if (draftKey) clearDraft(draftKey)
-			}
-		})
-	: null
+			: null
 
 	// Prime autosave on initial load (edit mode only)
 	$effect(() => {
@@ -101,7 +104,11 @@ let autoSave = mode === 'edit' && postId
 
 	// Trigger autosave when form data changes
 	$effect(() => {
-		title; status; content; featuredImage; tags
+		title
+		status
+		content
+		featuredImage
+		tags
 		if (hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
@@ -117,13 +124,13 @@ let autoSave = mode === 'edit' && postId
 		}
 	})
 
-$effect(() => {
-  const draft = loadDraft<any>(draftKey)
-  if (draft) {
-    showDraftPrompt = true
-    draftTimestamp = draft.ts
-  }
-})
+	$effect(() => {
+		const draft = loadDraft<any>(draftKey)
+		if (draft) {
+			showDraftPrompt = true
+			draftTimestamp = draft.ts
+		}
+	})
 
 	function restoreDraft() {
 		const draft = loadDraft<any>(draftKey)
@@ -330,11 +337,11 @@ $effect(() => {
 				throw new Error(`Failed to ${mode === 'edit' ? 'update' : 'create'} photo post`)
 			}
 
-    const savedPost = await response.json()
+			const savedPost = await response.json()
 
-    toast.dismiss(loadingToastId)
-    toast.success(`Photo post ${status === 'published' ? 'published' : 'saved'} successfully!`)
-    clearDraft(draftKey)
+			toast.dismiss(loadingToastId)
+			toast.success(`Photo post ${status === 'published' ? 'published' : 'saved'} successfully!`)
+			clearDraft(draftKey)
 
 			// Redirect to posts list or edit page
 			if (mode === 'create') {
@@ -397,7 +404,8 @@ $effect(() => {
 		<div class="draft-banner">
 			<div class="draft-banner-content">
 				<span class="draft-banner-text">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
+					Unsaved draft found{#if draftTimeText}
+						(saved {draftTimeText}){/if}.
 				</span>
 				<div class="draft-banner-actions">
 					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>

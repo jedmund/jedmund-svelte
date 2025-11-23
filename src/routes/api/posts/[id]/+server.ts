@@ -153,56 +153,57 @@ export const PUT: RequestHandler = async (event) => {
 
 // PATCH /api/posts/[id] - Partially update a post
 export const PATCH: RequestHandler = async (event) => {
-  if (!checkAdminAuth(event)) {
-    return errorResponse('Unauthorized', 401)
-  }
+	if (!checkAdminAuth(event)) {
+		return errorResponse('Unauthorized', 401)
+	}
 
-  try {
-    const id = parseInt(event.params.id)
-    if (isNaN(id)) {
-      return errorResponse('Invalid post ID', 400)
-    }
+	try {
+		const id = parseInt(event.params.id)
+		if (isNaN(id)) {
+			return errorResponse('Invalid post ID', 400)
+		}
 
-    const data = await event.request.json()
+		const data = await event.request.json()
 
-    // Check for existence and concurrency
-    const existing = await prisma.post.findUnique({ where: { id } })
-    if (!existing) return errorResponse('Post not found', 404)
-    if (data.updatedAt) {
-      const incoming = new Date(data.updatedAt)
-      if (existing.updatedAt.getTime() !== incoming.getTime()) {
-        return errorResponse('Conflict: post has changed', 409)
-      }
-    }
+		// Check for existence and concurrency
+		const existing = await prisma.post.findUnique({ where: { id } })
+		if (!existing) return errorResponse('Post not found', 404)
+		if (data.updatedAt) {
+			const incoming = new Date(data.updatedAt)
+			if (existing.updatedAt.getTime() !== incoming.getTime()) {
+				return errorResponse('Conflict: post has changed', 409)
+			}
+		}
 
-    const updateData: any = {}
+		const updateData: any = {}
 
-    if (data.status !== undefined) {
-      updateData.status = data.status
-      if (data.status === 'published' && !existing.publishedAt) {
-        updateData.publishedAt = new Date()
-      } else if (data.status === 'draft') {
-        updateData.publishedAt = null
-      }
-    }
-    if (data.title !== undefined) updateData.title = data.title
-    if (data.slug !== undefined) updateData.slug = data.slug
-    if (data.type !== undefined) updateData.postType = data.type
-    if (data.content !== undefined) updateData.content = data.content
-    if (data.featuredImage !== undefined) updateData.featuredImage = data.featuredImage
-    if (data.attachedPhotos !== undefined)
-      updateData.attachments = data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
-    if (data.tags !== undefined) updateData.tags = data.tags
-    if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt
+		if (data.status !== undefined) {
+			updateData.status = data.status
+			if (data.status === 'published' && !existing.publishedAt) {
+				updateData.publishedAt = new Date()
+			} else if (data.status === 'draft') {
+				updateData.publishedAt = null
+			}
+		}
+		if (data.title !== undefined) updateData.title = data.title
+		if (data.slug !== undefined) updateData.slug = data.slug
+		if (data.type !== undefined) updateData.postType = data.type
+		if (data.content !== undefined) updateData.content = data.content
+		if (data.featuredImage !== undefined) updateData.featuredImage = data.featuredImage
+		if (data.attachedPhotos !== undefined)
+			updateData.attachments =
+				data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
+		if (data.tags !== undefined) updateData.tags = data.tags
+		if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt
 
-    const post = await prisma.post.update({ where: { id }, data: updateData })
+		const post = await prisma.post.update({ where: { id }, data: updateData })
 
-    logger.info('Post partially updated', { id: post.id, fields: Object.keys(updateData) })
-    return jsonResponse(post)
-  } catch (error) {
-    logger.error('Failed to partially update post', error as Error)
-    return errorResponse('Failed to update post', 500)
-  }
+		logger.info('Post partially updated', { id: post.id, fields: Object.keys(updateData) })
+		return jsonResponse(post)
+	} catch (error) {
+		logger.error('Failed to partially update post', error as Error)
+		return errorResponse('Failed to update post', 500)
+	}
 }
 
 // DELETE /api/posts/[id] - Delete a post

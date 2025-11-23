@@ -40,7 +40,7 @@ export class LastfmStreamManager {
 		try {
 			// Always fetch fresh data for now playing detection
 			const freshData = await this.fetchFreshRecentTracks()
-			
+
 			// Fetch recent albums
 			const albums = await this.getRecentAlbums(4, freshData)
 
@@ -63,7 +63,10 @@ export class LastfmStreamManager {
 			}
 
 			// Check for now playing updates for non-recent albums
-			const nowPlayingUpdates = await this.getNowPlayingUpdatesForNonRecentAlbums(enrichedAlbums, freshData)
+			const nowPlayingUpdates = await this.getNowPlayingUpdatesForNonRecentAlbums(
+				enrichedAlbums,
+				freshData
+			)
 			if (nowPlayingUpdates.length > 0) {
 				update.nowPlayingUpdates = nowPlayingUpdates
 			}

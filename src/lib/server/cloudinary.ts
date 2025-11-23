@@ -165,19 +165,19 @@ export async function uploadFile(
 
 		// Generate thumbnail URL - different approach for videos vs images
 		const isVideo = file.type.startsWith('video/')
-		const thumbnailUrl = isVideo 
+		const thumbnailUrl = isVideo
 			? cloudinary.url(result.public_id + '.jpg', {
-				resource_type: 'video',
-				transformation: [
-					{ width: 1920, crop: 'scale', quality: 'auto:good' }, // 'scale' maintains aspect ratio
-					{ start_offset: 'auto' } // Let Cloudinary pick the most interesting frame
-				],
-				secure: true
-			})
+					resource_type: 'video',
+					transformation: [
+						{ width: 1920, crop: 'scale', quality: 'auto:good' }, // 'scale' maintains aspect ratio
+						{ start_offset: 'auto' } // Let Cloudinary pick the most interesting frame
+					],
+					secure: true
+				})
 			: cloudinary.url(result.public_id, {
-				...imageSizes.thumbnail,
-				secure: true
-			})
+					...imageSizes.thumbnail,
+					secure: true
+				})
 
 		// Extract dominant color using smart selection
 		let dominantColor: string | undefined
@@ -192,13 +192,13 @@ export async function uploadFile(
 
 		// Calculate aspect ratio
 		const aspectRatio = result.width && result.height ? result.width / result.height : undefined
-		
+
 		// Extract video metadata if present
 		let duration: number | undefined
 		let videoCodec: string | undefined
 		let audioCodec: string | undefined
 		let bitrate: number | undefined
-		
+
 		if (isVideo && result.duration) {
 			duration = result.duration
 			videoCodec = result.video?.codec

@@ -114,11 +114,7 @@
 <AdminPage>
 	<AdminHeader title="Work" slot="header">
 		{#snippet actions()}
-			<Button
-				variant="primary"
-				buttonSize="medium"
-				onclick={() => goto('/admin/projects/new')}
-			>
+			<Button variant="primary" buttonSize="medium" onclick={() => goto('/admin/projects/new')}>
 				New project
 			</Button>
 		{/snippet}
@@ -126,20 +122,20 @@
 
 	<AdminFilters>
 		{#snippet left()}
-				<Select
-					value={filters.values.type}
-					options={typeFilterOptions}
-					size="small"
-					variant="minimal"
-					onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
-				/>
-				<Select
-					value={filters.values.status}
-					options={statusFilterOptions}
-					size="small"
-					variant="minimal"
-					onchange={(e) => filters.set('status', (e.target as HTMLSelectElement).value)}
-				/>
+			<Select
+				value={filters.values.type}
+				options={typeFilterOptions}
+				size="small"
+				variant="minimal"
+				onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
+			/>
+			<Select
+				value={filters.values.status}
+				options={statusFilterOptions}
+				size="small"
+				variant="minimal"
+				onchange={(e) => filters.set('status', (e.target as HTMLSelectElement).value)}
+			/>
 		{/snippet}
 		{#snippet right()}
 			<Select

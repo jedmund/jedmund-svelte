@@ -131,9 +131,7 @@
 
 		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" type="button" onclick={handleEdit}>
-					Edit project
-				</button>
+				<button class="dropdown-item" type="button" onclick={handleEdit}> Edit project </button>
 				<button class="dropdown-item" type="button" onclick={handleTogglePublish}>
 					{project.status === 'published' ? 'Unpublish' : 'Publish'} project
 				</button>

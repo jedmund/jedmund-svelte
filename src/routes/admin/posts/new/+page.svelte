@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-import { goto } from '$app/navigation'
-import { api } from '$lib/admin/api'
+	import { goto } from '$app/navigation'
+	import { api } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'

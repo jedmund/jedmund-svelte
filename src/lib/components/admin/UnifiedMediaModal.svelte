@@ -225,7 +225,6 @@
 			// Short delay to prevent flicker
 			await new Promise((resolve) => setTimeout(resolve, 500))
 
-
 			let url = `/api/media?page=${page}&limit=24`
 
 			if (filterType !== 'all') {

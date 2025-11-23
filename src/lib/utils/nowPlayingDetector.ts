@@ -163,13 +163,19 @@ export class NowPlayingDetector {
 		for (const track of tracks) {
 			if (track.nowPlaying) {
 				hasOfficialNowPlaying = true
-				logger.music('debug', `Last.fm reports "${track.name}" by ${track.artist.name} as now playing`)
+				logger.music(
+					'debug',
+					`Last.fm reports "${track.name}" by ${track.artist.name} as now playing`
+				)
 				break
 			}
 		}
 
 		if (!hasOfficialNowPlaying) {
-			logger.music('debug', 'No official now playing from Last.fm, will use duration-based detection')
+			logger.music(
+				'debug',
+				'No official now playing from Last.fm, will use duration-based detection'
+			)
 		}
 
 		// Process all tracks
@@ -230,8 +236,11 @@ export class NowPlayingDetector {
 		this.updateRecentTracks(newRecentTracks)
 
 		// Log summary
-		const nowPlayingCount = Array.from(albums.values()).filter(a => a.isNowPlaying).length
-		logger.music('debug', `Detected ${nowPlayingCount} album(s) as now playing out of ${albums.size} recent albums`)
+		const nowPlayingCount = Array.from(albums.values()).filter((a) => a.isNowPlaying).length
+		logger.music(
+			'debug',
+			`Detected ${nowPlayingCount} album(s) as now playing out of ${albums.size} recent albums`
+		)
 
 		// Ensure only one album is marked as now playing
 		return this.ensureSingleNowPlaying(albums, newRecentTracks)

@@ -9,9 +9,7 @@ export function createProjectFormStore(initialProject?: Project | null) {
 	let original = $state<ProjectFormData | null>(null)
 
 	// Derived state using $derived rune
-	const isDirty = $derived(
-		original ? JSON.stringify(fields) !== JSON.stringify(original) : false
-	)
+	const isDirty = $derived(original ? JSON.stringify(fields) !== JSON.stringify(original) : false)
 
 	// Initialize from project if provided
 	if (initialProject) {
@@ -96,7 +94,8 @@ export function createProjectFormStore(initialProject?: Project | null) {
 				role: fields.role,
 				projectType: fields.projectType,
 				externalUrl: fields.externalUrl,
-				featuredImage: fields.featuredImage && fields.featuredImage !== '' ? fields.featuredImage : null,
+				featuredImage:
+					fields.featuredImage && fields.featuredImage !== '' ? fields.featuredImage : null,
 				logoUrl: fields.logoUrl && fields.logoUrl !== '' ? fields.logoUrl : null,
 				backgroundColor: fields.backgroundColor,
 				highlightColor: fields.highlightColor,

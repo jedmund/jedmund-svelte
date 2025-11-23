@@ -236,7 +236,7 @@
 	const isOverLimit = $derived(characterCount > CHARACTER_LIMIT)
 	const canSave = $derived(
 		(postType === 'post' && (characterCount > 0 || attachedPhotos.length > 0) && !isOverLimit) ||
-		(postType === 'essay' && essayTitle.length > 0 && content)
+			(postType === 'essay' && essayTitle.length > 0 && content)
 	)
 </script>
 
