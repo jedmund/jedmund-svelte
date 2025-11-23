@@ -14,8 +14,34 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from '$lib/components/admin/AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
+	import type { Post } from '@prisma/client'
 
-	let post = $state<any>(null)
+	// Type for the old blocks format from database
+	interface BlockContent {
+		blocks: Array<{
+			type: string
+			content?: string | Array<{ content?: string } | string>
+			level?: number
+			language?: string
+			src?: string
+			alt?: string
+			caption?: string
+		}>
+	}
+
+	// Type for draft payload
+	interface DraftPayload {
+		title: string | null
+		slug: string
+		type: string
+		status: string
+		content: JSONContent | null
+		excerpt?: string
+		tags: string[]
+		updatedAt?: Date
+	}
+
+	let post = $state<Post | null>(null)
 	let loading = $state(true)
 	let hasLoaded = $state(false)
 	let saving = $state(false)
@@ -68,7 +94,7 @@ const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(d
 			const saved = await api.put(`/api/posts/${$page.params.id}`, payload, { signal })
 			return saved
 		},
-		onSaved: (saved: any, { prime }) => {
+		onSaved: (saved: Post, { prime }) => {
 			post = saved
 			prime({
 				title: config?.showTitle ? title : null,
@@ -85,12 +111,12 @@ const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(d
 	})
 
 	// Convert blocks format (from database) to Tiptap format
-	function convertBlocksToTiptap(blocksContent: any): JSONContent {
+	function convertBlocksToTiptap(blocksContent: BlockContent): JSONContent {
 		if (!blocksContent || !blocksContent.blocks) {
 			return { type: 'doc', content: [] }
 		}
 
-		const tiptapContent = blocksContent.blocks.map((block: any) => {
+		const tiptapContent = blocksContent.blocks.map((block) => {
 			switch (block.type) {
 				case 'paragraph':
 					return {
@@ -109,30 +135,30 @@ const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(d
 				case 'ul':
 					return {
 						type: 'bulletList',
-						content: (block.content || []).map((item: any) => ({
+						content: Array.isArray(block.content) ? block.content.map((item) => ({
 							type: 'listItem',
 							content: [
 								{
 									type: 'paragraph',
-									content: [{ type: 'text', text: item.content || item }]
+									content: [{ type: 'text', text: (typeof item === 'object' && item.content) || String(item) }]
 								}
 							]
-						}))
+						})) : []
 					}
 
 				case 'orderedList':
 				case 'ol':
 					return {
 						type: 'orderedList',
-						content: (block.content || []).map((item: any) => ({
+						content: Array.isArray(block.content) ? block.content.map((item) => ({
 							type: 'listItem',
 							content: [
 								{
 									type: 'paragraph',
-									content: [{ type: 'text', text: item.content || item }]
+									content: [{ type: 'text', text: (typeof item === 'object' && item.content) || String(item) }]
 								}
 							]
-						}))
+						})) : []
 					}
 
 				case 'blockquote':
@@ -187,7 +213,7 @@ onMount(async () => {
   // Wait a tick to ensure page params are loaded
   await new Promise((resolve) => setTimeout(resolve, 0))
   await loadPost()
-  const draft = loadDraft<any>(draftKey)
+  const draft = loadDraft<DraftPayload>(draftKey)
   if (draft) {
     showDraftPrompt = true
     draftTimestamp = draft.ts
@@ -311,7 +337,7 @@ onMount(async () => {
 	}
 
 	function restoreDraft() {
-		const draft = loadDraft<any>(draftKey)
+		const draft = loadDraft<DraftPayload>(draftKey)
 		if (!draft) return
 		const p = draft.payload
 		// Apply payload fields to form

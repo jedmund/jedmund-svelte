@@ -2,7 +2,7 @@ import { beforeNavigate } from '$app/navigation'
 import { toast } from '$lib/stores/toast'
 import type { AutoSaveStore } from '$lib/admin/autoSave.svelte'
 
-export function useFormGuards(autoSave: AutoSaveStore<any, any> | null) {
+export function useFormGuards(autoSave: AutoSaveStore<unknown, unknown> | null) {
 	if (!autoSave) return // No guards needed for create mode
 
 	// Navigation guard: flush autosave before route change
@@ -13,7 +13,7 @@ export function useFormGuards(autoSave: AutoSaveStore<any, any> | null) {
 		// Otherwise flush pending changes
 		try {
 			await autoSave.flush()
-		} catch (error: any) {
+		} catch (error) {
 			console.error('Autosave flush failed:', error)
 			toast.error('Failed to save changes')
 		}
@@ -40,7 +40,7 @@ export function useFormGuards(autoSave: AutoSaveStore<any, any> | null) {
 
 			if (isModifier && key === 's') {
 				event.preventDefault()
-				autoSave!.flush().catch((error: any) => {
+				autoSave!.flush().catch((error) => {
 					console.error('Autosave flush failed:', error)
 					toast.error('Failed to save changes')
 				})

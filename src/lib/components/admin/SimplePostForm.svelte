@@ -2,6 +2,7 @@
 	import { goto, beforeNavigate } from '$app/navigation'
 	import AdminPage from './AdminPage.svelte'
 	import type { JSONContent } from '@tiptap/core'
+	import type { Post } from '@prisma/client'
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
@@ -9,6 +10,17 @@
 	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
+
+	// Payload type for saving posts
+	interface PostPayload {
+		type: string
+		status: string
+		content: JSONContent
+		updatedAt?: string
+		title?: string
+		link_url?: string
+		linkDescription?: string
+	}
 
 	interface Props {
 		postType: 'post'
@@ -43,7 +55,12 @@ let { postType, postId, initialData, mode }: Props = $props()
 	const textContent = $derived.by(() => {
 		if (!content.content) return ''
 		return content.content
-			.map((node: any) => node.content?.map((n: any) => n.text || '').join('') || '')
+			.map((node) => {
+				if (node.content) {
+					return node.content.map((n) => ('text' in n ? n.text : '') || '').join('')
+				}
+				return ''
+			})
 			.join('\n')
 	})
 	const charCount = $derived(textContent.length)
@@ -64,8 +81,8 @@ let draftTimestamp = $state<number | null>(null)
 let timeTicker = $state(0)
 const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
 
-function buildPayload() {
-  const payload: any = {
+function buildPayload(): PostPayload {
+  const payload: PostPayload = {
     type: 'post',
     status,
     content,
@@ -97,8 +114,8 @@ let autoSave = mode === 'edit' && postId
 				if (!response.ok) throw new Error('Failed to save')
 				return await response.json()
 			},
-			onSaved: (saved: any, { prime }) => {
-				updatedAt = saved.updatedAt
+			onSaved: (saved: Post, { prime }) => {
+				updatedAt = saved.updatedAt.toISOString()
 				prime(buildPayload())
 				if (draftKey) clearDraft(draftKey)
 			}
@@ -132,7 +149,7 @@ $effect(() => {
 })
 
 $effect(() => {
-  const draft = loadDraft<any>(draftKey)
+  const draft = loadDraft<PostPayload>(draftKey)
   if (draft) {
     showDraftPrompt = true
     draftTimestamp = draft.ts
@@ -140,7 +157,7 @@ $effect(() => {
 })
 
 function restoreDraft() {
-  const draft = loadDraft<any>(draftKey)
+  const draft = loadDraft<PostPayload>(draftKey)
   if (!draft) return
   const p = draft.payload
   status = p.status ?? status

@@ -12,8 +12,8 @@
 		placeholder?: string
 		rows?: number
 		helpText?: string
-		component?: any // For custom components
-		props?: any // Additional props for custom components
+		component?: unknown // For custom components
+		props?: Record<string, unknown> // Additional props for custom components
 	}
 
 	export interface MetadataConfig {
@@ -27,9 +27,9 @@
 
 	type Props = {
 		config: MetadataConfig
-		data: any
+		data: Record<string, unknown>
 		triggerElement: HTMLElement
-		onUpdate?: (key: string, value: any) => void
+		onUpdate?: (key: string, value: unknown) => void
 		onAddTag?: () => void
 		onRemoveTag?: (tag: string) => void
 		onClose?: () => void
@@ -110,7 +110,7 @@
 		popoverElement.style.zIndex = '1200'
 	}
 
-	function handleFieldUpdate(key: string, value: any) {
+	function handleFieldUpdate(key: string, value: unknown) {
 		data[key] = value
 		onUpdate(key, value)
 	}

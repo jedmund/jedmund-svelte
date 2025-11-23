@@ -1,12 +1,13 @@
 import type { Editor } from '@tiptap/core'
 import type { ComposerVariant, ComposerFeatures } from './types'
+import type { EdraCommand } from '$lib/components/edra/commands/types'
 import { commands } from '$lib/components/edra/commands/commands.js'
 
 export interface FilteredCommands {
 	[key: string]: {
 		name: string
 		label: string
-		commands: any[]
+		commands: EdraCommand[]
 	}
 }
 
@@ -59,20 +60,20 @@ export function getFilteredCommands(
 	// Reorganize text formatting for toolbar
 	if (filtered['text-formatting']) {
 		const allCommands = filtered['text-formatting'].commands
-		const basicFormatting: any[] = []
-		const advancedFormatting: any[] = []
+		const basicFormatting: EdraCommand[] = []
+		const advancedFormatting: EdraCommand[] = []
 
 		// Group basic formatting first
 		const basicOrder = ['bold', 'italic', 'underline', 'strike']
 		basicOrder.forEach((name) => {
-			const cmd = allCommands.find((c: any) => c.name === name)
+			const cmd = allCommands.find((c) => c.name === name)
 			if (cmd) basicFormatting.push(cmd)
 		})
 
 		// Then link and code
 		const advancedOrder = ['link', 'code']
 		advancedOrder.forEach((name) => {
-			const cmd = allCommands.find((c: any) => c.name === name)
+			const cmd = allCommands.find((c) => c.name === name)
 			if (cmd) advancedFormatting.push(cmd)
 		})
 
@@ -97,7 +98,7 @@ export function getFilteredCommands(
 }
 
 // Get media commands, but filter out based on features
-export function getMediaCommands(features: ComposerFeatures): any[] {
+export function getMediaCommands(features: ComposerFeatures): EdraCommand[] {
 	if (!commands.media) return []
 
 	let mediaCommands = [...commands.media.commands]
@@ -111,12 +112,12 @@ export function getMediaCommands(features: ComposerFeatures): any[] {
 }
 
 // Get color commands
-export function getColorCommands(): any[] {
+export function getColorCommands(): EdraCommand[] {
 	return commands.colors?.commands || []
 }
 
 // Get commands for bubble menu
-export function getBubbleMenuCommands(): any[] {
+export function getBubbleMenuCommands(): EdraCommand[] {
 	const textFormattingCommands = commands['text-formatting']?.commands || []
 	// Return only the essential formatting commands for bubble menu
 	return textFormattingCommands.filter((cmd) =>
