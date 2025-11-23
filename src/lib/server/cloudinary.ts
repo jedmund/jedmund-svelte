@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary'
-import type { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary'
+import type { UploadApiResponse } from 'cloudinary'
 import { logger } from './logger'
 import { uploadFileLocally } from './local-storage'
 import { dev } from '$app/environment'
@@ -130,7 +130,6 @@ export async function uploadFile(
 
 		// Extract filename without extension
 		const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
-		const fileExtension = file.name.split('.').pop()?.toLowerCase()
 
 		// Prepare upload options
 		const uploadOptions = {

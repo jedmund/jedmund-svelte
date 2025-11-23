@@ -2,8 +2,7 @@ import { getAppleMusicHeaders } from './apple-music-auth'
 import type {
 	AppleMusicAlbum,
 	AppleMusicTrack,
-	AppleMusicSearchResponse,
-	AppleMusicErrorResponse
+	AppleMusicSearchResponse
 } from '$lib/types/apple-music'
 import { isAppleMusicError } from '$lib/types/apple-music'
 import { ApiRateLimiter } from './rate-limiter'
@@ -74,7 +73,7 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 						`Apple Music API Error: ${errorData.errors[0]?.detail || 'Unknown error'}`
 					)
 				}
-			} catch (e) {
+			} catch (_e) {
 				// If not JSON, throw the text error
 			}
 
