@@ -4,7 +4,7 @@
 
 	interface Props extends NodeViewProps {}
 
-	let { node, updateAttributes }: Props = $props()
+	let { node }: Props = $props()
 
 	let mapContainer: HTMLDivElement
 	let map: L.Map | null = null

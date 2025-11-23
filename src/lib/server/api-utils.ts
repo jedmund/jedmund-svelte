@@ -60,7 +60,7 @@ export async function parseRequestBody<T>(request: Request): Promise<T | null> {
 	try {
 		const body = await request.json()
 		return body as T
-	} catch (error) {
+	} catch (_error) {
 		return null
 	}
 }

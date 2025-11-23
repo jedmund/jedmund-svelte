@@ -6,7 +6,6 @@
 
 	const { editor, node, deleteNode, getPos, selected }: NodeViewProps = $props()
 
-	let loading = $state(false)
 	let showActions = $state(false)
 	let showContextMenu = $state(false)
 	let contextMenuPosition = $state({ x: 0, y: 0 })
@@ -48,7 +47,6 @@
 
 	async function refreshMetadata() {
 		if (!node.attrs.url) return
-		loading = true
 
 		try {
 			const response = await fetch(
@@ -77,8 +75,6 @@
 			}
 		} catch (err) {
 			console.error('Error refreshing metadata:', err)
-		} finally {
-			loading = false
 		}
 	}
 
