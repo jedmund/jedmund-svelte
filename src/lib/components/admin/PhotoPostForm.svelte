@@ -182,7 +182,7 @@ $effect(() => {
 	})
 
 	// Navigation guard: flush autosave before navigating away (only if unsaved)
-	beforeNavigate(async (navigation) => {
+	beforeNavigate(async (_navigation) => {
 		if (hasLoaded && autoSave) {
 			if (autoSave.status === 'saved') {
 				return

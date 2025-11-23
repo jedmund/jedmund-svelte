@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Modal from './Modal.svelte'
 	import Button from './Button.svelte'
-	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import AlbumSelector from './AlbumSelector.svelte'
@@ -12,7 +11,7 @@
 	import MediaMetadataPanel from './MediaMetadataPanel.svelte'
 	import MediaUsageList from './MediaUsageList.svelte'
 	import { toast } from '$lib/stores/toast'
-	import { formatFileSize, getFileType, isVideoFile } from '$lib/utils/mediaHelpers'
+	import { getFileType, isVideoFile } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
 	interface Props {
@@ -44,7 +43,6 @@
 
 	// Album management state
 	let albums = $state<Array<{ id: number; title: string; slug: string }>>([])
-	let loadingAlbums = $state(false)
 	let showAlbumSelector = $state(false)
 
 	// Initialize form when media changes
@@ -90,8 +88,6 @@
 		if (!media) return
 
 		try {
-			loadingAlbums = true
-
 			// Load albums this media belongs to
 			const mediaResponse = await fetch(`/api/media/${media.id}/albums`, {
 				credentials: 'same-origin'
@@ -103,8 +99,6 @@
 		} catch (error) {
 			console.error('Error loading albums:', error)
 			albums = []
-		} finally {
-			loadingAlbums = false
 		}
 	}
 

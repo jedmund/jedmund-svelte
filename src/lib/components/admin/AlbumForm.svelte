@@ -18,17 +18,6 @@
 
 	let { album = null, mode }: Props = $props()
 
-	// Album schema for validation
-	const albumSchema = z.object({
-		title: z.string().min(1, 'Title is required'),
-		slug: z
-			.string()
-			.min(1, 'Slug is required')
-			.regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
-		location: z.string().optional(),
-		year: z.string().optional()
-	})
-
 	// State
 	let isLoading = $state(mode === 'edit')
 	let showBulkAlbumModal = $state(false)
