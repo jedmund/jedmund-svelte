@@ -4,7 +4,6 @@
 	import Button from './Button.svelte'
 	import CloseButton from '../icons/CloseButton.svelte'
 	import LoadingSpinner from './LoadingSpinner.svelte'
-	import type { Album } from '@prisma/client'
 
 	interface Props {
 		isOpen: boolean

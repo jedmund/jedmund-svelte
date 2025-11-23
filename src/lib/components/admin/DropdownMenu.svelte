@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { browser } from '$app/environment'
 	import { computePosition, flip, shift, offset, autoUpdate } from '@floating-ui/dom'
 	import ChevronRight from '$icons/chevron-right.svg?component'

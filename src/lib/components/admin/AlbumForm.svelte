@@ -4,7 +4,6 @@
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import Input from './Input.svelte'
-	import Button from './Button.svelte'
 	import DropdownSelectField from './DropdownSelectField.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
@@ -145,103 +144,6 @@
 				validationErrors = errors
 			}
 			return false
-		}
-	}
-
-	async function handleSave() {
-		if (!validateForm()) {
-			toast.error('Please fix the validation errors')
-			return
-		}
-
-		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} album...`)
-
-		try {
-			isSaving = true
-
-			const payload = {
-				title: formData.title,
-				slug: formData.slug,
-				description: null,
-				date: formData.year || null,
-				location: formData.location || null,
-				showInUniverse: formData.showInUniverse,
-				status: formData.status,
-				content: formData.content
-			}
-
-			const url = mode === 'edit' ? `/api/albums/${album?.id}` : '/api/albums'
-			const method = mode === 'edit' ? 'PUT' : 'POST'
-
-			const response = await fetch(url, {
-				method,
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(payload),
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(
-					errorData.message || `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
-				)
-			}
-
-			const savedAlbum = await response.json()
-
-			toast.dismiss(loadingToastId)
-
-			// Add pending photos to newly created album
-			if (mode === 'create' && pendingMediaIds.length > 0) {
-				const photoToastId = toast.loading('Adding selected photos to album...')
-				try {
-					const photoResponse = await fetch(`/api/albums/${savedAlbum.id}/media`, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({ mediaIds: pendingMediaIds }),
-						credentials: 'same-origin'
-					})
-
-					if (!photoResponse.ok) {
-						throw new Error('Failed to add photos to album')
-					}
-
-					toast.dismiss(photoToastId)
-					toast.success(
-						`Album created with ${pendingMediaIds.length} photo${pendingMediaIds.length !== 1 ? 's' : ''}!`
-					)
-				} catch (err) {
-					toast.dismiss(photoToastId)
-					toast.error(
-						'Album created but failed to add photos. You can add them by editing the album.'
-					)
-					console.error('Failed to add photos:', err)
-				}
-			} else {
-				toast.success(`Album ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
-			}
-
-			if (mode === 'create') {
-				goto(`/admin/albums/${savedAlbum.id}/edit`)
-			} else if (mode === 'edit' && album) {
-				// Update the album object to reflect saved changes
-				album = savedAlbum
-				populateFormData(savedAlbum)
-			}
-		} catch (err) {
-			toast.dismiss(loadingToastId)
-			toast.error(
-				err instanceof Error
-					? err.message
-					: `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
-			)
-			console.error(err)
-		} finally {
-			isSaving = false
 		}
 	}
 

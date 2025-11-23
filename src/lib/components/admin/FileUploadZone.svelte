@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Button from './Button.svelte'
 	import { validateFileType } from '$lib/utils/mediaHelpers'
 
 	interface Props {
