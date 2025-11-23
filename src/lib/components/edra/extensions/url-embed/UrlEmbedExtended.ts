@@ -1,7 +1,8 @@
 import { mergeAttributes, Node } from '@tiptap/core'
 import { SvelteNodeViewRenderer } from 'svelte-tiptap'
+import type { Component } from 'svelte'
 
-export const UrlEmbedExtended = (component: any) =>
+export const UrlEmbedExtended = (component: Component) =>
 	Node.create({
 		name: 'urlEmbed',
 

@@ -11,7 +11,7 @@ describe('createAutoSaveStore', () => {
 	})
 
 	it('skips save when payload matches primed baseline', async () => {
-		let value = 0
+		const value = 0
 		let saveCalls = 0
 
 		const controller = createAutoSaveController<{ value: number }>({

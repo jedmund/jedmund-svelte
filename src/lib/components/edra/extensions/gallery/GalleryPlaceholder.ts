@@ -3,8 +3,8 @@ import type { Component } from 'svelte'
 import { SvelteNodeViewRenderer } from 'svelte-tiptap'
 
 export interface GalleryPlaceholderOptions {
-	HTMLAttributes: Record<string, object>
-	onSelectImages: (images: any[], editor: Editor) => void
+	HTMLAttributes: Record<string, unknown>
+	onSelectImages: (images: Array<Record<string, unknown>>, editor: Editor) => void
 }
 
 declare module '@tiptap/core' {

@@ -17,6 +17,7 @@
 	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
 	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
 	import type { ProjectFormData } from '$lib/types/project'
+	import type { JSONContent } from '@tiptap/core'
 
 	interface Props {
 		project?: Project | null
@@ -37,7 +38,7 @@
 	let successMessage = $state<string | null>(null)
 
 	// Ref to the editor component
-	let editorRef: any
+	let editorRef: { save: () => Promise<JSONContent> } | undefined
 
 	// Draft key for autosave fallback
 	const draftKey = $derived(mode === 'edit' && project ? makeDraftKey('project', project.id) : null)
@@ -50,7 +51,7 @@
 			save: async (payload, { signal }) => {
 				return await api.put(`/api/projects/${project?.id}`, payload, { signal })
 			},
-			onSaved: (savedProject: any, { prime }) => {
+			onSaved: (savedProject: Project, { prime }) => {
 				project = savedProject
 				formStore.populateFromProject(savedProject)
 				prime(formStore.buildPayload())
@@ -112,7 +113,7 @@
 		}
 	})
 
-	function handleEditorChange(content: any) {
+	function handleEditorChange(content: JSONContent) {
 		formStore.setField('caseStudyContent', content)
 	}
 
@@ -158,7 +159,7 @@
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
-			if ((err as any)?.status === 409) {
+			if (err && typeof err === 'object' && 'status' in err && (err as { status: number }).status === 409) {
 				toast.error('This project has changed in another tab. Please reload.')
 			} else {
 				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)

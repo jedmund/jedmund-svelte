@@ -189,7 +189,7 @@
 	}
 
 	// Block manipulation functions
-	function convertBlockType(type: string, attrs?: any) {
+	function convertBlockType(type: string, attrs?: Record<string, unknown>) {
 		console.log('convertBlockType called:', type, attrs)
 		// Use menuNode which was captured when menu was opened
 		const nodeToConvert = menuNode || currentNode
@@ -486,10 +486,11 @@
 		// Find the existing drag handle created by the plugin and add click listener
 		const checkForDragHandle = setInterval(() => {
 			const existingDragHandle = document.querySelector('.drag-handle')
-			if (existingDragHandle && !(existingDragHandle as any).__menuListener) {
+			const element = existingDragHandle as HTMLElement & { __menuListener?: boolean }
+			if (existingDragHandle && !element.__menuListener) {
 				console.log('Found drag handle, adding click listener')
 				existingDragHandle.addEventListener('click', handleMenuClick)
-				;(existingDragHandle as any).__menuListener = true
+				element.__menuListener = true
 
 				// Update our reference to use the existing drag handle
 				dragHandleContainer = existingDragHandle as HTMLElement

@@ -7,7 +7,7 @@
 	let searchQuery = $state('')
 	let storefront = $state('us')
 	let isSearching = $state(false)
-	let searchResults = $state<any>(null)
+	let searchResults = $state<unknown>(null)
 	let searchError = $state<string | null>(null)
 	let responseTime = $state<number>(0)
 	

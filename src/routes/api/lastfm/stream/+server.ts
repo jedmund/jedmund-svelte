@@ -18,7 +18,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			let intervalId: NodeJS.Timeout | null = null
 			let isClosed = false
 			let currentInterval = UPDATE_INTERVAL
-			let isPlaying = false
+			const isPlaying = false
 
 			// Send initial connection message
 			try {

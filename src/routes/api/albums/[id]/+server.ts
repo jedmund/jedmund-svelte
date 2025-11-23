@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
@@ -89,7 +90,7 @@ export const PUT: RequestHandler = async (event) => {
 			coverPhotoId?: number
 			status?: string
 			showInUniverse?: boolean
-			content?: any
+			content?: Prisma.JsonValue
 		}>(event.request)
 
 		if (!body) {

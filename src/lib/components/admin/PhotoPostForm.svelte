@@ -10,7 +10,20 @@
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
-	import type { Media } from '@prisma/client'
+	import type { Media, Post } from '@prisma/client'
+	import type { Editor } from '@tiptap/core'
+
+	// Payload type for photo posts
+	interface PhotoPayload {
+		title: string
+		slug: string
+		type: string
+		status: string
+		content: JSONContent
+		featuredImage: string | null
+		tags: string[]
+		updatedAt?: string
+	}
 
 	interface Props {
 		postId?: number
@@ -40,7 +53,7 @@
 	let tags = $state(initialData?.tags?.join(', ') || '')
 
 	// Editor ref
-	let editorRef: any
+	let editorRef: Editor | undefined
 
 	// Draft backup
 	const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
@@ -49,7 +62,7 @@
 	let timeTicker = $state(0)
 	const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
 
-function buildPayload() {
+function buildPayload(): PhotoPayload {
   return {
     title: title.trim(),
     slug: createSlug(title),
@@ -83,8 +96,8 @@ let autoSave = mode === 'edit' && postId
 				if (!response.ok) throw new Error('Failed to save')
 				return await response.json()
 			},
-			onSaved: (saved: any, { prime }) => {
-				updatedAt = saved.updatedAt
+			onSaved: (saved: Post, { prime }) => {
+				updatedAt = saved.updatedAt.toISOString()
 				prime(buildPayload())
 				if (draftKey) clearDraft(draftKey)
 			}
@@ -118,7 +131,7 @@ let autoSave = mode === 'edit' && postId
 	})
 
 $effect(() => {
-  const draft = loadDraft<any>(draftKey)
+  const draft = loadDraft<PhotoPayload>(draftKey)
   if (draft) {
     showDraftPrompt = true
     draftTimestamp = draft.ts
@@ -126,7 +139,7 @@ $effect(() => {
 })
 
 	function restoreDraft() {
-		const draft = loadDraft<any>(draftKey)
+		const draft = loadDraft<PhotoPayload>(draftKey)
 		if (!draft) return
 		const p = draft.payload
 		title = p.title ?? title
@@ -149,7 +162,7 @@ $effect(() => {
 				usedIn: [],
 				createdAt: new Date(),
 				updatedAt: new Date()
-			} as any
+			} as unknown
 		}
 		showDraftPrompt = false
 		clearDraft(draftKey)

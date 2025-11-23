@@ -116,6 +116,11 @@
 
 	// Generate image gallery JSON-LD
 	const galleryJsonLd = $derived(album ? generateAlbumJsonLd(album, pageUrl) : null)
+
+	const galleryJsonLdScript = $derived(
+		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
+		galleryJsonLd ? `<script type="application/ld+json">${JSON.stringify(galleryJsonLd)}<\/script>` : null
+	)
 </script>
 
 <svelte:head>
@@ -136,8 +141,8 @@
 	<link rel="canonical" href={metaTags.other.canonical} />
 
 	<!-- JSON-LD -->
-	{#if galleryJsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(galleryJsonLd)}</script>`}
+	{#if galleryJsonLdScript}
+		{@html galleryJsonLdScript}
 	{/if}
 </svelte:head>
 

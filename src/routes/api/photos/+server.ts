@@ -1,8 +1,29 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import type { PhotoItem, PhotoAlbum, Photo } from '$lib/types/photos'
+
+// Type for media with photo fields
+interface PhotoMedia {
+	id: number
+	photoSlug: string | null
+	filename: string
+	url: string
+	thumbnailUrl: string | null
+	width: number | null
+	height: number | null
+	dominantColor: string | null
+	colors: Prisma.JsonValue
+	aspectRatio: number | null
+	photoCaption: string | null
+	photoTitle: string | null
+	photoDescription: string | null
+	createdAt: Date
+	photoPublishedAt: Date | null
+	exifData: Prisma.JsonValue
+}
 
 // GET /api/photos - Get individual photos only (albums excluded from collection)
 export const GET: RequestHandler = async (event) => {
@@ -39,11 +60,11 @@ export const GET: RequestHandler = async (event) => {
 		})
 
 		// Helper function to extract date from EXIF data
-		const getPhotoDate = (media: any): Date => {
+		const getPhotoDate = (media: PhotoMedia): Date => {
 			// Try to get date from EXIF data
 			if (media.exifData && typeof media.exifData === 'object') {
 				// Check for common EXIF date fields
-				const exif = media.exifData as any
+				const exif = media.exifData as Record<string, unknown>
 				const dateTaken = exif.DateTimeOriginal || exif.DateTime || exif.dateTaken
 				if (dateTaken) {
 					// Parse EXIF date format (typically "YYYY:MM:DD HH:MM:SS")

@@ -1,4 +1,6 @@
+import type { Project } from '@prisma/client'
 <script lang="ts">
+	import type { Snippet } from 'svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import BackButton from './BackButton.svelte'
 	import { onMount } from 'svelte'
@@ -7,7 +9,7 @@
 		projectSlug: string
 		correctPassword: string
 		projectType?: 'work' | 'labs'
-		children?: any
+		children?: Snippet
 	}
 
 	let { projectSlug, correctPassword, projectType = 'work', children }: Props = $props()

@@ -37,8 +37,8 @@
 	let isSaving = $state(false)
 	let validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
-	let albumMedia = $state<any[]>([])
-	let editorInstance = $state<any>()
+	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
+	let editorInstance = $state<{ save: () => Promise<JSONContent>; clear: () => void } | undefined>()
 	let activeTab = $state('metadata')
 	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
 

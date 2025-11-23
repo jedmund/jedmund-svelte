@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
@@ -75,8 +76,8 @@ export const PUT: RequestHandler = async (event) => {
 		}
 
 		// Use content as-is (no special handling needed)
-		let featuredImageId = data.featuredImage
-		let postContent = data.content
+		const featuredImageId = data.featuredImage
+		const postContent = data.content
 
 		const post = await prisma.post.update({
 			where: { id },
@@ -175,7 +176,7 @@ export const PATCH: RequestHandler = async (event) => {
       }
     }
 
-    const updateData: any = {}
+    const updateData: Prisma.PostUpdateInput = {}
 
     if (data.status !== undefined) {
       updateData.status = data.status

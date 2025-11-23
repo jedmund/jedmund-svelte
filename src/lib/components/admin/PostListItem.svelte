@@ -1,3 +1,4 @@
+import type { Post } from '@prisma/client'
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
@@ -72,14 +73,14 @@
 
 			if (typeof post.content === 'object' && post.content.content) {
 				// BlockNote/TipTap format
-				function extractText(node: any): string {
-					if (node.text) return node.text
-					if (node.content && Array.isArray(node.content)) {
-						return node.content.map(extractText).join(' ')
+				function extractText(node: Record<string, unknown>): string {
+					if (typeof node.text === 'string') return node.text
+					if (Array.isArray(node.content)) {
+						return node.content.map((n) => extractText(n as Record<string, unknown>)).join(' ')
 					}
 					return ''
 				}
-				textContent = extractText(post.content)
+				textContent = extractText(post.content as Record<string, unknown>)
 			} else if (typeof post.content === 'string') {
 				textContent = post.content
 			}

@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
@@ -29,7 +30,7 @@ export const GET: RequestHandler = async (event) => {
 		const postType = event.url.searchParams.get('postType')
 
 		// Build where clause
-		const where: any = {}
+		const where: Prisma.PostWhereInput = {}
 		if (status) {
 			where.status = status
 		}
@@ -98,7 +99,7 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		// Use content as-is (no special handling needed)
-		let postContent = data.content
+		const postContent = data.content
 
 		const post = await prisma.post.create({
 			data: {

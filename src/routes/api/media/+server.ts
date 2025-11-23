@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
@@ -29,7 +30,7 @@ export const GET: RequestHandler = async (event) => {
 		const albumId = event.url.searchParams.get('albumId')
 
 		// Build where clause
-		const whereConditions: any[] = []
+		const whereConditions: Prisma.MediaWhereInput[] = []
 
 		// Handle mime type filtering
 		if (mimeType && mimeType !== 'all') {
@@ -149,7 +150,7 @@ export const GET: RequestHandler = async (event) => {
 				: {}
 
 		// Build orderBy clause based on sort parameter
-		let orderBy: any = { createdAt: 'desc' } // default to newest
+		let orderBy: Prisma.MediaOrderByWithRelationInput = { createdAt: 'desc' } // default to newest
 
 		switch (sort) {
 			case 'oldest':

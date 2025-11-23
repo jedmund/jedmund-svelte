@@ -42,7 +42,7 @@
 		content: [{ type: 'paragraph' }]
 	}
 	let characterCount = 0
-	let editorInstance: any
+	let editorInstance: { save: () => Promise<JSONContent>; clear: () => void } | undefined
 
 	// Essay metadata
 	let essayTitle = ''
@@ -183,7 +183,7 @@
 		if (!hasContent() && postType !== 'essay') return
 		if (postType === 'essay' && !essayTitle) return
 
-		let postData: any = {
+		let postData: Record<string, unknown> = {
 			content,
 			status: 'published',
 			attachedPhotos: attachedPhotos.map((photo) => photo.id)

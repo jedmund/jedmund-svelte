@@ -1,3 +1,4 @@
+import type { Album } from '@prisma/client'
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import AdminByline from './AdminByline.svelte'
@@ -23,7 +24,7 @@
 		createdAt: string
 		updatedAt: string
 		photos: Photo[]
-		content?: any
+		content?: unknown
 		_count: {
 			media: number
 		}

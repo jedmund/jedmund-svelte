@@ -1,7 +1,31 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { logger } from '$lib/server/logger'
 import { renderEdraContent } from '$lib/utils/content'
+
+// Content node types for TipTap/Edra content
+interface TextNode {
+	type: 'text'
+	text: string
+	marks?: unknown[]
+}
+
+interface ParagraphNode {
+	type: 'paragraph'
+	content?: (TextNode | ContentNode)[]
+}
+
+interface ContentNode {
+	type: string
+	content?: ContentNode[]
+	attrs?: Record<string, unknown>
+}
+
+interface DocContent {
+	type: 'doc'
+	content?: ContentNode[]
+}
 
 // Helper function to escape XML special characters
 function escapeXML(str: string): string {
@@ -16,7 +40,7 @@ function escapeXML(str: string): string {
 
 // Helper function to convert content to HTML for full content
 // Uses the same rendering logic as the website for consistency
-function convertContentToHTML(content: any): string {
+function convertContentToHTML(content: Prisma.JsonValue): string {
 	if (!content) return ''
 
 	// Handle legacy content format (if it's just a string)
@@ -30,32 +54,33 @@ function convertContentToHTML(content: any): string {
 }
 
 // Helper function to extract text summary from content
-function extractTextSummary(content: any, maxLength: number = 300): string {
+function extractTextSummary(content: Prisma.JsonValue, maxLength: number = 300): string {
 	if (!content) return ''
-	
+
 	let text = ''
-	
+
 	// Handle string content
 	if (typeof content === 'string') {
 		text = content
 	}
 	// Handle TipTap/Edra format
-	else if (content.type === 'doc' && content.content && Array.isArray(content.content)) {
-		text = content.content
-			.filter((node: any) => node.type === 'paragraph')
-			.map((node: any) => {
+	else if (typeof content === 'object' && content !== null && 'type' in content && content.type === 'doc' && 'content' in content && Array.isArray(content.content)) {
+		const docContent = content as DocContent
+		text = docContent.content
+			?.filter((node): node is ParagraphNode => node.type === 'paragraph')
+			.map((node) => {
 				if (node.content && Array.isArray(node.content)) {
 					return node.content
-						.filter((child: any) => child.type === 'text')
-						.map((child: any) => child.text || '')
+						.filter((child): child is TextNode => 'type' in child && child.type === 'text')
+						.map((child) => child.text || '')
 						.join('')
 				}
 				return ''
 			})
-			.filter((t: string) => t)
-			.join(' ')
+			.filter((t) => t.length > 0)
+			.join(' ') || ''
 	}
-	
+
 	// Clean up and truncate
 	text = text.replace(/\s+/g, ' ').trim()
 	return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
@@ -79,8 +104,8 @@ export const GET: RequestHandler = async (event) => {
 		})
 
 		// TODO: Re-enable albums once database schema is updated
-		const universeAlbums: any[] = []
-		const photoAlbums: any[] = []
+		const universeAlbums: never[] = []
+		const photoAlbums: never[] = []
 
 		// Combine all content types
 		const items = [

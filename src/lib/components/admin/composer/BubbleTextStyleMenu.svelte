@@ -6,7 +6,7 @@
 		editor: Editor
 		isOpen: boolean
 		onClose: () => void
-		features: any
+		features: { textStyles?: boolean; colors?: boolean; [key: string]: unknown }
 	}
 
 	const { editor, isOpen, onClose, features }: Props = $props()

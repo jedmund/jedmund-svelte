@@ -26,11 +26,16 @@
 			]
 		})
 	)
+
+	const personJsonLdScript = $derived(
+		// eslint-disable-next-line no-useless-escape
+		`<script type="application/ld+json">${JSON.stringify(personJsonLd)}<\/script>`
+	)
 </script>
 
 <svelte:head>
 	<!-- Site-wide JSON-LD -->
-	{@html `<script type="application/ld+json">${JSON.stringify(personJsonLd)}</script>`}
+	{@html personJsonLdScript}
 </svelte:head>
 
 <div class="layout-wrapper" class:admin-route={isAdminRoute}>

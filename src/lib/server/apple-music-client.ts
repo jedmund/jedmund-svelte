@@ -263,7 +263,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		}
 
 		// Try different matching strategies in order of preference
-		let match = albums.find((a) => {
+		const match = albums.find((a) => {
 			const albumName = a.attributes?.name || ''
 			const artistName = a.attributes?.artistName || ''
 

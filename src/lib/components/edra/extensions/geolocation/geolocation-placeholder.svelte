@@ -19,9 +19,9 @@
 	// Map picker state
 	let showMapPicker = $state(false)
 	let mapContainer: HTMLDivElement
-	let pickerMap: any
-	let pickerMarker: any
-	let leaflet: any
+	let pickerMap: L.Map | null = null
+	let pickerMarker: L.Marker | null = null
+	let leaflet: typeof L | null = null
 
 	// Load Leaflet for map picker
 	async function loadLeaflet() {
@@ -77,15 +77,15 @@
 			.addTo(pickerMap)
 
 		// Update coordinates on marker drag
-		pickerMarker.on('dragend', (e: any) => {
-			const position = e.target.getLatLng()
+		pickerMarker.on('dragend', (e: L.LeafletEvent) => {
+			const position = (e.target as L.Marker).getLatLng()
 			latitude = position.lat.toFixed(6)
 			longitude = position.lng.toFixed(6)
 		})
 
 		// Update marker on map click
-		pickerMap.on('click', (e: any) => {
-			pickerMarker.setLatLng(e.latlng)
+		pickerMap.on('click', (e: L.LeafletMouseEvent) => {
+			pickerMarker!.setLatLng(e.latlng)
 			latitude = e.latlng.lat.toFixed(6)
 			longitude = e.latlng.lng.toFixed(6)
 		})

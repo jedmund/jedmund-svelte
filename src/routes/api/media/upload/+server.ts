@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { uploadFile, isCloudinaryConfigured } from '$lib/server/cloudinary'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
@@ -6,8 +7,27 @@ import { logger } from '$lib/server/logger'
 import { dev } from '$app/environment'
 import exifr from 'exifr'
 
+// Type for formatted EXIF data
+interface ExifData {
+	camera?: string
+	lens?: string
+	focalLength?: string
+	aperture?: string
+	shutterSpeed?: string
+	iso?: number
+	dateTaken?: string
+	gps?: {
+		latitude: number
+		longitude: number
+		altitude?: number
+	}
+	orientation?: number
+	colorSpace?: string
+	[key: string]: unknown
+}
+
 // Helper function to extract and format EXIF data
-async function extractExifData(file: File): Promise<any> {
+async function extractExifData(file: File): Promise<ExifData | null> {
 	try {
 		const buffer = await file.arrayBuffer()
 		const exif = await exifr.parse(buffer, {
@@ -33,7 +53,7 @@ async function extractExifData(file: File): Promise<any> {
 		if (!exif) return null
 
 		// Format the data into a more usable structure
-		const formattedExif: any = {}
+		const formattedExif: ExifData = {}
 
 		if (exif.Make && exif.Model) {
 			formattedExif.camera = `${exif.Make} ${exif.Model}`.trim()

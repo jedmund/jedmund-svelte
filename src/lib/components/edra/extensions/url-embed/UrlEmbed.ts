@@ -3,7 +3,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 export interface UrlEmbedOptions {
-	HTMLAttributes: Record<string, any>
+	HTMLAttributes: Record<string, unknown>
 	onShowDropdown?: (pos: number, url: string) => void
 }
 

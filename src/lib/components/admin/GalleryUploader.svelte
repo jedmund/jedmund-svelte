@@ -6,12 +6,15 @@
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
 
+	// Gallery items can be either Media objects or objects with a mediaId reference
+	type GalleryItem = Media | (Partial<Media> & { mediaId?: number })
+
 	interface Props {
 		label: string
-		value?: any[] // Changed from Media[] to any[] to be more flexible
-		onUpload: (media: any[]) => void
-		onReorder?: (media: any[]) => void
-		onRemove?: (item: any, index: number) => void // New callback for removals
+		value?: GalleryItem[]
+		onUpload: (media: GalleryItem[]) => void
+		onReorder?: (media: GalleryItem[]) => void
+		onRemove?: (item: GalleryItem, index: number) => void
 		maxItems?: number
 		allowAltText?: boolean
 		required?: boolean
@@ -50,7 +53,7 @@
 	let draggedOverIndex = $state<number | null>(null)
 	let isMediaLibraryOpen = $state(false)
 	let isImageModalOpen = $state(false)
-	let selectedImage = $state<any | null>(null)
+	let selectedImage = $state<Media | null>(null)
 
 	// Computed properties
 	const hasImages = $derived(value && value.length > 0)
@@ -316,7 +319,7 @@
 		isMediaLibraryOpen = true
 	}
 
-	function handleMediaSelect(selectedMedia: any | any[]) {
+	function handleMediaSelect(selectedMedia: Media | Media[]) {
 		// For gallery mode, selectedMedia will be an array
 		const mediaArray = Array.isArray(selectedMedia) ? selectedMedia : [selectedMedia]
 
@@ -357,10 +360,10 @@
 	}
 
 	// Handle clicking on an image to open details modal
-	function handleImageClick(media: any) {
+	function handleImageClick(media: GalleryItem) {
 		// Convert to Media format if needed
 		selectedImage = {
-			id: media.mediaId || media.id,
+			id: ('mediaId' in media && media.mediaId) || media.id!,
 			filename: media.filename,
 			originalName: media.originalName || media.filename,
 			mimeType: media.mimeType || 'image/jpeg',
@@ -381,9 +384,9 @@
 	}
 
 	// Handle updates from the media details modal
-	function handleImageUpdate(updatedMedia: any) {
+	function handleImageUpdate(updatedMedia: Media) {
 		// Update the media in our value array
-		const index = value.findIndex((m) => (m.mediaId || m.id) === updatedMedia.id)
+		const index = value.findIndex((m) => (('mediaId' in m && m.mediaId) || m.id) === updatedMedia.id)
 		if (index !== -1) {
 			value[index] = {
 				...value[index],

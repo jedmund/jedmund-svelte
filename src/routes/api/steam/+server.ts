@@ -66,7 +66,7 @@ async function getSerializedGames(steamId: string): Promise<SerializableGameInfo
 	)
 
 	// Map the games to a serializable format that the frontend understands.
-	let games: SerializableGameInfo[] = extendedGames.map((game) => ({
+	const games: SerializableGameInfo[] = extendedGames.map((game) => ({
 		id: game.game.id,
 		name: game.game.name,
 		playtime: game.minutes,

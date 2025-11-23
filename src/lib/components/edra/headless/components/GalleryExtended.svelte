@@ -38,8 +38,8 @@
 			updateAttributes({ images: newImages })
 		} else {
 			// Add to existing images
-			const existingImages = node.attrs.images || []
-			const currentIds = existingImages.map((img: any) => img.id)
+			const existingImages = (node.attrs.images || []) as Array<{ id: number; [key: string]: unknown }>
+			const currentIds = existingImages.map((img) => img.id)
 			const uniqueNewImages = newImages.filter((img) => !currentIds.includes(img.id))
 			updateAttributes({ images: [...existingImages, ...uniqueNewImages] })
 		}
@@ -54,8 +54,8 @@
 	}
 
 	function removeImage(imageId: number) {
-		const currentImages = node.attrs.images || []
-		const updatedImages = currentImages.filter((img: any) => img.id !== imageId)
+		const currentImages = (node.attrs.images || []) as Array<{ id: number; [key: string]: unknown }>
+		const updatedImages = currentImages.filter((img) => img.id !== imageId)
 		updateAttributes({ images: updatedImages })
 	}
 

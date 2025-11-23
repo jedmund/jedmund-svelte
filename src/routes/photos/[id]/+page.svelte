@@ -85,6 +85,11 @@
 			: null
 	)
 
+	const photoJsonLdScript = $derived(
+		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
+		photoJsonLd ? `<script type="application/ld+json">${JSON.stringify(photoJsonLd)}<\/script>` : null
+	)
+
 	// Parse EXIF data if available
 	const exifData = $derived(
 		photo?.exifData && typeof photo.exifData === 'object' ? photo.exifData : null
@@ -357,8 +362,8 @@
 	<link rel="canonical" href={metaTags.other.canonical} />
 
 	<!-- JSON-LD -->
-	{#if photoJsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(photoJsonLd)}</script>`}
+	{#if photoJsonLdScript}
+		{@html photoJsonLdScript}
 	{/if}
 </svelte:head>
 

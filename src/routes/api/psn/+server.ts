@@ -47,7 +47,7 @@ async function authorize(npsso: string): Promise<AuthTokensResponse> {
 
 async function getSerializedGames(psnId: string): Promise<SerializableGameInfo[]> {
 	// Authorize with PSN and get games sorted by last played time
-	let authorization = await authorize(PSN_NPSSO_TOKEN || '')
+	const authorization = await authorize(PSN_NPSSO_TOKEN || '')
 	const response = await getUserPlayedTime(authorization, PSN_ID, {
 		limit: 5,
 		categories: ['ps4_game', 'ps5_native_game']

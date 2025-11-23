@@ -1,20 +1,31 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
+
+// Type for photo in album
+interface AlbumPhoto {
+	id: number
+	url: string
+	thumbnailUrl: string | null
+	photoCaption: string | null
+	width: number | null
+	height: number | null
+}
 
 export interface UniverseItem {
 	id: number
 	type: 'post' | 'album'
 	slug: string
 	title?: string
-	content?: any
+	content?: Prisma.JsonValue
 	publishedAt: string
 	createdAt: string
 
 	// Post-specific fields
 	postType?: string
-	attachments?: any
+	attachments?: Prisma.JsonValue
 	featuredImage?: string
 
 	// Album-specific fields
@@ -22,8 +33,8 @@ export interface UniverseItem {
 	location?: string
 	date?: string
 	photosCount?: number
-	coverPhoto?: any
-	photos?: any[]
+	coverPhoto?: AlbumPhoto
+	photos?: AlbumPhoto[]
 	hasContent?: boolean
 }
 

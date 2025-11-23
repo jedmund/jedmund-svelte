@@ -1,7 +1,9 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	interface Props {
-		left?: any
-		right?: any
+		left?: Snippet
+		right?: Snippet
 	}
 
 	let { left, right }: Props = $props()

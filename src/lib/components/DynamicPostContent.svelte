@@ -5,7 +5,9 @@
 	import { formatDate } from '$lib/utils/date'
 	import { renderEdraContent } from '$lib/utils/content'
 
-	let { post }: { post: any } = $props()
+	import type { Post } from '@prisma/client'
+
+	let { post }: { post: Post } = $props()
 
 	const renderedContent = $derived(post.content ? renderEdraContent(post.content) : '')
 </script>

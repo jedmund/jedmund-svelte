@@ -1,7 +1,7 @@
 <script lang="ts">
 	interface Props {
 		title: string
-		actions?: any
+		actions?: unknown
 	}
 
 	let { title, actions }: Props = $props()

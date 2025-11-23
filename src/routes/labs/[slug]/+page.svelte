@@ -48,6 +48,11 @@
 				})
 			: null
 	)
+
+	const projectJsonLdScript = $derived(
+		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
+		projectJsonLd ? `<script type="application/ld+json">${JSON.stringify(projectJsonLd)}<\/script>` : null
+	)
 </script>
 
 <svelte:head>
@@ -73,8 +78,8 @@
 	{/if}
 
 	<!-- JSON-LD -->
-	{#if projectJsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(projectJsonLd)}</script>`}
+	{#if projectJsonLdScript}
+		{@html projectJsonLdScript}
 	{/if}
 </svelte:head>
 

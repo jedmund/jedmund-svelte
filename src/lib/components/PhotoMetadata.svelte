@@ -5,7 +5,7 @@
 		title?: string
 		caption?: string
 		description?: string
-		exifData?: any
+		exifData?: Record<string, unknown>
 		createdAt?: string
 		backHref?: string
 		backLabel?: string
