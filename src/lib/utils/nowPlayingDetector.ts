@@ -1,4 +1,3 @@
-import type { Album } from '$lib/types/lastfm'
 import { logger } from '$lib/server/logger'
 
 export interface TrackPlayInfo {

@@ -1,4 +1,4 @@
-type SerializableGameInfo = {
+export type SerializableGameInfo = {
 	id: number | string | null
 	name: string
 	playtime: string | number | undefined
