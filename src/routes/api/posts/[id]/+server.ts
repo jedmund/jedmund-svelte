@@ -75,8 +75,8 @@ export const PUT: RequestHandler = async (event) => {
 		}
 
 		// Use content as-is (no special handling needed)
-		let featuredImageId = data.featuredImage
-		let postContent = data.content
+		const featuredImageId = data.featuredImage
+		const postContent = data.content
 
 		const post = await prisma.post.update({
 			where: { id },

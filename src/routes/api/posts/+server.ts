@@ -98,7 +98,7 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		// Use content as-is (no special handling needed)
-		let postContent = data.content
+		const postContent = data.content
 
 		const post = await prisma.post.create({
 			data: {
