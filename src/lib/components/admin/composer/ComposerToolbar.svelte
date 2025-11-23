@@ -7,8 +7,8 @@
 		editor: Editor
 		variant: ComposerVariant
 		currentTextStyle: string
-		filteredCommands: any
-		colorCommands: any[]
+		filteredCommands: unknown
+		colorCommands: unknown[]
 		excludedCommands: string[]
 		showMediaLibrary: boolean
 		onTextStyleDropdownToggle: () => void

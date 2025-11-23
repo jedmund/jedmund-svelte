@@ -9,7 +9,7 @@
 	const { editor, deleteNode, getPos }: NodeViewProps = $props()
 
 	// Get album context if available
-	const editorContext = getContext<any>('editorContext') || {}
+	const editorContext = getContext<{ albumId?: number; [key: string]: unknown }>('editorContext') || {}
 	const albumId = $derived(editorContext.albumId)
 
 	// Generate unique pane ID based on node position
@@ -41,7 +41,7 @@
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault()
-			handleClick(e as any)
+			handleClick(e as unknown as MouseEvent)
 		} else if (e.key === 'Escape') {
 			if (showPane) {
 				paneManager.close()

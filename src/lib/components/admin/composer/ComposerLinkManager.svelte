@@ -133,10 +133,10 @@
 	}
 
 	// Dismiss dropdowns on typing
-	export function dismissOnTyping(transaction: any) {
+	export function dismissOnTyping(transaction: unknown) {
 		if (showUrlConvertDropdown && transaction.docChanged) {
 			const hasTextChange = transaction.steps.some(
-				(step: any) =>
+				(step: unknown) =>
 					step.toJSON().stepType === 'replace' || step.toJSON().stepType === 'replaceAround'
 			)
 			if (hasTextChange) {
