@@ -33,3 +33,4 @@ vite.config.ts.timestamp-*
 storybook-static
 backups/
 server.log
+*.db
