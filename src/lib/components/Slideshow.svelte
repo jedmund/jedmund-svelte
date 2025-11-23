@@ -117,7 +117,7 @@
 
 		{#if showThumbnails}
 			<div class="thumbnails">
-				{#each Array(totalSlots) as _slot, index}
+				{#each Array(totalSlots) as _, index}
 					{#if index < displayItems.length}
 						<button
 							class="thumbnail"
