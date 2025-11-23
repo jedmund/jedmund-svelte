@@ -34,16 +34,16 @@ async function initializeDatabase() {
 
 			// Run migrations
 			console.log('🔄 Running database migrations...')
-			execSync('npx prisma migrate deploy', { stdio: 'inherit' })
+			execSync('pnpm exec prisma migrate deploy', { stdio: 'inherit' })
 
 			// Run seeds
 			console.log('🌱 Seeding database...')
-			execSync('npx prisma db seed', { stdio: 'inherit' })
+			execSync('pnpm exec prisma db seed', { stdio: 'inherit' })
 
 			console.log('✅ Database initialization complete!')
 		} else {
 			console.log('✅ Database already initialized. Running migrations only...')
-			execSync('npx prisma migrate deploy', { stdio: 'inherit' })
+			execSync('pnpm exec prisma migrate deploy', { stdio: 'inherit' })
 		}
 	} catch (error) {
 		console.error('❌ Database initialization failed:', error)
