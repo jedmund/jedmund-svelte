@@ -9,7 +9,6 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
-	import Button from '$lib/components/admin/Button.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from '$lib/components/admin/AutoSaveStatus.svelte'
@@ -271,7 +270,7 @@ onMount(async () => {
 				// Fallback error messaging
 					loadError = 'Post not found'
 			}
-		} catch (error) {
+		} catch (_error) {
 			loadError = 'Network error occurred while loading post'
 		} finally {
 			loading = false
@@ -405,7 +404,7 @@ onMount(async () => {
 	})
 
 	// Navigation guard: flush autosave before navigating away (only if there are unsaved changes)
-	beforeNavigate(async (navigation) => {
+	beforeNavigate(async (_navigation) => {
 		if (hasLoaded) {
 			// If status is 'saved', there are no unsaved changes - allow navigation
 			if (autoSave.status === 'saved') {
