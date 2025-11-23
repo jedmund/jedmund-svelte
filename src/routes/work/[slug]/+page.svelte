@@ -51,6 +51,11 @@
 			: null
 	)
 
+	const projectJsonLdScript = $derived(
+		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
+		projectJsonLd ? `<script type="application/ld+json">${JSON.stringify(projectJsonLd)}<\/script>` : null
+	)
+
 	let headerContainer = $state<HTMLElement | null>(null)
 
 	// Spring with aggressive bounce settings
@@ -111,8 +116,8 @@
 	{/if}
 
 	<!-- JSON-LD -->
-	{#if projectJsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(projectJsonLd)}</script>`}
+	{#if projectJsonLdScript}
+		{@html projectJsonLdScript}
 	{/if}
 </svelte:head>
 
