@@ -1,8 +1,9 @@
 <script lang="ts">
 	import GenericMetadataPopover, { type MetadataConfig } from './GenericMetadataPopover.svelte'
+	import type { Post } from '@prisma/client'
 
 	type Props = {
-		post: any
+		post: Post
 		postType: 'post' | 'essay'
 		slug: string
 		tags: string[]
@@ -12,7 +13,7 @@
 		onRemoveTag: (tag: string) => void
 		onDelete: () => void
 		onClose?: () => void
-		onFieldUpdate?: (key: string, value: any) => void
+		onFieldUpdate?: (key: string, value: unknown) => void
 	}
 
 	let {
@@ -29,11 +30,11 @@
 		onFieldUpdate
 	}: Props = $props()
 
-	function handleFieldUpdate(key: string, value: any) {
-		if (key === 'slug') {
+	function handleFieldUpdate(key: string, value: unknown) {
+		if (key === 'slug' && typeof value === 'string') {
 			slug = value
 			onFieldUpdate?.(key, value)
-		} else if (key === 'tagInput') {
+		} else if (key === 'tagInput' && typeof value === 'string') {
 			tagInput = value
 		}
 	}

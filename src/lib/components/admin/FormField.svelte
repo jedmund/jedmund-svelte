@@ -1,16 +1,18 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	interface Props {
 		label: string
 		name?: string
 		type?: string
-		value?: any
+		value?: string | number
 		placeholder?: string
 		required?: boolean
 		error?: string
 		helpText?: string
 		disabled?: boolean
 		onchange?: (e: Event) => void
-		children?: any
+		children?: Snippet
 	}
 
 	let {

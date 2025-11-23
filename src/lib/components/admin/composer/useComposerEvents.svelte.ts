@@ -1,4 +1,4 @@
-import type { Editor } from '@tiptap/core'
+import type { Editor, EditorView } from '@tiptap/core'
 import type { ComposerMediaHandler } from './ComposerMediaHandler.svelte'
 import { focusEditor } from '$lib/components/edra/utils'
 
@@ -12,7 +12,7 @@ export interface UseComposerEventsOptions {
 
 export function useComposerEvents(options: UseComposerEventsOptions) {
 	// Handle paste events
-	function handlePaste(view: any, event: ClipboardEvent): boolean {
+	function handlePaste(view: EditorView, event: ClipboardEvent): boolean {
 		const clipboardData = event.clipboardData
 		if (!clipboardData) return false
 
@@ -30,7 +30,7 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 			event.preventDefault()
 
 			// Use editor commands to insert HTML content
-			const editorInstance = (view as any).editor
+			const editorInstance = options.editor
 			if (editorInstance) {
 				editorInstance
 					.chain()
@@ -66,7 +66,7 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 	}
 
 	// Handle drag and drop for images
-	function handleDrop(view: any, event: DragEvent): boolean {
+	function handleDrop(view: EditorView, event: DragEvent): boolean {
 		if (!options.features.imageUpload || !options.mediaHandler) return false
 
 		const files = event.dataTransfer?.files

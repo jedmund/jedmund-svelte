@@ -19,9 +19,9 @@
 	}: Props = $props()
 
 	let mapContainer: HTMLDivElement
-	let map: any
-	let marker: any
-	let leaflet: any
+	let map: L.Map | null = null
+	let marker: L.Marker | null = null
+	let leaflet: typeof L | null = null
 
 	// Load Leaflet dynamically
 	async function loadLeaflet() {

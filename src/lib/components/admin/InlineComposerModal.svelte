@@ -42,7 +42,7 @@
 		content: [{ type: 'paragraph' }]
 	}
 	let characterCount = 0
-	let editorInstance: any
+	let editorInstance: { save: () => Promise<JSONContent>; clear: () => void } | undefined
 
 	// Essay metadata
 	let essayTitle = ''
