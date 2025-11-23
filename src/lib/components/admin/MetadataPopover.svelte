@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import Input from './Input.svelte'
+	import type { Post } from '@prisma/client'
 
 	type Props = {
-		post: any
+		post: Post
 		postType: 'post' | 'essay'
 		slug: string
 		excerpt: string

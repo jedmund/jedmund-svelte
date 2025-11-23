@@ -43,11 +43,13 @@ import SlashCommandList from './headless/components/SlashCommandList.svelte'
 // Create lowlight instance
 const lowlight = createLowlight(all)
 
+import type { Component } from 'svelte'
+
 export interface EditorExtensionOptions {
 	showSlashCommands?: boolean
 	onShowUrlConvertDropdown?: (pos: number, url: string) => void
 	onShowLinkContextMenu?: (pos: number, url: string, coords: { x: number; y: number }) => void
-	imagePlaceholderComponent?: any // Allow custom image placeholder component
+	imagePlaceholderComponent?: Component // Allow custom image placeholder component
 }
 
 export function getEditorExtensions(options: EditorExtensionOptions = {}): Extensions {

@@ -3,7 +3,7 @@ import type { Component } from 'svelte'
 import { SvelteNodeViewRenderer } from 'svelte-tiptap'
 
 export interface GeolocationExtendedOptions {
-	HTMLAttributes: Record<string, any>
+	HTMLAttributes: Record<string, unknown>
 }
 
 export const GeolocationExtended = (

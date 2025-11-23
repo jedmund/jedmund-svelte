@@ -4,7 +4,7 @@ import GeolocationPlaceholder from './geolocation-placeholder.svelte'
 import GeolocationExtended from './geolocation-extended.svelte'
 
 export interface GeolocationOptions {
-	HTMLAttributes: Record<string, any>
+	HTMLAttributes: Record<string, unknown>
 }
 
 declare module '@tiptap/core' {

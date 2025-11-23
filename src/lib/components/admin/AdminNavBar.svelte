@@ -8,10 +8,12 @@
 
 	const currentPath = $derived($page.url.pathname)
 
+	import type { Component } from 'svelte'
+
 	interface NavItem {
 		text: string
 		href: string
-		icon: any
+		icon: Component
 	}
 
 	const navItems: NavItem[] = [

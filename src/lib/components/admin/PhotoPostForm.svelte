@@ -162,7 +162,7 @@ $effect(() => {
 				usedIn: [],
 				createdAt: new Date(),
 				updatedAt: new Date()
-			} as any
+			} as unknown
 		}
 		showDraftPrompt = false
 		clearDraft(draftKey)

@@ -33,10 +33,12 @@ export interface DropdownPosition {
 	left: number
 }
 
+import type { Media } from '@prisma/client'
+
 export interface MediaSelectionOptions {
 	mode: 'single' | 'multiple'
 	fileType?: 'image' | 'video' | 'audio' | 'all'
 	albumId?: number
-	onSelect: (media: any) => void
+	onSelect: (media: Media | Media[]) => void
 	onClose: () => void
 }

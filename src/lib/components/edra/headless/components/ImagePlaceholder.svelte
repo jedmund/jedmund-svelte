@@ -116,7 +116,7 @@
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault()
-			handleBrowseLibrary(e as any)
+			handleBrowseLibrary(e as unknown as MouseEvent)
 		} else if (e.key === 'Escape') {
 			deleteNode()
 		}

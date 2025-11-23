@@ -259,7 +259,7 @@ $effect(() => {
 		try {
 			isSaving = true
 
-			const payload: any = {
+			const payload: Record<string, unknown> = {
 				type: 'post', // Use simplified post type
 				status: publishStatus,
 				content: content

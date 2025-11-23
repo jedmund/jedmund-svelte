@@ -4,7 +4,7 @@ import type { Component } from 'svelte'
 import type { NodeViewProps } from '@tiptap/core'
 
 export interface GalleryOptions {
-	HTMLAttributes: Record<string, any>
+	HTMLAttributes: Record<string, unknown>
 }
 
 declare module '@tiptap/core' {
