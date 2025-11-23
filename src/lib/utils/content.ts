@@ -1,5 +1,20 @@
+// Content node types for rendering
+interface ContentNode {
+	type: string
+	attrs?: Record<string, unknown>
+	content?: ContentNode[] | string
+	text?: string
+	level?: number
+	src?: string
+	alt?: string
+	caption?: string
+	language?: string
+	mediaId?: number
+	[key: string]: unknown
+}
+
 // Render Edra/BlockNote JSON content to HTML
-export const renderEdraContent = (content: any, options: { albumSlug?: string } = {}): string => {
+export const renderEdraContent = (content: unknown, options: { albumSlug?: string } = {}): string => {
 	if (!content) return ''
 
 	// Handle Tiptap format first (has type: 'doc')
@@ -8,10 +23,11 @@ export const renderEdraContent = (content: any, options: { albumSlug?: string } 
 	}
 
 	// Handle both { blocks: [...] } and { content: [...] } formats
-	const blocks = content.blocks || content.content || []
+	const contentObj = content as Record<string, unknown>
+	const blocks = (contentObj.blocks || contentObj.content || []) as ContentNode[]
 	if (!Array.isArray(blocks)) return ''
 
-	const renderBlock = (block: any): string => {
+	const renderBlock = (block: ContentNode): string => {
 		switch (block.type) {
 			case 'heading': {
 				const level = block.attrs?.level || block.level || 1
@@ -28,7 +44,7 @@ export const renderEdraContent = (content: any, options: { albumSlug?: string } 
 			case 'bulletList':
 			case 'ul': {
 				const listItems = (block.content || [])
-					.map((item: any) => {
+					.map((item) => {
 						const itemText = item.content || item.text || ''
 						return `<li>${itemText}</li>`
 					})
@@ -39,7 +55,7 @@ export const renderEdraContent = (content: any, options: { albumSlug?: string } 
 			case 'orderedList':
 			case 'ol': {
 				const orderedItems = (block.content || [])
-					.map((item: any) => {
+					.map((item) => {
 						const itemText = item.content || item.text || ''
 						return `<li>${itemText}</li>`
 					})
@@ -97,10 +113,10 @@ export const renderEdraContent = (content: any, options: { albumSlug?: string } 
 }
 
 // Render Tiptap JSON content to HTML
-function renderTiptapContent(doc: any): string {
+function renderTiptapContent(doc: Record<string, unknown>): string {
 	if (!doc || !doc.content) return ''
 
-	const renderNode = (node: any): string => {
+	const renderNode = (node: ContentNode): string => {
 		switch (node.type) {
 			case 'paragraph': {
 				const content = renderInlineContent(node.content || [])
@@ -116,8 +132,8 @@ function renderTiptapContent(doc: any): string {
 
 			case 'bulletList': {
 				const items = (node.content || [])
-					.map((item: any) => {
-						const itemContent = item.content?.map(renderNode).join('') || ''
+					.map((item) => {
+						const itemContent = item.content ? (item.content as ContentNode[]).map(renderNode) : [].join('') || ''
 						return `<li>${itemContent}</li>`
 					})
 					.join('')
@@ -126,8 +142,8 @@ function renderTiptapContent(doc: any): string {
 
 			case 'orderedList': {
 				const items = (node.content || [])
-					.map((item: any) => {
-						const itemContent = item.content?.map(renderNode).join('') || ''
+					.map((item) => {
+						const itemContent = item.content ? (item.content as ContentNode[]).map(renderNode) : [].join('') || ''
 						return `<li>${itemContent}</li>`
 					})
 					.join('')
@@ -266,7 +282,7 @@ function renderTiptapContent(doc: any): string {
 			default: {
 				// For any unknown block types, try to render their content
 				if (node.content) {
-					return node.content.map(renderNode).join('')
+					return Array.isArray(node.content) ? node.content.map(renderNode as (node: unknown) => string) : [].join('')
 				}
 				return ''
 			}
@@ -346,7 +362,7 @@ export const getContentExcerpt = (content: any, maxLength = 200): string => {
 	const blocks = content.blocks || content.content || []
 	if (!Array.isArray(blocks)) return ''
 
-	const extractText = (node: any): string => {
+	const extractText = (node: ContentNode): string => {
 		// For block-level content
 		if (node.type && node.content && typeof node.content === 'string') {
 			return node.content
