@@ -387,7 +387,7 @@
 		const nodeToUse = menuNode || currentNode
 		if (!nodeToUse) return
 
-		const { node, pos } = nodeToUse
+		const { pos } = nodeToUse
 		
 		// Find the actual position of the node
 		const resolvedPos = editor.state.doc.resolve(pos)

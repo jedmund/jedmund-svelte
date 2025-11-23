@@ -31,7 +31,7 @@
 	let linkEditPos = $state<number | null>(null)
 
 	// URL convert handlers
-	export function handleShowUrlConvertDropdown(pos: number, url: string) {
+	export function handleShowUrlConvertDropdown(pos: number, _url: string) {
 		if (!editor) return
 		const coords = editor.view.coordsAtPos(pos)
 		urlConvertDropdownPosition = { x: coords.left, y: coords.bottom + 5 }

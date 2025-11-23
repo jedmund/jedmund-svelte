@@ -17,7 +17,6 @@
 
 	let {
 		editor,
-		variant,
 		currentTextStyle,
 		filteredCommands,
 		colorCommands,
