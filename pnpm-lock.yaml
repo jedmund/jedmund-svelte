@@ -163,7 +163,7 @@ importers:
         version: 6.16.3(typescript@5.9.3)
       psn-api:
         specifier: github:jedmund/psn-api
-        version: https://codeload.github.com/jedmund/psn-api/tar.gz/4ec4930d4ad9080d7c8d04103956107ec26af7e1
+        version: https://codeload.github.com/jedmund/psn-api/tar.gz/b8fb93bb18ee3bd8fb2145e632f60aa5171a09b0
       redis:
         specifier: ^4.7.0
         version: 4.7.1
@@ -319,8 +319,8 @@ packages:
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/helper-validator-identifier@7.27.1':
-    resolution: {integrity: sha512-D2hP9eA+Sqx1kBZgzxZh0y1trbuU+JoDkiEwqhQ36nodYqJwyEIhPSdMNd7lOm/4io72luTPWH20Yda0xOuUow==}
+  '@babel/helper-validator-identifier@7.28.5':
+    resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.28.4':
@@ -1998,8 +1998,8 @@ packages:
     resolution: {integrity: sha512-0LrrStPOdJj+SPCCrGhzryycLjwcgUSHBtxNA8aIDxf0GLsRh1cKYhB00Gd1lDOS4yGH69+SNn13+TWbVHETFQ==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0, npm: '>=7.0.0'}
 
-  csstype@3.1.3:
-    resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+  csstype@3.2.3:
+    resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
   dashdash@1.14.1:
     resolution: {integrity: sha512-jRFi8UDGo6j+odZiEpjazZaWqEal3w/basFjQHQEwVtZJGDpxbH1MeYluwCS8Xq5wmLJooDlMgvVarmWfGM44g==}
@@ -2999,9 +2999,10 @@ packages:
   psl@1.15.0:
     resolution: {integrity: sha512-JZd3gMVBAVQkSs6HdNZo9Sdo0LNcQeMNP3CozBJb3JYC/QUYZTnKxP+f8oWRX4rHP5EurWxqAHTSwUCjlNKa1w==}
 
-  psn-api@https://codeload.github.com/jedmund/psn-api/tar.gz/4ec4930d4ad9080d7c8d04103956107ec26af7e1:
-    resolution: {tarball: https://codeload.github.com/jedmund/psn-api/tar.gz/4ec4930d4ad9080d7c8d04103956107ec26af7e1}
+  psn-api@https://codeload.github.com/jedmund/psn-api/tar.gz/b8fb93bb18ee3bd8fb2145e632f60aa5171a09b0:
+    resolution: {tarball: https://codeload.github.com/jedmund/psn-api/tar.gz/b8fb93bb18ee3bd8fb2145e632f60aa5171a09b0}
     version: 0.0.0-development
+    engines: {node: '>=20', pnpm: '>=10'}
 
   punycode.js@2.3.1:
     resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
@@ -3599,11 +3600,11 @@ snapshots:
 
   '@babel/code-frame@7.27.1':
     dependencies:
-      '@babel/helper-validator-identifier': 7.27.1
+      '@babel/helper-validator-identifier': 7.28.5
       js-tokens: 4.0.0
       picocolors: 1.1.1
 
-  '@babel/helper-validator-identifier@7.27.1': {}
+  '@babel/helper-validator-identifier@7.28.5': {}
 
   '@babel/runtime@7.28.4': {}
 
@@ -4712,7 +4713,7 @@ snapshots:
 
   '@types/react@19.2.2':
     dependencies:
-      csstype: 3.1.3
+      csstype: 3.2.3
 
   '@types/redis@4.0.11':
     dependencies:
@@ -5119,7 +5120,7 @@ snapshots:
     dependencies:
       css-tree: 2.2.1
 
-  csstype@3.1.3: {}
+  csstype@3.2.3: {}
 
   dashdash@1.14.1:
     dependencies:
@@ -6142,7 +6143,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  psn-api@https://codeload.github.com/jedmund/psn-api/tar.gz/4ec4930d4ad9080d7c8d04103956107ec26af7e1:
+  psn-api@https://codeload.github.com/jedmund/psn-api/tar.gz/b8fb93bb18ee3bd8fb2145e632f60aa5171a09b0:
     dependencies:
       isomorphic-unfetch: 3.1.0
     transitivePeerDependencies:

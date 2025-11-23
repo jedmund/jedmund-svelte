@@ -2,14 +2,5 @@
   "packages": {
     "node": "20",
     "pnpm": "9"
-  },
-  "steps": {
-    "install": {
-      "commands": [
-        "corepack enable",
-        "corepack prepare yarn@1 --activate",
-        "..."
-      ]
-    }
   }
 }
