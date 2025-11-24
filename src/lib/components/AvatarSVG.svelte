@@ -106,19 +106,19 @@
 			<stop
 				stop-color="#E86A58"
 				stop-opacity="0.18"
-				style="stop-color:#E86A58;stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.18;"
+				style="stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.18;"
 			/>
 			<stop
 				offset="0.3"
 				stop-color="#E86A58"
 				stop-opacity="0.16"
-				style="stop-color:#E86A58;stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.16;"
+				style="stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.16;"
 			/>
 			<stop
 				offset="0.63"
 				stop-color="#E86A58"
 				stop-opacity="0.1"
-				style="stop-color:#E86A58;stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.1;"
+				style="stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.1;"
 			/>
 			<stop
 				offset="0.99"
@@ -144,19 +144,19 @@
 			<stop
 				stop-color="#E86A58"
 				stop-opacity="0.18"
-				style="stop-color:#E86A58;stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.18;"
+				style="stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.18;"
 			/>
 			<stop
 				offset="0.3"
 				stop-color="#E86A58"
 				stop-opacity="0.16"
-				style="stop-color:#E86A58;stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.16;"
+				style="stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.16;"
 			/>
 			<stop
 				offset="0.63"
 				stop-color="#E86A58"
 				stop-opacity="0.1"
-				style="stop-color:#E86A58;stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.1;"
+				style="stop-color:color(display-p3 0.9098 0.4157 0.3451);stop-opacity:0.1;"
 			/>
 			<stop
 				offset="0.99"
