@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import type { GeoLocation } from '@prisma/client'
+	import type * as L from 'leaflet'
 
 	interface Props {
 		location: GeoLocation

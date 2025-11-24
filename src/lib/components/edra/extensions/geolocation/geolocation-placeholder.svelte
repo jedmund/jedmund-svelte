@@ -2,6 +2,7 @@
 	import { getContext } from 'svelte'
 	import type { Readable } from 'svelte/store'
 	import type { Editor } from '@tiptap/core'
+	import type * as L from 'leaflet'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Input from '$lib/components/admin/Input.svelte'
 	import Textarea from '$lib/components/admin/Textarea.svelte'

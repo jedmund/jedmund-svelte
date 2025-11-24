@@ -262,8 +262,6 @@ $effect(() => {
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} essay...`)
 
 		try {
-			isSaving = true
-
 			const payload = {
 				title,
 				slug,
@@ -306,8 +304,6 @@ $effect(() => {
 			toast.dismiss(loadingToastId)
 			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} essay`)
 			console.error(err)
-		} finally {
-			isSaving = false
 		}
 	}
 
@@ -351,14 +347,6 @@ $effect(() => {
 	{/if}
 
 	<div class="admin-container">
-		{#if error}
-			<div class="error-message">{error}</div>
-		{/if}
-
-		{#if successMessage}
-			<div class="success-message">{successMessage}</div>
-		{/if}
-
 		<div class="tab-panels">
 			<!-- Metadata Panel -->
 			<div class="panel content-wrapper" class:active={activeTab === 'metadata'}>

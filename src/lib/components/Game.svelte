@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion'
 	import { parse } from 'tinyduration'
+	import type { SerializableGameInfo } from '$lib/types/steam'
 
 	interface GameProps {
 		game?: SerializableGameInfo
