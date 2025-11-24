@@ -69,7 +69,7 @@ export interface UploadResult {
 	format?: string
 	size?: number
 	dominantColor?: string
-	colors?: any
+	colors?: Array<{ hex: string; rgb: [number, number, number]; population: number }>
 	aspectRatio?: number
 	duration?: number
 	videoCodec?: string
@@ -82,7 +82,7 @@ export interface UploadResult {
 export async function uploadFile(
 	file: File,
 	type: 'media' | 'photos' | 'projects' = 'media',
-	customOptions?: any
+	customOptions?: Record<string, unknown>
 ): Promise<UploadResult> {
 	try {
 		// Toggle this to use Cloudinary in development (requires API keys)
