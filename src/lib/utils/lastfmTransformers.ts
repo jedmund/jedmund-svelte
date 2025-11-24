@@ -1,6 +1,25 @@
 import type { Album, AlbumImages } from '$lib/types/lastfm'
 import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
 
+// Type for Last.fm track data from API responses
+interface LastfmTrack {
+	name: string
+	album: {
+		name: string
+		mbid?: string
+	}
+	artist: {
+		name: string
+		mbid?: string
+	}
+	images: LastfmImage[]
+	url?: string
+	nowPlaying?: boolean
+	date?: Date | string
+	mbid?: string
+	[key: string]: unknown
+}
+
 /**
  * Transform Last.fm image array into structured AlbumImages object
  */
@@ -43,7 +62,7 @@ export function getAlbumKey(artistName: string, albumName: string): string {
 /**
  * Transform track data into an Album object
  */
-export function trackToAlbum(track: any, rank: number): Album {
+export function trackToAlbum(track: LastfmTrack, rank: number): Album {
 	return {
 		name: track.album.name,
 		artist: {
@@ -53,7 +72,7 @@ export function trackToAlbum(track: any, rank: number): Album {
 		playCount: 1,
 		images: transformImages(track.images),
 		mbid: track.album.mbid || '',
-		url: track.url,
+		url: track.url || '',
 		rank,
 		isNowPlaying: track.nowPlaying || false,
 		nowPlayingTrack: track.nowPlaying ? track.name : undefined,
@@ -64,12 +83,12 @@ export function trackToAlbum(track: any, rank: number): Album {
 /**
  * Merge Apple Music data into an Album
  */
-export function mergeAppleMusicData(album: Album, appleMusicData: any): Album {
+export function mergeAppleMusicData(album: Album, appleMusicData: Album['appleMusicData']): Album {
 	return {
 		...album,
 		images: {
 			...album.images,
-			itunes: appleMusicData.highResArtwork || album.images.itunes
+			itunes: appleMusicData?.highResArtwork || album.images.itunes
 		},
 		appleMusicData
 	}

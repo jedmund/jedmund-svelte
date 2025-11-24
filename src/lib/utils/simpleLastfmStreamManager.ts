@@ -5,6 +5,24 @@ import { AlbumEnricher } from './albumEnricher'
 import { trackToAlbum } from './lastfmTransformers'
 import { logger } from '$lib/server/logger'
 
+// Type for recent tracks response
+interface RecentTracksResponse {
+	tracks: Array<{
+		name: string
+		album: {
+			name: string
+			mbid?: string
+		}
+		artist: {
+			name: string
+		}
+		nowPlaying?: boolean
+		date?: unknown
+		[key: string]: unknown
+	}>
+	[key: string]: unknown
+}
+
 export interface StreamUpdate {
 	albums?: Album[]
 }
@@ -90,7 +108,10 @@ export class SimpleLastfmStreamManager {
 	/**
 	 * Get recent albums from Last.fm tracks
 	 */
-	private async getRecentAlbums(limit: number, recentTracksResponse: any): Promise<Album[]> {
+	private async getRecentAlbums(
+		limit: number,
+		recentTracksResponse: RecentTracksResponse
+	): Promise<Album[]> {
 		const uniqueAlbums = new Map<string, Album>()
 
 		for (const track of recentTracksResponse.tracks) {

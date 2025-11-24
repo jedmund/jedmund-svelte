@@ -1,4 +1,5 @@
 import { logger } from '$lib/server/logger'
+import type { Album } from '$lib/types/lastfm'
 
 export interface TrackPlayInfo {
 	albumName: string
@@ -17,6 +18,29 @@ export interface NowPlayingUpdate {
 export interface NowPlayingResult {
 	isNowPlaying: boolean
 	nowPlayingTrack?: string
+}
+
+// Type for Last.fm track from recent tracks API
+interface LastfmRecentTrack {
+	name: string
+	artist: {
+		name: string
+	}
+	album: {
+		name: string
+	}
+	nowPlaying?: boolean
+	date?: {
+		uts: number | string
+		'#text': string
+	}
+	[key: string]: unknown
+}
+
+// Type for recent tracks response
+interface RecentTracksResponse {
+	tracks: LastfmRecentTrack[]
+	[key: string]: unknown
 }
 
 // Configuration constants
@@ -139,8 +163,11 @@ export class NowPlayingDetector {
 	 * Process now playing data from Last.fm API response
 	 */
 	processNowPlayingTracks(
-		recentTracksResponse: any,
-		appleMusicDataLookup: (artistName: string, albumName: string) => Promise<any>
+		recentTracksResponse: RecentTracksResponse,
+		appleMusicDataLookup: (
+			artistName: string,
+			albumName: string
+		) => Promise<Album['appleMusicData'] | null>
 	): Promise<Map<string, NowPlayingUpdate>> {
 		return this.detectNowPlayingAlbums(recentTracksResponse.tracks, appleMusicDataLookup)
 	}
@@ -149,8 +176,11 @@ export class NowPlayingDetector {
 	 * Detect which albums are currently playing from a list of tracks
 	 */
 	private async detectNowPlayingAlbums(
-		tracks: any[],
-		appleMusicDataLookup: (artistName: string, albumName: string) => Promise<any>
+		tracks: LastfmRecentTrack[],
+		appleMusicDataLookup: (
+			artistName: string,
+			albumName: string
+		) => Promise<Album['appleMusicData'] | null>
 	): Promise<Map<string, NowPlayingUpdate>> {
 		const albums: Map<string, NowPlayingUpdate> = new Map()
 		let hasOfficialNowPlaying = false
