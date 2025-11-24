@@ -1,3 +1,5 @@
+import type { TiptapNode, EditorData } from '$lib/types/editor'
+
 // Content node types for rendering
 interface ContentNode {
 	type: string
@@ -10,7 +12,14 @@ interface ContentNode {
 	caption?: string
 	language?: string
 	mediaId?: number
+	marks?: Mark[]
 	[key: string]: unknown
+}
+
+// Mark types (bold, italic, link, etc.)
+interface Mark {
+	type: string
+	attrs?: Record<string, unknown>
 }
 
 // Render Edra/BlockNote JSON content to HTML
@@ -290,15 +299,15 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 	}
 
 	// Render inline content (text nodes with marks)
-	const renderInlineContent = (content: any[]): string => {
+	const renderInlineContent = (content: ContentNode[]): string => {
 		return content
-			.map((node: any) => {
+			.map((node: ContentNode) => {
 				if (node.type === 'text') {
 					let text = escapeHtml(node.text || '')
 
 					// Apply marks (bold, italic, etc.)
 					if (node.marks) {
-						node.marks.forEach((mark: any) => {
+						node.marks.forEach((mark: Mark) => {
 							switch (mark.type) {
 								case 'bold':
 									text = `<strong>${text}</strong>`
@@ -351,16 +360,19 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 }
 
 // Extract text content from Edra JSON for excerpt
-export const getContentExcerpt = (content: any, maxLength = 200): string => {
+export const getContentExcerpt = (content: EditorData | unknown, maxLength = 200): string => {
 	if (!content) return ''
 
+	// Type guard for content object
+	const contentObj = content as Record<string, unknown>
+
 	// Handle Tiptap format first (has type: 'doc')
-	if (content.type === 'doc' && content.content) {
-		return extractTiptapText(content, maxLength)
+	if (contentObj.type === 'doc' && contentObj.content) {
+		return extractTiptapText(contentObj, maxLength)
 	}
 
 	// Handle both { blocks: [...] } and { content: [...] } formats
-	const blocks = content.blocks || content.content || []
+	const blocks = (contentObj.blocks || contentObj.content || []) as ContentNode[]
 	if (!Array.isArray(blocks)) return ''
 
 	const extractText = (node: ContentNode): string => {
@@ -383,8 +395,8 @@ export const getContentExcerpt = (content: any, maxLength = 200): string => {
 }
 
 // Extract text from Tiptap content
-function extractTiptapText(doc: any, maxLength: number): string {
-	const extractFromNode = (node: any): string => {
+function extractTiptapText(doc: Record<string, unknown>, maxLength: number): string {
+	const extractFromNode = (node: ContentNode): string => {
 		if (node.type === 'text') {
 			return node.text || ''
 		}
@@ -396,7 +408,8 @@ function extractTiptapText(doc: any, maxLength: number): string {
 		return ''
 	}
 
-	const text = doc.content.map(extractFromNode).join(' ').trim()
+	const content = doc.content as ContentNode[]
+	const text = content.map(extractFromNode).join(' ').trim()
 	if (text.length <= maxLength) return text
 	return text.substring(0, maxLength).trim() + '...'
 }
