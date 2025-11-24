@@ -10,7 +10,7 @@
 	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
-	import type { JSONContent, Editor as TipTapEditor } from '@tiptap/core'
+	import type { JSONContent } from '@tiptap/core'
 	import type { Post } from '@prisma/client'
 
 	interface Props {
@@ -29,9 +29,7 @@
 	let { postId, initialData, mode }: Props = $props()
 
 	// State
-	let isLoading = $state(false)
 	let hasLoaded = $state(mode === 'create') // Create mode loads immediately
-	let isSaving = $state(false)
 	let activeTab = $state('metadata')
 	let updatedAt = $state<string | undefined>(initialData?.updatedAt)
 
@@ -179,7 +177,7 @@ $effect(() => {
 	})
 
 	// Navigation guard: flush autosave before navigating away (only if unsaved)
-	beforeNavigate(async (navigation) => {
+	beforeNavigate(async () => {
 		if (hasLoaded && autoSave) {
 			if (autoSave.status === 'saved') {
 				return

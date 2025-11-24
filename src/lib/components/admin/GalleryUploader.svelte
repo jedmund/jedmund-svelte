@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Media } from '@prisma/client'
 	import Button from './Button.svelte'
-	import Input from './Input.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
@@ -27,17 +26,13 @@
 	}
 
 	let {
-		label,
 		value = $bindable([]),
 		onUpload,
 		onReorder,
 		onRemove,
 		maxItems = 20,
-		allowAltText = true,
-		required = false,
 		error,
 		placeholder = 'Drag and drop images here, or click to browse',
-		helpText,
 		showBrowseLibrary = false,
 		maxFileSize = 10,
 		disabled = false
@@ -78,7 +73,7 @@
 
 	// Upload multiple files to server
 	async function uploadFiles(files: File[]): Promise<Media[]> {
-		const uploadPromises = files.map(async (file, index) => {
+		const uploadPromises = files.map(async (file) => {
 			const formData = new FormData()
 			formData.append('file', file)
 
