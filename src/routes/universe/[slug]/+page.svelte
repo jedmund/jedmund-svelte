@@ -87,6 +87,7 @@
 
 	<!-- JSON-LD -->
 	{#if articleJsonLdScript}
+		<!-- svelte-ignore svelte/no-at-html-tags -->
 		{@html articleJsonLdScript}
 	{/if}
 </svelte:head>

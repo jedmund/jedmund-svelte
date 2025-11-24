@@ -57,6 +57,7 @@
 		New Post
 		{#snippet icon()}
 			<div class="chevron">
+				<!-- svelte-ignore svelte/no-at-html-tags -->
 				{@html ChevronDownIcon}
 			</div>
 		{/snippet}

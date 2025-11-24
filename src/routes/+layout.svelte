@@ -35,6 +35,7 @@
 
 <svelte:head>
 	<!-- Site-wide JSON-LD -->
+	<!-- svelte-ignore svelte/no-at-html-tags -->
 	{@html personJsonLdScript}
 </svelte:head>
 

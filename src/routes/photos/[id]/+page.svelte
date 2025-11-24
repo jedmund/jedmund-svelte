@@ -357,6 +357,7 @@
 
 	<!-- JSON-LD -->
 	{#if photoJsonLdScript}
+		<!-- svelte-ignore svelte/no-at-html-tags -->
 		{@html photoJsonLdScript}
 	{/if}
 </svelte:head>

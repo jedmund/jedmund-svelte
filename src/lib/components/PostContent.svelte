@@ -39,6 +39,7 @@
 	{/if}
 
 	<div class="post-body">
+		<!-- svelte-ignore svelte/no-at-html-tags -->
 		{@html post.content}
 	</div>
 

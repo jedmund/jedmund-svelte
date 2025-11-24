@@ -142,6 +142,7 @@
 
 	<!-- JSON-LD -->
 	{#if galleryJsonLdScript}
+		<!-- svelte-ignore svelte/no-at-html-tags -->
 		{@html galleryJsonLdScript}
 	{/if}
 </svelte:head>
@@ -163,6 +164,7 @@
 			{#if album.content}
 				<div class="album-content">
 					<div class="edra-rendered-content">
+						<!-- svelte-ignore svelte/no-at-html-tags -->
 						{@html renderEdraContent(album.content, { albumSlug: album.slug })}
 					</div>
 				</div>

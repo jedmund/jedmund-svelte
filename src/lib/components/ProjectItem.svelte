@@ -133,6 +133,7 @@
 	<div class="project-logo" style="background-color: {backgroundColor}">
 		{#if svgContent}
 			<div bind:this={logoElement} class="logo-svg" style="transform: {logoTransform}">
+				<!-- svelte-ignore svelte/no-at-html-tags -->
 				{@html svgContent}
 			</div>
 		{:else if logoUrl}
@@ -146,6 +147,7 @@
 		{/if}
 	</div>
 	<div class="project-content">
+		<!-- svelte-ignore svelte/no-at-html-tags -->
 		<p class="project-description">{@html highlightedDescription}</p>
 
 		{#if isListOnly}

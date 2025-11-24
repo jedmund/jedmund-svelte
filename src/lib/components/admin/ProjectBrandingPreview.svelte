@@ -54,6 +54,7 @@
 	{:else if showLogo}
 		<!-- Show placeholder when logo toggle is on but no logo provided -->
 		<div class="preview-placeholder">
+			<!-- svelte-ignore svelte/no-at-html-tags -->
 			{@html placeholderIcon}
 		</div>
 	{/if}
