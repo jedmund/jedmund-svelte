@@ -1,3 +1,5 @@
+import type { TiptapNode } from '$lib/types/editor'
+
 // Extract URL embeds from Tiptap content
 export interface ExtractedEmbed {
 	type: 'urlEmbed' | 'youtube'
@@ -10,7 +12,7 @@ export interface ExtractedEmbed {
 	videoId?: string
 }
 
-export function extractEmbeds(content: any): ExtractedEmbed[] {
+export function extractEmbeds(content: TiptapNode): ExtractedEmbed[] {
 	if (!content || !content.content) return []
 
 	const embeds: ExtractedEmbed[] = []
@@ -32,7 +34,7 @@ export function extractEmbeds(content: any): ExtractedEmbed[] {
 	}
 
 	// Recursive function to find embed nodes
-	const findEmbeds = (node: any) => {
+	const findEmbeds = (node: TiptapNode) => {
 		if (node.type === 'urlEmbed' && node.attrs?.url) {
 			const url = node.attrs.url
 			const isYouTube = /(?:youtube\.com|youtu\.be)/.test(url)

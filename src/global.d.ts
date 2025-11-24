@@ -1,10 +1,11 @@
 declare module '*.svg' {
-	const content: any
+	const content: string
 	export default content
 }
 
 declare module '*.svg?component' {
-	const content: any
+	import type { Component } from 'svelte'
+	const content: Component
 	export default content
 }
 

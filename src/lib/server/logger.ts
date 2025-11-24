@@ -1,13 +1,17 @@
 import { dev } from '$app/environment'
+import type { RequestEvent } from '@sveltejs/kit'
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 export type LogCategory = 'music' | 'api' | 'db' | 'media' | 'general'
+
+// LogContext supports common log data types
+export type LogContext = Record<string, string | number | boolean | null | undefined>
 
 interface LogEntry {
 	level: LogLevel
 	message: string
 	timestamp: string
-	context?: Record<string, any>
+	context?: LogContext
 	error?: Error
 	category?: LogCategory
 }
@@ -67,7 +71,7 @@ class Logger {
 	private log(
 		level: LogLevel,
 		message: string,
-		context?: Record<string, any>,
+		context?: LogContext,
 		error?: Error,
 		category?: LogCategory
 	) {
@@ -98,29 +102,29 @@ class Logger {
 		}
 	}
 
-	debug(message: string, context?: Record<string, any>, category?: LogCategory) {
+	debug(message: string, context?: LogContext, category?: LogCategory) {
 		this.log('debug', message, context, undefined, category)
 	}
 
-	info(message: string, context?: Record<string, any>, category?: LogCategory) {
+	info(message: string, context?: LogContext, category?: LogCategory) {
 		this.log('info', message, context, undefined, category)
 	}
 
-	warn(message: string, context?: Record<string, any>, category?: LogCategory) {
+	warn(message: string, context?: LogContext, category?: LogCategory) {
 		this.log('warn', message, context, undefined, category)
 	}
 
-	error(message: string, error?: Error, context?: Record<string, any>, category?: LogCategory) {
+	error(message: string, error?: Error, context?: LogContext, category?: LogCategory) {
 		this.log('error', message, context, error, category)
 	}
 
 	// Convenience method for music-related logs
-	music(level: LogLevel, message: string, context?: Record<string, any>) {
+	music(level: LogLevel, message: string, context?: LogContext) {
 		this.log(level, message, context, undefined, 'music')
 	}
 
 	// Log API requests
-	apiRequest(method: string, path: string, context?: Record<string, any>) {
+	apiRequest(method: string, path: string, context?: LogContext) {
 		this.info(`API Request: ${method} ${path}`, context)
 	}
 
@@ -134,7 +138,7 @@ class Logger {
 	}
 
 	// Log database operations
-	dbQuery(operation: string, model: string, duration?: number, context?: Record<string, any>) {
+	dbQuery(operation: string, model: string, duration?: number, context?: LogContext) {
 		this.debug(`DB Query: ${operation} on ${model}`, {
 			...context,
 			duration: duration ? `${duration}ms` : undefined
@@ -156,13 +160,12 @@ export const logger = new Logger()
 
 // Middleware to log API requests
 export function createRequestLogger() {
-	return (event: any) => {
+	return (event: RequestEvent) => {
 		const start = Date.now()
 		const { method, url } = event.request
 		const path = new URL(url).pathname
 
 		logger.apiRequest(method, path, {
-			headers: Object.fromEntries(event.request.headers),
 			ip: event.getClientAddress()
 		})
 
