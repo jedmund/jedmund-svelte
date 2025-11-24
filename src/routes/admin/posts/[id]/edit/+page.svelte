@@ -378,7 +378,7 @@ onMount(async () => {
 	// Trigger autosave when form data changes
 	$effect(() => {
 		// Establish dependencies
-		title; slug; status; content; tags; excerpt; postType
+		void title; void slug; void status; void content; void tags; void excerpt; void postType
 		if (hasLoaded) {
 			autoSave.schedule()
 		}

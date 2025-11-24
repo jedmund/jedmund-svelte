@@ -132,7 +132,7 @@ $effect(() => {
 
 // Trigger autosave when form data changes
 $effect(() => {
-	status; content; linkUrl; linkDescription; title
+	void status; void content; void linkUrl; void linkDescription; void title
 	if (hasLoaded && autoSave) {
 		autoSave.schedule()
 	}

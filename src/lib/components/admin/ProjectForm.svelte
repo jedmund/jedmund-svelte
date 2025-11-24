@@ -88,7 +88,7 @@
 	// Trigger autosave when formData changes (edit mode)
 	$effect(() => {
 		// Establish dependencies on fields
-		formStore.fields; activeTab
+		void formStore.fields; void activeTab
 		if (mode === 'edit' && hasLoaded && autoSave) {
 			autoSave.schedule()
 		}

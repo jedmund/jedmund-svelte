@@ -125,7 +125,7 @@ $effect(() => {
 
 	// Trigger autosave when form data changes
 	$effect(() => {
-		title; slug; status; content; tags; activeTab
+		void title; void slug; void status; void content; void tags; void activeTab
 		if (hasLoaded && autoSave) {
 			autoSave.schedule()
 		}

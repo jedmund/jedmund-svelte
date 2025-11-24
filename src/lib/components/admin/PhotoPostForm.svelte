@@ -114,7 +114,7 @@ let autoSave = mode === 'edit' && postId
 
 	// Trigger autosave when form data changes
 	$effect(() => {
-		title; status; content; featuredImage; tags
+		void title; void status; void content; void featuredImage; void tags
 		if (hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
