@@ -235,8 +235,8 @@
 						}
 					])
 					.run()
-			break
-		}
+				break
+			}
 			case 'video':
 				editor.chain().focus().setVideo(media.url).run()
 				break
