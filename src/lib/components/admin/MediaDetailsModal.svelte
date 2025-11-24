@@ -223,6 +223,7 @@
 					<div class="video-container">
 						<video controls poster={media.thumbnailUrl || undefined} class="preview-video">
 							<source src={media.url} type={media.mimeType} />
+							<track kind="captions" />
 							Your browser does not support the video tag.
 						</video>
 					</div>

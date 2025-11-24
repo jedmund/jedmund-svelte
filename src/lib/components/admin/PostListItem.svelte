@@ -122,7 +122,13 @@
 	}
 </script>
 
-<article class="post-item" onclick={handlePostClick}>
+<div
+	class="post-item"
+	role="button"
+	tabindex="0"
+	onclick={handlePostClick}
+	onkeydown={(e) => e.key === 'Enter' && handlePostClick()}
+>
 	<div class="post-main">
 		{#if post.title}
 			<h3 class="post-title">{post.title}</h3>
@@ -178,7 +184,7 @@
 			</div>
 		{/if}
 	</div>
-</article>
+</div>
 
 <style lang="scss">
 	.post-item {

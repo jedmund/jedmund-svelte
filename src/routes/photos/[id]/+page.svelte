@@ -370,7 +370,12 @@
 		</div>
 	</div>
 {:else if photo}
-	<div class="photo-page" onmousemove={handleMouseMove} onmouseleave={handleMouseLeave}>
+	<div
+		class="photo-page"
+		role="presentation"
+		onmousemove={handleMouseMove}
+		onmouseleave={handleMouseLeave}
+	>
 		<div class="photo-content-wrapper">
 			<PhotoViewEnhanced
 				src={photo.url}

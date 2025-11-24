@@ -84,6 +84,8 @@
 	class:active={dragActive}
 	class:compact
 	class:disabled
+	role="region"
+	aria-label="File upload drop zone"
 	ondragover={handleDragOver}
 	ondragleave={handleDragLeave}
 	ondrop={handleDrop}

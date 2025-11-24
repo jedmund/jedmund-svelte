@@ -86,6 +86,7 @@
 
 <div
 	class="face-container"
+	role="presentation"
 	onmouseenter={handleMouseEnter}
 	onmouseleave={handleMouseLeave}
 	style="transform: scale({scale.current})"

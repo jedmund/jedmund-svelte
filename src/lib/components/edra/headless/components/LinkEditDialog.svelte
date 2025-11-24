@@ -68,6 +68,9 @@
 <div
 	bind:this={dialogElement}
 	class="link-edit-dialog"
+	role="dialog"
+	aria-modal="false"
+	tabindex="-1"
 	style="left: {x}px; top: {y}px;"
 	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
 	onkeydown={handleKeydown}

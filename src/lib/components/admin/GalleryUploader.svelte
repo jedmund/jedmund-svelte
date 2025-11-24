@@ -407,10 +407,14 @@
 			class:uploading={isUploading}
 			class:has-error={!!uploadError}
 			class:disabled
+			role="button"
+			aria-label="Upload images drop zone"
+			tabindex={disabled ? -1 : 0}
 			ondragover={disabled ? undefined : handleDragOver}
 			ondragleave={disabled ? undefined : handleDragLeave}
 			ondrop={disabled ? undefined : handleDrop}
 			onclick={disabled ? undefined : handleBrowseClick}
+			onkeydown={disabled ? undefined : (e) => e.key === 'Enter' && handleBrowseClick()}
 		>
 			{#if isUploading}
 				<!-- Upload Progress -->
@@ -541,6 +545,9 @@
 					class:drag-over={draggedOverIndex === index}
 					class:disabled
 					draggable={!disabled}
+					role="button"
+					aria-label="Draggable gallery image"
+					tabindex={disabled ? -1 : 0}
 					ondragstart={(e) => handleImageDragStart(e, index)}
 					ondragover={(e) => handleImageDragOver(e, index)}
 					ondragleave={handleImageDragLeave}

@@ -246,7 +246,8 @@
 			class:has-files={files.length > 0}
 			class:compact={files.length > 0}
 			class:uploading={isUploading}
-			ondragover={handleDragOver}
+		role="region"
+		aria-label="File upload drop zone"			ondragover={handleDragOver}
 			ondragleave={handleDragLeave}
 			ondrop={handleDrop}
 		>

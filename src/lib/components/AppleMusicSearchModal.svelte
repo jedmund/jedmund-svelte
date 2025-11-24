@@ -91,8 +91,15 @@
 </script>
 
 {#if isOpen}
-	<div class="modal-overlay" onclick={close}>
-		<div class="modal-container" onclick={(e) => e.stopPropagation()}>
+	<div class="modal-overlay" role="presentation" onclick={close}>
+		<div
+			class="modal-container"
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
+		>
 			<div class="modal-header">
 				<h2>Apple Music API Search</h2>
 				<button class="close-btn" onclick={close} aria-label="Close">

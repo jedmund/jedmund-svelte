@@ -449,7 +449,7 @@ $effect(() => {
 
 			<!-- Caption/Content -->
 			<div class="form-section">
-				<label class="editor-label">Caption & Description</label>
+				<div class="editor-label">Caption & Description</div>
 				<p class="editor-help">Add a caption or tell the story behind this photo</p>
 				<div class="editor-container">
 					<Editor

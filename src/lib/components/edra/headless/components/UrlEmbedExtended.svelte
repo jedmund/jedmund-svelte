@@ -162,7 +162,7 @@
 			onkeydown={handleKeydown}
 			oncontextmenu={handleContextMenu}
 			tabindex="0"
-			role="article"
+			role="button"
 		>
 			{#if showActions && editor.isEditable}
 				<div class="edra-youtube-embed-actions">
@@ -208,7 +208,7 @@
 			onkeydown={handleKeydown}
 			oncontextmenu={handleContextMenu}
 			tabindex="0"
-			role="article"
+			role="button"
 		>
 			{#if showActions && editor.isEditable}
 				<div class="edra-url-embed-actions">

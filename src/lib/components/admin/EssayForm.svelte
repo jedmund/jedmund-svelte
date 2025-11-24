@@ -375,7 +375,7 @@ $effect(() => {
 							/>
 
 							<div class="tags-field">
-								<label class="input-label">Tags</label>
+								<div class="input-label">Tags</div>
 								<div class="tag-input-wrapper">
 									<Input
 										bind:value={tagInput}

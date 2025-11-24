@@ -90,12 +90,12 @@
 </script>
 
 <div class="media-input">
-	<label class="input-label">
+	<div class="input-label">
 		{label}
 		{#if required}
 			<span class="required">*</span>
 		{/if}
-	</label>
+	</div>
 
 	<!-- Selected Media Preview -->
 	{#if hasValue}

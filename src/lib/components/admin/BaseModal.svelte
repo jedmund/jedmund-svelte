@@ -81,12 +81,15 @@
 {#if isOpen}
 	<div
 		class="modal-backdrop"
-		on:click={handleBackdropClick}
+		role="presentation"
+		onclick={handleBackdropClick}
 		transition:fade={{ duration: TRANSITION_FAST_MS }}
 	>
 		<div
 			class={modalClass}
-			on:click|stopPropagation
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
+			tabindex="-1"
 			transition:fade={{ duration: TRANSITION_FAST_MS }}
 			role="dialog"
 			aria-modal="true"
