@@ -65,7 +65,6 @@
 
 	{#if renderedContent}
 		<div class="post-body">
-			<!-- svelte-ignore svelte/no-at-html-tags -->
 			{@html renderedContent}
 		</div>
 	{/if}

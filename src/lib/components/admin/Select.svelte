@@ -53,7 +53,6 @@
 		{/each}
 	</select>
 	<div class="select-icon">
-		<!-- svelte-ignore svelte/no-at-html-tags -->
 		{@html ChevronDownIcon}
 	</div>
 </div>

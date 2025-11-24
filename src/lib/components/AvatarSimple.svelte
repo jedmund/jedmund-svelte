@@ -3,7 +3,6 @@
 </script>
 
 <div class="avatar-simple">
-	<!-- svelte-ignore svelte/no-at-html-tags -->
 	{@html jedmundIcon}
 </div>
 

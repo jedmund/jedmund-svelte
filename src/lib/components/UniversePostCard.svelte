@@ -83,7 +83,6 @@
 			{#if post.postType === 'essay'}
 				<p>{getContentExcerpt(post.content, 300)}</p>
 			{:else}
-				<!-- svelte-ignore svelte/no-at-html-tags -->
 				{@html renderEdraContent(post.content)}
 			{/if}
 		</div>

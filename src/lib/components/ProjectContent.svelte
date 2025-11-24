@@ -15,7 +15,6 @@
 	{#if project.caseStudyContent && project.caseStudyContent.content && project.caseStudyContent.content.length > 0}
 		<div class="case-study-section">
 			<div class="case-study-content">
-				<!-- svelte-ignore svelte/no-at-html-tags -->
 				{@html renderEdraContent(project.caseStudyContent)}
 			</div>
 		</div>
