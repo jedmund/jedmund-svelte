@@ -1,7 +1,7 @@
 import { loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 
 export function useDraftRecovery<TPayload>(options: {
-	draftKey: string | null
+	draftKey: () => string | null
 	onRestore: (payload: TPayload) => void
 	enabled?: boolean
 }) {
@@ -17,9 +17,10 @@ export function useDraftRecovery<TPayload>(options: {
 
 	// Auto-detect draft on mount using $effect
 	$effect(() => {
-		if (!options.draftKey || options.enabled === false) return
+		const key = options.draftKey()
+		if (!key || options.enabled === false) return
 
-		const draft = loadDraft<TPayload>(options.draftKey)
+		const draft = loadDraft<TPayload>(key)
 		if (draft) {
 			showPrompt = true
 			draftTimestamp = draft.ts
@@ -43,19 +44,21 @@ export function useDraftRecovery<TPayload>(options: {
 		draftTimeText,
 
 		restore() {
-			if (!options.draftKey) return
-			const draft = loadDraft<TPayload>(options.draftKey)
+			const key = options.draftKey()
+			if (!key) return
+			const draft = loadDraft<TPayload>(key)
 			if (!draft) return
 
 			options.onRestore(draft.payload)
 			showPrompt = false
-			clearDraft(options.draftKey)
+			clearDraft(key)
 		},
 
 		dismiss() {
-			if (!options.draftKey) return
+			const key = options.draftKey()
+			if (!key) return
 			showPrompt = false
-			clearDraft(options.draftKey)
+			clearDraft(key)
 		}
 	}
 }
