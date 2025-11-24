@@ -5,6 +5,8 @@
 	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import RefreshIcon from '$icons/refresh.svg?component'
+	import FileIcon from '$icons/FileIcon.svelte'
+	import { validateImageFile, uploadMediaFiles } from '$lib/utils/mediaHelpers'
 
 	interface Props {
 		label: string
@@ -56,45 +58,22 @@
 		return `aspect-ratio: ${w}/${h}; padding-bottom: ${ratio}%;`
 	})
 
-	// File validation
+	// File validation using shared helper
 	function validateFile(file: File): string | null {
-		// Check file type
-		if (!file.type.startsWith('image/')) {
-			return 'Please select an image file'
-		}
-
-		// Check file size
-		const sizeMB = file.size / 1024 / 1024
-		if (sizeMB > maxFileSize) {
-			return `File size must be less than ${maxFileSize}MB`
-		}
-
-		return null
+		return validateImageFile(file, maxFileSize)
 	}
 
-	// Upload file to server
+	// Upload file to server using shared helper
 	async function uploadFile(file: File): Promise<Media> {
-		const formData = new FormData()
-		formData.append('file', file)
-
-		// Removed altText upload - description is handled separately
-
+		const extraFields: Record<string, string> = {}
+		
+		// Add description if provided
 		if (descriptionValue.trim()) {
-			formData.append('description', descriptionValue.trim())
+			extraFields.description = descriptionValue.trim()
 		}
 
-		const response = await fetch('/api/media/upload', {
-			method: 'POST',
-			body: formData,
-			credentials: 'same-origin'
-		})
-
-		if (!response.ok) {
-			const errorData = await response.json()
-			throw new Error(errorData.error || 'Upload failed')
-		}
-
-		return await response.json()
+		const uploadedMedia = await uploadMediaFiles([file], { extraFields })
+		return uploadedMedia[0] as Media
 	}
 
 	// Handle file selection/drop
@@ -420,54 +399,7 @@
 				{:else}
 					<!-- Upload Prompt -->
 					<div class="upload-prompt">
-						<svg
-							class="upload-icon"
-							width="48"
-							height="48"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<polyline
-								points="14,2 14,8 20,8"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<line
-								x1="16"
-								y1="13"
-								x2="8"
-								y2="13"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-							/>
-							<line
-								x1="16"
-								y1="17"
-								x2="8"
-								y2="17"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-							/>
-							<polyline
-								points="10,9 9,9 8,9"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
+						<FileIcon size={48} class="upload-icon" />
 						<p class="upload-main-text">{placeholder}</p>
 						<p class="upload-sub-text">
 							Supports JPG, PNG, GIF up to {maxFileSize}MB

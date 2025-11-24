@@ -74,6 +74,25 @@ export function validateFileType(file: File, acceptedTypes: string[]): boolean {
 }
 
 /**
+ * Validate image file for upload (type and size)
+ * Returns null if valid, error message if invalid
+ */
+export function validateImageFile(file: File, maxSizeMB: number): string | null {
+	// Check file type
+	if (!file.type.startsWith('image/')) {
+		return 'Please select an image file'
+	}
+
+	// Check file size
+	const sizeMB = file.size / 1024 / 1024
+	if (sizeMB > maxSizeMB) {
+		return `File size must be less than ${maxSizeMB}MB`
+	}
+
+	return null
+}
+
+/**
  * Get display name for MIME type
  */
 export function getMimeTypeDisplayName(mimeType: string): string {
@@ -114,4 +133,65 @@ export function formatBitrate(bitrate: number): string {
 	if (bitrate < 1000) return `${bitrate} bps`
 	if (bitrate < 1000000) return `${(bitrate / 1000).toFixed(0)} kbps`
 	return `${(bitrate / 1000000).toFixed(1)} Mbps`
+}
+
+/**
+ * Serialized Media type - represents Media as returned from API (dates as strings)
+ */
+export interface SerializedMedia {
+	id: number
+	filename: string
+	originalName: string
+	mimeType: string
+	size: number
+	url: string
+	thumbnailUrl: string | null
+	width: number | null
+	height: number | null
+	description: string | null
+	isPhotography: boolean
+	createdAt: string
+	updatedAt: string
+	exifData: Record<string, unknown> | null
+	usedIn: string[]
+}
+
+/**
+ * Upload media files to the server
+ * Returns serialized media objects (with string dates from JSON)
+ */
+export async function uploadMediaFiles(
+	files: File[],
+	options?: {
+		onProgress?: (fileKey: string, percent: number) => void
+		extraFields?: Record<string, string>
+	}
+): Promise<SerializedMedia[]> {
+	const uploadPromises = files.map(async (file) => {
+		const formData = new FormData()
+		formData.append('file', file)
+
+		// Add any extra fields (e.g., description)
+		if (options?.extraFields) {
+			Object.entries(options.extraFields).forEach(([key, value]) => {
+				formData.append(key, value)
+			})
+		}
+
+		const response = await fetch('/api/media/upload', {
+			method: 'POST',
+			body: formData,
+			credentials: 'same-origin'
+		})
+
+		if (!response.ok) {
+			const errorData = await response.json()
+			throw new Error(errorData.error || `Upload failed for ${file.name}`)
+		}
+
+		const result = await response.json()
+		return result as SerializedMedia
+	})
+
+	return Promise.all(uploadPromises)
 }
