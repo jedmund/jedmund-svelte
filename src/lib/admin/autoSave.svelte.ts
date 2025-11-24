@@ -95,7 +95,7 @@ export function createAutoSaveStore<TPayload, TResponse = unknown>(
       lastSentHash = hash
       setStatus('saved')
       if (opts.onSaved) opts.onSaved(res, { prime })
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (e?.name === 'AbortError') {
         // Newer save superseded this one
         return

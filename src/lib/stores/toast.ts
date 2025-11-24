@@ -67,7 +67,7 @@ export const toast = {
 		messages: {
 			loading: string
 			success: string | ((data: T) => string)
-			error: string | ((error: any) => string)
+			error: string | ((error: unknown) => string)
 		},
 		options?: ToastOptions
 	) => {
@@ -82,7 +82,7 @@ export const toast = {
 	},
 
 	// Custom toast with full control
-	custom: (component: any, options?: ToastOptions) => {
+	custom: (component: unknown, options?: ToastOptions) => {
 		return sonnerToast.custom(component, {
 			...defaultOptions,
 			...options

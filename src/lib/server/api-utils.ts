@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit'
 import { getSessionUser } from '$lib/server/admin/session'
 
 // Response helpers
-export function jsonResponse(data: any, status = 200): Response {
+export function jsonResponse(data: unknown, status = 200): Response {
 	return new Response(JSON.stringify(data), {
 		status,
 		headers: { 'Content-Type': 'application/json' }
@@ -43,7 +43,7 @@ export function getPaginationMeta(total: number, page: number, limit: number) {
 export const VALID_STATUSES = ['draft', 'published'] as const
 export type Status = (typeof VALID_STATUSES)[number]
 
-export function isValidStatus(status: any): status is Status {
+export function isValidStatus(status: unknown): status is Status {
 	return VALID_STATUSES.includes(status)
 }
 
@@ -51,7 +51,7 @@ export function isValidStatus(status: any): status is Status {
 export const VALID_POST_TYPES = ['post', 'essay'] as const
 export type PostType = (typeof VALID_POST_TYPES)[number]
 
-export function isValidPostType(type: any): type is PostType {
+export function isValidPostType(type: unknown): type is PostType {
 	return VALID_POST_TYPES.includes(type)
 }
 

@@ -58,7 +58,7 @@ export async function request<TResponse = unknown, TBody = unknown>(
   const res = await fetch(url, {
     method,
     headers: mergedHeaders,
-    body: body ? (isFormData ? (body as any) : JSON.stringify(body)) : undefined,
+    body: body ? (isFormData ? (body as FormData) : JSON.stringify(body)) : undefined,
     signal,
     credentials: 'same-origin'
   })

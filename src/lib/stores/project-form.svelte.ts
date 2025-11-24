@@ -54,7 +54,7 @@ export function createProjectFormStore(initialProject?: Project | null) {
 		isDirty,
 
 		// Methods for controlled mutation
-		setField(key: keyof ProjectFormData, value: any) {
+		setField(key: keyof ProjectFormData, value: unknown) {
 			fields[key] = value
 		},
 
