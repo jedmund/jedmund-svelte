@@ -6,11 +6,9 @@ import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
-	import Button from '$lib/components/admin/Button.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
-	let loading = $state(false)
 	let saving = $state(false)
 
 	let title = $state('')
@@ -155,7 +153,7 @@ import { api } from '$lib/admin/api'
 						onRemoveTag={removeTag}
 						onDelete={() => {}}
 						onClose={() => (showMetadata = false)}
-						onFieldUpdate={(key, value) => {
+						onFieldUpdate={(key, _value) => {
 							if (key === 'slug') {
 								slugManuallySet = true
 							}

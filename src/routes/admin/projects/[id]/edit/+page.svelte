@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
 import { page } from '$app/stores'
 import ProjectForm from '$lib/components/admin/ProjectForm.svelte'
 import type { Project } from '$lib/types/project'

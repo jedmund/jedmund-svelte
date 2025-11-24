@@ -4,7 +4,6 @@
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
-	import { browser } from '$app/environment'
 	import type { PageData } from './$types'
 
 	interface Album {

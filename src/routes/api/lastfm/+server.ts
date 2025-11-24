@@ -80,14 +80,6 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 }
 
-async function getWeeklyAlbumChart(client: LastClient, username: string): Promise<Album[]> {
-	const chart = await client.user.getWeeklyAlbumChart(username)
-	return chart.albums.map((album) => ({
-		...album,
-		images: { small: '', medium: '', large: '', extralarge: '', mega: '', default: '' }
-	}))
-}
-
 async function getRecentAlbums(
 	client: LastClient,
 	username: string,
