@@ -8,8 +8,7 @@ import {
 	parseRequestBody
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
-import { removeMediaUsage, extractMediaIds } from '$lib/server/media-usage.js'
-import { deleteFile, extractPublicId, isCloudinaryConfigured } from '$lib/server/cloudinary'
+import { deleteFile, extractPublicId } from '$lib/server/cloudinary'
 import { deleteFileLocally } from '$lib/server/local-storage'
 
 // Type for content node structure

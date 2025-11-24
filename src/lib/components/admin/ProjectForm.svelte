@@ -6,7 +6,6 @@
 	import Composer from './composer'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
-	import ProjectImagesForm from './ProjectImagesForm.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import DraftPrompt from './DraftPrompt.svelte'
 	import { toast } from '$lib/stores/toast'
@@ -32,13 +31,12 @@
 	// UI state
 	let isLoading = $state(mode === 'edit')
 	let hasLoaded = $state(mode === 'create')
-	let isSaving = $state(false)
 	let activeTab = $state('metadata')
 	let error = $state<string | null>(null)
 	let successMessage = $state<string | null>(null)
 
 	// Ref to the editor component
-	let editorRef: { save: () => Promise<JSONContent> } | undefined
+	let editorRef: { save: () => Promise<JSONContent> } | undefined = $state.raw()
 
 	// Draft key for autosave fallback
 	const draftKey = $derived(mode === 'edit' && project ? makeDraftKey('project', project.id) : null)
@@ -62,7 +60,7 @@
 
 	// Draft recovery helper
 	const draftRecovery = useDraftRecovery<Partial<ProjectFormData>>({
-		draftKey: draftKey,
+		draftKey: () => draftKey,
 		onRestore: (payload) => formStore.setFields(payload)
 	})
 
@@ -90,7 +88,7 @@
 	// Trigger autosave when formData changes (edit mode)
 	$effect(() => {
 		// Establish dependencies on fields
-		formStore.fields; activeTab
+		void formStore.fields; void activeTab
 		if (mode === 'edit' && hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
@@ -134,8 +132,6 @@
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} project...`)
 
 		try {
-			isSaving = true
-
 			const payload = {
 				...formStore.buildPayload(),
 				// Include updatedAt for concurrency control in edit mode
@@ -165,8 +161,6 @@
 				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
 			}
 			console.error(err)
-		} finally {
-			isSaving = false
 		}
 	}
 

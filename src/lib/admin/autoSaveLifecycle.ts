@@ -10,7 +10,7 @@ interface AutoSaveLifecycleOptions {
 }
 
 export function initAutoSaveLifecycle(
-  controller: AutoSaveController | AutoSaveStore<any, any>,
+  controller: AutoSaveController | AutoSaveStore<unknown, unknown>,
   options: AutoSaveLifecycleOptions = {}
 ) {
   const { isReady = () => true, onFlushError, enableShortcut = true } = options

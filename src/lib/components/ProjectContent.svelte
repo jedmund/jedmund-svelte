@@ -26,7 +26,7 @@
 			<h2>Gallery</h2>
 			<div class="gallery-grid">
 				{#each project.gallery as image}
-					<img src={image} alt="Project gallery image" />
+					<img src={image} alt="Gallery item" />
 				{/each}
 			</div>
 		</div>

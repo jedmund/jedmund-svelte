@@ -1,4 +1,3 @@
-import type { Album } from '@prisma/client'
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import AdminByline from './AdminByline.svelte'

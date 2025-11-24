@@ -5,7 +5,7 @@ import * as pmView from '@tiptap/pm/view'
 function getPmView() {
 	try {
 		return pmView
-	} catch (error: Error) {
+	} catch (_error) {
 		return null
 	}
 }

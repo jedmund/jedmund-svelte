@@ -5,7 +5,6 @@
 	import Upload from 'lucide-svelte/icons/upload'
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte'
-	import { onMount } from 'svelte'
 
 	const { editor, deleteNode }: NodeViewProps = $props()
 

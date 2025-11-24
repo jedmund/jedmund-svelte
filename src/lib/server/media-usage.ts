@@ -185,7 +185,7 @@ function getFieldDisplayName(fieldName: string): string {
 /**
  * Extract media IDs from various data structures
  */
-export function extractMediaIds(data: any, fieldName: string): number[] {
+export function extractMediaIds(data: unknown, fieldName: string): number[] {
 	const value = data[fieldName]
 	if (!value) return []
 
@@ -224,12 +224,12 @@ export function extractMediaIds(data: any, fieldName: string): number[] {
 /**
  * Extract media IDs from rich text content (TipTap/Edra JSON)
  */
-function extractMediaFromRichText(content: any): number[] {
+function extractMediaFromRichText(content: unknown): number[] {
 	if (!content || typeof content !== 'object') return []
 
 	const mediaIds: number[] = []
 
-	function traverse(node: any) {
+	function traverse(node: unknown) {
 		if (!node) return
 
 		// Handle image nodes

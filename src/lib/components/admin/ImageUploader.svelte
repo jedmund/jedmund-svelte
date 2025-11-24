@@ -30,7 +30,6 @@
 		aspectRatio,
 		required = false,
 		error,
-		allowAltText = true,
 		maxFileSize = 10,
 		placeholder = 'Drag and drop an image here, or click to browse',
 		helpText,
@@ -232,12 +231,12 @@
 
 <div class="image-uploader" class:compact>
 	<!-- Label -->
-	<label class="uploader-label">
+	<div class="uploader-label">
 		{label}
 		{#if required}
 			<span class="required">*</span>
 		{/if}
-	</label>
+	</div>
 
 	{#if helpText}
 		<p class="help-text">{helpText}</p>
@@ -379,10 +378,14 @@
 				class:uploading={isUploading}
 				class:has-error={!!uploadError}
 				style={aspectRatioStyle}
+				role="button"
+				aria-label="Upload image drop zone"
+				tabindex="0"
 				ondragover={handleDragOver}
 				ondragleave={handleDragLeave}
 				ondrop={handleDrop}
 				onclick={handleBrowseClick}
+				onkeydown={(e) => e.key === 'Enter' && handleBrowseClick()}
 			>
 				{#if isUploading}
 					<!-- Upload Progress -->

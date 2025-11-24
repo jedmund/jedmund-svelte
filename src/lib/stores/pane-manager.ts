@@ -5,7 +5,7 @@ interface PaneState {
 }
 
 function createPaneManager() {
-	const { subscribe, set, update } = writable<PaneState>({
+	const { subscribe, update } = writable<PaneState>({
 		activePane: null
 	})
 

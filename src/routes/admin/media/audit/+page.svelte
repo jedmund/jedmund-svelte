@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Modal from '$lib/components/admin/Modal.svelte'
 	import { formatBytes } from '$lib/utils/format'

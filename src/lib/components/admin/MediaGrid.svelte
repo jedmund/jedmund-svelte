@@ -38,7 +38,7 @@
 	{#if isLoading && media.length === 0}
 		<!-- Loading skeleton -->
 		<div class="media-grid">
-			{#each Array(12) as _, i}
+			{#each Array(12) as _}
 				<div class="media-item skeleton" aria-hidden="true">
 					<div class="media-thumbnail skeleton-bg"></div>
 				</div>

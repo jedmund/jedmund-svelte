@@ -5,6 +5,18 @@ import { transformImages, mergeAppleMusicData } from './lastfmTransformers'
 import redis from '../../routes/api/redis-client'
 import { logger } from '$lib/server/logger'
 
+// Type for cached recent tracks data
+interface RecentTracksData {
+	tracks: Array<{
+		name: string
+		artist: string
+		album?: string
+		date?: Date | string
+		[key: string]: unknown
+	}>
+	[key: string]: unknown
+}
+
 export class AlbumEnricher {
 	private client: LastClient
 	private cacheTTL = {
@@ -116,7 +128,10 @@ export class AlbumEnricher {
 	/**
 	 * Get Apple Music data for duration-based now playing detection
 	 */
-	async getAppleMusicDataForNowPlaying(artistName: string, albumName: string): Promise<any> {
+	async getAppleMusicDataForNowPlaying(
+		artistName: string,
+		albumName: string
+	): Promise<Album['appleMusicData'] | null> {
 		const cacheKey = `apple:album:${artistName}:${albumName}`
 		const cached = await redis.get(cacheKey)
 
@@ -146,7 +161,7 @@ export class AlbumEnricher {
 	/**
 	 * Cache recent tracks from Last.fm
 	 */
-	async cacheRecentTracks(username: string, recentTracks: any): Promise<void> {
+	async cacheRecentTracks(username: string, recentTracks: RecentTracksData): Promise<void> {
 		const cacheKey = `lastfm:recent:${username}`
 		await redis.set(cacheKey, JSON.stringify(recentTracks), 'EX', this.cacheTTL.recentTracks)
 	}
@@ -154,15 +169,15 @@ export class AlbumEnricher {
 	/**
 	 * Get cached recent tracks
 	 */
-	async getCachedRecentTracks(username: string): Promise<any | null> {
+	async getCachedRecentTracks(username: string): Promise<RecentTracksData | null> {
 		const cacheKey = `lastfm:recent:${username}`
 		const cached = await redis.get(cacheKey)
 
 		if (cached) {
-			const data = JSON.parse(cached)
+			const data = JSON.parse(cached) as RecentTracksData
 			// Convert date strings back to Date objects
 			if (data.tracks) {
-				data.tracks = data.tracks.map((track: any) => ({
+				data.tracks = data.tracks.map((track) => ({
 					...track,
 					date: track.date ? new Date(track.date) : undefined
 				}))

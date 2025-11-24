@@ -16,8 +16,8 @@
 
 const { data, form } = $props<{ data: PageData; form?: { message?: string } }>()
 
-let showInlineComposer = true
-let showDeleteConfirmation = false
+let showInlineComposer = $state(true)
+let showDeleteConfirmation = $state(false)
 let postToDelete: AdminPost | null = null
 
 const actionError = form?.message ?? ''

@@ -1,6 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 export interface UrlEmbedOptions {
 	HTMLAttributes: Record<string, unknown>
@@ -103,7 +102,7 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 				},
 			convertLinkToEmbed:
 				(pos) =>
-				({ state, commands, chain }) => {
+				({ state, chain }) => {
 					const { doc } = state
 
 					// Find the link mark at the given position
@@ -189,7 +188,7 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 						if (text && !html) {
 							// Simple URL regex check
 							const urlRegex =
-								/^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
+								/^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/
 
 							if (urlRegex.test(text.trim())) {
 								// It's a URL, let it paste as a link naturally (don't prevent default)
@@ -206,7 +205,6 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 									// Find the link that was just inserted
 									// Start from where we were before paste
 									let linkStart = -1
-									let linkEnd = -1
 
 									// Search for the link in a reasonable range
 									for (
@@ -235,15 +233,13 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 													const hasLink = $endPos
 														.marks()
 														.some((m) => m.type.name === 'link' && m.attrs.href === pastedUrl)
-													if (hasLink) {
-														linkEnd = endPos + 1
-													} else {
+													if (!hasLink) {
 														break
 													}
 												}
 												break
 											}
-										} catch (e) {
+										} catch (_e) {
 											// Position might be invalid, continue
 										}
 									}

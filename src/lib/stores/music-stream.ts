@@ -9,7 +9,7 @@ interface MusicStreamState {
 }
 
 function createMusicStream() {
-	const { subscribe, set, update } = writable<MusicStreamState>({
+	const { subscribe, update } = writable<MusicStreamState>({
 		connected: false,
 		albums: [],
 		lastUpdate: null
@@ -81,7 +81,7 @@ function createMusicStream() {
 					...state,
 					lastUpdate: new Date(data.timestamp)
 				}))
-			} catch (error) {
+			} catch (_error) {
 				// Old heartbeat format, ignore
 			}
 		})

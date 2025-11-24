@@ -9,7 +9,7 @@
 	const projectUrl = $derived(`/labs/${project.slug}`)
 
 	// Tilt card functionality
-	let cardElement: HTMLElement
+	let cardElement: HTMLElement | undefined = $state.raw()
 	let isHovering = $state(false)
 	let transform = $state('')
 
@@ -43,11 +43,11 @@
 	<div
 		class="lab-card clickable"
 		bind:this={cardElement}
-		on:mousemove={handleMouseMove}
-		on:mouseenter={handleMouseEnter}
-		on:mouseleave={handleMouseLeave}
-		on:click={() => (window.location.href = projectUrl)}
-		on:keydown={(e) => e.key === 'Enter' && (window.location.href = projectUrl)}
+		onmousemove={handleMouseMove}
+		onmouseenter={handleMouseEnter}
+		onmouseleave={handleMouseLeave}
+		onclick={() => (window.location.href = projectUrl)}
+		onkeydown={(e) => e.key === 'Enter' && (window.location.href = projectUrl)}
 		role="button"
 		tabindex="0"
 		style:transform
@@ -113,9 +113,9 @@
 	<article
 		class="lab-card"
 		bind:this={cardElement}
-		on:mousemove={handleMouseMove}
-		on:mouseenter={handleMouseEnter}
-		on:mouseleave={handleMouseLeave}
+		onmousemove={handleMouseMove}
+		onmouseenter={handleMouseEnter}
+		onmouseleave={handleMouseLeave}
 		style:transform
 	>
 		<div class="card-header">

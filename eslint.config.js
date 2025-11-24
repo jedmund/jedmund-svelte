@@ -31,6 +31,20 @@ export default [
 		}
 	},
 	{
+		rules: {
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_'
+				}
+			],
+			// Disable @html warnings - all uses are for trusted content (static SVGs, sanitized content, JSON-LD)
+			'svelte/no-at-html-tags': 'off'
+		}
+	},
+	{
 		ignores: ['build/', '.svelte-kit/', 'dist/']
 	},
 	...storybook.configs['flat/recommended']

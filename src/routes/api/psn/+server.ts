@@ -4,8 +4,7 @@ import redis from '../redis-client'
 
 import type {
 	AuthTokensResponse,
-	GetUserPlayedTimeResponse,
-	RecentlyPlayedGamesResponse
+	GetUserPlayedTimeResponse
 } from 'psn-api'
 import type { RequestHandler } from './$types'
 
@@ -13,7 +12,6 @@ const require = Module.createRequire(import.meta.url)
 const {
 	exchangeNpssoForCode,
 	exchangeCodeForAccessToken,
-	getRecentlyPlayedGames,
 	getUserPlayedTime
 } = require('psn-api')
 
@@ -21,7 +19,7 @@ const CACHE_TTL = 60 * 60 // 1 hour
 const PSN_NPSSO_TOKEN = process.env.PSN_NPSSO_TOKEN
 const PSN_ID = '1275018559140296533'
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async () => {
 	// Check if data is in cache
 	const cachedData = await redis.get(`psn:${PSN_ID}`)
 	if (cachedData) {
@@ -45,7 +43,7 @@ async function authorize(npsso: string): Promise<AuthTokensResponse> {
 	return authorization
 }
 
-async function getSerializedGames(psnId: string): Promise<SerializableGameInfo[]> {
+async function getSerializedGames(_psnId: string): Promise<SerializableGameInfo[]> {
 	// Authorize with PSN and get games sorted by last played time
 	const authorization = await authorize(PSN_NPSSO_TOKEN || '')
 	const response = await getUserPlayedTime(authorization, PSN_ID, {

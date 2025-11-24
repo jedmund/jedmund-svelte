@@ -63,12 +63,12 @@
 </script>
 
 <div class="image-picker">
-	<label class="input-label">
+	<div class="input-label">
 		{label}
 		{#if required}
 			<span class="required">*</span>
 		{/if}
-	</label>
+	</div>
 
 	<!-- Image Preview Area -->
 	<div

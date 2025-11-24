@@ -1,4 +1,3 @@
-import type { Post } from '@prisma/client'
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
@@ -123,7 +122,13 @@ import type { Post } from '@prisma/client'
 	}
 </script>
 
-<article class="post-item" onclick={handlePostClick}>
+<div
+	class="post-item"
+	role="button"
+	tabindex="0"
+	onclick={handlePostClick}
+	onkeydown={(e) => e.key === 'Enter' && handlePostClick()}
+>
 	<div class="post-main">
 		{#if post.title}
 			<h3 class="post-title">{post.title}</h3>
@@ -179,7 +184,7 @@ import type { Post } from '@prisma/client'
 			</div>
 		{/if}
 	</div>
-</article>
+</div>
 
 <style lang="scss">
 	.post-item {

@@ -111,7 +111,7 @@ export class CacheManager {
 		let totalDeleted = 0
 
 		// Clear all cache types that might contain this album
-		for (const [type, config] of this.cacheTypes) {
+		for (const [type] of this.cacheTypes) {
 			if (type.includes('album') || type.includes('notfound')) {
 				const deleted = await this.clearPattern(type, albumKey)
 				totalDeleted += deleted

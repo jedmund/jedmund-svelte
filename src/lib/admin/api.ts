@@ -23,7 +23,9 @@ async function handleResponse(res: Response) {
     // Redirect to login for unauthorized requests
     try {
       goto('/admin/login')
-    } catch {}
+    } catch {
+      // Ignore navigation errors (e.g., if already on login page)
+    }
   }
 
   const contentType = res.headers.get('content-type') || ''
@@ -56,7 +58,7 @@ export async function request<TResponse = unknown, TBody = unknown>(
   const res = await fetch(url, {
     method,
     headers: mergedHeaders,
-    body: body ? (isFormData ? (body as any) : JSON.stringify(body)) : undefined,
+    body: body ? (isFormData ? (body as FormData) : JSON.stringify(body)) : undefined,
     signal,
     credentials: 'same-origin'
   })

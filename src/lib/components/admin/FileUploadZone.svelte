@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Button from './Button.svelte'
 	import { validateFileType } from '$lib/utils/mediaHelpers'
 
 	interface Props {
@@ -85,6 +84,8 @@
 	class:active={dragActive}
 	class:compact
 	class:disabled
+	role="region"
+	aria-label="File upload drop zone"
 	ondragover={handleDragOver}
 	ondragleave={handleDragLeave}
 	ondrop={handleDrop}

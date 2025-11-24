@@ -38,24 +38,6 @@
 					) || navItems[0]
 	)
 
-	// Get background color based on variant
-	function getBgColor(variant: string): string {
-		switch (variant) {
-			case 'work':
-				return '#ffcdc5'
-			case 'photos':
-				return '#e8c5ff'
-			case 'universe':
-				return '#ffebc5'
-			case 'labs':
-				return '#c5eaff'
-			case 'about':
-				return '#ffcdc5'
-			default:
-				return '#c5eaff'
-		}
-	}
-
 	// Get text color based on variant
 	function getTextColor(variant: string): string {
 		switch (variant) {

@@ -15,7 +15,7 @@
 
 	const { data, form } = $props<{ data: PageData; form?: { message?: string } }>()
 
-	let showDeleteModal = false
+	let showDeleteModal = $state(false)
 	let projectToDelete: AdminProject | null = null
 
 	const actionError = form?.message ?? ''

@@ -2,12 +2,28 @@ import { getAppleMusicHeaders } from './apple-music-auth'
 import type {
 	AppleMusicAlbum,
 	AppleMusicTrack,
-	AppleMusicSearchResponse,
-	AppleMusicErrorResponse
+	AppleMusicSearchResponse
 } from '$lib/types/apple-music'
 import { isAppleMusicError } from '$lib/types/apple-music'
 import { ApiRateLimiter } from './rate-limiter'
 import { logger } from './logger'
+
+// Extended types for Apple Music data with custom metadata
+interface ExtendedAppleMusicAlbum extends AppleMusicAlbum {
+	_storefront?: string
+}
+
+interface ExtendedAttributes {
+	isSingle?: boolean
+	_singleSongId?: string
+	_singleSongPreview?: string
+	[key: string]: unknown
+}
+
+interface SyntheticAlbum extends Omit<AppleMusicAlbum, 'attributes'> {
+	attributes: AppleMusicAlbum['attributes'] & ExtendedAttributes
+	_storefront?: string
+}
 
 const APPLE_MUSIC_API_BASE = 'https://api.music.apple.com/v1'
 const DEFAULT_STOREFRONT = 'us' // Default to US storefront
@@ -74,7 +90,7 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 						`Apple Music API Error: ${errorData.errors[0]?.detail || 'Unknown error'}`
 					)
 				}
-			} catch (e) {
+			} catch (_e) {
 				// If not JSON, throw the text error
 			}
 
@@ -317,7 +333,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 
 				if (result) {
 					// Store the storefront information with the album
-					const matchedAlbum = result.album as any
+					const matchedAlbum = result.album as ExtendedAppleMusicAlbum
 					matchedAlbum._storefront = result.storefront
 					return result.album
 				}
@@ -390,7 +406,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 							const albumResponse = await searchAlbums(`${artist} ${albumName}`, 5, storefront)
 							if (albumResponse.results?.albums?.data?.length) {
 								const album = albumResponse.results.albums.data[0]
-								const matchedAlbum = album as any
+								const matchedAlbum = album as ExtendedAppleMusicAlbum
 								matchedAlbum._storefront = storefront
 								return album
 							}
@@ -414,7 +430,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 								_singleSongPreview: matchingSong.attributes?.previews?.[0]?.url
 							},
 							_storefront: storefront
-						} as any
+						} as SyntheticAlbum
 					}
 				}
 			} catch (error) {
@@ -438,7 +454,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 }
 
 // Transform Apple Music album data to match existing format
-export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
+export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum | SyntheticAlbum) {
 	const attributes = appleMusicAlbum.attributes
 
 	// Get preview URL from tracks if album doesn't have one
@@ -446,12 +462,13 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 	let tracks: Array<{ name: string; previewUrl?: string; durationMs?: number }> = []
 
 	// Check if this is a synthetic single album
-	if ((attributes as any).isSingle && (attributes as any)._singleSongPreview) {
+	const extendedAttrs = attributes as ExtendedAttributes
+	if (extendedAttrs.isSingle && extendedAttrs._singleSongPreview) {
 		logger.music('debug', 'Processing synthetic single album')
-		previewUrl = (attributes as any)._singleSongPreview
+		previewUrl = extendedAttrs._singleSongPreview
 		tracks = [{
 			name: attributes.name,
-			previewUrl: (attributes as any)._singleSongPreview,
+			previewUrl: extendedAttrs._singleSongPreview,
 			durationMs: undefined // We'd need to fetch the song details for duration
 		}]
 	}
@@ -459,7 +476,8 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 	else if (appleMusicAlbum.id) {
 		try {
 			// Determine which storefront to use
-			const storefront = (appleMusicAlbum as any)._storefront || DEFAULT_STOREFRONT
+			const extendedAlbum = appleMusicAlbum as ExtendedAppleMusicAlbum
+			const storefront = extendedAlbum._storefront || DEFAULT_STOREFRONT
 
 			// Fetch album details with tracks
 			const endpoint = `/catalog/${storefront}/albums/${appleMusicAlbum.id}?include=tracks`
@@ -477,8 +495,8 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum) {
 
 				// Process all tracks
 				tracks = tracksData
-					.filter((item: any) => item.type === 'songs')
-					.map((track: any) => {
+					.filter((item: AppleMusicTrack) => item.type === 'songs')
+					.map((track: AppleMusicTrack) => {
 						return {
 							name: track.attributes?.name || 'Unknown',
 							previewUrl: track.attributes?.previews?.[0]?.url,

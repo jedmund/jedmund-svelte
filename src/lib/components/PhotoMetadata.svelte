@@ -23,7 +23,6 @@
 		backHref,
 		backLabel,
 		showBackButton = false,
-		albums = [],
 		class: className = ''
 	}: Props = $props()
 

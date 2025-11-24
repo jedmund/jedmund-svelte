@@ -3,7 +3,6 @@
 	import Button from './Button.svelte'
 	import FileUploadZone from './FileUploadZone.svelte'
 	import FilePreviewList from './FilePreviewList.svelte'
-	import { formatFileSize } from '$lib/utils/mediaHelpers'
 
 	interface Props {
 		isOpen: boolean
@@ -59,7 +58,7 @@
 			files = files.filter((f) => f.name !== id)
 			// Clear any related upload progress
 			if (uploadProgress[fileToRemove.name]) {
-				const { [fileToRemove.name]: removed, ...rest } = uploadProgress
+				const { [fileToRemove.name]: _, ...rest } = uploadProgress
 				uploadProgress = rest
 			}
 		}
@@ -92,7 +91,7 @@
 					successCount++
 					uploadProgress = { ...uploadProgress, [file.name]: 100 }
 				}
-			} catch (error) {
+			} catch {
 				uploadErrors = [...uploadErrors, `${file.name}: Network error`]
 			}
 		}

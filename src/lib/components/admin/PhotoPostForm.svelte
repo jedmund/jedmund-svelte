@@ -114,7 +114,7 @@ let autoSave = mode === 'edit' && postId
 
 	// Trigger autosave when form data changes
 	$effect(() => {
-		title; status; content; featuredImage; tags
+		void title; void status; void content; void featuredImage; void tags
 		if (hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
@@ -182,7 +182,7 @@ $effect(() => {
 	})
 
 	// Navigation guard: flush autosave before navigating away (only if unsaved)
-	beforeNavigate(async (navigation) => {
+	beforeNavigate(async (_navigation) => {
 		if (hasLoaded && autoSave) {
 			if (autoSave.status === 'saved') {
 				return
@@ -449,7 +449,7 @@ $effect(() => {
 
 			<!-- Caption/Content -->
 			<div class="form-section">
-				<label class="editor-label">Caption & Description</label>
+				<div class="editor-label">Caption & Description</div>
 				<p class="editor-help">Add a caption or tell the story behind this photo</p>
 				<div class="editor-container">
 					<Editor

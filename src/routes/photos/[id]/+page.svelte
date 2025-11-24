@@ -5,11 +5,10 @@
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
-	import { onMount } from 'svelte'
 	import { spring } from 'svelte/motion'
 	import { getCurrentMousePosition } from '$lib/stores/mouse'
 	import type { PageData } from './$types'
-	import { isAlbum } from '$lib/types/photos'
+	import { isAlbum, type PhotoItem } from '$lib/types/photos'
 	import ArrowLeft from '$icons/arrow-left.svg'
 	import ArrowRight from '$icons/arrow-right.svg'
 
@@ -46,7 +45,6 @@
 	let defaultRightX = 0
 
 	const pageUrl = $derived($page.url.href)
-	const fromAlbum = $derived($page.url.searchParams.get('from'))
 
 	// Generate metadata
 	const metaTags = $derived(
@@ -112,7 +110,7 @@
 	})
 
 	// Handle photo navigation
-	function navigateToPhoto(item: any) {
+	function navigateToPhoto(item: PhotoItem | null) {
 		if (!item) return
 		// Extract media ID from item.id (could be 'media-123' or 'photo-123')
 		const mediaId = item.id.replace(/^(media|photo)-/, '')
@@ -217,10 +215,6 @@
 			rightButtonCoords.set({ x: mouseX, y: mouseY }, { hard: true })
 		}
 	}
-
-	// Track last known mouse position for scroll updates
-	let lastMouseX = 0
-	let lastMouseY = 0
 
 	// Store last mouse client position for scroll updates
 	let lastClientX = 0
@@ -376,7 +370,12 @@
 		</div>
 	</div>
 {:else if photo}
-	<div class="photo-page" onmousemove={handleMouseMove} onmouseleave={handleMouseLeave}>
+	<div
+		class="photo-page"
+		role="presentation"
+		onmousemove={handleMouseMove}
+		onmouseleave={handleMouseLeave}
+	>
 		<div class="photo-content-wrapper">
 			<PhotoViewEnhanced
 				src={photo.url}

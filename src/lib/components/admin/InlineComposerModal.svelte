@@ -3,12 +3,10 @@
 	import Modal from './Modal.svelte'
 	import Composer from './composer'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
-	import FormField from './FormField.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
-	import SmartImage from '../SmartImage.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
@@ -35,30 +33,33 @@
 	type PostType = 'post' | 'essay'
 	type ComposerMode = 'modal' | 'page'
 
-	let postType: PostType = initialPostType
-	let mode: ComposerMode = initialMode
-	let content: JSONContent = initialContent || {
-		type: 'doc',
-		content: [{ type: 'paragraph' }]
-	}
-	let characterCount = 0
-	let editorInstance: { save: () => Promise<JSONContent>; clear: () => void } | undefined
+	let postType: PostType = $state(initialPostType)
+	let mode: ComposerMode = $state(initialMode)
+	let content: JSONContent = $state(
+		initialContent || {
+			type: 'doc',
+			content: [{ type: 'paragraph' }]
+		}
+	)
+	let characterCount = $state(0)
+	let editorInstance: { save: () => Promise<JSONContent>; clear: () => void } | undefined =
+		$state.raw()
 
 	// Essay metadata
-	let essayTitle = ''
-	let essaySlug = ''
-	let essayExcerpt = ''
-	let essayTags = ''
-	let essayTab = 0
+	let essayTitle = $state('')
+	let essaySlug = $state('')
+	let essayExcerpt = $state('')
+	let essayTags = $state('')
+	let essayTab = $state(0)
 
 	// Photo attachment state
-	let attachedPhotos: Media[] = []
-	let isMediaLibraryOpen = false
-	let fileInput: HTMLInputElement
+	let attachedPhotos: Media[] = $state([])
+	let isMediaLibraryOpen = $state(false)
+	let fileInput: HTMLInputElement | undefined = $state.raw()
 
 	// Media details modal state
-	let selectedMedia: Media | null = null
-	let isMediaDetailsOpen = false
+	let selectedMedia: Media | null = $state(null)
+	let isMediaDetailsOpen = $state(false)
 
 	const CHARACTER_LIMIT = 600
 

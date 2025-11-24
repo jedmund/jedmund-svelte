@@ -4,7 +4,6 @@
 
 	type Props = {
 		post: Post
-		postType: 'post' | 'essay'
 		slug: string
 		tags: string[]
 		tagInput: string
@@ -18,7 +17,6 @@
 
 	let {
 		post,
-		postType,
 		slug = $bindable(),
 		tags = $bindable(),
 		tagInput = $bindable(),

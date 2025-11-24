@@ -59,7 +59,7 @@
 			{disabled}
 			onchange={handleChange}
 			rows="4"
-		/>
+		></textarea>
 	{:else}
 		<input
 			id={name}

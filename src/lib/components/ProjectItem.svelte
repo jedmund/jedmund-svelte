@@ -38,8 +38,8 @@
 	)
 
 	// 3D tilt effect
-	let cardElement: HTMLDivElement
-	let logoElement: HTMLElement
+	let cardElement: HTMLDivElement | undefined = $state.raw()
+	let logoElement: HTMLElement | undefined = $state.raw()
 	let isHovering = $state(false)
 	let transform = $state('')
 	let svgContent = $state('')
@@ -127,8 +127,8 @@
 	onmouseenter={isClickable ? handleMouseEnter : undefined}
 	onmouseleave={isClickable ? handleMouseLeave : undefined}
 	style="transform: {transform};"
-	role={isClickable ? 'button' : 'article'}
-	tabindex={isClickable ? 0 : -1}
+	role={isClickable ? 'button' : undefined}
+	{...(isClickable ? { tabindex: 0 } : {})}
 >
 	<div class="project-logo" style="background-color: {backgroundColor}">
 		{#if svgContent}

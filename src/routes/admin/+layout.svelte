@@ -2,8 +2,9 @@
 	import { page } from '$app/stores'
 	import AdminNavBar from '$lib/components/admin/AdminNavBar.svelte'
 	import type { LayoutData } from './$types'
+	import type { Snippet } from 'svelte'
 
-	const { children, data } = $props<{ children: any; data: LayoutData }>()
+	const { children, data } = $props<{ children: Snippet; data: LayoutData }>()
 
 	const currentPath = $derived($page.url.pathname)
 	const isLoginRoute = $derived(currentPath === '/admin/login')

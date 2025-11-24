@@ -6,7 +6,7 @@ export function useFormGuards(autoSave: AutoSaveStore<unknown, unknown> | null) 
 	if (!autoSave) return // No guards needed for create mode
 
 	// Navigation guard: flush autosave before route change
-	beforeNavigate(async (navigation) => {
+	beforeNavigate(async (_navigation) => {
 		// If already saved, allow navigation immediately
 		if (autoSave.status === 'saved') return
 

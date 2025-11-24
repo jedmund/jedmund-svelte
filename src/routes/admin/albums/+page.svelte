@@ -10,6 +10,7 @@
 	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
+	import type { EditorData } from '$lib/types/editor'
 
 	interface Photo {
 		id: number
@@ -32,7 +33,7 @@
 		createdAt: string
 		updatedAt: string
 		photos: Photo[]
-		content?: any
+		content?: EditorData
 		_count: {
 			media: number
 		}
@@ -43,8 +44,6 @@
 	let filteredAlbums = $state<Album[]>([])
 	let isLoading = $state(true)
 	let error = $state('')
-	let total = $state(0)
-	let albumTypeCounts = $state<Record<string, number>>({})
 	let showDeleteModal = $state(false)
 	let albumToDelete = $state<Album | null>(null)
 	let activeDropdown = $state<number | null>(null)
@@ -101,15 +100,6 @@
 
 			const data = await response.json()
 			albums = data.albums || []
-			total = data.pagination?.total || albums.length
-
-			// Calculate album status counts
-			const counts: Record<string, number> = {
-				all: albums.length,
-				published: albums.filter((a) => a.status === 'published').length,
-				draft: albums.filter((a) => a.status === 'draft').length
-			}
-			albumTypeCounts = counts
 
 			// Apply initial filter and sort
 			applyFilterAndSort()

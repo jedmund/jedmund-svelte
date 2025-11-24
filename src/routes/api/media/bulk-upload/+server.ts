@@ -229,7 +229,7 @@ export const POST: RequestHandler = async (event) => {
 						filename: media.filename,
 						exifData: media.exifData
 					})
-				} catch (dbError) {
+				} catch (_dbError) {
 					errors.push({
 						filename: file.name,
 						error: 'Failed to save to database'

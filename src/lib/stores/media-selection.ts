@@ -11,7 +11,7 @@ interface MediaSelectionState {
 }
 
 function createMediaSelectionStore() {
-	const { subscribe, set, update } = writable<MediaSelectionState>({
+	const { subscribe, update } = writable<MediaSelectionState>({
 		isOpen: false,
 		mode: 'single',
 		fileType: 'all'

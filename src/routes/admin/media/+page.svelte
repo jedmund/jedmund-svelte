@@ -24,7 +24,6 @@
 	const media = $derived(data.items ?? [])
 	const currentPage = $derived(data.pagination?.page ?? 1)
 	const totalPages = $derived(data.pagination?.totalPages ?? 1)
-	const total = $derived(data.pagination?.total ?? 0)
 
 	// Read filter states from URL
 	const filterType = $derived($page.url.searchParams.get('mimeType') ?? 'all')
@@ -149,7 +148,7 @@
 		isDetailsModalOpen = false
 	}
 
-	async function handleMediaUpdate(updatedMedia: Media) {
+	async function handleMediaUpdate(_updatedMedia: Media) {
 		// Invalidate to reload from server
 		await invalidate('admin:media')
 	}

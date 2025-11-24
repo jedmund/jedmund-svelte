@@ -13,7 +13,6 @@
 		items = [],
 		alt = 'Image',
 		showThumbnails = true,
-		aspectRatio = '4/3',
 		maxThumbnails,
 		totalCount,
 		showMoreLink
@@ -94,7 +93,13 @@
 {#if items.length === 1}
 	<!-- Single image -->
 	<TiltCard>
-		<div class="single-image image-container" onclick={() => openLightbox()}>
+		<div
+			class="single-image image-container"
+			role="button"
+			tabindex="0"
+			onclick={() => openLightbox()}
+			onkeydown={(e) => e.key === 'Enter' && openLightbox()}
+		>
 			<img src={items[0].url} alt={items[0].alt || alt} />
 			{#if items[0].caption}
 				<div class="image-caption">{items[0].caption}</div>
@@ -105,7 +110,13 @@
 	<!-- Slideshow -->
 	<div class="slideshow">
 		<TiltCard>
-			<div class="main-image image-container" onclick={() => openLightbox()}>
+			<div
+				class="main-image image-container"
+				role="button"
+				tabindex="0"
+				onclick={() => openLightbox()}
+				onkeydown={(e) => e.key === 'Enter' && openLightbox()}
+			>
 				<img
 					src={items[selectedIndex].url}
 					alt={items[selectedIndex].alt || `${alt} ${selectedIndex + 1}`}

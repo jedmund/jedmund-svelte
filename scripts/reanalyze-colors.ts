@@ -11,7 +11,7 @@
  *   --dry-run          Show what would be changed without updating
  */
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import { selectBestDominantColor, isGreyColor } from '../src/lib/server/color-utils'
 
 const prisma = new PrismaClient()
@@ -54,7 +54,7 @@ function parseArgs(): Options {
 async function reanalyzeColors(options: Options) {
 	try {
 		// Build query
-		const where: any = {
+		const where: Prisma.MediaWhereInput = {
 			colors: { not: null }
 		}
 

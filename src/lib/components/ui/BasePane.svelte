@@ -25,7 +25,7 @@
 		children
 	}: BasePaneProps = $props()
 
-	let paneElement: HTMLDivElement
+	let paneElement: HTMLDivElement | undefined = $state.raw()
 
 	// Handle escape key
 	$effect(() => {

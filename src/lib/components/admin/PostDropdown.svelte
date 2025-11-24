@@ -65,7 +65,13 @@
 	{#if isOpen}
 		<ul class="dropdown-menu">
 			{#each postTypes as type}
-				<li class="dropdown-item" onclick={() => handleSelection(type.value)}>
+				<li
+					class="dropdown-item"
+					role="menuitem"
+					tabindex="0"
+					onclick={() => handleSelection(type.value)}
+					onkeydown={(e) => e.key === 'Enter' && handleSelection(type.value)}
+				>
 					<div class="dropdown-icon">
 						{#if type.value === 'essay'}
 							<svg width="20" height="20" viewBox="0 0 20 20" fill="none">

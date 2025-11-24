@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { getContext } from 'svelte'
 	import PhotosIcon from '$icons/photos.svg?component'
 	import ViewSingleIcon from '$icons/view-single.svg?component'
 	import ViewTwoColumnIcon from '$icons/view-two-column.svg?component'

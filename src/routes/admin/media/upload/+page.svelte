@@ -56,7 +56,7 @@
 		// Clear any related upload progress
 		const fileName = files[index]?.name
 		if (fileName && uploadProgress[fileName]) {
-			const { [fileName]: removed, ...rest } = uploadProgress
+			const { [fileName]: _removed, ...rest } = uploadProgress
 			uploadProgress = rest
 		}
 	}
@@ -96,7 +96,7 @@
 					successCount++
 					uploadProgress = { ...uploadProgress, [file.name]: 100 }
 				}
-			} catch (error) {
+			} catch (_error) {
 				uploadErrors = [...uploadErrors, `${file.name}: Network error`]
 			}
 		}
@@ -246,7 +246,8 @@
 			class:has-files={files.length > 0}
 			class:compact={files.length > 0}
 			class:uploading={isUploading}
-			ondragover={handleDragOver}
+		role="region"
+		aria-label="File upload drop zone"			ondragover={handleDragOver}
 			ondragleave={handleDragLeave}
 			ondrop={handleDrop}
 		>

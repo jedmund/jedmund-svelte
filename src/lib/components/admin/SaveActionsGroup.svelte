@@ -8,11 +8,6 @@
 		disabled?: boolean
 		isLoading?: boolean
 		canSave?: boolean
-		customActions?: Array<{
-			label: string
-			status: string
-			variant?: 'default' | 'danger'
-		}>
 	}
 
 	let {
@@ -20,8 +15,7 @@
 		onSave,
 		disabled = false,
 		isLoading = false,
-		canSave = true,
-		customActions = []
+		canSave = true
 	}: Props = $props()
 
 	function handlePublish() {

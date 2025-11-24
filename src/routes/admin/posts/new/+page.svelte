@@ -6,11 +6,9 @@ import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
-	import Button from '$lib/components/admin/Button.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
-	let loading = $state(false)
 	let saving = $state(false)
 
 	let title = $state('')
@@ -23,7 +21,7 @@ import { api } from '$lib/admin/api'
 	let tags = $state<string[]>([])
 	let tagInput = $state('')
 	let showMetadata = $state(false)
-	let metadataButtonRef: HTMLButtonElement
+	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 
 	// Auto-generate slug from title when title changes and slug hasn't been manually set
 	$effect(() => {
@@ -111,7 +109,7 @@ import { api } from '$lib/admin/api'
 <AdminPage>
 	<header slot="header">
 		<div class="header-left">
-			<button class="btn-icon" onclick={() => goto('/admin/posts')}>
+			<button class="btn-icon" onclick={() => goto('/admin/posts')} aria-label="Back to posts">
 				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
 					<path
 						d="M12.5 15L7.5 10L12.5 5"
@@ -155,7 +153,7 @@ import { api } from '$lib/admin/api'
 						onRemoveTag={removeTag}
 						onDelete={() => {}}
 						onClose={() => (showMetadata = false)}
-						onFieldUpdate={(key, value) => {
+						onFieldUpdate={(key, _value) => {
 							if (key === 'slug') {
 								slugManuallySet = true
 							}

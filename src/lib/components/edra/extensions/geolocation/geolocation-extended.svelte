@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import type { NodeViewProps } from '@tiptap/core'
+	import type * as L from 'leaflet'
 
-	interface Props extends NodeViewProps {}
+	type Props = NodeViewProps
 
-	let { node, updateAttributes }: Props = $props()
+	let { node }: Props = $props()
 
 	let mapContainer: HTMLDivElement
 	let map: L.Map | null = null

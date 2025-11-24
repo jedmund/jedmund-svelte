@@ -109,7 +109,6 @@ export function selectBestDominantColor(
 ): string {
 	const {
 		minPercentage = 2, // Ignore colors below this percentage
-		preferVibrant = true,
 		excludeGreys = false,
 		preferBrighter = true // Avoid very dark colors
 	} = options

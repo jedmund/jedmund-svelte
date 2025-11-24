@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/core'
 
-export interface EditorData extends JSONContent {}
+export type EditorData = JSONContent
 
 export interface EditorProps {
 	data?: EditorData
@@ -20,7 +20,7 @@ export interface EditorBlock {
 		items?: string[]
 		caption?: string
 		url?: string
-		[key: string]: any
+		[key: string]: unknown
 	}
 }
 
@@ -33,11 +33,11 @@ export interface EditorSaveData {
 // Tiptap/Edra content nodes
 export interface TiptapNode {
 	type: string
-	attrs?: Record<string, any>
+	attrs?: Record<string, unknown>
 	content?: TiptapNode[]
 	marks?: Array<{
 		type: string
-		attrs?: Record<string, any>
+		attrs?: Record<string, unknown>
 	}>
 	text?: string
 }

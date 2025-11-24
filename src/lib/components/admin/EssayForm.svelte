@@ -10,7 +10,7 @@
 	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
-	import type { JSONContent, Editor as TipTapEditor } from '@tiptap/core'
+	import type { JSONContent } from '@tiptap/core'
 	import type { Post } from '@prisma/client'
 
 	interface Props {
@@ -29,9 +29,7 @@
 	let { postId, initialData, mode }: Props = $props()
 
 	// State
-	let isLoading = $state(false)
 	let hasLoaded = $state(mode === 'create') // Create mode loads immediately
-	let isSaving = $state(false)
 	let activeTab = $state('metadata')
 	let updatedAt = $state<string | undefined>(initialData?.updatedAt)
 
@@ -127,7 +125,7 @@ $effect(() => {
 
 	// Trigger autosave when form data changes
 	$effect(() => {
-		title; slug; status; content; tags; activeTab
+		void title; void slug; void status; void content; void tags; void activeTab
 		if (hasLoaded && autoSave) {
 			autoSave.schedule()
 		}
@@ -179,7 +177,7 @@ $effect(() => {
 	})
 
 	// Navigation guard: flush autosave before navigating away (only if unsaved)
-	beforeNavigate(async (navigation) => {
+	beforeNavigate(async () => {
 		if (hasLoaded && autoSave) {
 			if (autoSave.status === 'saved') {
 				return
@@ -264,8 +262,6 @@ $effect(() => {
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} essay...`)
 
 		try {
-			isSaving = true
-
 			const payload = {
 				title,
 				slug,
@@ -308,8 +304,6 @@ $effect(() => {
 			toast.dismiss(loadingToastId)
 			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} essay`)
 			console.error(err)
-		} finally {
-			isSaving = false
 		}
 	}
 
@@ -353,14 +347,6 @@ $effect(() => {
 	{/if}
 
 	<div class="admin-container">
-		{#if error}
-			<div class="error-message">{error}</div>
-		{/if}
-
-		{#if successMessage}
-			<div class="success-message">{successMessage}</div>
-		{/if}
-
 		<div class="tab-panels">
 			<!-- Metadata Panel -->
 			<div class="panel content-wrapper" class:active={activeTab === 'metadata'}>
@@ -389,7 +375,7 @@ $effect(() => {
 							/>
 
 							<div class="tags-field">
-								<label class="input-label">Tags</label>
+								<div class="input-label">Tags</div>
 								<div class="tag-input-wrapper">
 									<Input
 										bind:value={tagInput}

@@ -32,6 +32,7 @@
 		onfocus,
 		onblur,
 		class: className = '',
+		// eslint-disable-next-line svelte/valid-compile
 		...restProps
 	}: Props = $props()
 </script>

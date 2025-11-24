@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy } from 'svelte'
+	import { onMount } from 'svelte'
 	import { Spring } from 'svelte/motion'
 	import { musicStream } from '$lib/stores/music-stream'
 	import AvatarSVG from './AvatarSVG.svelte'
@@ -86,6 +86,7 @@
 
 <div
 	class="face-container"
+	role="presentation"
 	onmouseenter={handleMouseEnter}
 	onmouseleave={handleMouseLeave}
 	style="transform: scale({scale.current})"

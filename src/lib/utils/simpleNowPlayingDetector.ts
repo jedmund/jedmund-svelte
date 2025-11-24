@@ -1,6 +1,22 @@
 import type { Album } from '$lib/types/lastfm'
 import { logger } from '$lib/server/logger'
 
+// Type for Last.fm track from API
+interface LastfmTrack {
+	name: string
+	album: {
+		name: string
+	}
+	artist: {
+		name: string
+	}
+	nowPlaying?: boolean
+	date?: {
+		uts: number | string
+	}
+	[key: string]: unknown
+}
+
 // Simple buffer time for tracks that might have paused/buffered
 const BUFFER_TIME_MS = 30000 // 30 seconds grace period
 
@@ -27,8 +43,11 @@ export class SimpleNowPlayingDetector {
 	 */
 	async processAlbums(
 		albums: Album[],
-		recentTracks: any[],
-		appleMusicDataLookup: (artistName: string, albumName: string) => Promise<any>
+		recentTracks: LastfmTrack[],
+		appleMusicDataLookup: (
+			artistName: string,
+			albumName: string
+		) => Promise<Album['appleMusicData'] | null>
 	): Promise<Album[]> {
 		logger.music('debug', `Processing ${albums.length} albums with ${recentTracks.length} recent tracks`)
 		
@@ -59,15 +78,18 @@ export class SimpleNowPlayingDetector {
 
 		// Fall back to duration-based detection
 		logger.music('debug', 'Using duration-based detection')
-		
+
 		// Find the most recent track across all albums
-		let mostRecentTrack: any = null
+		let mostRecentTrack: LastfmTrack | null = null
 		let mostRecentTime = new Date(0)
-		
+
 		for (const track of recentTracks) {
-			if (track.date && track.date > mostRecentTime) {
-				mostRecentTime = track.date
-				mostRecentTrack = track
+			if (track.date && typeof track.date === 'object' && 'uts' in track.date) {
+				const trackTime = new Date(Number(track.date.uts) * 1000)
+				if (trackTime > mostRecentTime) {
+					mostRecentTime = trackTime
+					mostRecentTrack = track
+				}
 			}
 		}
 		
@@ -82,26 +104,26 @@ export class SimpleNowPlayingDetector {
 		}
 
 		logger.music('debug', `Most recent track: "${mostRecentTrack.name}" by ${mostRecentTrack.artist.name} from ${mostRecentTrack.album.name}`)
-		logger.music('debug', `Scrobbled at: ${mostRecentTrack.date}`)
-		
+		logger.music('debug', `Scrobbled at: ${mostRecentTime}`)
+
 		// Check if the most recent track is still playing
 		const albumKey = `${mostRecentTrack.artist.name}:${mostRecentTrack.album.name}`
 		let isPlaying = false
 		let playingTrack: string | undefined
-		
+
 		try {
 			const appleMusicData = await appleMusicDataLookup(
-				mostRecentTrack.artist.name, 
+				mostRecentTrack.artist.name,
 				mostRecentTrack.album.name
 			)
-			
+
 			if (appleMusicData?.tracks) {
 				const trackData = appleMusicData.tracks.find(
-					(t: any) => t.name.toLowerCase() === mostRecentTrack.name.toLowerCase()
+					(t) => t.name?.toLowerCase() === mostRecentTrack!.name.toLowerCase()
 				)
-				
+
 				if (trackData?.durationMs) {
-					isPlaying = this.isTrackPlaying(mostRecentTrack.date, trackData.durationMs)
+					isPlaying = this.isTrackPlaying(mostRecentTime, trackData.durationMs)
 					if (isPlaying) {
 						playingTrack = mostRecentTrack.name
 						logger.music('debug', `✅ "${playingTrack}" is still playing`)

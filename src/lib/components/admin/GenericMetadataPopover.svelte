@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte'
 	import { clickOutside } from '$lib/actions/clickOutside'
 	import Input from './Input.svelte'
-	import FormField from './FormField.svelte'
 	import Button from './Button.svelte'
 
 	export interface MetadataField {

@@ -1,3 +1,6 @@
+// JSON-LD structured data object type
+type JsonLdObject = Record<string, unknown>
+
 interface MetaTagsOptions {
 	title?: string
 	description?: string
@@ -16,7 +19,7 @@ interface MetaTagsOptions {
 	locale?: string
 	canonicalUrl?: string
 	noindex?: boolean
-	jsonLd?: Record<string, any>
+	jsonLd?: JsonLdObject
 }
 
 interface GeneratedMetaTags {
@@ -25,7 +28,7 @@ interface GeneratedMetaTags {
 	openGraph: Record<string, string>
 	twitter: Record<string, string>
 	other: Record<string, string>
-	jsonLd?: Record<string, any>
+	jsonLd?: JsonLdObject
 }
 
 const DEFAULTS = {
@@ -197,10 +200,10 @@ export function generatePersonJsonLd(options: {
 	jobTitle?: string
 	description?: string
 	sameAs?: string[]
-}): Record<string, any> {
+}): JsonLdObject {
 	const { name, url = DEFAULTS.siteUrl, image, jobTitle, description, sameAs = [] } = options
 
-	const jsonLd: Record<string, any> = {
+	const jsonLd: JsonLdObject = {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
 		name,
@@ -237,10 +240,10 @@ export function generateArticleJsonLd(options: {
 	datePublished?: string
 	dateModified?: string
 	author?: string
-}): Record<string, any> {
+}): JsonLdObject {
 	const { title, description, url, image, datePublished, dateModified, author } = options
 
-	const jsonLd: Record<string, any> = {
+	const jsonLd: JsonLdObject = {
 		'@context': 'https://schema.org',
 		'@type': 'Article',
 		headline: title,
@@ -291,10 +294,10 @@ export function generateImageGalleryJsonLd(options: {
 		url: string
 		caption?: string
 	}>
-}): Record<string, any> {
+}): JsonLdObject {
 	const { name, description, url, images } = options
 
-	const jsonLd: Record<string, any> = {
+	const jsonLd: JsonLdObject = {
 		'@context': 'https://schema.org',
 		'@type': 'ImageGallery',
 		name,
@@ -327,10 +330,10 @@ export function generateCreativeWorkJsonLd(options: {
 	creator?: string
 	dateCreated?: string
 	keywords?: string[]
-}): Record<string, any> {
+}): JsonLdObject {
 	const { name, description, url, image, creator, dateCreated, keywords = [] } = options
 
-	const jsonLd: Record<string, any> = {
+	const jsonLd: JsonLdObject = {
 		'@context': 'https://schema.org',
 		'@type': 'CreativeWork',
 		name,

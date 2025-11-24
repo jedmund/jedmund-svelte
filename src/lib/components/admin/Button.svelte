@@ -33,6 +33,7 @@
 		icon,
 		children,
 		onclick,
+		// eslint-disable-next-line svelte/valid-compile
 		...restProps
 	}: Props = $props()
 

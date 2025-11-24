@@ -5,6 +5,24 @@ import { AlbumEnricher } from './albumEnricher'
 import { trackToAlbum, getAlbumKey } from './lastfmTransformers'
 import { logger } from '$lib/server/logger'
 
+// Type for Last.fm recent tracks response
+interface RecentTracksResponse {
+	tracks: Array<{
+		name: string
+		album: {
+			name: string
+			mbid?: string
+		}
+		artist: {
+			name: string
+		}
+		nowPlaying?: boolean
+		date?: Date | { uts: number; '#text': string }
+		[key: string]: unknown
+	}>
+	[key: string]: unknown
+}
+
 export interface StreamState {
 	lastNowPlayingState: Map<string, { isPlaying: boolean; track?: string }>
 	lastAlbumOrder: string[]
@@ -78,7 +96,7 @@ export class LastfmStreamManager {
 	/**
 	 * Fetch fresh recent tracks from Last.fm (no cache)
 	 */
-	private async fetchFreshRecentTracks(): Promise<any> {
+	private async fetchFreshRecentTracks(): Promise<RecentTracksResponse> {
 		logger.music('debug', 'Fetching fresh Last.fm recent tracks for now playing detection')
 		const recentTracksResponse = await this.client.user.getRecentTracks(this.username, {
 			limit: 50,
@@ -92,7 +110,10 @@ export class LastfmStreamManager {
 	/**
 	 * Get recent albums from Last.fm
 	 */
-	private async getRecentAlbums(limit: number, recentTracksResponse?: any): Promise<Album[]> {
+	private async getRecentAlbums(
+		limit: number,
+		recentTracksResponse?: RecentTracksResponse
+	): Promise<Album[]> {
 		// Use provided fresh data or fetch new
 		if (!recentTracksResponse) {
 			recentTracksResponse = await this.fetchFreshRecentTracks()
@@ -124,7 +145,10 @@ export class LastfmStreamManager {
 	/**
 	 * Update now playing status using the detector
 	 */
-	private async updateNowPlayingStatus(albums: Album[], recentTracksResponse?: any): Promise<void> {
+	private async updateNowPlayingStatus(
+		albums: Album[],
+		recentTracksResponse?: RecentTracksResponse
+	): Promise<void> {
 		// Use provided fresh data or fetch new
 		if (!recentTracksResponse) {
 			recentTracksResponse = await this.fetchFreshRecentTracks()
@@ -237,7 +261,7 @@ export class LastfmStreamManager {
 	 */
 	private async getNowPlayingUpdatesForNonRecentAlbums(
 		recentAlbums: Album[],
-		recentTracksResponse?: any
+		recentTracksResponse?: RecentTracksResponse
 	): Promise<NowPlayingUpdate[]> {
 		const updates: NowPlayingUpdate[] = []
 

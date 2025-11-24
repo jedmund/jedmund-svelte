@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PhotoItem, Photo, PhotoAlbum } from '$lib/types/photos'
+	import type { PhotoItem } from '$lib/types/photos'
 	import { isAlbum } from '$lib/types/photos'
 	import { goto } from '$app/navigation'
 

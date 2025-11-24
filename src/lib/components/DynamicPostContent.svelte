@@ -1,5 +1,4 @@
 <script lang="ts">
-	import LinkCard from './LinkCard.svelte'
 	import Slideshow from './Slideshow.svelte'
 	import BackButton from './BackButton.svelte'
 	import { formatDate } from '$lib/utils/date'

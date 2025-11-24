@@ -4,7 +4,6 @@
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import Input from './Input.svelte'
-	import Button from './Button.svelte'
 	import DropdownSelectField from './DropdownSelectField.svelte'
 	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
@@ -34,8 +33,8 @@
 
 	// State
 	let isLoading = $state(mode === 'edit')
-	let isSaving = $state(false)
-	let validationErrors = $state<Record<string, string>>({})
+	let _isSaving = $state(false)
+	let _validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
 	let editorInstance = $state<{ save: () => Promise<JSONContent>; clear: () => void } | undefined>()
@@ -132,7 +131,7 @@
 				location: formData.location || undefined,
 				year: formData.year || undefined
 			})
-			validationErrors = {}
+			_validationErrors = {}
 			return true
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -142,13 +141,13 @@
 						errors[e.path[0].toString()] = e.message
 					}
 				})
-				validationErrors = errors
+				_validationErrors = errors
 			}
 			return false
 		}
 	}
 
-	async function handleSave() {
+	async function _handleSave() {
 		if (!validateForm()) {
 			toast.error('Please fix the validation errors')
 			return
@@ -157,7 +156,7 @@
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} album...`)
 
 		try {
-			isSaving = true
+			_isSaving = true
 
 			const payload = {
 				title: formData.title,
@@ -241,7 +240,7 @@
 			)
 			console.error(err)
 		} finally {
-			isSaving = false
+			_isSaving = false
 		}
 	}
 
@@ -298,8 +297,6 @@
 							bind:value={formData.title}
 							placeholder="Album title"
 							required
-							error={validationErrors.title}
-							disabled={isSaving}
 						/>
 
 						<Input
@@ -307,8 +304,7 @@
 							bind:value={formData.slug}
 							placeholder="url-friendly-name"
 							required
-							error={validationErrors.slug}
-							disabled={isSaving || mode === 'edit'}
+							disabled={mode === 'edit'}
 						/>
 
 						<div class="form-grid">
@@ -316,16 +312,12 @@
 								label="Location"
 								bind:value={formData.location}
 								placeholder="e.g. Tokyo, Japan"
-								error={validationErrors.location}
-								disabled={isSaving}
 							/>
 							<Input
 								label="Year"
 								type="text"
 								bind:value={formData.year}
 								placeholder="e.g. 2023 or 2023-2025"
-								error={validationErrors.year}
-								disabled={isSaving}
 							/>
 						</div>
 
@@ -333,7 +325,6 @@
 							label="Status"
 							bind:value={formData.status}
 							options={statusOptions}
-							disabled={isSaving}
 						/>
 					</div>
 
@@ -343,7 +334,6 @@
 							<input
 								type="checkbox"
 								bind:checked={formData.showInUniverse}
-								disabled={isSaving}
 								class="toggle-input"
 							/>
 							<div class="toggle-content">
@@ -400,7 +390,6 @@
 						bind:data={formData.content}
 						placeholder="Add album content..."
 						onChange={handleContentUpdate}
-						editable={!isSaving}
 						albumId={album?.id}
 						variant="full"
 					/>

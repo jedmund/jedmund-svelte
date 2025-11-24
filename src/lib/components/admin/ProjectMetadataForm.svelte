@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
-	import SelectField from './SelectField.svelte'
 	import SegmentedControlField from './SegmentedControlField.svelte'
 	import DropdownSelectField from './DropdownSelectField.svelte'
 	import type { ProjectFormData } from '$lib/types/project'
@@ -9,10 +8,9 @@
 	interface Props {
 		formData: ProjectFormData
 		validationErrors: Record<string, string>
-		onSave?: () => Promise<void>
 	}
 
-	let { formData = $bindable(), validationErrors, onSave }: Props = $props()
+	let { formData = $bindable(), validationErrors }: Props = $props()
 
 	const statusOptions = [
 		{

@@ -80,11 +80,19 @@
 	<div
 		class="lightbox-backdrop"
 		onclick={handleBackgroundClick}
+		onkeydown={(e) => e.key === 'Enter' && handleBackgroundClick()}
 		transition:fade={{ duration: TRANSITION_NORMAL_MS }}
 		role="button"
 		tabindex="-1"
 	>
-		<div class="lightbox-content" onclick={(e) => e.stopPropagation()}>
+		<div
+			class="lightbox-content"
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
+		>
 			<div class="lightbox-image-container">
 				<img
 					src={images[selectedIndex]}

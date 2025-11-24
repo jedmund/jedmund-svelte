@@ -3,7 +3,7 @@
 	import type { PageData } from '../posts/$types'
 
 	export let data: PageData
-	export let form: any
+	export let form: Record<string, unknown> | null | undefined
 </script>
 
 <PostsPage {data} {form} />

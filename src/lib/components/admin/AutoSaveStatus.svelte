@@ -60,7 +60,7 @@
 
   const label = $derived.by(() => {
     // Force dependency on refreshKey to trigger re-computation
-    refreshKey
+    void refreshKey
 
     switch (status) {
       case 'saving':

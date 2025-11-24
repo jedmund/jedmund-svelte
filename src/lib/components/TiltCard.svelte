@@ -32,6 +32,7 @@
 <div
 	class="tilt-card"
 	bind:this={cardElement}
+	role="presentation"
 	on:mousemove={handleMouseMove}
 	on:mouseenter={handleMouseEnter}
 	on:mouseleave={handleMouseLeave}

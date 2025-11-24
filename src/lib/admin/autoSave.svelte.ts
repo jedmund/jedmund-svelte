@@ -8,7 +8,7 @@ export interface AutoSaveStoreOptions<TPayload, TResponse = unknown> {
   onSaved?: (res: TResponse, ctx: { prime: (payload: TPayload) => void }) => void
 }
 
-export interface AutoSaveStore<TPayload, TResponse = unknown> {
+export interface AutoSaveStore<TPayload> {
   readonly status: AutoSaveStatus
   readonly lastError: string | null
   schedule: () => void
@@ -36,7 +36,7 @@ export interface AutoSaveStore<TPayload, TResponse = unknown> {
  */
 export function createAutoSaveStore<TPayload, TResponse = unknown>(
   opts: AutoSaveStoreOptions<TPayload, TResponse>
-): AutoSaveStore<TPayload, TResponse> {
+): AutoSaveStore<TPayload> {
   const debounceMs = opts.debounceMs ?? 2000
   const idleResetMs = opts.idleResetMs ?? 2000
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -95,7 +95,7 @@ export function createAutoSaveStore<TPayload, TResponse = unknown>(
       lastSentHash = hash
       setStatus('saved')
       if (opts.onSaved) opts.onSaved(res, { prime })
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (e?.name === 'AbortError') {
         // Newer save superseded this one
         return

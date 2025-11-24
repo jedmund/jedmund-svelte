@@ -44,7 +44,6 @@
 	let error = $state('')
 	let currentPage = $state(1)
 	let totalPages = $state(1)
-	let total = $state(0)
 
 	// Media selection state
 	let selectedMediaIds = $state<Set<number>>(new Set(selectedIds))
@@ -137,10 +136,6 @@
 		selectedMediaIds = new Set()
 	}
 
-	function getSelectedIds(): number[] {
-		return Array.from(selectedMediaIds)
-	}
-
 	function getSelected(): Media[] {
 		return selectedMedia
 	}
@@ -190,8 +185,8 @@
 	})
 
 	// Watch for filter changes
-	let previousFilterType = filterType
-	let previousPhotographyFilter = photographyFilter
+	let previousFilterType = $state<typeof filterType | undefined>(undefined)
+	let previousPhotographyFilter = $state<typeof photographyFilter | undefined>(undefined)
 
 	$effect(() => {
 		if (
@@ -258,7 +253,6 @@
 
 			currentPage = page
 			totalPages = data.pagination.totalPages
-			total = data.pagination.total
 
 			// Update loader state
 			if (currentPage >= totalPages) {

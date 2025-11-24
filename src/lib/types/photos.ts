@@ -9,6 +9,12 @@ export interface ExifData {
 	location?: string
 }
 
+export interface ColorPalette {
+	hex?: string
+	rgb?: [number, number, number]
+	population?: number
+}
+
 export interface Photo {
 	id: string
 	src: string
@@ -17,7 +23,7 @@ export interface Photo {
 	width: number
 	height: number
 	dominantColor?: string
-	colors?: any
+	colors?: ColorPalette[]
 	aspectRatio?: number
 	exif?: ExifData
 	createdAt?: string

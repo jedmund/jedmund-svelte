@@ -5,11 +5,9 @@
 	import { toast } from 'svelte-sonner'
 	
 	// Import SVG icons
-	import SettingsIcon from '$icons/settings.svg'
 	import CheckIcon from '$icons/check.svg'
 	import XIcon from '$icons/x.svg'
 	import TrashIcon from '$icons/trash.svg'
-	import ClockIcon from '$icons/clock.svg'
 	import LoaderIcon from '$icons/loader.svg'
 	import AppleMusicSearchModal from './AppleMusicSearchModal.svelte'
 
@@ -42,7 +40,7 @@
 	let clearingAlbums = $state(new Set<string>())
 	
 	// Search modal reference
-	let searchModal: AppleMusicSearchModal
+	let searchModal: AppleMusicSearchModal | undefined = $state.raw()
 
 	// Subscribe to music stream
 	$effect(() => {
@@ -184,12 +182,12 @@
 		try {
 			const response = await fetch('/api/admin/debug/clear-cache', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ key: albumKey })
 			})
 			
 			if (response.ok) {
-				const result = await response.json()
+				await response.json()
 				toast.success(`Cleared cache for "${album.name}"`)
 			} else {
 				toast.error(`Failed to clear cache for "${album.name}"`)
@@ -213,7 +211,13 @@
 
 {#if dev}
 	<div class="debug-panel" class:minimized={isMinimized}>
-		<div class="debug-header" onclick={() => isMinimized = !isMinimized}>
+		<div
+			class="debug-header"
+			role="button"
+			tabindex="0"
+			onclick={() => (isMinimized = !isMinimized)}
+			onkeydown={(e) => e.key === 'Enter' && (isMinimized = !isMinimized)}
+		>
 			<h3>Debug Panel</h3>
 			<button class="minimize-btn" aria-label={isMinimized ? 'Expand' : 'Minimize'}>
 				{isMinimized ? '▲' : '▼'}
@@ -291,7 +295,15 @@
 								{#each albums as album}
 									{@const albumId = `${album.artist.name}:${album.name}`}
 									<div class="album-item" class:playing={album.isNowPlaying} class:expanded={expandedAlbumId === albumId}>
-										<div class="album-header" onclick={() => expandedAlbumId = expandedAlbumId === albumId ? null : albumId}>
+										<div
+										class="album-header"
+										role="button"
+										tabindex="0"
+										onclick={() => (expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
+										onkeydown={(e) =>
+											e.key === 'Enter' &&
+											(expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
+									>
 											<div class="album-content">
 												<div class="album-info">
 													<span class="name">{album.name}</span>

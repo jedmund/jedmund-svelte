@@ -124,12 +124,12 @@
 
 <div class="gallery-manager">
 	<div class="header">
-		<label class="input-label">
+		<div class="input-label">
 			{label}
 			{#if required}
 				<span class="required">*</span>
 			{/if}
-		</label>
+		</div>
 
 		{#if hasImages}
 			<span class="items-count">
@@ -149,6 +149,9 @@
 					class="gallery-item"
 					class:drag-over={dragOverIndex === index}
 					draggable="true"
+					role="button"
+					aria-label="Draggable gallery item"
+					tabindex="0"
 					ondragstart={(e) => handleDragStart(e, index)}
 					ondragend={handleDragEnd}
 					ondragover={(e) => handleDragOver(e, index)}

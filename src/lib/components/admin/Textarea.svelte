@@ -32,6 +32,7 @@
 		disabled = false,
 		readonly = false,
 		id = `textarea-${Math.random().toString(36).substr(2, 9)}`,
+		// eslint-disable-next-line svelte/valid-compile
 		...restProps
 	}: Props = $props()
 
@@ -93,7 +94,7 @@
 			{rows}
 			class={getTextareaClasses()}
 			{...restProps}
-		/>
+		></textarea>
 	</div>
 
 	{#if (error || helpText || showCharCount) && !disabled}

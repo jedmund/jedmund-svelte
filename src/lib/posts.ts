@@ -64,7 +64,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 }
 
 function getExcerpt(content: string, type: 'note' | 'article'): string {
-	const plainText = content.replace(/[#*`\[\]]/g, '').trim()
+	const plainText = content.replace(/[#*`[\]]/g, '').trim()
 	const maxLength = type === 'note' ? 280 : 160
 
 	if (plainText.length <= maxLength) return plainText

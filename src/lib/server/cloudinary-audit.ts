@@ -97,7 +97,7 @@ export async function fetchAllDatabaseCloudinaryReferences(): Promise<Set<string
 			if (publicId) publicIds.add(publicId)
 		}
 		if (project.gallery && typeof project.gallery === 'object') {
-			const gallery = project.gallery as any[]
+			const gallery = project.gallery as Record<string, unknown>[]
 			for (const item of gallery) {
 				if (item.url?.includes('cloudinary.com')) {
 					const publicId = extractPublicId(item.url)
@@ -121,7 +121,7 @@ export async function fetchAllDatabaseCloudinaryReferences(): Promise<Set<string
 			if (publicId) publicIds.add(publicId)
 		}
 		if (post.attachments && typeof post.attachments === 'object') {
-			const attachments = post.attachments as any[]
+			const attachments = post.attachments as Record<string, unknown>[]
 			for (const attachment of attachments) {
 				if (attachment.url?.includes('cloudinary.com')) {
 					const publicId = extractPublicId(attachment.url)
@@ -296,7 +296,7 @@ export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
 
 		for (const project of projectsToClean) {
 			let updated = false
-			const updates: any = {}
+			const updates: Record<string, unknown> = {}
 
 			if (project.featuredImage?.includes('cloudinary.com')) {
 				const publicId = extractPublicId(project.featuredImage)
@@ -316,7 +316,7 @@ export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
 
 			// Handle gallery items
 			if (project.gallery && typeof project.gallery === 'object') {
-				const gallery = project.gallery as any[]
+				const gallery = project.gallery as Record<string, unknown>[]
 				const cleanedGallery = gallery.filter((item) => {
 					if (item.url?.includes('cloudinary.com')) {
 						const publicId = extractPublicId(item.url)
@@ -349,7 +349,7 @@ export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
 
 		for (const post of postsToClean) {
 			let updated = false
-			const updates: any = {}
+			const updates: Record<string, unknown> = {}
 
 			if (post.featuredImage?.includes('cloudinary.com')) {
 				const publicId = extractPublicId(post.featuredImage)
@@ -361,7 +361,7 @@ export async function cleanupBrokenReferences(publicIds: string[]): Promise<{
 
 			// Handle attachments
 			if (post.attachments && typeof post.attachments === 'object') {
-				const attachments = post.attachments as any[]
+				const attachments = post.attachments as Record<string, unknown>[]
 				const cleanedAttachments = attachments.filter((attachment) => {
 					if (attachment.url?.includes('cloudinary.com')) {
 						const publicId = extractPublicId(attachment.url)

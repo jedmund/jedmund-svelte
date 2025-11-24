@@ -27,7 +27,7 @@ export function getCurrentTextStyle(editor: Editor): string {
 // Get filtered commands based on variant and features
 export function getFilteredCommands(
 	variant: ComposerVariant,
-	features: ComposerFeatures
+	_features: ComposerFeatures
 ): FilteredCommands {
 	const filtered = { ...commands }
 

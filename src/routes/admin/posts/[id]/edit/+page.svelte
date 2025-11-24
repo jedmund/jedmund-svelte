@@ -9,7 +9,6 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
-	import Button from '$lib/components/admin/Button.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from '$lib/components/admin/AutoSaveStatus.svelte'
@@ -57,8 +56,8 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	let tags = $state<string[]>([])
 	let tagInput = $state('')
 	let showMetadata = $state(false)
-	let metadataButtonRef: HTMLButtonElement
-let showDeleteConfirmation = $state(false)
+	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
+	let showDeleteConfirmation = $state(false)
 
 // Draft backup
 const draftKey = $derived(makeDraftKey('post', $page.params.id))
@@ -271,7 +270,7 @@ onMount(async () => {
 				// Fallback error messaging
 					loadError = 'Post not found'
 			}
-		} catch (error) {
+		} catch (_error) {
 			loadError = 'Network error occurred while loading post'
 		} finally {
 			loading = false
@@ -379,7 +378,7 @@ onMount(async () => {
 	// Trigger autosave when form data changes
 	$effect(() => {
 		// Establish dependencies
-		title; slug; status; content; tags; excerpt; postType
+		void title; void slug; void status; void content; void tags; void excerpt; void postType
 		if (hasLoaded) {
 			autoSave.schedule()
 		}
@@ -405,7 +404,7 @@ onMount(async () => {
 	})
 
 	// Navigation guard: flush autosave before navigating away (only if there are unsaved changes)
-	beforeNavigate(async (navigation) => {
+	beforeNavigate(async (_navigation) => {
 		if (hasLoaded) {
 			// If status is 'saved', there are no unsaved changes - allow navigation
 			if (autoSave.status === 'saved') {
@@ -478,7 +477,7 @@ $effect(() => {
 	<header slot="header">
 		{#if !loading && post}
 			<div class="header-left">
-				<button class="btn-icon" onclick={() => goto('/admin/posts')}>
+				<button class="btn-icon" onclick={() => goto('/admin/posts')} aria-label="Back to posts">
 					<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
 						<path
 							d="M12.5 15L7.5 10L12.5 5"

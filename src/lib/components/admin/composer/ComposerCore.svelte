@@ -2,7 +2,7 @@
 	import { type Editor } from '@tiptap/core'
 	import { onMount, setContext } from 'svelte'
 	import { initiateEditor } from '$lib/components/edra/editor.ts'
-	import { getEditorExtensions, EDITOR_PRESETS } from '$lib/components/edra/editor-extensions.js'
+	import { getEditorExtensions } from '$lib/components/edra/editor-extensions.js'
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle'
 	import LinkMenu from '$lib/components/edra/headless/menus/link-menu.svelte'
 	import TableRowMenu from '$lib/components/edra/headless/menus/table/table-row-menu.svelte'
@@ -113,8 +113,8 @@
 
 	// Event handlers
 	const eventHandlers = useComposerEvents({
-		editor,
-		mediaHandler,
+		editor: () => editor,
+		mediaHandler: () => mediaHandler,
 		features
 	})
 

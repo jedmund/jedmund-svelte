@@ -1,4 +1,3 @@
-import type { Project } from '@prisma/client'
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 	import Button from '$lib/components/admin/Button.svelte'

@@ -132,7 +132,7 @@ $effect(() => {
 
 // Trigger autosave when form data changes
 $effect(() => {
-	status; content; linkUrl; linkDescription; title
+	void status; void content; void linkUrl; void linkDescription; void title
 	if (hasLoaded && autoSave) {
 		autoSave.schedule()
 	}
@@ -187,7 +187,7 @@ $effect(() => {
 })
 
 // Navigation guard: flush autosave before navigating away (only if unsaved)
-beforeNavigate(async (navigation) => {
+beforeNavigate(async (_navigation) => {
 	if (hasLoaded && autoSave) {
 		if (autoSave.status === 'saved') {
 			return
@@ -292,7 +292,7 @@ $effect(() => {
 				throw new Error(`Failed to ${mode === 'edit' ? 'save' : 'create'} post`)
 			}
 
-    const savedPost = await response.json()
+    await response.json()
 
     toast.dismiss(loadingToastId)
     toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)

@@ -51,6 +51,7 @@
 		maxLength,
 		colorSwatch = false,
 		id = `input-${Math.random().toString(36).substr(2, 9)}`,
+		// eslint-disable-next-line svelte/valid-compile
 		...restProps
 	}: Props = $props()
 
@@ -65,7 +66,7 @@
 	}
 
 	// Color picker functionality
-	let colorPickerInput: HTMLInputElement
+	let colorPickerInput: HTMLInputElement | undefined = $state.raw()
 
 	function handleColorSwatchClick() {
 		if (colorPickerInput) {
@@ -126,6 +127,7 @@
 				class="color-swatch"
 				style="background-color: {value}"
 				onclick={handleColorSwatchClick}
+				onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleColorSwatchClick()}
 				role="button"
 				tabindex="0"
 				aria-label="Open color picker"
