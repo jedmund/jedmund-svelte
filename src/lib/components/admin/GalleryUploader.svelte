@@ -4,6 +4,8 @@
 	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
+	import FileIcon from '$icons/FileIcon.svelte'
+	import { validateImageFile, uploadMediaFiles } from '$lib/utils/mediaHelpers'
 
 	// Gallery items can be either Media objects or objects with a mediaId reference
 	type GalleryItem = Media | (Partial<Media> & { mediaId?: number })
@@ -55,43 +57,9 @@
 	const canAddMore = $derived(!maxItems || !value || value.length < maxItems)
 	const remainingSlots = $derived(maxItems ? maxItems - (value?.length || 0) : Infinity)
 
-	// File validation
+	// File validation using shared helper
 	function validateFile(file: File): string | null {
-		// Check file type
-		if (!file.type.startsWith('image/')) {
-			return 'Please select image files only'
-		}
-
-		// Check file size
-		const sizeMB = file.size / 1024 / 1024
-		if (sizeMB > maxFileSize) {
-			return `File size must be less than ${maxFileSize}MB`
-		}
-
-		return null
-	}
-
-	// Upload multiple files to server
-	async function uploadFiles(files: File[]): Promise<Media[]> {
-		const uploadPromises = files.map(async (file) => {
-			const formData = new FormData()
-			formData.append('file', file)
-
-			const response = await fetch('/api/media/upload', {
-				method: 'POST',
-				body: formData,
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(errorData.error || `Upload failed for ${file.name}`)
-			}
-
-			return await response.json()
-		})
-
-		return Promise.all(uploadPromises)
+		return validateImageFile(file, maxFileSize)
 	}
 
 	// Handle file selection/drop
@@ -140,7 +108,8 @@
 				}, 100)
 			})
 
-			const uploadedMedia = await uploadFiles(filesToUpload)
+			// Upload files using shared helper
+			const uploadedMedia = await uploadMediaFiles(filesToUpload) as Media[]
 
 			// Clear progress intervals
 			progressIntervals.forEach((interval) => clearInterval(interval))
@@ -459,54 +428,7 @@
 			{:else}
 				<!-- Upload Prompt -->
 				<div class="upload-prompt">
-					<svg
-						class="upload-icon"
-						width="48"
-						height="48"
-						viewBox="0 0 24 24"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-						<polyline
-							points="14,2 14,8 20,8"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-						<line
-							x1="16"
-							y1="13"
-							x2="8"
-							y2="13"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-						/>
-						<line
-							x1="16"
-							y1="17"
-							x2="8"
-							y2="17"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-						/>
-						<polyline
-							points="10,9 9,9 8,9"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
+					<FileIcon size={48} class="upload-icon" />
 					<p class="upload-main-text">{placeholder}</p>
 					<p class="upload-sub-text">
 						Supports JPG, PNG, GIF up to {maxFileSize}MB
