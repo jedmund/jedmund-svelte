@@ -5,7 +5,6 @@
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
-	import { onMount } from 'svelte'
 	import { spring } from 'svelte/motion'
 	import { getCurrentMousePosition } from '$lib/stores/mouse'
 	import type { PageData } from './$types'
@@ -46,7 +45,6 @@
 	let defaultRightX = 0
 
 	const pageUrl = $derived($page.url.href)
-	const fromAlbum = $derived($page.url.searchParams.get('from'))
 
 	// Generate metadata
 	const metaTags = $derived(
@@ -217,10 +215,6 @@
 			rightButtonCoords.set({ x: mouseX, y: mouseY }, { hard: true })
 		}
 	}
-
-	// Track last known mouse position for scroll updates
-	let lastMouseX = 0
-	let lastMouseY = 0
 
 	// Store last mouse client position for scroll updates
 	let lastClientX = 0

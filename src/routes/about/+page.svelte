@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Album from '$components/Album.svelte'
-	import Game from '$components/Game.svelte'
 	import MentionList from '$components/MentionList.svelte'
 	import Page from '$components/Page.svelte'
 	import RecentAlbums from '$components/RecentAlbums.svelte'
@@ -13,8 +11,6 @@
 	let { data } = $props<{ data: PageData }>()
 
 	let albums = $derived(data.albums)
-	let games = $derived(data.games)
-	let error = $derived(data.error)
 
 	const pageUrl = $derived($page.url.href)
 

@@ -1,11 +1,6 @@
 <script lang="ts">
 	import type { Editor } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
-	import Image from 'lucide-svelte/icons/image'
-	import Video from 'lucide-svelte/icons/video'
-	import AudioLines from 'lucide-svelte/icons/audio-lines'
-	import Grid3x3 from 'lucide-svelte/icons/grid-3x3'
-	import MapPin from 'lucide-svelte/icons/map-pin'
 	import MediaIcon from '$icons/media.svg?component'
 	import Upload from 'lucide-svelte/icons/upload'
 	import Link from 'lucide-svelte/icons/link'
@@ -38,7 +33,6 @@
 
 	let selectedAction = $state<ActionType>(defaultAction())
 	let embedUrl = $state('')
-	let searchQuery = $state('')
 	let isUploading = $state(false)
 	let fileInput: HTMLInputElement
 	let isOpen = $state(true)
@@ -291,12 +285,6 @@
 		return null
 	}
 
-	function handleLocationSearch() {
-		// This would integrate with a geocoding API
-		// For now, just show a message
-		alert('Location search coming soon! For now, paste a Google Maps link.')
-	}
-
 	function handleLocationInsert() {
 		const lat = parseFloat(locationLat)
 		const lng = parseFloat(locationLng)
@@ -335,23 +323,6 @@
 	function handlePaneClose() {
 		isOpen = false
 		onClose()
-	}
-
-	function getContentTitle() {
-		switch (contentType) {
-			case 'image':
-				return 'Insert Image'
-			case 'video':
-				return 'Insert Video'
-			case 'audio':
-				return 'Insert Audio'
-			case 'gallery':
-				return 'Create Gallery'
-			case 'location':
-				return 'Add Location'
-			default:
-				return 'Insert Content'
-		}
 	}
 </script>
 
