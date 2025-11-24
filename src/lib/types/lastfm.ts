@@ -39,7 +39,10 @@ export interface Album {
 		trackCount?: number
 		recordLabel?: string
 		copyright?: string
-		editorialNotes?: any
+		editorialNotes?: {
+			short?: string
+			standard?: string
+		}
 		isComplete?: boolean
 		tracks?: Array<{
 			name: string
@@ -51,7 +54,7 @@ export interface Album {
 			searchQuery?: string
 			storefront?: string
 			responseTime?: number
-			rawResponse?: any
+			rawResponse?: unknown
 			matchType?: 'exact' | 'fuzzy' | 'single'
 			searchAttempts?: number
 		}

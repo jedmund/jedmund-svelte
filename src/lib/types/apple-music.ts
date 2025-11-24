@@ -40,6 +40,13 @@ export interface AppleMusicAttributes {
 	url: string
 }
 
+export interface AppleMusicArtistAttributes {
+	name: string
+	artwork?: AppleMusicArtwork
+	genreNames?: string[]
+	url?: string
+}
+
 export interface AppleMusicTrackAttributes {
 	albumName: string
 	artistName: string
@@ -64,7 +71,7 @@ export interface AppleMusicTrackAttributes {
 
 export interface AppleMusicRelationships {
 	artists?: {
-		data: AppleMusicResource<any>[]
+		data: AppleMusicResource<AppleMusicArtistAttributes>[]
 		href?: string
 		next?: string
 	}
@@ -117,16 +124,33 @@ export interface AppleMusicErrorResponse {
 }
 
 // Type guards
-export function isAppleMusicError(response: any): response is AppleMusicErrorResponse {
-	return response && 'errors' in response && Array.isArray(response.errors)
+export function isAppleMusicError(response: unknown): response is AppleMusicErrorResponse {
+	return (
+		typeof response === 'object' &&
+		response !== null &&
+		'errors' in response &&
+		Array.isArray((response as AppleMusicErrorResponse).errors)
+	)
 }
 
-export function isAppleMusicAlbum(resource: any): resource is AppleMusicAlbum {
-	return resource && resource.type === 'albums' && 'attributes' in resource
+export function isAppleMusicAlbum(resource: unknown): resource is AppleMusicAlbum {
+	return (
+		typeof resource === 'object' &&
+		resource !== null &&
+		'type' in resource &&
+		(resource as AppleMusicAlbum).type === 'albums' &&
+		'attributes' in resource
+	)
 }
 
-export function isAppleMusicTrack(resource: any): resource is AppleMusicTrack {
-	return resource && resource.type === 'songs' && 'attributes' in resource
+export function isAppleMusicTrack(resource: unknown): resource is AppleMusicTrack {
+	return (
+		typeof resource === 'object' &&
+		resource !== null &&
+		'type' in resource &&
+		(resource as AppleMusicTrack).type === 'songs' &&
+		'attributes' in resource
+	)
 }
 
 // Helper function to get high-resolution artwork URL

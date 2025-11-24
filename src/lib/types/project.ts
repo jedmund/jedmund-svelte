@@ -1,3 +1,5 @@
+import type { EditorData } from './editor'
+
 export type ProjectStatus = 'draft' | 'published' | 'list-only' | 'password-protected'
 export type ProjectType = 'work' | 'labs'
 
@@ -13,7 +15,7 @@ export interface Project {
 	featuredImage: string | null
 	logoUrl: string | null
 	externalUrl: string | null
-	caseStudyContent: any | null
+	caseStudyContent: EditorData | null
 	backgroundColor: string | null
 	highlightColor: string | null
 	projectType: ProjectType
@@ -43,7 +45,7 @@ export interface ProjectFormData {
 	logoUrl: string
 	status: ProjectStatus
 	password: string
-	caseStudyContent: any
+	caseStudyContent: EditorData
 	showFeaturedImageInHeader: boolean
 	showBackgroundColorInHeader: boolean
 	showLogoInHeader: boolean
