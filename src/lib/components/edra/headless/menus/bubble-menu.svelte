@@ -15,18 +15,20 @@
 
 	let isDragging = $state(false)
 
-	editor.view.dom.addEventListener('dragstart', () => {
-		isDragging = true
-	})
+	if (editor.view) {
+		editor.view.dom.addEventListener('dragstart', () => {
+			isDragging = true
+		})
 
-	editor.view.dom.addEventListener('drop', () => {
-		isDragging = true
+		editor.view.dom.addEventListener('drop', () => {
+			isDragging = true
 
-		// Allow some time for the drop action to complete before re-enabling
-		setTimeout(() => {
-			isDragging = false
-		}, 100) // Adjust delay if needed
-	})
+			// Allow some time for the drop action to complete before re-enabling
+			setTimeout(() => {
+				isDragging = false
+			}, 100) // Adjust delay if needed
+		})
+	}
 
 	const bubbleMenuCommands = [
 		...commands['text-formatting'].commands,
@@ -40,7 +42,7 @@
 	function shouldShow(props: ShouldShowProps) {
 		if (!props.editor.isEditable) return false
 		const { view, editor } = props
-		if (!view || editor.view.dragging) {
+		if (!view || !editor.view || editor.view.dragging) {
 			return false
 		}
 		if (editor.isActive('link')) return false

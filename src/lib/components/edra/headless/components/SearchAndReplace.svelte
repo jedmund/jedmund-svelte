@@ -32,7 +32,7 @@
 	function goToSelection() {
 		const { results, resultIndex } = editor.storage.searchAndReplace
 		const position = results[resultIndex]
-		if (!position) return
+		if (!position || !editor.view) return
 		editor.commands.setTextSelection(position)
 		const { node } = editor.view.domAtPos(editor.state.selection.anchor)
 		if (node instanceof HTMLElement) node.scrollIntoView({ behavior: 'smooth', block: 'center' })

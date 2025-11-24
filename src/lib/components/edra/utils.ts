@@ -114,7 +114,7 @@ export function getHandlePaste(editor: Editor, maxSize: number = 2) {
  * @param event - Optional MouseEvent or KeyboardEvent triggering the focus
  */
 export function focusEditor(editor: Editor | undefined, event?: MouseEvent | KeyboardEvent) {
-	if (!editor) return
+	if (!editor || !editor.view) return
 	// Check if there is a text selection already (i.e. a non-empty selection)
 	const selection = window.getSelection()
 	if (selection && selection.toString().length > 0) {

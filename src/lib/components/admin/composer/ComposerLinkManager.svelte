@@ -32,7 +32,7 @@
 
 	// URL convert handlers
 	export function handleShowUrlConvertDropdown(pos: number, _url: string) {
-		if (!editor) return
+		if (!editor || !editor.view) return
 		const coords = editor.view.coordsAtPos(pos)
 		urlConvertDropdownPosition = { x: coords.left, y: coords.bottom + 5 }
 		urlConvertPos = pos
@@ -48,7 +48,7 @@
 
 	// Link context menu handlers
 	export function handleShowLinkContextMenu(pos: number, url: string) {
-		if (!editor) return
+		if (!editor || !editor.view) return
 		const coords = editor.view.coordsAtPos(pos)
 		linkContextMenuPosition = { x: coords.left, y: coords.bottom + 5 }
 		linkContextUrl = url
@@ -65,7 +65,7 @@
 	}
 
 	function handleEditLink() {
-		if (!editor || linkContextPos === null || !linkContextUrl) return
+		if (!editor || !editor.view || linkContextPos === null || !linkContextUrl) return
 		const coords = editor.view.coordsAtPos(linkContextPos)
 		linkEditDialogPosition = { x: coords.left, y: coords.bottom + 5 }
 		linkEditUrl = linkContextUrl
