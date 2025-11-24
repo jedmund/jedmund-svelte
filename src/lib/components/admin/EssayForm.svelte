@@ -79,7 +79,8 @@
 					return await response.json()
 				},
 				onSaved: (saved: Post, { prime }) => {
-					updatedAt = saved.updatedAt.toISOString()
+					updatedAt =
+					typeof saved.updatedAt === 'string' ? saved.updatedAt : saved.updatedAt.toISOString()
 					prime(buildPayload())
 					if (draftKey) clearDraft(draftKey)
 				}

@@ -46,7 +46,13 @@
 	let editorInstance = $state<{ save: () => Promise<JSONContent>; clear: () => void } | undefined>()
 	let activeTab = $state('metadata')
 	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
-	let updatedAt = $state<string | undefined>(album?.updatedAt?.toISOString())
+	let updatedAt = $state<string | undefined>(
+		album?.updatedAt
+			? typeof album.updatedAt === 'string'
+				? album.updatedAt
+				: album.updatedAt.toISOString()
+			: undefined
+	)
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -114,7 +120,8 @@
 					return await response.json()
 				},
 				onSaved: (saved: Album, { prime }) => {
-					updatedAt = saved.updatedAt.toISOString()
+					updatedAt =
+						typeof saved.updatedAt === 'string' ? saved.updatedAt : saved.updatedAt.toISOString()
 					prime(buildPayload())
 					if (draftKey) clearDraft(draftKey)
 				}
