@@ -155,7 +155,7 @@
 			case 'audio':
 				editor.chain().focus().setAudio(embedUrl).run()
 				break
-			case 'location':
+			case 'location': {
 				// For location, try to extract coordinates from Google Maps URL
 				const coords = extractCoordinatesFromUrl(embedUrl)
 				if (coords) {
@@ -212,7 +212,7 @@
 
 	function insertContent(media: Media) {
 		switch (contentType) {
-			case 'image':
+			case 'image': {
 				const displayWidth = media.width && media.width > 600 ? 600 : media.width
 				editor
 					.chain()
@@ -235,7 +235,8 @@
 						}
 					])
 					.run()
-				break
+			break
+		}
 			case 'video':
 				editor.chain().focus().setVideo(media.url).run()
 				break

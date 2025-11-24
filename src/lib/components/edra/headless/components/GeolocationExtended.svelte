@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte'
 	import type L from 'leaflet'
 
-	interface Props extends NodeViewProps {}
+	type Props = NodeViewProps
 	let { node, selected }: Props = $props()
 
 	let mapContainer: HTMLDivElement

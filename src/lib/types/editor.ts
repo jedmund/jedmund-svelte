@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/core'
 
-export interface EditorData extends JSONContent {}
+export type EditorData = JSONContent
 
 export interface EditorProps {
 	data?: EditorData

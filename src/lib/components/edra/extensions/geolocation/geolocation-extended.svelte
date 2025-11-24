@@ -3,7 +3,7 @@
 	import type { NodeViewProps } from '@tiptap/core'
 	import type * as L from 'leaflet'
 
-	interface Props extends NodeViewProps {}
+	type Props = NodeViewProps
 
 	let { node }: Props = $props()
 

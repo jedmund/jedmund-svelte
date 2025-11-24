@@ -315,11 +315,12 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 								case 'code':
 									text = `<code>${text}</code>`
 									break
-								case 'link':
+								case 'link': {
 									const href = mark.attrs?.href || '#'
 									const target = mark.attrs?.target || '_blank'
 									text = `<a href="${href}" target="${target}" rel="noopener noreferrer">${text}</a>`
 									break
+								}
 								case 'highlight':
 									text = `<mark>${text}</mark>`
 									break

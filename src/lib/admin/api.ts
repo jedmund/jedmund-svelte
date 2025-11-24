@@ -23,7 +23,9 @@ async function handleResponse(res: Response) {
     // Redirect to login for unauthorized requests
     try {
       goto('/admin/login')
-    } catch {}
+    } catch {
+      // Ignore navigation errors (e.g., if already on login page)
+    }
   }
 
   const contentType = res.headers.get('content-type') || ''

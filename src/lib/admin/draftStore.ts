@@ -26,7 +26,9 @@ export function loadDraft<T = unknown>(key: string): Draft<T> | null {
 export function clearDraft(key: string) {
   try {
     localStorage.removeItem(key)
-  } catch {}
+  } catch {
+    // Ignore storage errors
+  }
 }
 
 export function timeAgo(ts: number): string {
