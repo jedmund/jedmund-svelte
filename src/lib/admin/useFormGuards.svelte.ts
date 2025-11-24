@@ -2,7 +2,9 @@ import { beforeNavigate } from '$app/navigation'
 import { toast } from '$lib/stores/toast'
 import type { AutoSaveStore } from '$lib/admin/autoSave.svelte'
 
-export function useFormGuards(autoSave: AutoSaveStore<unknown, unknown> | null) {
+export function useFormGuards<TPayload = unknown, _TResponse = unknown>(
+	autoSave: AutoSaveStore<TPayload, unknown> | null
+) {
 	if (!autoSave) return // No guards needed for create mode
 
 	// Navigation guard: flush autosave before route change
@@ -21,8 +23,12 @@ export function useFormGuards(autoSave: AutoSaveStore<unknown, unknown> | null) 
 
 	// Warn before closing browser tab/window if unsaved changes
 	$effect(() => {
+		// Capture autoSave in closure to avoid non-null assertions
+		const store = autoSave
+		if (!store) return
+
 		function handleBeforeUnload(event: BeforeUnloadEvent) {
-			if (autoSave!.status !== 'saved') {
+			if (store.status !== 'saved') {
 				event.preventDefault()
 				event.returnValue = ''
 			}
@@ -34,13 +40,17 @@ export function useFormGuards(autoSave: AutoSaveStore<unknown, unknown> | null) 
 
 	// Cmd/Ctrl+S keyboard shortcut for immediate save
 	$effect(() => {
+		// Capture autoSave in closure to avoid non-null assertions
+		const store = autoSave
+		if (!store) return
+
 		function handleKeydown(event: KeyboardEvent) {
 			const key = event.key.toLowerCase()
 			const isModifier = event.metaKey || event.ctrlKey
 
 			if (isModifier && key === 's') {
 				event.preventDefault()
-				autoSave!.flush().catch((error) => {
+				store.flush().catch((error) => {
 					console.error('Autosave flush failed:', error)
 					toast.error('Failed to save changes')
 				})

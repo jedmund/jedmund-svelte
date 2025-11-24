@@ -46,7 +46,13 @@
 	let editorInstance = $state<{ save: () => Promise<JSONContent>; clear: () => void } | undefined>()
 	let activeTab = $state('metadata')
 	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
-	let updatedAt = $state<string | undefined>(album?.updatedAt?.toISOString())
+	let updatedAt = $state<string | undefined>(
+		album?.updatedAt
+			? typeof album.updatedAt === 'string'
+				? album.updatedAt
+				: album.updatedAt.toISOString()
+			: undefined
+	)
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -98,12 +104,22 @@
 	}
 
 	// Autosave store (edit mode only)
-	const autoSave = mode === 'edit' && album
-		? createAutoSaveStore({
+	// Initialized as null and created reactively when album data becomes available
+	let autoSave = $state<ReturnType<typeof createAutoSaveStore<ReturnType<typeof buildPayload>, Album>> | null>(null)
+
+	// INITIALIZATION ORDER:
+	// 1. This effect creates autoSave when album prop becomes available
+	// 2. useFormGuards is called immediately after creation (same effect)
+	// 3. Other effects check for autoSave existence before using it
+	$effect(() => {
+		// Create autoSave when album becomes available (only once)
+		if (mode === 'edit' && album && !autoSave) {
+			const albumId = album.id // Capture album ID to avoid null reference
+			autoSave = createAutoSaveStore({
 				debounceMs: 2000,
 				getPayload: () => (hasLoaded ? buildPayload() : null),
 				save: async (payload, { signal }) => {
-					const response = await fetch(`/api/albums/${album.id}`, {
+					const response = await fetch(`/api/albums/${albumId}`, {
 						method: 'PUT',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify(payload),
@@ -114,12 +130,17 @@
 					return await response.json()
 				},
 				onSaved: (saved: Album, { prime }) => {
-					updatedAt = saved.updatedAt.toISOString()
+					updatedAt =
+						typeof saved.updatedAt === 'string' ? saved.updatedAt : saved.updatedAt.toISOString()
 					prime(buildPayload())
 					if (draftKey) clearDraft(draftKey)
 				}
 			})
-		: null
+
+			// Form guards (navigation protection, Cmd+S, beforeunload)
+			useFormGuards(autoSave)
+		}
+	})
 
 	// Draft recovery helper
 	const draftRecovery = useDraftRecovery<ReturnType<typeof buildPayload>>({
@@ -134,9 +155,6 @@
 			formData.content = payload.content ?? formData.content
 		}
 	})
-
-	// Form guards (navigation protection, Cmd+S, beforeunload)
-	useFormGuards(autoSave)
 
 	// Watch for album changes and populate form data
 	$effect(() => {
@@ -167,6 +185,8 @@
 	})
 
 	// Trigger autosave when form data changes
+	// Using `void` operator to explicitly track dependencies without using their values
+	// This effect re-runs whenever any of these form fields change
 	$effect(() => {
 		void formData.title
 		void formData.slug
@@ -194,7 +214,8 @@
 	// Cleanup autosave on unmount
 	$effect(() => {
 		if (autoSave) {
-			return () => autoSave.destroy()
+			const instance = autoSave
+			return () => instance.destroy()
 		}
 	})
 

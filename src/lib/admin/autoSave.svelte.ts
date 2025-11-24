@@ -8,7 +8,7 @@ export interface AutoSaveStoreOptions<TPayload, TResponse = unknown> {
   onSaved?: (res: TResponse, ctx: { prime: (payload: TPayload) => void }) => void
 }
 
-export interface AutoSaveStore<TPayload> {
+export interface AutoSaveStore<TPayload, _TResponse = unknown> {
   readonly status: AutoSaveStatus
   readonly lastError: string | null
   schedule: () => void
@@ -36,7 +36,7 @@ export interface AutoSaveStore<TPayload> {
  */
 export function createAutoSaveStore<TPayload, TResponse = unknown>(
   opts: AutoSaveStoreOptions<TPayload, TResponse>
-): AutoSaveStore<TPayload> {
+): AutoSaveStore<TPayload, unknown> {
   const debounceMs = opts.debounceMs ?? 2000
   const idleResetMs = opts.idleResetMs ?? 2000
   let timer: ReturnType<typeof setTimeout> | null = null
