@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto, beforeNavigate } from '$app/navigation'
-import { onMount } from 'svelte'
-import { api } from '$lib/admin/api'
-import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
+	import { goto } from '$app/navigation'
+	import { onMount } from 'svelte'
+	import { api } from '$lib/admin/api'
+	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
+	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
+	import { useDraftRecovery } from '$lib/admin/useDraftRecovery.svelte'
+	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import DraftPrompt from '$lib/components/admin/DraftPrompt.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
-	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import AutoSaveStatus from '$lib/components/admin/AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Post } from '@prisma/client'
@@ -59,12 +62,8 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
 
-// Draft backup
-const draftKey = $derived(makeDraftKey('post', $page.params.id))
-let showDraftPrompt = $state(false)
-let draftTimestamp = $state<number | null>(null)
-let timeTicker = $state(0)
-const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
+	// Draft key for autosave fallback
+	const draftKey = $derived(makeDraftKey('post', $page.params.id))
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -74,7 +73,7 @@ const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(d
 	let config = $derived(postTypeConfig[postType])
 
 	// Autosave store
-	let autoSave = createAutoSaveStore({
+	const autoSave = createAutoSaveStore({
 		debounceMs: 2000,
 		getPayload: () => {
 			if (!hasLoaded) return null
@@ -108,6 +107,23 @@ const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(d
 			if (draftKey) clearDraft(draftKey)
 		}
 	})
+
+	// Draft recovery helper
+	const draftRecovery = useDraftRecovery<DraftPayload>({
+		draftKey: () => draftKey,
+		onRestore: (payload) => {
+			if (payload.title !== undefined) title = payload.title ?? ''
+			if (payload.slug !== undefined) slug = payload.slug
+			if (payload.type !== undefined) postType = payload.type as 'post' | 'essay'
+			if (payload.status !== undefined) status = payload.status as 'draft' | 'published'
+			if (payload.content !== undefined) content = payload.content ?? { type: 'doc', content: [] }
+			if (payload.excerpt !== undefined) excerpt = payload.excerpt ?? ''
+			if (payload.tags !== undefined) tags = payload.tags
+		}
+	})
+
+	// Form guards (navigation protection, Cmd+S, beforeunload)
+	useFormGuards(autoSave)
 
 	// Convert blocks format (from database) to Tiptap format
 	function convertBlocksToTiptap(blocksContent: BlockContent): JSONContent {
@@ -208,16 +224,11 @@ const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(d
 		}
 	}
 
-onMount(async () => {
-  // Wait a tick to ensure page params are loaded
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  await loadPost()
-  const draft = loadDraft<DraftPayload>(draftKey)
-  if (draft) {
-    showDraftPrompt = true
-    draftTimestamp = draft.ts
-  }
-})
+	onMount(async () => {
+		// Wait a tick to ensure page params are loaded
+		await new Promise((resolve) => setTimeout(resolve, 0))
+		await loadPost()
+	})
 
 	async function loadPost() {
 		const postId = $page.params.id
@@ -335,27 +346,6 @@ onMount(async () => {
 		}
 	}
 
-	function restoreDraft() {
-		const draft = loadDraft<DraftPayload>(draftKey)
-		if (!draft) return
-		const p = draft.payload
-		// Apply payload fields to form
-		if (p.title !== undefined) title = p.title
-		if (p.slug !== undefined) slug = p.slug
-		if (p.type !== undefined) postType = p.type
-		if (p.status !== undefined) status = p.status
-		if (p.content !== undefined) content = p.content
-		if (p.excerpt !== undefined) excerpt = p.excerpt
-		if (p.tags !== undefined) tags = p.tags
-		showDraftPrompt = false
-		clearDraft(draftKey)
-	}
-
-	function dismissDraft() {
-		showDraftPrompt = false
-		clearDraft(draftKey)
-	}
-
 	function handleMetadataPopover(event: MouseEvent) {
 		const target = event.target as Node
 		// Don't close if clicking inside the metadata button or anywhere in a metadata popover
@@ -403,68 +393,10 @@ onMount(async () => {
 		}
 	})
 
-	// Navigation guard: flush autosave before navigating away (only if there are unsaved changes)
-	beforeNavigate(async (_navigation) => {
-		if (hasLoaded) {
-			// If status is 'saved', there are no unsaved changes - allow navigation
-			if (autoSave.status === 'saved') {
-				return
-			}
-
-			// Otherwise, flush any pending changes before allowing navigation to proceed
-			try {
-				await autoSave.flush()
-			} catch (error) {
-				console.error('Autosave flush failed:', error)
-			}
-		}
-	})
-
-	// Warn before closing browser tab/window if there are unsaved changes
-	$effect(() => {
-		if (!hasLoaded) return
-
-		function handleBeforeUnload(event: BeforeUnloadEvent) {
-			// Only warn if there are unsaved changes
-			if (autoSave.status !== 'saved') {
-				event.preventDefault()
-				event.returnValue = '' // Required for Chrome
-			}
-		}
-
-		window.addEventListener('beforeunload', handleBeforeUnload)
-		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-	})
-
-	// Keyboard shortcut: Cmd/Ctrl+S to save immediately
-	$effect(() => {
-		if (!hasLoaded) return
-
-		function handleKeydown(e: KeyboardEvent) {
-			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-				e.preventDefault()
-				autoSave.flush().catch((error) => {
-					console.error('Autosave flush failed:', error)
-				})
-			}
-		}
-
-		document.addEventListener('keydown', handleKeydown)
-		return () => document.removeEventListener('keydown', handleKeydown)
-	})
-
 	// Cleanup autosave on unmount
 	$effect(() => {
 		return () => autoSave.destroy()
 	})
-
-// Auto-update draft time text every minute when prompt visible
-$effect(() => {
-  if (showDraftPrompt) {
-    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
-    return () => clearInterval(id)
-  }
-})
 </script>
 
 <svelte:head>
@@ -542,18 +474,12 @@ $effect(() => {
 		{/if}
 	</header>
 
-	{#if showDraftPrompt}
-		<div class="draft-banner">
-			<div class="draft-banner-content">
-				<span class="draft-banner-text">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
-				</span>
-				<div class="draft-banner-actions">
-					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>
-					<button class="draft-banner-button dismiss" onclick={dismissDraft}>Dismiss</button>
-				</div>
-			</div>
-		</div>
+	{#if draftRecovery.showPrompt}
+		<DraftPrompt
+			timeAgo={draftRecovery.draftTimeText}
+			onRestore={draftRecovery.restore}
+			onDismiss={draftRecovery.dismiss}
+		/>
 	{/if}
 
 	{#if loading}
@@ -634,72 +560,6 @@ $effect(() => {
 		display: flex;
 		align-items: center;
 		gap: $unit-2x;
-	}
-
-	.draft-banner {
-		background: $blue-95;
-		border-bottom: 1px solid $blue-80;
-		padding: $unit-2x $unit-5x;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		animation: slideDown 0.2s ease-out;
-
-		@keyframes slideDown {
-			from {
-				opacity: 0;
-				transform: translateY(-10px);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
-	}
-
-	.draft-banner-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: $unit-3x;
-		width: 100%;
-		max-width: 1200px;
-	}
-
-	.draft-banner-text {
-		color: $blue-20;
-		font-size: $font-size-small;
-		font-weight: $font-weight-med;
-	}
-
-	.draft-banner-actions {
-		display: flex;
-		gap: $unit-2x;
-	}
-
-	.draft-banner-button {
-		background: $blue-50;
-		border: none;
-		color: $white;
-		cursor: pointer;
-		padding: $unit-half $unit-2x;
-		border-radius: $corner-radius-sm;
-		font-size: $font-size-small;
-		font-weight: $font-weight-med;
-		transition: background $transition-fast;
-
-		&:hover {
-			background: $blue-40;
-		}
-
-		&.dismiss {
-			background: transparent;
-			color: $blue-30;
-
-			&:hover {
-				background: $blue-90;
-			}
-		}
 	}
 
 	.btn-icon {
