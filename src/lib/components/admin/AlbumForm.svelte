@@ -104,12 +104,17 @@
 	}
 
 	// Autosave store (edit mode only)
-	const autoSave = mode === 'edit' && album
-		? createAutoSaveStore({
+	let autoSave = $state<ReturnType<typeof createAutoSaveStore<ReturnType<typeof buildPayload>, Album>> | null>(null)
+
+	$effect(() => {
+		// Create or update autoSave when album becomes available
+		if (mode === 'edit' && album && !autoSave) {
+			const albumId = album.id // Capture album ID to avoid null reference
+			autoSave = createAutoSaveStore({
 				debounceMs: 2000,
 				getPayload: () => (hasLoaded ? buildPayload() : null),
 				save: async (payload, { signal }) => {
-					const response = await fetch(`/api/albums/${album.id}`, {
+					const response = await fetch(`/api/albums/${albumId}`, {
 						method: 'PUT',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify(payload),
@@ -126,7 +131,11 @@
 					if (draftKey) clearDraft(draftKey)
 				}
 			})
-		: null
+
+			// Form guards (navigation protection, Cmd+S, beforeunload)
+			useFormGuards(autoSave)
+		}
+	})
 
 	// Draft recovery helper
 	const draftRecovery = useDraftRecovery<ReturnType<typeof buildPayload>>({
@@ -141,9 +150,6 @@
 			formData.content = payload.content ?? formData.content
 		}
 	})
-
-	// Form guards (navigation protection, Cmd+S, beforeunload)
-	useFormGuards(autoSave)
 
 	// Watch for album changes and populate form data
 	$effect(() => {
@@ -201,7 +207,8 @@
 	// Cleanup autosave on unmount
 	$effect(() => {
 		if (autoSave) {
-			return () => autoSave.destroy()
+			const instance = autoSave
+			return () => instance.destroy()
 		}
 	})
 
