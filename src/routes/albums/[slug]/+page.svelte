@@ -6,6 +6,29 @@
 	import { renderEdraContent, getContentExcerpt } from '$lib/utils/content'
 	import { page } from '$app/stores'
 	import type { PageData } from './$types'
+	import type { EditorData } from '$lib/types/editor'
+
+	interface AlbumPhoto {
+		id: number
+		url: string
+		caption: string | null
+		filename: string
+		width: number | null
+		height: number | null
+	}
+
+	interface AlbumData {
+		id: number
+		slug: string
+		title: string
+		description: string | null
+		content: EditorData | null
+		location: string | null
+		date: string | null
+		createdAt: string
+		updatedAt: string
+		photos?: AlbumPhoto[]
+	}
 
 	let { data }: { data: PageData } = $props()
 
@@ -14,7 +37,7 @@
 
 	// Transform album data to PhotoItem format for MasonryPhotoGrid
 	const photoItems = $derived(
-		album?.photos?.map((photo: any) => ({
+		album?.photos?.map((photo: AlbumPhoto) => ({
 			id: `photo-${photo.id}`,
 			src: photo.url,
 			alt: photo.caption || photo.filename,
@@ -36,7 +59,7 @@
 	const pageUrl = $derived($page.url.href)
 
 	// Helper to get content preview using Edra content excerpt utility
-	const extractContentPreview = (content: any): string => {
+	const extractContentPreview = (content: EditorData | null): string => {
 		if (!content) return ''
 		return getContentExcerpt(content, 155)
 	}
@@ -65,13 +88,13 @@
 	)
 
 	// Generate enhanced JSON-LD for albums with content
-	const generateAlbumJsonLd = (album: any, pageUrl: string) => {
+	const generateAlbumJsonLd = (album: AlbumData, pageUrl: string) => {
 		const baseJsonLd = generateImageGalleryJsonLd({
 			name: album.title,
 			description: album.description,
 			url: pageUrl,
 			images:
-				album.photos?.map((photo: any) => ({
+				album.photos?.map((photo: AlbumPhoto) => ({
 					url: photo.url,
 					caption: photo.caption
 				})) || []

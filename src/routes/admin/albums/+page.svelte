@@ -10,6 +10,7 @@
 	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
+	import type { EditorData } from '$lib/types/editor'
 
 	interface Photo {
 		id: number
@@ -32,7 +33,7 @@
 		createdAt: string
 		updatedAt: string
 		photos: Photo[]
-		content?: any
+		content?: EditorData
 		_count: {
 			media: number
 		}

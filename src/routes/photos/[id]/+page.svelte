@@ -8,7 +8,7 @@
 	import { spring } from 'svelte/motion'
 	import { getCurrentMousePosition } from '$lib/stores/mouse'
 	import type { PageData } from './$types'
-	import { isAlbum } from '$lib/types/photos'
+	import { isAlbum, type PhotoItem } from '$lib/types/photos'
 	import ArrowLeft from '$icons/arrow-left.svg'
 	import ArrowRight from '$icons/arrow-right.svg'
 
@@ -110,7 +110,7 @@
 	})
 
 	// Handle photo navigation
-	function navigateToPhoto(item: any) {
+	function navigateToPhoto(item: PhotoItem | null) {
 		if (!item) return
 		// Extract media ID from item.id (could be 'media-123' or 'photo-123')
 		const mediaId = item.id.replace(/^(media|photo)-/, '')

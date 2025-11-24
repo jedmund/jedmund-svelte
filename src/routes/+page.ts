@@ -40,9 +40,16 @@ async function fetchRecentAlbums(fetch: typeof window.fetch): Promise<Album[]> {
 	return musicData.albums
 }
 
+interface PaginationInfo {
+	total: number
+	limit: number
+	offset: number
+	hasMore: boolean
+}
+
 async function fetchProjects(
 	fetch: typeof window.fetch
-): Promise<{ projects: Project[]; pagination: any }> {
+): Promise<{ projects: Project[]; pagination: PaginationInfo | null }> {
 	const response = await fetch(
 		'/api/projects?projectType=work&includeListOnly=true&includePasswordProtected=true'
 	)
