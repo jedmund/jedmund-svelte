@@ -211,7 +211,13 @@
 
 {#if dev}
 	<div class="debug-panel" class:minimized={isMinimized}>
-		<div class="debug-header" onclick={() => isMinimized = !isMinimized}>
+		<div
+			class="debug-header"
+			role="button"
+			tabindex="0"
+			onclick={() => (isMinimized = !isMinimized)}
+			onkeydown={(e) => e.key === 'Enter' && (isMinimized = !isMinimized)}
+		>
 			<h3>Debug Panel</h3>
 			<button class="minimize-btn" aria-label={isMinimized ? 'Expand' : 'Minimize'}>
 				{isMinimized ? '▲' : '▼'}
@@ -289,7 +295,15 @@
 								{#each albums as album}
 									{@const albumId = `${album.artist.name}:${album.name}`}
 									<div class="album-item" class:playing={album.isNowPlaying} class:expanded={expandedAlbumId === albumId}>
-										<div class="album-header" onclick={() => expandedAlbumId = expandedAlbumId === albumId ? null : albumId}>
+										<div
+										class="album-header"
+										role="button"
+										tabindex="0"
+										onclick={() => (expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
+										onkeydown={(e) =>
+											e.key === 'Enter' &&
+											(expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
+									>
 											<div class="album-content">
 												<div class="album-info">
 													<span class="name">{album.name}</span>
