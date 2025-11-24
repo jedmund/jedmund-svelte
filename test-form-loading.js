@@ -1,5 +1,5 @@
 // Simple test to check if project edit page loads correctly
-const puppeteer = require('puppeteer')
+import puppeteer from 'puppeteer'
 
 ;(async () => {
 	const browser = await puppeteer.launch({ headless: false })

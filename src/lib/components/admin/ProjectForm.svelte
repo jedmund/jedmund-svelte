@@ -36,7 +36,7 @@
 	let successMessage = $state<string | null>(null)
 
 	// Ref to the editor component
-	let editorRef: { save: () => Promise<JSONContent> } | undefined
+	let editorRef: { save: () => Promise<JSONContent> } | undefined = $state.raw()
 
 	// Draft key for autosave fallback
 	const draftKey = $derived(mode === 'edit' && project ? makeDraftKey('project', project.id) : null)
@@ -60,7 +60,7 @@
 
 	// Draft recovery helper
 	const draftRecovery = useDraftRecovery<Partial<ProjectFormData>>({
-		draftKey: draftKey,
+		draftKey: () => draftKey,
 		onRestore: (payload) => formStore.setFields(payload)
 	})
 

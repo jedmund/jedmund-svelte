@@ -185,8 +185,8 @@
 	})
 
 	// Watch for filter changes
-	let previousFilterType = filterType
-	let previousPhotographyFilter = photographyFilter
+	let previousFilterType = $state<typeof filterType | undefined>(undefined)
+	let previousPhotographyFilter = $state<typeof photographyFilter | undefined>(undefined)
 
 	$effect(() => {
 		if (

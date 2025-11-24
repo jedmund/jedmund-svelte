@@ -14,6 +14,7 @@
 		onclick?: () => void
 	}
 
+	// eslint-disable-next-line svelte/valid-compile
 	const { primary = false, backgroundColor, size = 'medium', label, ...props }: Props = $props()
 
 	let mode = $derived(primary ? 'storybook-button--primary' : 'storybook-button--secondary')

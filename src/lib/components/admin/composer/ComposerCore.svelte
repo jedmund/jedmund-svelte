@@ -113,8 +113,8 @@
 
 	// Event handlers
 	const eventHandlers = useComposerEvents({
-		editor,
-		mediaHandler,
+		editor: () => editor,
+		mediaHandler: () => mediaHandler,
 		features
 	})
 

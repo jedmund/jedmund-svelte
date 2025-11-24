@@ -1,4 +1,4 @@
-import type { TiptapNode, EditorData } from '$lib/types/editor'
+import type { EditorData } from '$lib/types/editor'
 
 // Content node types for rendering
 interface ContentNode {

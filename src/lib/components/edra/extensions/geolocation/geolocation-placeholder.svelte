@@ -19,7 +19,7 @@
 
 	// Map picker state
 	let showMapPicker = $state(false)
-	let mapContainer: HTMLDivElement
+	let mapContainer: HTMLDivElement | undefined = $state.raw()
 	let pickerMap: L.Map | null = null
 	let pickerMarker: L.Marker | null = null
 	let leaflet: typeof L | null = null

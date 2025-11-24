@@ -24,14 +24,14 @@
 	type ActionType = 'upload' | 'embed' | 'gallery' | 'search'
 
 	// Set default action based on content type
-	const defaultAction = $derived(() => {
+	function getDefaultAction(): ActionType {
 		if (contentType === 'location') return 'search'
 		if (contentType === 'gallery') return 'gallery'
 		if (contentType === 'image') return 'gallery'
 		return 'upload'
-	})
+	}
 
-	let selectedAction = $state<ActionType>(defaultAction())
+	let selectedAction = $state<ActionType>(getDefaultAction())
 	let embedUrl = $state('')
 	let isUploading = $state(false)
 	let fileInput: HTMLInputElement
@@ -45,7 +45,7 @@
 	let locationMarkerColor = $state('#ef4444')
 	let locationZoom = $state(15)
 
-	const availableActions = $derived(() => {
+	const availableActions = $derived.by(() => {
 		switch (contentType) {
 			case 'image':
 				return [
@@ -177,6 +177,7 @@
 					return
 				}
 				break
+			}
 		}
 
 		deleteNode?.()
@@ -186,6 +187,13 @@
 	function handleGallerySelect() {
 		const fileType = contentType === 'gallery' ? 'image' : contentType
 		const mode = contentType === 'gallery' ? 'multiple' : 'single'
+		// Map fileType to what the store accepts (audio -> all)
+		const storeFileType: 'image' | 'video' | 'all' | undefined =
+			fileType === 'audio'
+				? 'all'
+				: fileType === 'image' || fileType === 'video'
+					? fileType
+					: undefined
 
 		// Close the pane first to prevent z-index issues
 		handlePaneClose()
@@ -194,7 +202,7 @@
 		setTimeout(() => {
 			mediaSelectionStore.open({
 				mode,
-				fileType: fileType as 'image' | 'video' | 'audio',
+				fileType: storeFileType,
 				albumId,
 				onSelect: (media: Media | Media[]) => {
 					if (contentType === 'gallery') {
@@ -222,7 +230,7 @@
 							type: 'image',
 							attrs: {
 								src: media.url,
-								alt: media.altText || '',
+								alt: media.description || '',
 								title: media.description || '',
 								width: displayWidth,
 								height: media.height,
@@ -254,7 +262,7 @@
 			const galleryImages = mediaArray.map((m) => ({
 				id: m.id,
 				url: m.url,
-				alt: m.altText || '',
+				alt: m.description || '',
 				title: m.description || ''
 			}))
 
@@ -337,15 +345,16 @@
 	maxHeight="auto"
 	onClose={handlePaneClose}
 >
-	{#if availableActions().length > 1}
+	{#if availableActions.length > 1}
 		<div class="action-selector">
-			{#each availableActions() as action}
+			{#each availableActions as action}
+				{@const Icon = action.icon}
 				<button
 					class="action-tab"
 					class:active={selectedAction === action.type}
 					onclick={() => (selectedAction = action.type)}
 				>
-					<svelte:component this={action.icon} size={16} />
+					<Icon size={16} />
 					<span>{action.label}</span>
 				</button>
 			{/each}
@@ -391,24 +400,33 @@
 		{:else if selectedAction === 'search' && contentType === 'location'}
 			<div class="location-form">
 				<div class="form-group">
-					<label class="form-label">Title (optional)</label>
-					<input bind:value={locationTitle} placeholder="Location name" class="form-input" />
+					<label for="location-title" class="form-label">Title (optional)</label>
+					<input
+						id="location-title"
+						bind:value={locationTitle}
+						placeholder="Location name"
+						class="form-input"
+					/>
 				</div>
 
 				<div class="form-group">
-					<label class="form-label">Description (optional)</label>
+					<label for="location-description" class="form-label">Description (optional)</label>
 					<textarea
+						id="location-description"
 						bind:value={locationDescription}
 						placeholder="About this location"
 						class="form-textarea"
 						rows="2"
-					/>
+					></textarea>
 				</div>
 
 				<div class="coordinates-group">
 					<div class="form-group">
-						<label class="form-label">Latitude <span class="required">*</span></label>
+						<label for="location-lat" class="form-label"
+							>Latitude <span class="required">*</span></label
+						>
 						<input
+							id="location-lat"
 							bind:value={locationLat}
 							placeholder="37.7749"
 							type="number"
@@ -418,8 +436,11 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label class="form-label">Longitude <span class="required">*</span></label>
+						<label for="location-lng" class="form-label"
+							>Longitude <span class="required">*</span></label
+						>
 						<input
+							id="location-lng"
 							bind:value={locationLng}
 							placeholder="-122.4194"
 							type="number"

@@ -38,8 +38,8 @@
 	)
 
 	// 3D tilt effect
-	let cardElement: HTMLDivElement
-	let logoElement: HTMLElement
+	let cardElement: HTMLDivElement | undefined = $state.raw()
+	let logoElement: HTMLElement | undefined = $state.raw()
 	let isHovering = $state(false)
 	let transform = $state('')
 	let svgContent = $state('')

@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment'
 	import { computePosition, flip, shift, offset, autoUpdate } from '@floating-ui/dom'
 	import ChevronRight from '$icons/chevron-right.svg?component'
+	import DropdownMenu from './DropdownMenu.svelte'
 
 	interface Props {
 		isOpen: boolean
@@ -23,7 +24,7 @@
 
 	let { isOpen = $bindable(), triggerElement, items, onClose, isSubmenu = false }: Props = $props()
 
-	let dropdownElement: HTMLDivElement
+	let dropdownElement: HTMLDivElement | undefined = $state.raw()
 	let cleanup: (() => void) | null = null
 
 	// Track which submenu is open
@@ -190,11 +191,11 @@
 				</button>
 
 				{#if item.children && openSubmenuId === item.id}
-					<div
+					<div role="presentation"
 						onmouseenter={handleSubmenuMouseEnter}
 						onmouseleave={() => handleSubmenuMouseLeave(item.id)}
 					>
-						<svelte:self
+						<DropdownMenu
 							isOpen={true}
 							triggerElement={submenuElements.get(item.id)}
 							items={item.children}

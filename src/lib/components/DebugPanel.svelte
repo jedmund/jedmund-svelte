@@ -40,7 +40,7 @@
 	let clearingAlbums = $state(new Set<string>())
 	
 	// Search modal reference
-	let searchModal: AppleMusicSearchModal
+	let searchModal: AppleMusicSearchModal | undefined = $state.raw()
 
 	// Subscribe to music stream
 	$effect(() => {

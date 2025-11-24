@@ -32,6 +32,7 @@
 		required = false,
 		helpText,
 		error,
+		// eslint-disable-next-line svelte/valid-compile
 		...restProps
 	}: Props = $props()
 </script>

@@ -2,7 +2,9 @@
 	import { type NodeViewProps } from '@tiptap/core'
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import { onMount } from 'svelte'
+	import { mount, unmount } from 'svelte'
 	import type L from 'leaflet'
+	import MapPopup from './MapPopup.svelte'
 
 	type Props = NodeViewProps
 	let { node, selected }: Props = $props()
@@ -46,17 +48,26 @@
 		const marker = leaflet.marker([latitude, longitude], { icon }).addTo(map)
 
 		// Add popup if title or description exists
+		let popupComponent: ReturnType<typeof mount> | null = null
 		if (title || description) {
-			const popupContent = `
-				<div class="map-popup">
-					${title ? `<h4>${title}</h4>` : ''}
-					${description ? `<p>${description}</p>` : ''}
-				</div>
-			`
-			marker.bindPopup(popupContent)
+			// Create a container for the Svelte component
+			const popupContainer = document.createElement('div')
+
+			// Mount the Svelte component
+			popupComponent = mount(MapPopup, {
+				target: popupContainer,
+				props: { title, description }
+			})
+
+			// Bind the container to the marker
+			marker.bindPopup(popupContainer)
 		}
 
 		return () => {
+			// Clean up the popup component
+			if (popupComponent) {
+				unmount(popupComponent)
+			}
 			map?.remove()
 		}
 	})
@@ -76,20 +87,6 @@
 	:global(.custom-marker) {
 		background: transparent;
 		border: none;
-	}
-
-	:global(.map-popup) {
-		h4 {
-			margin: 0 0 8px;
-			font-size: 16px;
-			font-weight: 600;
-		}
-
-		p {
-			margin: 0;
-			font-size: 14px;
-			color: #4b5563;
-		}
 	}
 
 	.geolocation-node {

@@ -56,8 +56,8 @@ import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/ad
 	let tags = $state<string[]>([])
 	let tagInput = $state('')
 	let showMetadata = $state(false)
-	let metadataButtonRef: HTMLButtonElement
-let showDeleteConfirmation = $state(false)
+	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
+	let showDeleteConfirmation = $state(false)
 
 // Draft backup
 const draftKey = $derived(makeDraftKey('post', $page.params.id))
@@ -477,7 +477,7 @@ $effect(() => {
 	<header slot="header">
 		{#if !loading && post}
 			<div class="header-left">
-				<button class="btn-icon" onclick={() => goto('/admin/posts')}>
+				<button class="btn-icon" onclick={() => goto('/admin/posts')} aria-label="Back to posts">
 					<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
 						<path
 							d="M12.5 15L7.5 10L12.5 5"
