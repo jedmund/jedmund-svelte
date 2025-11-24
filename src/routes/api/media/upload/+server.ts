@@ -1,5 +1,4 @@
 import type { RequestHandler } from './$types'
-import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { uploadFile, isCloudinaryConfigured } from '$lib/server/cloudinary'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'

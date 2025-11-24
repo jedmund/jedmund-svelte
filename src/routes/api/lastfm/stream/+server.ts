@@ -108,7 +108,7 @@ export const GET: RequestHandler = async ({ request }) => {
 									intervalId = setInterval(checkForUpdates, currentInterval)
 								}
 							}
-						} catch (e) {
+						} catch (_e) {
 							isClosed = true
 						}
 					}
@@ -122,7 +122,7 @@ export const GET: RequestHandler = async ({ request }) => {
 								hasUpdates: !!update.albums
 							})
 							controller.enqueue(encoder.encode(`event: heartbeat\ndata: ${heartbeatData}\n\n`))
-						} catch (e) {
+						} catch (_e) {
 							// Expected when client disconnects
 							isClosed = true
 						}
@@ -146,7 +146,7 @@ export const GET: RequestHandler = async ({ request }) => {
 				}
 				try {
 					controller.close()
-				} catch (e) {
+				} catch (_e) {
 					// Already closed
 				}
 			})

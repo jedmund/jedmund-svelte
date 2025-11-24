@@ -3,7 +3,7 @@ import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
-import type { PhotoItem, PhotoAlbum, Photo } from '$lib/types/photos'
+import type { Photo } from '$lib/types/photos'
 
 // Type for media with photo fields
 interface PhotoMedia {

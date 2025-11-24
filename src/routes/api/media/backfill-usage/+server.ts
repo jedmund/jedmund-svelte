@@ -5,7 +5,6 @@ import { logger } from '$lib/server/logger'
 import {
 	trackMediaUsage,
 	extractMediaIds,
-	removeMediaUsage,
 	type MediaUsageReference
 } from '$lib/server/media-usage.js'
 

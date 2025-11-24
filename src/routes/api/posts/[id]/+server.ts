@@ -4,7 +4,6 @@ import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import {
-	updateMediaUsage,
 	removeMediaUsage,
 	extractMediaIds,
 	trackMediaUsage,

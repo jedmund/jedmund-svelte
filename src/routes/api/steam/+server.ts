@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { error, json } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 import redis from '../redis-client'
 import SteamAPI from 'steamapi'
 
@@ -8,7 +8,7 @@ import type { RequestHandler } from './$types'
 const CACHE_TTL = 60 * 60 // 1 hour
 const STEAM_ID = '76561197997279808'
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async () => {
 	try {
 		// Check if data is in cache
 		const cachedData = await redis.get(`steam:${STEAM_ID}`)
