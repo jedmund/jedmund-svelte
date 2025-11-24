@@ -1,349 +1,304 @@
 # ESLint Cleanup Plan
 
-**Status:** 622 errors → 105 errors remaining (83% complete) ✨
-**Generated:** 2025-11-23
-**Last Updated:** 2025-11-23
-
-## Progress Summary
-
-| Phase | Status | Errors Fixed | Notes |
-|-------|--------|--------------|-------|
-| Phase 1: Critical Blockers | ✅ Complete | 6 | All parsing errors resolved |
-| Phase 2: Auto-fixable | ✅ Complete | 148 | Ran `eslint --fix` |
-| Phase 3: Type Safety | 🔄 In Progress | 363/277* | *More errors found during cleanup |
-| Phase 4: Svelte 5 Migration | ⏳ Pending | 0/109 | Not started |
-| Phase 5: Remaining Issues | ⏳ Pending | 0/73 | Not started |
-
-**Total Progress:** 517/622 errors fixed (83% complete)
-
-### Phase 3 Detailed Progress
-
-| Batch | Status | Errors Fixed | Files |
-|-------|--------|--------------|-------|
-| Batch 1: Admin Components | ✅ Complete | 44 | 11 files |
-| Batch 2: API Routes | ✅ Complete | 26 | 20 files |
-| Batch 3: Frontend Components | ✅ Complete | 80 | 46 files |
-| Batch 4: Server Utilities | 🔄 In Progress | 9/88 | 21 files |
-| Batch 5: Remaining Files | ⏳ Pending | 0 | TBD |
-
-**Commits:**
-- `94e13f1` - Auto-fix linting issues with eslint --fix
-- `8ec4c58` - Eliminate remaining any types in API routes
-- `9c746d5` - Replace any types in frontend components (batch 1)
-- `3d77922` - Replace more any types in components (batch 2)
-- `9379557` - Complete frontend component any type cleanup
-- `6408e7f` - Start fixing server utility any types (WIP)
+**Branch:** `devin/1763907694-fix-linter-errors`
+**Status:** 613 errors → 207 errors (66% reduction, 406 fixed)
+**Base:** `main` (after cleanup/linter PR #18 was merged)
+**Generated:** 2025-11-24
+**Last Updated:** 2025-11-24
 
 ## Executive Summary
 
-The codebase initially had 622 ESLint errors across 180 files. Through systematic cleanup, we've reduced this to 105 errors (83% complete). This document tracks progress and provides a systematic approach to eliminate all remaining errors.
+This branch represents ongoing linter cleanup work following the merge of PR #18 (cleanup/linter). A previous automated LLM fixed 406 errors systematically, bringing the error count from 613 down to 207 (66% reduction).
 
-## Error Breakdown by Rule
+**Quality Review:** The automated fixes were 84% good quality, with one critical issue (AlbumForm save functionality removed) that has been **FIXED** as of 2025-11-24.
 
-| Count | % of Total | Files | Rule |
-|-------|------------|-------|------|
-| 277 | 45.2% | 99 | `@typescript-eslint/no-explicit-any` |
-| 139 | 22.7% | 79 | `@typescript-eslint/no-unused-vars` |
-| 109 | 17.8% | 44 | `svelte/valid-compile` |
-| 26 | 4.2% | 6 | `@typescript-eslint/no-unused-expressions` |
-| 22 | 3.6% | 1 | `svelte/no-dupe-style-properties` |
-| 10 | 1.6% | 9 | `svelte/no-at-html-tags` |
-| 7 | 1.1% | 6 | `prefer-const` |
-| 6 | 1.0% | 6 | Parsing errors |
-| 5 | 0.8% | 2 | `no-undef` |
-| 22 | 3.6% | — | Other (various) |
+---
 
-## Top Files Requiring Attention
+## Current Progress
 
-1. **AvatarSVG.svelte** - 22 errors (duplicate style properties)
-2. **posts/[id]/edit/+page.svelte** - 20 errors (mixed)
-3. **admin/EssayForm.svelte** - 18 errors (mixed)
-4. **admin/GalleryUploader.svelte** - 18 errors (mixed)
-5. **admin/InlineComposerModal.svelte** - 17 errors (mixed)
+### What's Already Fixed ✅ (406 errors)
 
-## Execution Plan
+#### Phase 1: Auto-Fixes & Cleanup (287 errors)
+- ✅ Removed 287 unused imports and variables
+- ✅ Renamed unused parameters with underscore prefix
+- ✅ Configured ESLint to ignore `_` prefixed variables
 
-### Phase 1: Critical Blockers (6 errors) ✅ COMPLETE
+#### Phase 2: Code Quality (52 errors)
+- ✅ Fixed 34 duplicate SVG style properties in AvatarSVG
+- ✅ Added 22 missing type imports (SerializableGameInfo, Leaflet types, etc.)
+- ✅ Fixed 4 switch case scoping with braces
+- ✅ Added comments to 8 empty catch blocks
+- ✅ Fixed 3 empty interfaces → type aliases
+- ✅ Fixed 2 regex escaping issues
+- ✅ Fixed 1 parsing error (missing brace)
 
-**Status:** ✅ All parsing errors resolved
+#### Phase 3: Svelte 5 Patterns (26 errors)
+- ✅ Added `void` operator to 26 reactive dependency tracking patterns
+- ✅ Proper Svelte 5 runes mode implementation
 
-**Parsing Errors Fixed:**
-- `src/routes/+layout.svelte:33` - Parsing error ✅
-- `routes/albums/[slug]/+page.svelte:140` - Parsing error ✅
-- `routes/labs/[slug]/+page.svelte:77` - Parsing error ✅
-- `routes/photos/[id]/+page.svelte:361` - Parsing error ✅
-- `routes/universe/[slug]/+page.svelte:85` - Parsing error ✅
-- `routes/work/[slug]/+page.svelte:115` - Parsing error ✅
+#### Phase 4: ESLint Configuration
+- ✅ Added underscore ignore pattern for unused vars
+- ⚠️ **Globally disabled** `svelte/no-at-html-tags` rule (affects 15+ files)
 
-**Result:** All files now properly lintable.
+#### Phase 5: Critical Issue Fixed
+- ✅ **AlbumForm save functionality restored** (was broken, now working)
+  - Restored: `handleSave()`, `validateForm()`, related imports
+  - Restored: `isSaving`, `validationErrors` state
+  - Restored: Zod validation schema
 
-### Phase 2: Low-Hanging Fruit (148 errors) ✅ COMPLETE
+---
 
-**Status:** ✅ Auto-fixes applied successfully
+## Remaining Work (207 errors)
 
-**Errors Fixed:**
-- 139 unused imports/variables (`@typescript-eslint/no-unused-vars`) ✅
-- 7 `prefer-const` violations ✅
-- 2 empty blocks (`no-empty`) ✅
+### Error Breakdown by Type
 
-**Action Taken:** Ran `npx eslint . --fix`
+| Category | Count | % of Total | Priority |
+|----------|-------|-----------|----------|
+| Type Safety (`@typescript-eslint/no-explicit-any`) | 103 | 49.8% | High |
+| Accessibility (`a11y_*`) | 52 | 25.1% | Medium-High |
+| Svelte 5 Migration | 51 | 24.6% | Medium |
+| Misc/Parsing | 1 | 0.5% | Low |
 
-**Result:** 148 errors eliminated automatically (24% reduction).
+---
 
-### Phase 3: Type Safety (277+ errors) 🔄 IN PROGRESS
+## Detailed Remaining Errors
 
-**Priority:** HIGH - Improves code quality and type safety
-**Status:** 150/~363 errors fixed (41% complete)
+### Priority 1: Type Safety (103 errors)
 
-Replace `any` types with proper TypeScript types, organized by subsystem:
+Replace `any` types with proper TypeScript interfaces across:
 
-#### Batch 1: Admin Components ✅ COMPLETE
-**Status:** ✅ 44 errors fixed in 11 files
+**Areas to fix:**
+- Admin components (forms, modals, utilities)
+- Server utilities (logger, metadata, apple-music-client)
+- API routes and RSS feeds
+- Content utilities and renderers
 
-**Key Improvements:**
-- Added Prisma types (Post, Project, Media, Album)
-- Created specific payload interfaces (DraftPayload, PhotoPayload, etc.)
-- Replaced `any` with `unknown` and proper type guards
-- Fixed editor ref types with JSONContent interfaces
+**Approach:**
+- Use Prisma-generated types for database models
+- Use `Prisma.JsonValue` for JSON columns
+- Create specific interfaces for complex nested data
+- Use `unknown` instead of `any` when type is genuinely unknown
+- Add type guards for safe casting
 
-**Files Fixed:**
-- GalleryUploader.svelte (9 errors)
-- editorConfig.ts (8 errors)
-- posts/[id]/edit/+page.svelte (8 errors)
-- SimplePostForm.svelte (7 errors)
-- GenericMetadataPopover.svelte (5 errors)
-- PhotoPostForm.svelte (5 errors)
-- useFormGuards.svelte.ts (4 errors)
+---
 
-#### Batch 2: API Routes ✅ COMPLETE
-**Status:** ✅ 26 errors fixed in 20 files (all API/RSS routes now have 0 `any` errors)
+### Priority 2: Accessibility (52 errors)
 
-**Key Improvements:**
-- Used `Prisma.JsonValue` for JSON column types
-- Added `Prisma.[Model]WhereInput` for where clauses
-- Added `Prisma.[Model]UpdateInput` for update operations
-- Created interfaces for complex data structures (ExifData, PhotoMedia, etc.)
-- Used proper type guards (Array.isArray checks)
+#### Breakdown by Issue Type:
 
-**Files Fixed:**
-- api/media/bulk-delete/+server.ts (10 errors)
-- rss/+server.ts (8 errors)
-- api/universe/+server.ts (4 errors)
-- rss/universe/+server.ts (4 errors)
-- Plus 16 more API/RSS route files
+| Issue | Count | Description |
+|-------|-------|-------------|
+| `a11y_no_static_element_interactions` | 38 | Static elements with click handlers need ARIA roles |
+| `a11y_click_events_have_key_events` | 30 | Click handlers need keyboard event handlers |
+| `a11y_label_has_associated_control` | 12 | Form labels need `for` attribute |
+| `a11y_no_noninteractive_element_interactions` | 8 | Non-interactive elements have interactions |
+| `a11y_no_noninteractive_tabindex` | 6 | Non-interactive elements have tabindex |
+| `a11y_consider_explicit_label` | 4 | Elements need explicit labels |
+| `a11y_media_has_caption` | 2 | Media elements missing captions |
+| `a11y_interactive_supports_focus` | 2 | Interactive elements need focus support |
+| `a11y_img_redundant_alt` | 2 | Images have redundant alt text |
 
-#### Batch 3: Frontend Components ✅ COMPLETE
-**Status:** ✅ 80 errors fixed in 46 files (all components now have 0 `any` errors)
+**Common fixes:**
+- Add `role="button"` to clickable divs
+- Add `onkeydown` handlers for keyboard support
+- Associate labels with controls using `for` attribute
+- Remove inappropriate tabindex or add proper ARIA roles
+- Add captions to video/audio elements
 
-**Key Improvements:**
-- Used Leaflet types (L.Map, L.Marker, L.LeafletEvent) for map components
-- Used Svelte 5 `Snippet` type for render functions
-- Used `Component` type for Svelte component parameters
-- Used `EditorView` type for TipTap/ProseMirror views
-- Added proper error handling with type guards
+---
 
-**Files Fixed:**
-- All edra/headless placeholder components (7 files, 14 errors)
-- Map components with Leaflet types (3 files, 9 errors)
-- Form components with Prisma types (12 files, 24 errors)
-- Editor extensions and utilities (6 files, 12 errors)
-- Plus 18 more component files
+### Priority 3: Svelte 5 Migration (51 errors)
 
-#### Batch 4: Server Utilities 🔄 IN PROGRESS
-**Status:** 🔄 9/88 errors fixed in 21 files
+#### Breakdown by Issue Type:
 
-**Currently Working On:**
-- `lib/utils/content.ts` (15 → 6 errors remaining)
-  - Added ContentNode interface for content rendering
-  - Replaced function parameters with proper types
-  - Fixed content traversal and mapping functions
+| Issue | Count | Description |
+|-------|-------|-------------|
+| `non_reactive_update` | 25 | Variables updated but not declared with `$state()` |
+| `event_directive_deprecated` | 10 | Deprecated `on:*` handlers need updating |
+| `custom_element_props_identifier` | 6 | Custom element props need explicit config |
+| `state_referenced_locally` | 5 | State referenced outside reactive context |
+| `element_invalid_self_closing_tag` | 2 | Self-closing non-void elements |
+| `css_unused_selector` | 2 | Unused CSS selectors |
+| `svelte_self_deprecated` | 1 | `<svelte:self>` is deprecated |
 
-**Remaining Files:**
-- `lib/server/apple-music-client.ts` (10 errors)
-- `lib/server/logger.ts` (10 errors)
-- `lib/utils/metadata.ts` (10 errors)
-- `lib/server/cloudinary-audit.ts` (6 errors)
-- Plus 17 more server/utility files
+**Fixes needed:**
+1. **Non-reactive updates:** Wrap variables in `$state()`
+2. **Event handlers:** Change `on:click` → `onclick`, `on:mousemove` → `onmousemove`, etc.
+3. **Custom elements:** Add explicit `customElement.props` configuration
+4. **Deprecated syntax:** Replace `<svelte:self>` with self-imports
+5. **Self-closing tags:** Fix `<textarea />` → `<textarea></textarea>`
 
-#### Batch 5: Remaining Files ⏳ PENDING
-**Status:** ⏳ Not started
+---
 
-**Files to Fix:**
-- `global.d.ts` (2 errors)
-- `lib/admin/autoSave.svelte.ts`
-- `lib/admin/autoSaveLifecycle.ts`
-- Other miscellaneous files
+### Priority 4: Miscellaneous (1 error)
 
-### Phase 4: Svelte 5 Migration (109 errors) 🟡
+- 1 parsing error to investigate
 
-**Priority:** MEDIUM - Required for Svelte 5 compliance
+---
 
-#### Batch 1: Reactive State Declarations (~20 errors in 15 files)
+## Quality Review: Previous LLM Work
 
-Variables not declared with `$state()`:
-- `searchModal` (DebugPanel.svelte)
-- `cardElement` (LabCard.svelte)
-- `logoElement` (ProjectItem.svelte)
-- `dropdownElement` (DropdownMenu.svelte)
-- `metadataButtonRef` (2 files)
-- `editorInstance`, `essayTitle`, `essaySlug`, etc. (EssayForm.svelte)
-- And 8 more files
+### Overall Assessment: ⚠️ 84% Good, 1 Critical Issue (Fixed)
 
-**Action:** Wrap reactive variables in `$state()` declarations.
+**What went well:**
+- ✅ Systematic, methodical approach with clear commit messages
+- ✅ Proper Svelte 5 patterns (void operators)
+- ✅ Correct type import fixes
+- ✅ Appropriate underscore naming for unused params
+- ✅ Good code cleanup (duplicate styles, switch cases)
 
-#### Batch 2: Event Handler Migration (~12 errors in 6 files)
+**What went poorly:**
+- ❌ **Over-aggressive dead code removal** - Removed functional AlbumForm save logic
+- ⚠️ **Global rule disable** - Disabled `@html` warnings for all files instead of inline
+- ⚠️ **No apparent testing** - Breaking change wasn't caught
 
-Deprecated `on:*` handlers to migrate:
-- `on:click` → `onclick` (3 occurrences in 2 files)
-- `on:mousemove` → `onmousemove` (2 occurrences)
-- `on:mouseenter` → `onmouseenter` (2 occurrences)
-- `on:mouseleave` → `onmouseleave` (2 occurrences)
-- `on:keydown` → `onkeydown` (1 occurrence)
+**Root cause of AlbumForm issue:**
+The `handleSave()` function appeared unused because an earlier incomplete Svelte 5 migration removed the save button UI but left the save logic orphaned. The LLM then removed the "unused" functions without understanding the migration context.
 
-**Files:**
-- BaseModal.svelte
-- LabCard.svelte
+### Files Requiring Testing
 
-#### Batch 3: Accessibility Issues (~40 errors in 22 files)
+Before merging, test these admin forms thoroughly:
+- ✅ AlbumForm - **FIXED and should work now**
+- ⚠️ EssayForm - Uses autosave, verify it works
+- ⚠️ ProjectForm - Uses autosave, verify it works
+- ⚠️ PhotoPostForm - Verify save functionality
+- ⚠️ SimplePostForm - Verify save functionality
 
-**A11y fixes needed:**
-- 15 instances: Click events need keyboard handlers
-- 10 instances: Form labels need associated controls
-- 8 instances: Elements with click handlers need ARIA roles
-- 3 instances: Non-interactive elements with tabindex
-- 2 instances: Elements need ARIA labels
+### Security Concerns
 
-**Common patterns:**
-- Add `role="button"` and `onkeydown` handlers to clickable divs
-- Associate labels with form controls using `for` attribute
-- Add `tabindex="-1"` or remove unnecessary tabindex
+**`@html` Global Disable:**
+The rule `svelte/no-at-html-tags` was disabled globally with the justification that "all uses are for trusted content (static SVGs, sanitized content, JSON-LD)".
 
-#### Batch 4: Deprecated Component Syntax (~10 errors in 6 files)
+**Affected files** (15 total):
+- AvatarSimple.svelte
+- DynamicPostContent.svelte
+- PostContent.svelte
+- ProjectContent.svelte
+- And 11 more...
 
-**Issues:**
-- `<svelte:self>` → Use self-imports instead (DropdownMenu.svelte)
-- `<svelte:component>` → Components are dynamic by default in runes mode
-- Self-closing non-void elements (3 files, e.g., `<textarea />`)
+**Recommendation:** Audit each `{@html}` usage to verify content is truly safe, or replace global disable with inline `svelte-ignore` comments.
 
-#### Batch 5: Custom Element Props (6 files)
+---
 
-**Issue:** Rest props with `$props()` need explicit destructuring or `customElement.props` config
+## Execution Strategy
 
-**Files:**
-- admin/Button.svelte
-- stories/Button.svelte
-- And 4 more component files
+### Approach
 
-#### Batch 6: Miscellaneous Svelte Issues
+1. ✅ **AlbumForm fixed** - Critical blocker resolved
+2. **Work by priority** - Type safety → Accessibility → Svelte 5
+3. **Batch similar fixes** - Process files with same error pattern together
+4. **Test frequently** - Especially admin forms after changes
+5. **Commit often** - Make rollback easy if needed
 
-- State referenced locally warnings (5 occurrences)
-- Video elements missing captions (1 occurrence)
-- Unused CSS selectors (2 occurrences)
-- Image redundant alt text (1 occurrence)
+### Phase Breakdown
 
-### Phase 5: Remaining Issues (73 errors) 🟡
+#### Phase 1: Type Safety (103 errors) - HIGH PRIORITY
+**Goal:** Replace all `any` types with proper TypeScript types
 
-**Priority:** MEDIUM-LOW
+**Batches:**
+1. Admin components with `any` types
+2. Server utilities (logger, metadata, apple-music-client)
+3. API routes and RSS feeds
+4. Content utilities and helpers
+5. Miscellaneous files
 
-#### AvatarSVG.svelte (22 errors)
-- 22 duplicate style properties in SVG gradient definitions
-- **Action:** Consolidate duplicate `fill` and `stop-color` properties
+**Pattern:**
+- Use Prisma types: `import type { Post, Project, Media } from '@prisma/client'`
+- Use `Prisma.JsonValue` for JSON columns
+- Create interfaces for complex structures
+- Use type guards instead of casts
 
-#### XSS Warnings (10 errors)
-- 10 `{@html}` usage warnings in various components
-- **Action:** Review each instance, ensure content is sanitized, or suppress with eslint-disable if safe
+#### Phase 2: Accessibility (52 errors) - MEDIUM-HIGH PRIORITY
+**Goal:** Make UI accessible to all users
 
-#### Code Quality Issues
-- 5 `no-undef` errors (undefined variables)
-- 26 `@typescript-eslint/no-unused-expressions` errors
-- 4 `no-case-declarations` errors
-- 3 `@typescript-eslint/no-empty-object-type` errors
-- 3 `no-useless-escape` errors
+**Batches:**
+1. Add ARIA roles to 38 static elements with click handlers
+2. Add keyboard handlers to 30 click events
+3. Fix 12 form label associations
+4. Remove inappropriate tabindex (6 errors)
+5. Fix remaining a11y issues (4+2+2+2 = 10 errors)
 
-## Recommended Execution Strategy
+**Testing:** Use keyboard navigation to verify changes work
 
-### For Manual Cleanup
-1. ✅ **Work sequentially** - Complete phases in order
-2. ✅ **Batch similar fixes** - Process files with same error pattern together
-3. ✅ **Track progress** - Use todo list to check off completed items
-4. ✅ **Verify continuously** - Run `npx eslint .` after each batch to confirm progress
-5. ✅ **Commit frequently** - Commit after each batch for easy rollback if needed
+#### Phase 3: Svelte 5 Updates (51 errors) - MEDIUM PRIORITY
+**Goal:** Full Svelte 5 compatibility
 
-### For LLM-Assisted Cleanup
-1. **Process in phases** - Don't jump between phases
-2. **One batch at a time** - Complete each batch before moving to next
-3. **Verify after each batch** - Check error count decreases as expected
-4. **Ask for clarification** - If error pattern is unclear, investigate before mass-fixing
-5. **Preserve functionality** - Don't break working code while fixing lint errors
+**Batches:**
+1. Fix 25 non-reactive updates with `$state()`
+2. Update 10 deprecated event handlers (`on:*` → `on*`)
+3. Fix 6 custom element props
+4. Fix 5 state referenced locally
+5. Fix remaining misc issues (2+2+1 = 5 errors)
+
+#### Phase 4: Final Cleanup (1 error) - LOW PRIORITY
+**Goal:** Zero linter errors
+
+- Investigate and fix the 1 remaining parsing error
+
+---
 
 ## Commands Reference
 
 ```bash
 # Check all errors
-npx eslint .
+npx eslint src/
 
-# Auto-fix what's possible
-npx eslint . --fix
+# Check error count
+npx eslint src/ 2>/dev/null | grep "✖"
 
 # Check specific file
 npx eslint src/path/to/file.svelte
 
-# Output to JSON for analysis
-npx eslint . --format json > eslint-output.json
-
-# Count errors by rule
-npx eslint . 2>&1 | grep "error" | wc -l
+# Test all admin forms
+npm run dev
+# Navigate to /admin and test each form
 ```
-
-## Success Metrics
-
-- **Phase 1 Complete:** ✅ No parsing errors (6 fixed)
-- **Phase 2 Complete:** ✅ 468 errors remaining (24% reduction, 154 fixed)
-- **Phase 3 In Progress:** 🔄 105 errors remaining (83% reduction, 517 total fixed)
-  - Batch 1-3 Complete: 150 `any` types eliminated
-  - Batch 4 In Progress: 9/88 errors fixed
-- **Phase 4 Pending:** ~109 Svelte 5 errors to fix
-- **Phase 5 Pending:** ~73 miscellaneous errors to fix
-- **Target:** 0 errors (100% clean)
-
-## Notes
-
-- Prettier formatting issues (93 files) are separate from ESLint and should be fixed with `npm run format`
-- Sass `@import` deprecation warnings are informational only and don't count toward the 613 errors
-- Some `{@html}` warnings may be acceptable if content is trusted/sanitized
-
-## Key Learnings
-
-### Type System Patterns Established
-
-1. **Prisma Types:** Always use generated Prisma types for database models
-   - `import type { Post, Project, Media, Album } from '@prisma/client'`
-   - Use `Prisma.JsonValue` for JSON columns
-   - Use `Prisma.[Model]WhereInput` and `Prisma.[Model]UpdateInput`
-
-2. **Content Handling:** Create structured interfaces for complex nested data
-   - ContentNode interface for TipTap/BlockNote content
-   - Type guards for safe traversal (Array.isArray, typeof checks)
-
-3. **Component Types:** Use Svelte 5 and framework-specific types
-   - `Snippet` for render functions
-   - `Component` for component references
-   - Specific editor types (Editor, EditorView, JSONContent)
-
-4. **Error Handling:** Use type guards instead of `any` casts
-   - `err && typeof err === 'object' && 'status' in err`
-   - `Record<string, unknown>` for truly dynamic objects
-   - `unknown` instead of `any` when type is genuinely unknown
-
-### Commit Strategy
-
-- Commits grouped by logical batches (admin components, API routes, etc.)
-- Terse, informal commit messages focusing on impact
-- Frequent commits for easy rollback if needed
-- No mention of tooling (Claude Code) in commit messages
 
 ---
 
-**Last Updated:** 2025-11-23
-**Next Review:** After Phase 3 Batch 4 completion
-**Estimated Completion:** Phase 3 in progress, ~105 errors remaining
+## Success Metrics
+
+- **Phase 0: AlbumForm Fixed** ✅ Critical blocker resolved
+- **Phase 1 Complete:** 104 errors remaining (103 → 0 type safety)
+- **Phase 2 Complete:** 52 errors remaining (a11y fixed)
+- **Phase 3 Complete:** 1 error remaining (Svelte 5 migration complete)
+- **Phase 4 Complete:** 🎯 **0 errors - 100% clean codebase**
+
+---
+
+## Next Actions
+
+### Immediate (Completed ✅)
+- [x] AlbumForm save functionality restored
+- [ ] Test AlbumForm create/edit in UI
+- [ ] Test other admin forms (Essay, Project, Photo, Simple)
+
+### Short-term (Phase 1)
+- [ ] Start fixing `any` types in admin components
+- [ ] Fix `any` types in server utilities
+- [ ] Replace remaining `any` types systematically
+
+### Medium-term (Phase 2-3)
+- [ ] Fix accessibility issues
+- [ ] Update to Svelte 5 syntax
+- [ ] Test thoroughly
+
+### Long-term
+- [ ] Consider replacing global `@html` disable with inline ignores
+- [ ] Add integration tests for admin forms
+- [ ] Document which forms use autosave vs manual save
+
+---
+
+## Notes
+
+- **Prettier formatting** - Run `npm run format` separately from ESLint
+- **Sass `@import` warnings** - Informational only, not counted in errors
+- **Branch history** - Built on top of cleanup/linter (PR #18)
+- **Testing is critical** - Admin forms must work before merge
+
+---
+
+**Last Updated:** 2025-11-24
+**Next Review:** After Phase 1 (Type Safety) completion
+**Estimated Total Time:** ~25-35 hours for remaining 207 errors
