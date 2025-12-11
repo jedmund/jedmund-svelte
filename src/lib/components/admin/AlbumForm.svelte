@@ -104,10 +104,15 @@
 	}
 
 	// Autosave store (edit mode only)
+	// Initialized as null and created reactively when album data becomes available
 	let autoSave = $state<ReturnType<typeof createAutoSaveStore<ReturnType<typeof buildPayload>, Album>> | null>(null)
 
+	// INITIALIZATION ORDER:
+	// 1. This effect creates autoSave when album prop becomes available
+	// 2. useFormGuards is called immediately after creation (same effect)
+	// 3. Other effects check for autoSave existence before using it
 	$effect(() => {
-		// Create or update autoSave when album becomes available
+		// Create autoSave when album becomes available (only once)
 		if (mode === 'edit' && album && !autoSave) {
 			const albumId = album.id // Capture album ID to avoid null reference
 			autoSave = createAutoSaveStore({
@@ -180,6 +185,8 @@
 	})
 
 	// Trigger autosave when form data changes
+	// Using `void` operator to explicitly track dependencies without using their values
+	// This effect re-runs whenever any of these form fields change
 	$effect(() => {
 		void formData.title
 		void formData.slug
