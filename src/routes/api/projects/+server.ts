@@ -37,6 +37,9 @@ interface ProjectCreateBody {
 	status?: string
 	password?: string | null
 	slug?: string
+	showFeaturedImageInHeader?: boolean
+	showBackgroundColorInHeader?: boolean
+	showLogoInHeader?: boolean
 }
 
 // GET /api/projects - List all projects
@@ -148,7 +151,10 @@ export const POST: RequestHandler = async (event) => {
 				displayOrder: body.displayOrder || 0,
 				status: body.status || 'draft',
 				password: body.password || null,
-				publishedAt: body.status === 'published' ? new Date() : null
+				publishedAt: body.status === 'published' ? new Date() : null,
+				showFeaturedImageInHeader: body.showFeaturedImageInHeader ?? true,
+				showBackgroundColorInHeader: body.showBackgroundColorInHeader ?? true,
+				showLogoInHeader: body.showLogoInHeader ?? true
 			}
 		})
 

@@ -36,6 +36,9 @@ interface ProjectUpdateBody {
 	status?: string
 	password?: string | null
 	slug?: string
+	showFeaturedImageInHeader?: boolean
+	showBackgroundColorInHeader?: boolean
+	showLogoInHeader?: boolean
 }
 
 // GET /api/projects/[id] - Get a single project
@@ -129,7 +132,19 @@ export const PUT: RequestHandler = async (event) => {
 				status: body.status !== undefined ? body.status : existing.status,
 				password: body.password !== undefined ? body.password : existing.password,
 				publishedAt:
-					body.status === 'published' && !existing.publishedAt ? new Date() : existing.publishedAt
+					body.status === 'published' && !existing.publishedAt ? new Date() : existing.publishedAt,
+				showFeaturedImageInHeader:
+					body.showFeaturedImageInHeader !== undefined
+						? body.showFeaturedImageInHeader
+						: existing.showFeaturedImageInHeader,
+				showBackgroundColorInHeader:
+					body.showBackgroundColorInHeader !== undefined
+						? body.showBackgroundColorInHeader
+						: existing.showBackgroundColorInHeader,
+				showLogoInHeader:
+					body.showLogoInHeader !== undefined
+						? body.showLogoInHeader
+						: existing.showLogoInHeader
 			}
 		})
 
@@ -269,6 +284,11 @@ export const PATCH: RequestHandler = async (event) => {
 		if (body.projectType !== undefined) updateData.projectType = body.projectType
 		if (body.displayOrder !== undefined) updateData.displayOrder = body.displayOrder
 		if (body.password !== undefined) updateData.password = body.password
+		if (body.showFeaturedImageInHeader !== undefined)
+			updateData.showFeaturedImageInHeader = body.showFeaturedImageInHeader
+		if (body.showBackgroundColorInHeader !== undefined)
+			updateData.showBackgroundColorInHeader = body.showBackgroundColorInHeader
+		if (body.showLogoInHeader !== undefined) updateData.showLogoInHeader = body.showLogoInHeader
 
 		// Handle slug update if provided
 		if (body.slug && body.slug !== existing.slug) {
