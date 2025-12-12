@@ -70,6 +70,9 @@ export function createAutoSaveStore<TPayload, TResponse = unknown>(
 
   function schedule() {
     if (timer) clearTimeout(timer)
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      console.debug(`[AutoSave] Scheduled (${debounceMs}ms debounce)`)
+    }
     timer = setTimeout(() => void run(), debounceMs)
   }
 
@@ -80,13 +83,27 @@ export function createAutoSaveStore<TPayload, TResponse = unknown>(
     }
 
     const payload = opts.getPayload()
-    if (!payload) return
+    if (!payload) {
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        console.debug('[AutoSave] Skipped: getPayload returned null/undefined')
+      }
+      return
+    }
 
     const hash = safeHash(payload)
-    if (lastSentHash && hash === lastSentHash) return
+    if (lastSentHash && hash === lastSentHash) {
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        console.debug('[AutoSave] Skipped: payload unchanged (hash match)')
+      }
+      return
+    }
 
     if (controller) controller.abort()
     controller = new AbortController()
+
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      console.debug('[AutoSave] Saving...', { hashChanged: lastSentHash !== hash })
+    }
 
     setStatus('saving')
     lastError = null
@@ -94,10 +111,16 @@ export function createAutoSaveStore<TPayload, TResponse = unknown>(
       const res = await opts.save(payload, { signal: controller.signal })
       lastSentHash = hash
       setStatus('saved')
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        console.debug('[AutoSave] Saved successfully')
+      }
       if (opts.onSaved) opts.onSaved(res, { prime })
-    } catch (e: unknown) {
-      if (e?.name === 'AbortError') {
+    } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') {
         // Newer save superseded this one
+        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+          console.debug('[AutoSave] Aborted: superseded by newer save')
+        }
         return
       }
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -105,7 +128,10 @@ export function createAutoSaveStore<TPayload, TResponse = unknown>(
       } else {
         setStatus('error')
       }
-      lastError = e?.message || 'Auto-save failed'
+      lastError = e instanceof Error ? e.message : 'Auto-save failed'
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        console.debug('[AutoSave] Error:', lastError)
+      }
     }
   }
 

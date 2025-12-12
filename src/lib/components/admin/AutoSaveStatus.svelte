@@ -10,6 +10,7 @@
     lastSavedAt?: Date | string | null
     showTimestamp?: boolean
     compact?: boolean
+    onclick?: () => void
   }
 
   let {
@@ -19,7 +20,8 @@
     error: errorProp,
     lastSavedAt,
     showTimestamp = true,
-    compact = true
+    compact = true,
+    onclick
   }: Props = $props()
 
   // Support both old subscription-based stores and new reactive values
@@ -81,12 +83,19 @@
 </script>
 
 {#if label}
-  <div class="autosave-status" class:compact>
+  <button
+    type="button"
+    class="autosave-status"
+    class:compact
+    class:clickable={!!onclick && status !== 'saving'}
+    onclick={onclick}
+    disabled={status === 'saving'}
+  >
     {#if status === 'saving'}
       <span class="spinner" aria-hidden="true"></span>
     {/if}
     <span class="text">{label}</span>
-  </div>
+  </button>
 {/if}
 
 <style lang="scss">
@@ -96,9 +105,25 @@
     gap: 6px;
     color: $gray-40;
     font-size: 0.875rem;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
 
     &.compact {
       font-size: 0.75rem;
+    }
+
+    &.clickable {
+      cursor: pointer;
+
+      &:hover {
+        color: $gray-20;
+      }
+    }
+
+    &:disabled {
+      cursor: default;
     }
   }
 
