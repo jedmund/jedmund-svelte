@@ -46,11 +46,16 @@ export function createProjectFormStore(initialProject?: Project | null) {
 	}
 
 	return {
-		// State is returned directly - it's already reactive in Svelte 5
-		// Components can read: formStore.fields.title
-		// Mutation should go through methods below for validation
-		fields,
-		validationErrors,
+		// Use getters to maintain reactivity when accessing state from outside the store
+		get fields() {
+			return fields
+		},
+		set fields(value: ProjectFormData) {
+			fields = value
+		},
+		get validationErrors() {
+			return validationErrors
+		},
 		isDirty,
 
 		// Methods for controlled mutation
