@@ -6,15 +6,8 @@
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import DropdownSelectField from './DropdownSelectField.svelte'
-	import DraftPrompt from './DraftPrompt.svelte'
 	import { toast } from '$lib/stores/toast'
-	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
-	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
-	import { useDraftRecovery } from '$lib/admin/useDraftRecovery.svelte'
-	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
-	import AutoSaveStatus from './AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
-	import type { Post } from '@prisma/client'
 
 	interface Props {
 		postId?: number
@@ -32,9 +25,9 @@
 	let { postId, initialData, mode }: Props = $props()
 
 	// State
-	let hasLoaded = $state(mode === 'create') // Create mode loads immediately
+	let hasLoaded = $state(mode === 'create')
+	let isSaving = $state(false)
 	let activeTab = $state('metadata')
-	let updatedAt = $state<string | undefined>(initialData?.updatedAt)
 
 	// Form data
 	let title = $state(initialData?.title || '')
@@ -46,61 +39,6 @@
 
 	// Ref to the editor component
 	let editorRef: { save: () => Promise<JSONContent> } | undefined
-
-	// Draft key for autosave fallback
-	const draftKey = $derived(mode === 'edit' && postId ? makeDraftKey('post', postId) : null)
-
-	function buildPayload() {
-		return {
-			title,
-			slug,
-			type: 'essay',
-			status,
-			content,
-			tags,
-			updatedAt
-		}
-	}
-
-	// Autosave store (edit mode only)
-	const autoSave = mode === 'edit' && postId
-		? createAutoSaveStore({
-				debounceMs: 2000,
-				getPayload: () => (hasLoaded ? buildPayload() : null),
-				save: async (payload, { signal }) => {
-					const response = await fetch(`/api/posts/${postId}`, {
-						method: 'PUT',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(payload),
-						credentials: 'same-origin',
-						signal
-					})
-					if (!response.ok) throw new Error('Failed to save')
-					return await response.json()
-				},
-				onSaved: (saved: Post, { prime }) => {
-					updatedAt =
-					typeof saved.updatedAt === 'string' ? saved.updatedAt : saved.updatedAt.toISOString()
-					prime(buildPayload())
-					if (draftKey) clearDraft(draftKey)
-				}
-			})
-		: null
-
-	// Draft recovery helper
-	const draftRecovery = useDraftRecovery<ReturnType<typeof buildPayload>>({
-		draftKey: () => draftKey,
-		onRestore: (payload) => {
-			title = payload.title ?? title
-			slug = payload.slug ?? slug
-			status = payload.status ?? status
-			content = payload.content ?? content
-			tags = payload.tags ?? tags
-		}
-	})
-
-	// Form guards (navigation protection, Cmd+S, beforeunload)
-	useFormGuards(autoSave)
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -130,36 +68,10 @@
 		}
 	})
 
-	// Prime autosave on initial load (edit mode only)
+	// Mark as loaded for edit mode
 	$effect(() => {
-		if (mode === 'edit' && initialData && !hasLoaded && autoSave) {
-			autoSave.prime(buildPayload())
+		if (mode === 'edit' && initialData && !hasLoaded) {
 			hasLoaded = true
-		}
-	})
-
-	// Trigger autosave when form data changes
-	$effect(() => {
-		void title; void slug; void status; void content; void tags; void activeTab
-		if (hasLoaded && autoSave) {
-			autoSave.schedule()
-		}
-	})
-
-	// Save draft only when autosave fails
-	$effect(() => {
-		if (hasLoaded && autoSave && draftKey) {
-			const saveStatus = autoSave.status
-			if (saveStatus === 'error' || saveStatus === 'offline') {
-				saveDraft(draftKey, buildPayload())
-			}
-		}
-	})
-
-	// Cleanup autosave on unmount
-	$effect(() => {
-		if (autoSave) {
-			return () => autoSave.destroy()
 		}
 	})
 
@@ -192,16 +104,18 @@
 			return
 		}
 
+		isSaving = true
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} essay...`)
 
 		try {
 			const payload = {
 				title,
 				slug,
-				type: 'essay', // No mapping needed anymore
+				type: 'essay',
 				status,
 				content,
-				tags
+				tags,
+				updatedAt: mode === 'edit' ? initialData?.updatedAt : undefined
 			}
 
 			const url = mode === 'edit' ? `/api/posts/${postId}` : '/api/posts'
@@ -227,8 +141,7 @@
 			const savedPost = await response.json()
 
 			toast.dismiss(loadingToastId)
-      toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
-      clearDraft(draftKey)
+			toast.success(`Essay ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 
 			if (mode === 'create') {
 				goto(`/admin/posts/${savedPost.id}/edit`)
@@ -237,9 +150,10 @@
 			toast.dismiss(loadingToastId)
 			toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} essay`)
 			console.error(err)
+		} finally {
+			isSaving = false
 		}
 	}
-
 </script>
 
 <AdminPage>
@@ -255,23 +169,15 @@
 			/>
 		</div>
 		<div class="header-actions">
-			{#if mode === 'edit' && autoSave}
-				<AutoSaveStatus
-					status={autoSave.status}
-					error={autoSave.lastError}
-					lastSavedAt={initialData?.updatedAt}
-				/>
-			{/if}
+			<Button
+				variant="primary"
+				onclick={handleSave}
+				disabled={isSaving}
+			>
+				{isSaving ? 'Saving...' : 'Save'}
+			</Button>
 		</div>
 	</header>
-
-	{#if draftRecovery.showPrompt}
-		<DraftPrompt
-			timeAgo={draftRecovery.draftTimeText}
-			onRestore={draftRecovery.restore}
-			onDismiss={draftRecovery.dismiss}
-		/>
-	{/if}
 
 	<div class="admin-container">
 		<div class="tab-panels">
@@ -402,77 +308,6 @@
 		}
 	}
 
-	.save-actions {
-		position: relative;
-		display: flex;
-	}
-
-	// Custom styles for save/publish buttons to maintain grey color scheme
-	:global(.save-button.btn-primary) {
-		background-color: $gray-10;
-
-		&:hover:not(:disabled) {
-			background-color: $gray-20;
-		}
-
-		&:active:not(:disabled) {
-			background-color: $gray-30;
-		}
-	}
-
-	.save-button {
-		border-top-right-radius: 0;
-		border-bottom-right-radius: 0;
-		padding-right: $unit-2x;
-	}
-
-	:global(.chevron-button.btn-primary) {
-		background-color: $gray-10;
-
-		&:hover:not(:disabled) {
-			background-color: $gray-20;
-		}
-
-		&:active:not(:disabled) {
-			background-color: $gray-30;
-		}
-
-		&.active {
-			background-color: $gray-20;
-		}
-	}
-
-	.chevron-button {
-		border-top-left-radius: 0;
-		border-bottom-left-radius: 0;
-		border-left: 1px solid rgba(255, 255, 255, 0.2);
-
-		svg {
-			transition: transform 0.2s ease;
-		}
-
-		&.active svg {
-			transform: rotate(180deg);
-		}
-	}
-
-	.publish-menu {
-		position: absolute;
-		top: 100%;
-		right: 0;
-		margin-top: $unit;
-		background: white;
-		border-radius: $unit;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-		overflow: hidden;
-		min-width: 120px;
-		z-index: 100;
-
-		.menu-item {
-			text-align: left;
-		}
-	}
-
 	.tab-panels {
 		position: relative;
 
@@ -492,26 +327,6 @@
 		padding: 0;
 		width: 100%;
 		margin: 0 auto;
-	}
-
-	.error-message,
-	.success-message {
-		padding: $unit-3x;
-		border-radius: $unit;
-		margin-bottom: $unit-4x;
-		max-width: 700px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.error-message {
-		background-color: #fee;
-		color: #d33;
-	}
-
-	.success-message {
-		background-color: #efe;
-		color: #363;
 	}
 
 	.form-section {

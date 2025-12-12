@@ -1,26 +1,11 @@
 <script lang="ts">
-	import { goto, beforeNavigate } from '$app/navigation'
+	import { goto } from '$app/navigation'
 	import AdminPage from './AdminPage.svelte'
 	import type { JSONContent } from '@tiptap/core'
-	import type { Post } from '@prisma/client'
 	import Editor from './Editor.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import { toast } from '$lib/stores/toast'
-	import { makeDraftKey, saveDraft, loadDraft, clearDraft, timeAgo } from '$lib/admin/draftStore'
-	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
-	import AutoSaveStatus from './AutoSaveStatus.svelte'
-
-	// Payload type for saving posts
-	interface PostPayload {
-		type: string
-		status: string
-		content: JSONContent
-		updatedAt?: string
-		title?: string
-		link_url?: string
-		linkDescription?: string
-	}
 
 	interface Props {
 		postType: 'post'
@@ -36,13 +21,11 @@
 		mode: 'create' | 'edit'
 	}
 
-let { postType, postId, initialData, mode }: Props = $props()
+	let { postType, postId, initialData, mode }: Props = $props()
 
 	// State
 	let isSaving = $state(false)
-	let hasLoaded = $state(mode === 'create')
 	let status = $state<'draft' | 'published'>(initialData?.status || 'draft')
-	let updatedAt = $state<string | undefined>(initialData?.updatedAt)
 
 	// Form data
 	let content = $state<JSONContent>(initialData?.content || { type: 'doc', content: [] })
@@ -50,7 +33,7 @@ let { postType, postId, initialData, mode }: Props = $props()
 	let linkDescription = $state(initialData?.linkDescription || '')
 	let title = $state(initialData?.title || '')
 
-// Character count for posts
+	// Character count for posts
 	const maxLength = 280
 	const textContent = $derived.by(() => {
 		if (!content.content) return ''
@@ -67,179 +50,11 @@ let { postType, postId, initialData, mode }: Props = $props()
 	const isOverLimit = $derived(charCount > maxLength)
 
 	// Check if form has content
-const hasContent = $derived.by(() => {
-		// For posts, check if either content exists or it's a link with URL
+	const hasContent = $derived.by(() => {
 		const hasTextContent = textContent.trim().length > 0
 		const hasLinkContent = linkUrl && linkUrl.trim().length > 0
 		return hasTextContent || hasLinkContent
-})
-
-// Draft backup
-const draftKey = $derived(makeDraftKey('post', postId ?? 'new'))
-let showDraftPrompt = $state(false)
-let draftTimestamp = $state<number | null>(null)
-let timeTicker = $state(0)
-const draftTimeText = $derived.by(() => (draftTimestamp ? (timeTicker, timeAgo(draftTimestamp)) : null))
-
-function buildPayload(): PostPayload {
-  const payload: PostPayload = {
-    type: 'post',
-    status,
-    content,
-    updatedAt
-  }
-  if (linkUrl && linkUrl.trim()) {
-    payload.title = title || linkUrl
-    payload.link_url = linkUrl
-    payload.linkDescription = linkDescription
-  } else if (title) {
-    payload.title = title
-  }
-  return payload
-}
-
-// Autosave store (edit mode only)
-let autoSave = mode === 'edit' && postId
-	? createAutoSaveStore({
-			debounceMs: 2000,
-			getPayload: () => (hasLoaded ? buildPayload() : null),
-			save: async (payload, { signal }) => {
-				const response = await fetch(`/api/posts/${postId}`, {
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-					credentials: 'same-origin',
-					signal
-				})
-				if (!response.ok) throw new Error('Failed to save')
-				return await response.json()
-			},
-			onSaved: (saved: Post, { prime }) => {
-				updatedAt =
-				typeof saved.updatedAt === 'string' ? saved.updatedAt : saved.updatedAt.toISOString()
-				prime(buildPayload())
-				if (draftKey) clearDraft(draftKey)
-			}
-		})
-	: null
-
-// Prime autosave on initial load (edit mode only)
-$effect(() => {
-	if (mode === 'edit' && initialData && !hasLoaded && autoSave) {
-		autoSave.prime(buildPayload())
-		hasLoaded = true
-	}
-})
-
-// Trigger autosave when form data changes
-$effect(() => {
-	void status; void content; void linkUrl; void linkDescription; void title
-	if (hasLoaded && autoSave) {
-		autoSave.schedule()
-	}
-})
-
-// Save draft only when autosave fails
-$effect(() => {
-	if (hasLoaded && autoSave) {
-		const saveStatus = autoSave.status
-		if (saveStatus === 'error' || saveStatus === 'offline') {
-			saveDraft(draftKey, buildPayload())
-		}
-	}
-})
-
-$effect(() => {
-  const draft = loadDraft<PostPayload>(draftKey)
-  if (draft) {
-    showDraftPrompt = true
-    draftTimestamp = draft.ts
-  }
-})
-
-function restoreDraft() {
-  const draft = loadDraft<PostPayload>(draftKey)
-  if (!draft) return
-  const p = draft.payload
-  status = p.status ?? status
-  content = p.content ?? content
-  if (p.link_url) {
-    linkUrl = p.link_url
-    linkDescription = p.linkDescription ?? linkDescription
-    title = p.title ?? title
-  } else {
-    title = p.title ?? title
-  }
-  showDraftPrompt = false
-  clearDraft(draftKey)
-}
-
-function dismissDraft() {
-  showDraftPrompt = false
-  clearDraft(draftKey)
-}
-
-// Auto-update draft time text every minute when prompt visible
-$effect(() => {
-  if (showDraftPrompt) {
-    const id = setInterval(() => (timeTicker = timeTicker + 1), 60000)
-    return () => clearInterval(id)
-  }
-})
-
-// Navigation guard: flush autosave before navigating away (only if unsaved)
-beforeNavigate(async (_navigation) => {
-	if (hasLoaded && autoSave) {
-		if (autoSave.status === 'saved') {
-			return
-		}
-		// Flush any pending changes before allowing navigation to proceed
-		try {
-			await autoSave.flush()
-		} catch (error) {
-			console.error('Autosave flush failed:', error)
-		}
-	}
-})
-
-// Warn before closing browser tab/window if there are unsaved changes
-$effect(() => {
-	if (!hasLoaded || !autoSave) return
-
-	function handleBeforeUnload(event: BeforeUnloadEvent) {
-		if (autoSave!.status !== 'saved') {
-			event.preventDefault()
-			event.returnValue = ''
-		}
-	}
-
-	window.addEventListener('beforeunload', handleBeforeUnload)
-	return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-})
-
-// Keyboard shortcut: Cmd/Ctrl+S to save immediately
-$effect(() => {
-	if (!hasLoaded || !autoSave) return
-
-	function handleKeydown(e: KeyboardEvent) {
-		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-			e.preventDefault()
-			autoSave!.flush().catch((error) => {
-				console.error('Autosave flush failed:', error)
-			})
-		}
-	}
-
-	document.addEventListener('keydown', handleKeydown)
-	return () => document.removeEventListener('keydown', handleKeydown)
-})
-
-// Cleanup autosave on unmount
-$effect(() => {
-	if (autoSave) {
-		return () => autoSave.destroy()
-	}
-})
+	})
 
 	async function handleSave(publishStatus: 'draft' | 'published') {
 		if (isOverLimit) {
@@ -247,26 +62,24 @@ $effect(() => {
 			return
 		}
 
-		// For link posts, URL is required
 		if (linkUrl && !linkUrl.trim()) {
 			toast.error('Link URL is required')
 			return
 		}
 
+		isSaving = true
 		const loadingToastId = toast.loading(
 			`${publishStatus === 'published' ? 'Publishing' : 'Saving'} post...`
 		)
 
 		try {
-			isSaving = true
-
 			const payload: Record<string, unknown> = {
-				type: 'post', // Use simplified post type
+				type: 'post',
 				status: publishStatus,
-				content: content
+				content: content,
+				updatedAt: mode === 'edit' ? initialData?.updatedAt : undefined
 			}
 
-			// Add link fields if they're provided
 			if (linkUrl && linkUrl.trim()) {
 				payload.title = title || linkUrl
 				payload.link_url = linkUrl
@@ -293,13 +106,11 @@ $effect(() => {
 				throw new Error(`Failed to ${mode === 'edit' ? 'save' : 'create'} post`)
 			}
 
-    await response.json()
+			await response.json()
 
-    toast.dismiss(loadingToastId)
-    toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
-    clearDraft(draftKey)
+			toast.dismiss(loadingToastId)
+			toast.success(`Post ${publishStatus === 'published' ? 'published' : 'saved'} successfully!`)
 
-			// Redirect back to posts list after creation
 			goto('/admin/posts')
 		} catch (err) {
 			toast.dismiss(loadingToastId)
@@ -334,35 +145,18 @@ $effect(() => {
 			</h1>
 		</div>
 		<div class="header-actions">
-			{#if mode === 'edit' && autoSave}
-				<AutoSaveStatus status={autoSave.status} error={autoSave.lastError} />
-			{/if}
 			<Button variant="secondary" onclick={() => handleSave('draft')} disabled={isSaving}>
 				Save Draft
 			</Button>
 			<Button
 				variant="primary"
 				onclick={() => handleSave('published')}
-				disabled={isSaving || !hasContent() || (postType === 'microblog' && isOverLimit)}
+				disabled={isSaving || !hasContent || (postType === 'microblog' && isOverLimit)}
 			>
 				Post
 			</Button>
 		</div>
 	</header>
-
-	{#if showDraftPrompt}
-		<div class="draft-banner">
-			<div class="draft-banner-content">
-				<span class="draft-banner-text">
-					Unsaved draft found{#if draftTimeText} (saved {draftTimeText}){/if}.
-				</span>
-				<div class="draft-banner-actions">
-					<button class="draft-banner-button" onclick={restoreDraft}>Restore</button>
-					<button class="draft-banner-button dismiss" onclick={dismissDraft}>Dismiss</button>
-				</div>
-			</div>
-		</div>
-	{/if}
 
 	<div class="composer-container">
 		<div class="composer">
@@ -442,15 +236,6 @@ $effect(() => {
 		max-width: 600px;
 		margin: 0 auto;
 		padding: $unit-3x;
-	}
-
-	.error-message {
-		padding: $unit-2x;
-		border-radius: $unit;
-		margin-bottom: $unit-3x;
-		background-color: #fee;
-		color: #d33;
-		font-size: 0.875rem;
 	}
 
 	.composer {
@@ -559,105 +344,6 @@ $effect(() => {
 
 		&::placeholder {
 			color: $gray-60;
-		}
-	}
-	.draft-banner {
-		background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-		border-bottom: 1px solid #f59e0b;
-		box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-		padding: $unit-3x $unit-4x;
-		animation: slideDown 0.3s ease-out;
-
-		@include breakpoint('phone') {
-			padding: $unit-2x $unit-3x;
-		}
-	}
-
-	@keyframes slideDown {
-		from {
-			opacity: 0;
-			transform: translateY(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.draft-banner-content {
-		max-width: 1200px;
-		margin: 0 auto;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: $unit-3x;
-
-		@include breakpoint('phone') {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: $unit-2x;
-		}
-	}
-
-	.draft-banner-text {
-		color: #92400e;
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1.5;
-
-		@include breakpoint('phone') {
-			font-size: 0.8125rem;
-		}
-	}
-
-	.draft-banner-actions {
-		display: flex;
-		gap: $unit-2x;
-		flex-shrink: 0;
-
-		@include breakpoint('phone') {
-			width: 100%;
-		}
-	}
-
-	.draft-banner-button {
-		background: white;
-		border: 1px solid #f59e0b;
-		color: #92400e;
-		padding: $unit $unit-3x;
-		border-radius: $unit;
-		font-size: 0.875rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		white-space: nowrap;
-
-		&:hover {
-			background: #fffbeb;
-			border-color: #d97706;
-			transform: translateY(-1px);
-			box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
-		}
-
-		&:active {
-			transform: translateY(0);
-		}
-
-		&.dismiss {
-			background: transparent;
-			border-color: #fbbf24;
-			color: #b45309;
-
-			&:hover {
-				background: rgba(255, 255, 255, 0.5);
-				border-color: #f59e0b;
-			}
-		}
-
-		@include breakpoint('phone') {
-			flex: 1;
-			padding: $unit-1_5x $unit-2x;
-			font-size: 0.8125rem;
 		}
 	}
 </style>

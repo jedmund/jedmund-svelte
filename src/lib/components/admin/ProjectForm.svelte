@@ -3,19 +3,13 @@
 	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
+	import Button from './Button.svelte'
 	import Composer from './composer'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
-	import AutoSaveStatus from './AutoSaveStatus.svelte'
-	import DraftPrompt from './DraftPrompt.svelte'
 	import { toast } from '$lib/stores/toast'
 	import type { Project } from '$lib/types/project'
-	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
 	import { createProjectFormStore } from '$lib/stores/project-form.svelte'
-	import { useDraftRecovery } from '$lib/admin/useDraftRecovery.svelte'
-	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
-	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
-	import type { ProjectFormData } from '$lib/types/project'
 	import type { JSONContent } from '@tiptap/core'
 
 	interface Props {
@@ -31,41 +25,11 @@
 	// UI state
 	let isLoading = $state(mode === 'edit')
 	let hasLoaded = $state(mode === 'create')
+	let isSaving = $state(false)
 	let activeTab = $state('metadata')
-	let error = $state<string | null>(null)
-	let successMessage = $state<string | null>(null)
 
 	// Ref to the editor component
 	let editorRef: { save: () => Promise<JSONContent> } | undefined = $state.raw()
-
-	// Draft key for autosave fallback
-	const draftKey = $derived(mode === 'edit' && project ? makeDraftKey('project', project.id) : null)
-
-	// Autosave (edit mode only)
-	const autoSave = mode === 'edit'
-		? createAutoSaveStore({
-			debounceMs: 2000,
-			getPayload: () => (hasLoaded ? formStore.buildPayload() : null),
-			save: async (payload, { signal }) => {
-				return await api.put(`/api/projects/${project?.id}`, payload, { signal })
-			},
-			onSaved: (savedProject: Project, { prime }) => {
-				project = savedProject
-				formStore.populateFromProject(savedProject)
-				prime(formStore.buildPayload())
-				if (draftKey) clearDraft(draftKey)
-			}
-		})
-		: null
-
-	// Draft recovery helper
-	const draftRecovery = useDraftRecovery<Partial<ProjectFormData>>({
-		draftKey: () => draftKey,
-		onRestore: (payload) => formStore.setFields(payload)
-	})
-
-	// Form guards (navigation protection, Cmd+S, beforeunload)
-	useFormGuards(autoSave)
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -77,37 +41,8 @@
 	$effect(() => {
 		if (project && mode === 'edit' && !hasLoaded) {
 			formStore.populateFromProject(project)
-			if (autoSave) {
-				autoSave.prime(formStore.buildPayload())
-			}
 			isLoading = false
 			hasLoaded = true
-		}
-	})
-
-	// Trigger autosave when formData changes (edit mode)
-	$effect(() => {
-		// Establish dependencies on fields
-		void formStore.fields; void activeTab
-		if (mode === 'edit' && hasLoaded && autoSave) {
-			autoSave.schedule()
-		}
-	})
-
-	// Save draft only when autosave fails
-	$effect(() => {
-		if (mode === 'edit' && autoSave && draftKey) {
-			const status = autoSave.status
-			if (status === 'error' || status === 'offline') {
-				saveDraft(draftKey, formStore.buildPayload())
-			}
-		}
-	})
-
-	// Cleanup autosave on unmount
-	$effect(() => {
-		if (autoSave) {
-			return () => autoSave.destroy()
 		}
 	})
 
@@ -129,6 +64,7 @@
 			return
 		}
 
+		isSaving = true
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} project...`)
 
 		try {
@@ -137,6 +73,12 @@
 				// Include updatedAt for concurrency control in edit mode
 				updatedAt: mode === 'edit' ? project?.updatedAt : undefined
 			}
+
+			console.log('[ProjectForm] Saving with payload:', {
+				showFeaturedImageInHeader: payload.showFeaturedImageInHeader,
+				showBackgroundColorInHeader: payload.showBackgroundColorInHeader,
+				showLogoInHeader: payload.showLogoInHeader
+			})
 
 			let savedProject: Project
 			if (mode === 'edit') {
@@ -152,6 +94,7 @@
 				goto(`/admin/projects/${savedProject.id}/edit`)
 			} else {
 				project = savedProject
+				formStore.populateFromProject(savedProject)
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
@@ -161,10 +104,10 @@
 				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
 			}
 			console.error(err)
+		} finally {
+			isSaving = false
 		}
 	}
-
-
 </script>
 
 <AdminPage>
@@ -180,36 +123,20 @@
 			/>
 		</div>
 		<div class="header-actions">
-			{#if !isLoading && mode === 'edit' && autoSave}
-				<AutoSaveStatus
-					status={autoSave.status}
-					error={autoSave.lastError}
-					lastSavedAt={project?.updatedAt}
-				/>
-			{/if}
+			<Button
+				variant="primary"
+				onclick={handleSave}
+				disabled={isSaving}
+			>
+				{isSaving ? 'Saving...' : 'Save'}
+			</Button>
 		</div>
 	</header>
-
-	{#if draftRecovery.showPrompt}
-		<DraftPrompt
-			timeAgo={draftRecovery.draftTimeText}
-			onRestore={draftRecovery.restore}
-			onDismiss={draftRecovery.dismiss}
-		/>
-	{/if}
 
 	<div class="admin-container">
 		{#if isLoading}
 			<div class="loading">Loading project...</div>
 		{:else}
-			{#if error}
-				<div class="error-message">{error}</div>
-			{/if}
-
-			{#if successMessage}
-				<div class="success-message">{successMessage}</div>
-			{/if}
-
 			<div class="tab-panels">
 				<!-- Metadata Panel -->
 				<div class="panel content-wrapper" class:active={activeTab === 'metadata'}>
@@ -220,7 +147,7 @@
 								handleSave()
 							}}
 						>
-							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
+							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} />
 						</form>
 					</div>
 				</div>
@@ -234,7 +161,7 @@
 								handleSave()
 							}}
 						>
-							<ProjectBrandingForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} onSave={handleSave} />
+							<ProjectBrandingForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} />
 						</form>
 					</div>
 				</div>
@@ -295,25 +222,6 @@
 		white-space: nowrap;
 	}
 
-	.btn-icon {
-		width: 40px;
-		height: 40px;
-		border: none;
-		background: none;
-		color: $gray-40;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 8px;
-		transition: all 0.2s ease;
-
-		&:hover {
-			background: $gray-90;
-			color: $gray-10;
-		}
-	}
-
 	.admin-container {
 		width: 100%;
 		margin: 0 auto;
@@ -346,35 +254,10 @@
 		margin: 0 auto;
 	}
 
-	.loading,
-	.error {
+	.loading {
 		text-align: center;
 		padding: $unit-6x;
 		color: $gray-40;
-	}
-
-	.error {
-		color: #d33;
-	}
-
-	.error-message,
-	.success-message {
-		padding: $unit-3x;
-		border-radius: $unit;
-		margin-bottom: $unit-4x;
-		max-width: 700px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.error-message {
-		background-color: #fee;
-		color: #d33;
-	}
-
-	.success-message {
-		background-color: #efe;
-		color: #363;
 	}
 
 	.form-content {

@@ -9,10 +9,9 @@
 	interface Props {
 		formData: ProjectFormData
 		validationErrors: Record<string, string>
-		onSave?: () => Promise<void>
 	}
 
-	let { formData = $bindable(), validationErrors, onSave }: Props = $props()
+	let { formData = $bindable(), validationErrors }: Props = $props()
 
 	// ===== Media State Management =====
 	// Convert logoUrl string to Media object for ImageUploader
@@ -91,16 +90,47 @@
 		if (!hasLogo) formData.showLogoInHeader = false
 	})
 
+	// Track previous toggle states to detect which one changed
+	let prevShowFeaturedImage: boolean | null = $state(null)
+	let prevShowBackgroundColor: boolean | null = $state(null)
+
+	// Mutual exclusion: only one of featured image or background color can be active
+	$effect(() => {
+		// On first run (initial load), if both are true, default to featured image taking priority
+		if (prevShowFeaturedImage === null && prevShowBackgroundColor === null) {
+			if (formData.showFeaturedImageInHeader && formData.showBackgroundColorInHeader) {
+				formData.showBackgroundColorInHeader = false
+			}
+			prevShowFeaturedImage = formData.showFeaturedImageInHeader
+			prevShowBackgroundColor = formData.showBackgroundColorInHeader
+			return
+		}
+
+		const featuredChanged = formData.showFeaturedImageInHeader !== prevShowFeaturedImage
+		const bgColorChanged = formData.showBackgroundColorInHeader !== prevShowBackgroundColor
+
+		if (featuredChanged && formData.showFeaturedImageInHeader && formData.showBackgroundColorInHeader) {
+			// Featured image was just turned ON while background color was already ON
+			formData.showBackgroundColorInHeader = false
+		} else if (bgColorChanged && formData.showBackgroundColorInHeader && formData.showFeaturedImageInHeader) {
+			// Background color was just turned ON while featured image was already ON
+			formData.showFeaturedImageInHeader = false
+		}
+
+		// Update previous values
+		prevShowFeaturedImage = formData.showFeaturedImageInHeader
+		prevShowBackgroundColor = formData.showBackgroundColorInHeader
+	})
+
 	// ===== Upload Handlers =====
 	function handleFeaturedImageUpload(media: Media) {
 		formData.featuredImage = media.url
 		featuredImageMedia = media
 	}
 
-	async function handleFeaturedImageRemove() {
+	function handleFeaturedImageRemove() {
 		formData.featuredImage = ''
 		featuredImageMedia = null
-		if (onSave) await onSave()
 	}
 
 	function handleLogoUpload(media: Media) {
@@ -108,10 +138,9 @@
 		logoMedia = media
 	}
 
-	async function handleLogoRemove() {
+	function handleLogoRemove() {
 		formData.logoUrl = ''
 		logoMedia = null
-		if (onSave) await onSave()
 	}
 </script>
 

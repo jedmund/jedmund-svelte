@@ -3,18 +3,13 @@
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
+	import Button from './Button.svelte'
 	import Input from './Input.svelte'
 	import DropdownSelectField from './DropdownSelectField.svelte'
-	import AutoSaveStatus from './AutoSaveStatus.svelte'
-	import DraftPrompt from './DraftPrompt.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import Composer from './composer'
 	import { toast } from '$lib/stores/toast'
-	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
-	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
-	import { useDraftRecovery } from '$lib/admin/useDraftRecovery.svelte'
-	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
 	import type { Album, Media } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
 
@@ -39,20 +34,13 @@
 	// State
 	let isLoading = $state(mode === 'edit')
 	let hasLoaded = $state(mode === 'create')
-	let _isSaving = $state(false)
-	let _validationErrors = $state<Record<string, string>>({})
+	let isSaving = $state(false)
+	let validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
 	let editorInstance = $state<{ save: () => Promise<JSONContent>; clear: () => void } | undefined>()
 	let activeTab = $state('metadata')
 	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
-	let updatedAt = $state<string | undefined>(
-		album?.updatedAt
-			? typeof album.updatedAt === 'string'
-				? album.updatedAt
-				: album.updatedAt.toISOString()
-			: undefined
-	)
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -86,81 +74,12 @@
 	// Derived state for existing media IDs
 	const existingMediaIds = $derived(albumMedia.map((item) => item.media.id))
 
-	// Draft key for autosave fallback
-	const draftKey = $derived(mode === 'edit' && album ? makeDraftKey('album', album.id) : null)
-
-	function buildPayload() {
-		return {
-			title: formData.title,
-			slug: formData.slug,
-			description: null,
-			date: formData.year || null,
-			location: formData.location || null,
-			showInUniverse: formData.showInUniverse,
-			status: formData.status,
-			content: formData.content,
-			updatedAt
-		}
-	}
-
-	// Autosave store (edit mode only)
-	// Initialized as null and created reactively when album data becomes available
-	let autoSave = $state<ReturnType<typeof createAutoSaveStore<ReturnType<typeof buildPayload>, Album>> | null>(null)
-
-	// INITIALIZATION ORDER:
-	// 1. This effect creates autoSave when album prop becomes available
-	// 2. useFormGuards is called immediately after creation (same effect)
-	// 3. Other effects check for autoSave existence before using it
-	$effect(() => {
-		// Create autoSave when album becomes available (only once)
-		if (mode === 'edit' && album && !autoSave) {
-			const albumId = album.id // Capture album ID to avoid null reference
-			autoSave = createAutoSaveStore({
-				debounceMs: 2000,
-				getPayload: () => (hasLoaded ? buildPayload() : null),
-				save: async (payload, { signal }) => {
-					const response = await fetch(`/api/albums/${albumId}`, {
-						method: 'PUT',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(payload),
-						credentials: 'same-origin',
-						signal
-					})
-					if (!response.ok) throw new Error('Failed to save')
-					return await response.json()
-				},
-				onSaved: (saved: Album, { prime }) => {
-					updatedAt =
-						typeof saved.updatedAt === 'string' ? saved.updatedAt : saved.updatedAt.toISOString()
-					prime(buildPayload())
-					if (draftKey) clearDraft(draftKey)
-				}
-			})
-
-			// Form guards (navigation protection, Cmd+S, beforeunload)
-			useFormGuards(autoSave)
-		}
-	})
-
-	// Draft recovery helper
-	const draftRecovery = useDraftRecovery<ReturnType<typeof buildPayload>>({
-		draftKey: () => draftKey,
-		onRestore: (payload) => {
-			formData.title = payload.title ?? formData.title
-			formData.slug = payload.slug ?? formData.slug
-			formData.status = payload.status ?? formData.status
-			formData.year = payload.date ?? formData.year
-			formData.location = payload.location ?? formData.location
-			formData.showInUniverse = payload.showInUniverse ?? formData.showInUniverse
-			formData.content = payload.content ?? formData.content
-		}
-	})
-
 	// Watch for album changes and populate form data
 	$effect(() => {
-		if (album && mode === 'edit') {
+		if (album && mode === 'edit' && !hasLoaded) {
 			populateFormData(album)
 			loadAlbumMedia()
+			hasLoaded = true
 		} else if (mode === 'create') {
 			isLoading = false
 		}
@@ -173,49 +92,6 @@
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, '-')
 				.replace(/^-+|-+$/g, '')
-		}
-	})
-
-	// Prime autosave on initial load (edit mode only)
-	$effect(() => {
-		if (mode === 'edit' && album && !hasLoaded && autoSave) {
-			autoSave.prime(buildPayload())
-			hasLoaded = true
-		}
-	})
-
-	// Trigger autosave when form data changes
-	// Using `void` operator to explicitly track dependencies without using their values
-	// This effect re-runs whenever any of these form fields change
-	$effect(() => {
-		void formData.title
-		void formData.slug
-		void formData.status
-		void formData.year
-		void formData.location
-		void formData.showInUniverse
-		void formData.content
-		void activeTab
-		if (hasLoaded && autoSave) {
-			autoSave.schedule()
-		}
-	})
-
-	// Save draft only when autosave fails
-	$effect(() => {
-		if (hasLoaded && autoSave && draftKey) {
-			const saveStatus = autoSave.status
-			if (saveStatus === 'error' || saveStatus === 'offline') {
-				saveDraft(draftKey, buildPayload())
-			}
-		}
-	})
-
-	// Cleanup autosave on unmount
-	$effect(() => {
-		if (autoSave) {
-			const instance = autoSave
-			return () => instance.destroy()
 		}
 	})
 
@@ -237,9 +113,9 @@
 		if (!album) return
 
 		try {
-		const response = await fetch(`/api/albums/${album.id}`, {
-			credentials: 'same-origin'
-		})
+			const response = await fetch(`/api/albums/${album.id}`, {
+				credentials: 'same-origin'
+			})
 			if (response.ok) {
 				const data = await response.json()
 				albumMedia = data.media || []
@@ -257,7 +133,7 @@
 				location: formData.location || undefined,
 				year: formData.year || undefined
 			})
-			_validationErrors = {}
+			validationErrors = {}
 			return true
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -267,23 +143,22 @@
 						errors[e.path[0].toString()] = e.message
 					}
 				})
-				_validationErrors = errors
+				validationErrors = errors
 			}
 			return false
 		}
 	}
 
-	async function _handleSave() {
+	async function handleSave() {
 		if (!validateForm()) {
 			toast.error('Please fix the validation errors')
 			return
 		}
 
+		isSaving = true
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} album...`)
 
 		try {
-			_isSaving = true
-
 			const payload = {
 				title: formData.title,
 				slug: formData.slug,
@@ -292,7 +167,8 @@
 				location: formData.location || null,
 				showInUniverse: formData.showInUniverse,
 				status: formData.status,
-				content: formData.content
+				content: formData.content,
+				updatedAt: mode === 'edit' ? album?.updatedAt : undefined
 			}
 
 			const url = mode === 'edit' ? `/api/albums/${album?.id}` : '/api/albums'
@@ -366,7 +242,7 @@
 			)
 			console.error(err)
 		} finally {
-			_isSaving = false
+			isSaving = false
 		}
 	}
 
@@ -399,22 +275,15 @@
 			/>
 		</div>
 		<div class="header-actions">
-			{#if !isLoading}
-				<AutoSaveStatus
-					status={autoSave?.status ?? 'idle'}
-					lastSavedAt={album?.updatedAt}
-				/>
-			{/if}
+			<Button
+				variant="primary"
+				onclick={handleSave}
+				disabled={isSaving}
+			>
+				{isSaving ? 'Saving...' : 'Save'}
+			</Button>
 		</div>
 	</header>
-
-	{#if draftRecovery.showPrompt}
-		<DraftPrompt
-			timeAgo={draftRecovery.draftTimeText}
-			onRestore={draftRecovery.restore}
-			onDismiss={draftRecovery.dismiss}
-		/>
-	{/if}
 
 	<div class="admin-container">
 		{#if isLoading}
@@ -583,25 +452,6 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-
-	.btn-icon {
-		width: 40px;
-		height: 40px;
-		border: none;
-		background: none;
-		color: $gray-40;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 8px;
-		transition: all 0.2s ease;
-
-		&:hover {
-			background: $gray-90;
-			color: $gray-10;
-		}
 	}
 
 	.admin-container {

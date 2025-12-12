@@ -6,6 +6,7 @@
 		toggleChecked?: boolean
 		toggleDisabled?: boolean
 		showToggle?: boolean
+		onToggleChange?: (checked: boolean) => void
 		children?: import('svelte').Snippet
 	}
 
@@ -14,6 +15,7 @@
 		toggleChecked = $bindable(false),
 		toggleDisabled = false,
 		showToggle = true,
+		onToggleChange,
 		children
 	}: Props = $props()
 </script>
@@ -22,7 +24,7 @@
 	<header class="branding-section__header">
 		<h2 class="branding-section__title">{title}</h2>
 		{#if showToggle}
-			<BrandingToggle bind:checked={toggleChecked} disabled={toggleDisabled} />
+			<BrandingToggle bind:checked={toggleChecked} disabled={toggleDisabled} onchange={onToggleChange} />
 		{/if}
 	</header>
 	<div class="branding-section__content">
