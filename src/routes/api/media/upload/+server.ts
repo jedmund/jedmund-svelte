@@ -232,22 +232,20 @@ export const POST: RequestHandler = async (event) => {
 		)
 	} catch (error) {
 		logger.error('Media upload error', error as Error)
-		console.error('Detailed upload error:', error)
-		return errorResponse(
-			`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-			500
-		)
+		return errorResponse('Upload failed', 500)
 	}
 }
 
 // Handle preflight requests
-export const OPTIONS: RequestHandler = async () => {
+export const OPTIONS: RequestHandler = async ({ request }) => {
+	const origin = request.headers.get('origin') || ''
 	return new Response(null, {
 		status: 204,
 		headers: {
-			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Origin': origin,
 			'Access-Control-Allow-Methods': 'POST, OPTIONS',
-			'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+			'Access-Control-Allow-Headers': 'Content-Type',
+			'Access-Control-Allow-Credentials': 'true'
 		}
 	})
 }
