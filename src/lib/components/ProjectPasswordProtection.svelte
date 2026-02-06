@@ -2,27 +2,20 @@
 	import type { Snippet } from 'svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import BackButton from './BackButton.svelte'
-	import { onMount } from 'svelte'
 
 	interface Props {
+		projectId: number
 		projectSlug: string
-		correctPassword: string
 		projectType?: 'work' | 'labs'
+		onUnlocked?: () => void
 		children?: Snippet
 	}
 
-	let { projectSlug, correctPassword, projectType = 'work', children }: Props = $props()
+	let { projectId, projectSlug, projectType = 'work', onUnlocked, children }: Props = $props()
 
-	let isUnlocked = $state(false)
 	let password = $state('')
 	let error = $state('')
 	let isLoading = $state(false)
-
-	// Check if project is already unlocked in session storage
-	onMount(() => {
-		const unlockedProjects = JSON.parse(sessionStorage.getItem('unlockedProjects') || '[]')
-		isUnlocked = unlockedProjects.includes(projectSlug)
-	})
 
 	async function handleSubmit() {
 		if (!password.trim()) {
@@ -33,20 +26,22 @@
 		isLoading = true
 		error = ''
 
-		// Simulate a small delay for better UX
-		await new Promise((resolve) => setTimeout(resolve, 500))
+		try {
+			const response = await fetch(`/api/projects/${projectId}/unlock`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ password }),
+				credentials: 'same-origin'
+			})
 
-		if (password === correctPassword) {
-			// Store in session storage
-			const unlockedProjects = JSON.parse(sessionStorage.getItem('unlockedProjects') || '[]')
-			if (!unlockedProjects.includes(projectSlug)) {
-				unlockedProjects.push(projectSlug)
-				sessionStorage.setItem('unlockedProjects', JSON.stringify(unlockedProjects))
+			if (response.ok) {
+				onUnlocked?.()
+			} else {
+				error = 'Incorrect password. Please try again.'
+				password = ''
 			}
-			isUnlocked = true
-		} else {
-			error = 'Incorrect password. Please try again.'
-			password = ''
+		} catch {
+			error = 'Something went wrong. Please try again.'
 		}
 
 		isLoading = false
@@ -59,10 +54,7 @@
 	}
 </script>
 
-{#if isUnlocked}
-	{@render children?.()}
-{:else}
-	{#snippet passwordHeader()}
+{#snippet passwordHeader()}
 		<div class="password-header">
 			<div class="lock-icon">
 				<svg
@@ -131,9 +123,8 @@
 		</div>
 	{/snippet}
 
-	{@render passwordHeader()}
-	{@render passwordContent()}
-{/if}
+{@render passwordHeader()}
+{@render passwordContent()}
 
 <style lang="scss">
 	.password-header {

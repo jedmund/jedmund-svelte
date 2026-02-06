@@ -7,6 +7,7 @@ import {
 	checkAdminAuth,
 	parseRequestBody
 } from '$lib/server/api-utils'
+import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { logger } from '$lib/server/logger'
 import { ensureUniqueSlug } from '$lib/server/database'
 import {
@@ -64,10 +65,22 @@ export const GET: RequestHandler = async (event) => {
 			return errorResponse('Project not found', 404)
 		}
 
-		// Strip password from response for non-admin users
+		// Strip password and lock content for non-admin users
 		if (!isAdmin) {
 			const { password: _, ...safeProject } = project
-			return jsonResponse({ ...safeProject, hasPassword: !!project.password })
+			const isLocked = project.status === 'password-protected' &&
+				!getUnlockedProjectIds(event.cookies).includes(id)
+
+			if (isLocked) {
+				return jsonResponse({
+					...safeProject,
+					caseStudyContent: null,
+					gallery: [],
+					hasPassword: true,
+					locked: true
+				})
+			}
+			return jsonResponse({ ...safeProject, hasPassword: !!project.password, locked: false })
 		}
 
 		return jsonResponse(project)

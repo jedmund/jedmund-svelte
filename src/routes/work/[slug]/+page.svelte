@@ -12,7 +12,8 @@
 
 	let { data } = $props<{ data: PageData }>()
 
-	const project = $derived(data.project as Project | null)
+	let refetchedProject = $state<Project | null>(null)
+	const project = $derived(refetchedProject ?? (data.project as Project | null))
 	const error = $derived(data.error as string | undefined)
 	const pageUrl = $derived($page.url.href)
 
@@ -90,6 +91,14 @@
 
 	function handleMouseLeave() {
 		logoPosition.set({ x: 0, y: 0 })
+	}
+
+	async function handleProjectUnlocked() {
+		if (!project) return
+		const res = await fetch(`/api/projects/${project.id}`, { credentials: 'same-origin' })
+		if (res.ok) {
+			refetchedProject = await res.json()
+		}
 	}
 </script>
 
@@ -182,16 +191,13 @@
 						<ProjectHeaderContent {project} />
 					</div>
 				{/snippet}
-				{#if project.status === 'password-protected'}
+				{#if project.locked}
 					<ProjectPasswordProtection
+						projectId={project.id}
 						projectSlug={project.slug}
-						correctPassword={project.password || ''}
 						projectType="work"
-					>
-						{#snippet children()}
-							<ProjectContent {project} />
-						{/snippet}
-					</ProjectPasswordProtection>
+						onUnlocked={handleProjectUnlocked}
+					/>
 				{:else}
 					<ProjectContent {project} />
 				{/if}
