@@ -48,6 +48,8 @@ export const GET: RequestHandler = async (event) => {
 		return errorResponse('Invalid project ID', 400)
 	}
 
+	const isAdmin = checkAdminAuth(event)
+
 	try {
 		const project = await prisma.project.findUnique({
 			where: { id }
@@ -55,6 +57,17 @@ export const GET: RequestHandler = async (event) => {
 
 		if (!project) {
 			return errorResponse('Project not found', 404)
+		}
+
+		// Non-admin users can only see published and password-protected projects
+		if (!isAdmin && project.status !== 'published' && project.status !== 'password-protected' && project.status !== 'list-only') {
+			return errorResponse('Project not found', 404)
+		}
+
+		// Strip password from response for non-admin users
+		if (!isAdmin) {
+			const { password: _, ...safeProject } = project
+			return jsonResponse({ ...safeProject, hasPassword: !!project.password })
 		}
 
 		return jsonResponse(project)

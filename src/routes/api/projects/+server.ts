@@ -98,8 +98,13 @@ export const GET: RequestHandler = async (event) => {
 
 		logger.info('Projects list retrieved', { total, page, limit })
 
+		// Strip passwords from non-admin responses
+		const safeProjects = isAdmin
+			? projects
+			: projects.map(({ password: _, ...rest }) => ({ ...rest, hasPassword: !!_ }))
+
 		return jsonResponse({
-			projects,
+			projects: safeProjects,
 			pagination
 		})
 	} catch (error) {
