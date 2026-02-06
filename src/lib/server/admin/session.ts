@@ -12,7 +12,12 @@ interface SessionPayload {
 }
 
 function sessionSecret(): string {
-	return process.env.ADMIN_SESSION_SECRET ?? 'changeme'
+	const secret = process.env.ADMIN_SESSION_SECRET
+	if (!secret) {
+		if (dev) return 'dev-session-secret'
+		throw new Error('ADMIN_SESSION_SECRET environment variable is required in production')
+	}
+	return secret
 }
 
 function signPayload(payload: string): Buffer {
@@ -70,7 +75,11 @@ function parseToken(token: string): SessionPayload | null {
 }
 
 export function validateAdminPassword(password: string): SessionUser | null {
-	const expected = process.env.ADMIN_PASSWORD ?? 'changeme'
+	const expected = process.env.ADMIN_PASSWORD
+	if (!expected) {
+		if (dev) return null
+		throw new Error('ADMIN_PASSWORD environment variable is required in production')
+	}
 	const providedBuf = Buffer.from(password)
 	const expectedBuf = Buffer.from(expected)
 

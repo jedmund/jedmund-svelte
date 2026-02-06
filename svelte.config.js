@@ -19,7 +19,7 @@ const config = {
 		}),
 
 		csrf: {
-			checkOrigin: false
+			checkOrigin: true
 		},
 
 		alias: {
