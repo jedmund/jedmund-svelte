@@ -147,7 +147,7 @@ export const POST: RequestHandler = async (event) => {
 			'image/gif',
 			'image/svg+xml'
 		]
-		
+
 		const allowedVideoTypes = [
 			'video/webm',
 			'video/mp4',
@@ -155,17 +155,33 @@ export const POST: RequestHandler = async (event) => {
 			'video/quicktime',
 			'video/x-msvideo'
 		]
-		
-		const allowedTypes = [...allowedImageTypes, ...allowedVideoTypes]
-		
+
+		const allowedAudioTypes = [
+			'audio/mpeg',
+			'audio/mp3',
+			'audio/wav',
+			'audio/x-wav',
+			'audio/wave',
+			'audio/x-pn-wav',
+			'audio/ogg',
+			'audio/flac',
+			'audio/aac',
+			'audio/mp4',
+			'audio/x-m4a',
+			'audio/webm'
+		]
+
+		const allowedTypes = [...allowedImageTypes, ...allowedVideoTypes, ...allowedAudioTypes]
+
 		if (!allowedTypes.includes(file.type)) {
-			return errorResponse('Invalid file type. Allowed types: Images (JPEG, PNG, WebP, GIF, SVG) and Videos (WebM, MP4, OGG, MOV, AVI)', 400)
+			return errorResponse('Invalid file type. Allowed types: Images (JPEG, PNG, WebP, GIF, SVG), Videos (WebM, MP4, OGG, MOV, AVI), and Audio (MP3, WAV, OGG, FLAC, AAC, M4A, WebM)', 400)
 		}
 
-		// Validate file size - different limits for images and videos
+		// Validate file size - different limits for images, videos, and audio
 		const isVideo = allowedVideoTypes.includes(file.type)
-		const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024 // 100MB for videos, 10MB for images
-		const maxSizeText = isVideo ? '100MB' : '10MB'
+		const isAudio = allowedAudioTypes.includes(file.type)
+		const maxSize = isVideo ? 100 * 1024 * 1024 : isAudio ? 50 * 1024 * 1024 : 10 * 1024 * 1024 // 100MB for videos, 50MB for audio, 10MB for images
+		const maxSizeText = isVideo ? '100MB' : isAudio ? '50MB' : '10MB'
 		
 		if (file.size > maxSize) {
 			return errorResponse(`File too large. Maximum size is ${maxSizeText}`, 400)
