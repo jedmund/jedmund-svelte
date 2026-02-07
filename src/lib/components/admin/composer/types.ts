@@ -28,6 +28,15 @@ export interface ComposerProps {
 	features?: ComposerFeatures
 }
 
+export interface EditorHandle {
+	focus: () => void
+	blur: () => void
+	clear: () => void
+	isEmpty: () => boolean
+	getContent: () => JSONContent | undefined
+	getText: () => string
+}
+
 export interface DropdownPosition {
 	top: number
 	left: number
