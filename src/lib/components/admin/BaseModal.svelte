@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { fade } from 'svelte/transition'
+	import { cubicOut } from 'svelte/easing'
 
 	// Convert CSS transition durations to milliseconds for Svelte transitions
 	const TRANSITION_FAST_MS = 150 // $transition-fast: 0.15s
@@ -12,6 +13,7 @@
 		closeOnEscape?: boolean
 		onClose?: () => void
 		class?: string
+		scale?: boolean // Enable scale animation
 	}
 
 	let {
@@ -20,8 +22,34 @@
 		closeOnBackdrop = true,
 		closeOnEscape = true,
 		onClose,
-		class: className = ''
+		class: className = '',
+		scale = false
 	}: Props = $props()
+
+	// Animation state management for CSS animations
+	let animationState = $state<'entering' | 'open' | 'closing' | 'closed'>('closed')
+	const INTRO_DURATION = 200 // matches CSS animation
+	const OUTRO_DURATION = 150 // matches CSS animation
+
+	$effect(() => {
+		if (isOpen) {
+			animationState = 'entering'
+			const timer = setTimeout(() => {
+				if (isOpen) animationState = 'open'
+			}, INTRO_DURATION)
+			return () => clearTimeout(timer)
+		} else {
+			if (animationState === 'open' || animationState === 'entering') {
+				animationState = 'closing'
+				const timer = setTimeout(() => {
+					animationState = 'closed'
+				}, OUTRO_DURATION)
+				return () => clearTimeout(timer)
+			} else {
+				animationState = 'closed'
+			}
+		}
+	})
 
 	function handleClose() {
 		isOpen = false
@@ -75,10 +103,10 @@
 		}
 	})
 
-	let modalClass = $derived(`modal modal-${size} ${className}`)
+	let modalClass = $derived(`modal modal-${size} ${scale ? 'modal-scale' : ''} ${className}`)
 </script>
 
-{#if isOpen}
+{#if animationState !== 'closed'}
 	<div
 		class="modal-backdrop"
 		role="presentation"
@@ -87,10 +115,10 @@
 	>
 		<div
 			class={modalClass}
+			data-state={animationState}
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
 			tabindex="-1"
-			transition:fade={{ duration: TRANSITION_FAST_MS }}
 			role="dialog"
 			aria-modal="true"
 		>
@@ -153,6 +181,34 @@
 			width: 100%;
 			max-width: 1200px;
 			height: 90vh;
+		}
+
+		// Scale animations based on state (like bits-ui)
+		&.modal-scale[data-state='entering'],
+		&.modal-scale[data-state='open'] {
+			animation: modalScaleIn 0.2s cubic-bezier(0.33, 1, 0.68, 1);
+		}
+
+		&.modal-scale[data-state='closing'] {
+			animation: modalScaleOut 0.15s cubic-bezier(0.33, 1, 0.68, 1);
+		}
+	}
+
+	@keyframes modalScaleIn {
+		from {
+			transform: scale(0.95);
+		}
+		to {
+			transform: scale(1);
+		}
+	}
+
+	@keyframes modalScaleOut {
+		from {
+			transform: scale(1);
+		}
+		to {
+			transform: scale(0.95);
 		}
 	}
 </style>
