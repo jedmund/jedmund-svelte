@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-import { goto } from '$app/navigation'
+import { goto, beforeNavigate } from '$app/navigation'
 import { api } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
+	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
@@ -22,6 +23,17 @@ import { api } from '$lib/admin/api'
 	let tagInput = $state('')
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
+	let showUnsavedChangesModal = $state(false)
+	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
+
+	// Check if form has any content (unsaved changes for new post)
+	let isDirty = $derived(
+		title.trim() !== '' ||
+		slug.trim() !== '' ||
+		excerpt.trim() !== '' ||
+		tags.length > 0 ||
+		(content.content && content.content.length > 0)
+	)
 
 	// Auto-generate slug from title when title changes and slug hasn't been manually set
 	$effect(() => {
@@ -40,6 +52,40 @@ import { api } from '$lib/admin/api'
 	}
 
 	let config = $derived(postTypeConfig[postType])
+
+	// Cmd+S keyboard shortcut
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+				e.preventDefault()
+				handleSave()
+			}
+		}
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Browser warning for page unloads (refresh/close) - required for these events
+	$effect(() => {
+		function handleBeforeUnload(e: BeforeUnloadEvent) {
+			if (isDirty) {
+				e.preventDefault()
+				e.returnValue = ''
+			}
+		}
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	})
+
+	// Navigation guard for unsaved changes (in-app navigation only)
+	beforeNavigate((navigation) => {
+		// Only intercept in-app navigation, not page unloads (refresh/close)
+		if (isDirty && navigation.type !== 'leave') {
+			pendingNavigation = navigation
+			navigation.cancel()
+			showUnsavedChangesModal = true
+		}
+	})
 
 	onMount(() => {
 		// Get post type from URL params
@@ -100,6 +146,21 @@ import { api } from '$lib/admin/api'
 		updatedAt: new Date().toISOString(),
 		publishedAt: null
 	})
+
+	function handleContinueEditing() {
+		showUnsavedChangesModal = false
+		pendingNavigation = null
+	}
+
+	function handleLeaveWithoutSaving() {
+		showUnsavedChangesModal = false
+		if (pendingNavigation) {
+			// Temporarily allow dirty navigation
+			const nav = pendingNavigation
+			pendingNavigation = null
+			nav.to && goto(nav.to.url.pathname)
+		}
+	}
 </script>
 
 <svelte:head>
@@ -184,6 +245,12 @@ import { api } from '$lib/admin/api'
 		</div>
 	</div>
 </AdminPage>
+
+<UnsavedChangesModal
+	isOpen={showUnsavedChangesModal}
+	onContinueEditing={handleContinueEditing}
+	onLeave={handleLeaveWithoutSaving}
+/>
 
 <style lang="scss">
 	@import '$styles/variables.scss';
