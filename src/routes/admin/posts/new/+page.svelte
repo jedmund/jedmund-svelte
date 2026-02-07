@@ -357,6 +357,7 @@ import { api } from '$lib/admin/api'
 	.editor-wrapper {
 		width: 100%;
 		min-height: 400px;
+		padding: 0 $unit-4x;
 	}
 
 	.metadata-popover-container {
