@@ -1,62 +1,61 @@
-import { Extension } from '@tiptap/core'
-import { NodeSelection, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
-import { Fragment, Slice, Node } from '@tiptap/pm/model'
-import { EditorView } from '@tiptap/pm/view'
-import { serializeForClipboard } from './ClipboardSerializer.js'
-import DragHandleIcon from '$icons/drag-handle.svg?raw'
+import { Extension } from '@tiptap/core';
+import { Fragment, type Node, Slice } from '@tiptap/pm/model';
+import { NodeSelection, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state';
+import type { EditorView } from '@tiptap/pm/view';
+import { serializeForClipboard } from './ClipboardSerializer.js';
 
 export interface GlobalDragHandleOptions {
 	/**
 	 * The width of the drag handle
 	 */
-	dragHandleWidth: number
+	dragHandleWidth: number;
 
 	/**
 	 * The treshold for scrolling
 	 */
-	scrollTreshold: number
+	scrollTreshold: number;
 
 	/*
 	 * The css selector to query for the drag handle. (eg: '.custom-handle').
 	 * If handle element is found, that element will be used as drag handle. If not, a default handle will be created
 	 */
-	dragHandleSelector?: string
+	dragHandleSelector?: string;
 
 	/**
 	 * Tags to be excluded for drag handle
 	 */
-	excludedTags: string[]
+	excludedTags: string[];
 
 	/**
 	 * Custom nodes to be included for drag handle
 	 */
-	customNodes: string[]
+	customNodes: string[];
 
 	/**
 	 * onNodeChange callback for drag handle
 	 * @param data
 	 * @returns
 	 */
-	onMouseMove?: (data: { node: Node; pos: number }) => void
+	onMouseMove?: (data: { node: Node; pos: number }) => void;
 }
 function absoluteRect(node: Element) {
-	const data = node.getBoundingClientRect()
-	const modal = node.closest('[role="dialog"]')
+	const data = node.getBoundingClientRect();
+	const modal = node.closest('[role="dialog"]');
 
 	if (modal && window.getComputedStyle(modal).transform !== 'none') {
-		const modalRect = modal.getBoundingClientRect()
+		const modalRect = modal.getBoundingClientRect();
 
 		return {
 			top: data.top - modalRect.top,
 			left: data.left - modalRect.left,
 			width: data.width
-		}
+		};
 	}
 	return {
 		top: data.top,
 		left: data.left,
 		width: data.width
-	}
+	};
 }
 
 function nodeDOMAtCoords(coords: { x: number; y: number }, options: GlobalDragHandleOptions) {
@@ -71,38 +70,35 @@ function nodeDOMAtCoords(coords: { x: number; y: number }, options: GlobalDragHa
 		'h4',
 		'h5',
 		'h6',
-		'[data-drag-handle]', // NodeView components with drag handle
-		'.edra-url-embed-wrapper', // URL embed wrapper
-		'.edra-youtube-embed-card', // YouTube embed
 		...options.customNodes.map((node) => `[data-type=${node}]`)
-	].join(', ')
+	].join(', ');
 	return document
 		.elementsFromPoint(coords.x, coords.y)
 		.find(
 			(elem: Element) => elem.parentElement?.matches?.('.ProseMirror') || elem.matches(selectors)
-		)
+		);
 }
 function nodePosAtDOM(node: Element, view: EditorView, options: GlobalDragHandleOptions) {
-	const boundingRect = node.getBoundingClientRect()
+	const boundingRect = node.getBoundingClientRect();
 
 	return view.posAtCoords({
 		left: boundingRect.left + 50 + options.dragHandleWidth,
 		top: boundingRect.top + 1
-	})?.inside
+	})?.inside;
 }
 
 function calcNodePos(pos: number, view: EditorView) {
-	const $pos = view.state.doc.resolve(pos)
-	if ($pos.depth > 1) return $pos.before($pos.depth)
-	return pos
+	const $pos = view.state.doc.resolve(pos);
+	if ($pos.depth > 1) return $pos.before($pos.depth);
+	return pos;
 }
 
 export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey: string }) {
-	let listType = ''
+	let listType = '';
 	function handleDragStart(event: DragEvent, view: EditorView) {
-		view.focus()
+		view.focus();
 
-		if (!event.dataTransfer) return
+		if (!event.dataTransfer) return;
 
 		const node = nodeDOMAtCoords(
 			{
@@ -110,38 +106,38 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 				y: event.clientY
 			},
 			options
-		)
+		);
 
-		if (!(node instanceof Element)) return
+		if (!(node instanceof Element)) return;
 
-		let draggedNodePos = nodePosAtDOM(node, view, options)
-		if (draggedNodePos == null || draggedNodePos < 0) return
-		draggedNodePos = calcNodePos(draggedNodePos, view)
+		let draggedNodePos = nodePosAtDOM(node, view, options);
+		if (draggedNodePos == null || draggedNodePos < 0) return;
+		draggedNodePos = calcNodePos(draggedNodePos, view);
 
-		const { from, to } = view.state.selection
-		const diff = from - to
+		const { from, to } = view.state.selection;
+		const diff = from - to;
 
-		const fromSelectionPos = calcNodePos(from, view)
-		let differentNodeSelected = false
+		const fromSelectionPos = calcNodePos(from, view);
+		let differentNodeSelected = false;
 
-		const nodePos = view.state.doc.resolve(fromSelectionPos)
+		const nodePos = view.state.doc.resolve(fromSelectionPos);
 
 		// Check if nodePos points to the top level node
-		if (nodePos.node().type.name === 'doc') differentNodeSelected = true
+		if (nodePos.node().type.name === 'doc') differentNodeSelected = true;
 		else {
-			const nodeSelection = NodeSelection.create(view.state.doc, nodePos.before())
+			const nodeSelection = NodeSelection.create(view.state.doc, nodePos.before());
 
 			// Check if the node where the drag event started is part of the current selection
 			differentNodeSelected = !(
 				draggedNodePos + 1 >= nodeSelection.$from.pos && draggedNodePos <= nodeSelection.$to.pos
-			)
+			);
 		}
-		let selection = view.state.selection
+		let selection = view.state.selection;
 		if (!differentNodeSelected && diff !== 0 && !(view.state.selection instanceof NodeSelection)) {
-			const endSelection = NodeSelection.create(view.state.doc, to - 1)
-			selection = TextSelection.create(view.state.doc, draggedNodePos, endSelection.$to.pos)
+			const endSelection = NodeSelection.create(view.state.doc, to - 1);
+			selection = TextSelection.create(view.state.doc, draggedNodePos, endSelection.$to.pos);
 		} else {
-			selection = NodeSelection.create(view.state.doc, draggedNodePos)
+			selection = NodeSelection.create(view.state.doc, draggedNodePos);
 
 			// if inline node is selected, e.g mention -> go to the parent node to select the whole node
 			// if table row is selected, go to the parent node to select the whole node
@@ -149,62 +145,58 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 				(selection as NodeSelection).node.type.isInline ||
 				(selection as NodeSelection).node.type.name === 'tableRow'
 			) {
-				const $pos = view.state.doc.resolve(selection.from)
-				selection = NodeSelection.create(view.state.doc, $pos.before())
+				const $pos = view.state.doc.resolve(selection.from);
+				selection = NodeSelection.create(view.state.doc, $pos.before());
 			}
 		}
-		view.dispatch(view.state.tr.setSelection(selection))
+		view.dispatch(view.state.tr.setSelection(selection));
 
 		// If the selected node is a list item, we need to save the type of the wrapping list e.g. OL or UL
 		if (
 			view.state.selection instanceof NodeSelection &&
 			view.state.selection.node.type.name === 'listItem'
 		) {
-			listType = node.parentElement!.tagName
+			listType = node.parentElement!.tagName;
 		}
 
-		const slice = view.state.selection.content()
-		const { dom, text } = serializeForClipboard(view, slice)
+		const slice = view.state.selection.content();
+		const { dom, text } = serializeForClipboard(view, slice);
 
-		event.dataTransfer.clearData()
-		event.dataTransfer.setData('text/html', dom.innerHTML)
-		event.dataTransfer.setData('text/plain', text)
-		event.dataTransfer.effectAllowed = 'copyMove'
+		event.dataTransfer.clearData();
+		event.dataTransfer.setData('text/html', dom.innerHTML);
+		event.dataTransfer.setData('text/plain', text);
+		event.dataTransfer.effectAllowed = 'copyMove';
 
-		event.dataTransfer.setDragImage(node, 0, 0)
+		event.dataTransfer.setDragImage(node, 0, 0);
 
-		view.dragging = { slice, move: event.ctrlKey }
+		view.dragging = { slice, move: event.ctrlKey };
 	}
 
-	let dragHandleElement: HTMLElement | null = null
+	let dragHandleElement: HTMLElement | null = null;
 
 	function hideDragHandle() {
 		if (dragHandleElement) {
-			dragHandleElement.classList.add('hide')
+			dragHandleElement.classList.add('hide');
 		}
 	}
 
 	function showDragHandle() {
 		if (dragHandleElement) {
-			dragHandleElement.classList.remove('hide')
+			dragHandleElement.classList.remove('hide');
 		}
 	}
 
 	function hideHandleOnEditorOut(event: MouseEvent) {
 		if (event.target instanceof Element) {
 			// Check if the relatedTarget class is still inside the editor
-			const relatedTarget = event.relatedTarget as HTMLElement
+			const relatedTarget = event.relatedTarget as HTMLElement;
 			const isInsideEditor =
 				relatedTarget?.classList.contains('tiptap') ||
-				relatedTarget?.classList.contains('drag-handle') ||
-				relatedTarget?.classList.contains('drag-handle-menu') ||
-				relatedTarget?.classList.contains('dropdown-menu') ||
-				relatedTarget?.closest('.drag-handle') ||
-				relatedTarget?.closest('.dropdown-menu')
+				relatedTarget?.classList.contains('drag-handle');
 
-			if (isInsideEditor) return
+			if (isInsideEditor) return;
 		}
-		hideDragHandle()
+		hideDragHandle();
 	}
 
 	return new Plugin({
@@ -212,71 +204,54 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 		view: (view) => {
 			const handleBySelector = options.dragHandleSelector
 				? document.querySelector<HTMLElement>(options.dragHandleSelector)
-				: null
-			dragHandleElement = handleBySelector ?? document.createElement('div')
-			dragHandleElement.draggable = true
-			dragHandleElement.dataset.dragHandle = ''
-			dragHandleElement.classList.add('drag-handle')
-
-			// Add custom drag handle SVG if element was created (not selected)
-			if (!handleBySelector) {
-				dragHandleElement.innerHTML = DragHandleIcon
-			}
+				: null;
+			dragHandleElement = handleBySelector ?? document.createElement('div');
+			dragHandleElement.draggable = true;
+			dragHandleElement.dataset.dragHandle = '';
+			dragHandleElement.classList.add('drag-handle');
 
 			function onDragHandleDragStart(e: DragEvent) {
-				handleDragStart(e, view)
+				handleDragStart(e, view);
 			}
 
-			dragHandleElement.addEventListener('dragstart', onDragHandleDragStart)
+			dragHandleElement.addEventListener('dragstart', onDragHandleDragStart);
 
 			function onDragHandleDrag(e: DragEvent) {
-				hideDragHandle()
-				const scrollY = window.scrollY
+				hideDragHandle();
+				const scrollY = window.scrollY;
 				if (e.clientY < options.scrollTreshold) {
-					window.scrollTo({ top: scrollY - 30, behavior: 'smooth' })
+					window.scrollTo({ top: scrollY - 30, behavior: 'smooth' });
 				} else if (window.innerHeight - e.clientY < options.scrollTreshold) {
-					window.scrollTo({ top: scrollY + 30, behavior: 'smooth' })
+					window.scrollTo({ top: scrollY + 30, behavior: 'smooth' });
 				}
 			}
 
-			dragHandleElement.addEventListener('drag', onDragHandleDrag)
+			dragHandleElement.addEventListener('drag', onDragHandleDrag);
 
-			hideDragHandle()
+			hideDragHandle();
 
 			if (!handleBySelector) {
-				view?.dom?.parentElement?.appendChild(dragHandleElement)
+				view?.dom?.parentElement?.appendChild(dragHandleElement);
 			}
-			view?.dom?.parentElement?.addEventListener('mouseout', hideHandleOnEditorOut)
+			view?.dom?.parentElement?.addEventListener('mouseout', hideHandleOnEditorOut);
 
 			return {
 				destroy: () => {
 					if (!handleBySelector) {
-						dragHandleElement?.remove?.()
+						dragHandleElement?.remove?.();
 					}
-					dragHandleElement?.removeEventListener('drag', onDragHandleDrag)
-					dragHandleElement?.removeEventListener('dragstart', onDragHandleDragStart)
-					dragHandleElement = null
-					view?.dom?.parentElement?.removeEventListener('mouseout', hideHandleOnEditorOut)
+					dragHandleElement?.removeEventListener('drag', onDragHandleDrag);
+					dragHandleElement?.removeEventListener('dragstart', onDragHandleDragStart);
+					dragHandleElement = null;
+					view?.dom?.parentElement?.removeEventListener('mouseout', hideHandleOnEditorOut);
 				}
-			}
+			};
 		},
 		props: {
 			handleDOMEvents: {
 				mousemove: (view, event) => {
 					if (!view.editable) {
-						return
-					}
-
-					// Check if we're hovering over the drag handle itself
-					const target = event.target as HTMLElement
-					if (target.closest('.drag-handle') || target.closest('.dropdown-menu')) {
-						// Keep the handle visible when hovering over it or the dropdown
-						return
-					}
-
-					// Don't move the drag handle if the menu is open
-					if (dragHandleElement?.classList.contains('menu-open')) {
-						return
+						return;
 					}
 
 					const node = nodeDOMAtCoords(
@@ -285,96 +260,76 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 							y: event.clientY
 						},
 						options
-					)
+					);
 
-					const notDragging = node?.closest('.not-draggable')
-					const excludedTagList = options.excludedTags.concat(['ol', 'ul']).join(', ')
+					const notDragging = node?.closest('.not-draggable');
+					const excludedTagList = options.excludedTags.concat(['ol', 'ul']).join(', ');
 
 					if (!(node instanceof Element) || node.matches(excludedTagList) || notDragging) {
-						hideDragHandle()
-						return
+						hideDragHandle();
+						return;
 					}
 
-					const nodePos = nodePosAtDOM(node, view, options)
+					const nodePos = nodePosAtDOM(node, view, options);
 					if (nodePos !== undefined) {
-						const currentNode = view.state.doc.nodeAt(nodePos)
+						const currentNode = view.state.doc.nodeAt(nodePos);
 						if (currentNode !== null) {
-							// Still update the current node for tracking, but don't reposition if menu is open
-							options.onMouseMove?.({ node: currentNode, pos: nodePos })
+							options.onMouseMove?.({ node: currentNode, pos: nodePos });
 						}
 					}
 
-					// Don't reposition the drag handle if menu is open
-					if (dragHandleElement?.classList.contains('menu-open')) {
-						return
-					}
+					const compStyle = window.getComputedStyle(node);
+					const parsedLineHeight = Number.parseInt(compStyle.lineHeight, 10);
+					const lineHeight = isNaN(parsedLineHeight)
+						? Number.parseInt(compStyle.fontSize) * 1.2
+						: parsedLineHeight;
+					const paddingTop = Number.parseInt(compStyle.paddingTop, 10);
 
-					const compStyle = window.getComputedStyle(node)
-					const paddingTop = parseInt(compStyle.paddingTop, 10)
-					const rect = absoluteRect(node)
+					const rect = absoluteRect(node);
 
-					// For custom nodes like embeds, position at the top of the element
-					const isCustomNode = node.matches(
-						'[data-drag-handle], .edra-url-embed-wrapper, .edra-youtube-embed-card, [data-type]'
-					)
-					if (isCustomNode) {
-						// For NodeView components, position handle at top with small offset
-						rect.top += 8
-					} else {
-						// For text nodes, calculate based on line height
-						const parsedLineHeight = parseInt(compStyle.lineHeight, 10)
-						const lineHeight = isNaN(parsedLineHeight)
-							? parseInt(compStyle.fontSize) * 1.2
-							: parsedLineHeight
-						rect.top += (lineHeight - 20) / 2
-						rect.top += paddingTop
-					}
+					rect.top += (lineHeight - 24) / 2;
+					rect.top += paddingTop;
 					// Li markers
 					if (node.matches('ul:not([data-type=taskList]) li, ol li')) {
-						rect.left -= options.dragHandleWidth
+						rect.left -= options.dragHandleWidth;
 					}
-					rect.width = options.dragHandleWidth
+					rect.width = options.dragHandleWidth;
 
-					if (!dragHandleElement) return
+					if (!dragHandleElement) return;
 
-					// Get the computed padding of the element to position handle correctly
-					const paddingLeft = parseInt(compStyle.paddingLeft, 10) || 0
-
-					// Add 12px gap between drag handle and content
-					// Position the handle inside the padding area, close to the text
-					dragHandleElement.style.left = `${rect.left + paddingLeft - rect.width - 12}px`
-					dragHandleElement.style.top = `${rect.top - 1}px`
-					showDragHandle()
+					dragHandleElement.style.left = `${rect.left - rect.width}px`;
+					dragHandleElement.style.top = `${rect.top}px`;
+					showDragHandle();
 				},
 				keydown: () => {
-					hideDragHandle()
+					hideDragHandle();
 				},
 				mousewheel: () => {
-					hideDragHandle()
+					hideDragHandle();
 				},
 				// dragging class is used for CSS
 				dragstart: (view) => {
-					view.dom.classList.add('dragging')
+					view.dom.classList.add('dragging');
 				},
 				drop: (view, event) => {
-					view.dom.classList.remove('dragging')
-					hideDragHandle()
-					let droppedNode: Node | null = null
+					view.dom.classList.remove('dragging');
+					hideDragHandle();
+					let droppedNode: Node | null = null;
 					const dropPos = view.posAtCoords({
 						left: event.clientX,
 						top: event.clientY
-					})
+					});
 
-					if (!dropPos) return
+					if (!dropPos) return;
 
 					if (view.state.selection instanceof NodeSelection) {
-						droppedNode = view.state.selection.node
+						droppedNode = view.state.selection.node;
 					}
-					if (!droppedNode) return
+					if (!droppedNode) return;
 
-					const resolvedPos = view.state.doc.resolve(dropPos.pos)
+					const resolvedPos = view.state.doc.resolve(dropPos.pos);
 
-					const isDroppedInsideList = resolvedPos.parent.type.name === 'listItem'
+					const isDroppedInsideList = resolvedPos.parent.type.name === 'listItem';
 
 					// If the selected node is a list item and is not dropped inside a list, we need to wrap it inside <ol> tag otherwise ol list items will be transformed into ul list item when dropped
 					if (
@@ -383,21 +338,17 @@ export function DragHandlePlugin(options: GlobalDragHandleOptions & { pluginKey:
 						!isDroppedInsideList &&
 						listType == 'OL'
 					) {
-						const newList = view.state.schema.nodes.orderedList?.createAndFill(null, droppedNode)
-						const slice = new Slice(Fragment.from(newList), 0, 0)
-						view.dragging = { slice, move: event.ctrlKey }
+						const newList = view.state.schema.nodes.orderedList?.createAndFill(null, droppedNode);
+						const slice = new Slice(Fragment.from(newList), 0, 0);
+						view.dragging = { slice, move: event.ctrlKey };
 					}
-
-					// Return false to let ProseMirror's default drop handler (from Dropcursor) take over
-					// This allows the actual node movement to happen
-					return false
 				},
 				dragend: (view) => {
-					view.dom.classList.remove('dragging')
+					view.dom.classList.remove('dragging');
 				}
 			}
 		}
-	})
+	});
 }
 
 const GlobalDragHandle = Extension.create({
@@ -409,7 +360,7 @@ const GlobalDragHandle = Extension.create({
 			scrollTreshold: 100,
 			excludedTags: [],
 			customNodes: []
-		}
+		};
 	},
 
 	addProseMirrorPlugins() {
@@ -423,8 +374,8 @@ const GlobalDragHandle = Extension.create({
 				customNodes: this.options.customNodes,
 				onMouseMove: this.options.onMouseMove
 			})
-		]
+		];
 	}
-})
+});
 
-export default GlobalDragHandle
+export default GlobalDragHandle;

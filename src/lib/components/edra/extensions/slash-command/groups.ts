@@ -1,63 +1,59 @@
-import { commands } from '../../commands/commands.js'
-
-import type { EdraCommand } from '../../commands/types.js'
-import type { Editor } from '@tiptap/core'
+import Minus from '@lucide/svelte/icons/minus';
+import Quote from '@lucide/svelte/icons/quote';
+import SquareCode from '@lucide/svelte/icons/square-code';
+import type { Editor } from '@tiptap/core';
+import commands from '../../commands/toolbar-commands.js';
+import type { EdraToolBarCommands } from '../../commands/types.js';
+import strings from '../../strings.js';
 
 export interface Group {
-	name: string
-	title: string
-	commands: EdraCommand[]
+	name: string;
+	title: string;
+	actions: EdraToolBarCommands[];
 }
 
 export const GROUPS: Group[] = [
 	{
 		name: 'format',
-		title: 'Format',
-		commands: [
-			...commands.headings.commands,
+		title: strings.command.formatGroup,
+		actions: [
+			...commands.headings,
 			{
-				iconName: 'Quote',
+				icon: Quote,
 				name: 'blockquote',
-				label: 'Blockquote',
-				action: (editor: Editor) => {
-					editor.chain().focus().setBlockquote().run()
+				tooltip: strings.command.blockQuote,
+				onClick: (editor: Editor) => {
+					editor.chain().focus().setBlockquote().run();
 				}
 			},
 			{
-				iconName: 'SquareCode',
+				icon: SquareCode,
 				name: 'codeBlock',
-				label: 'Code Block',
-				action: (editor: Editor) => {
-					editor.chain().focus().setCodeBlock().run()
+				tooltip: strings.command.codeBlock,
+				onClick: (editor: Editor) => {
+					editor.chain().focus().setCodeBlock().run();
 				}
 			},
-			...commands.lists.commands
+			...commands.lists
 		]
 	},
 	{
 		name: 'insert',
-		title: 'Insert',
-		commands: [
-			...commands.media.commands,
-			...commands.table.commands,
+		title: strings.command.insertGroup,
+		actions: [
+			...commands.media,
+			...commands.table,
+			...commands.math,
 			{
-				iconName: 'MapPin',
-				name: 'geolocation-placeholder',
-				label: 'Location',
-				action: (editor: Editor) => {
-					editor.chain().focus().insertGeolocationPlaceholder().run()
-				}
-			},
-			{
-				iconName: 'Minus',
+				icon: Minus,
 				name: 'horizontalRule',
-				label: 'Horizontal Rule',
-				action: (editor: Editor) => {
-					editor.chain().focus().setHorizontalRule().run()
+				tooltip: strings.command.horizontalRule,
+				onClick: (editor: Editor) => {
+					editor.chain().focus().setHorizontalRule().run();
 				}
 			}
 		]
 	}
-]
+];
 
-export default GROUPS
+export default GROUPS;

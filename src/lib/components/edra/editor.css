@@ -1,34 +1,26 @@
 /* Base TipTap Editor Styles with Light/Dark Theme Support */
-
-/* Import Tippy.js animation styles */
-@import 'tippy.js/animations/scale.css';
+.edra-editor .tiptap.ProseMirror {
+	margin-inline: auto;
+}
 
 .tiptap :first-child {
 	margin-top: 0;
 }
 
-/* Paragraph spacing */
-.tiptap p {
-	margin-top: 0;
-	margin-bottom: 1rem;
-	line-height: 1.6;
-}
-
-.tiptap p:last-child {
+.tiptap :last-child {
 	margin-bottom: 0;
 }
 
-@media (max-width: 768px) {
-	.tiptap p {
-	}
+.tiptap > p {
+	margin: 0.5rem 0;
 }
 
 /* For Placeholder */
-.tiptap .is-empty::before {
-	pointer-events: none;
+.tiptap .is-empty:not(blockquote.is-empty)::before {
 	float: left;
 	height: 0;
-	color: var(--border-color-hover);
+	color: var(--muted-foreground);
+	pointer-events: none;
 	content: attr(data-placeholder);
 }
 
@@ -39,162 +31,139 @@
 .tiptap h4,
 .tiptap h5,
 .tiptap h6 {
+	margin-top: 1rem;
 	line-height: 1.2;
-	margin-top: 1.5rem;
-	margin-bottom: 0.75rem;
 	text-wrap: pretty;
 }
 
 .tiptap h1,
 .tiptap h2 {
-	margin-top: 2rem;
+	margin-top: 1rem;
 	margin-bottom: 1rem;
 }
 
-/* Reduce top margin for headings that immediately follow other elements */
-.tiptap p + h1,
-.tiptap p + h2,
-.tiptap p + h3,
-.tiptap p + h4,
-.tiptap p + h5,
-.tiptap p + h6 {
-	margin-top: 1.5rem;
-}
-
-@media (max-width: 768px) {
-	.tiptap h1,
-	.tiptap h2,
-	.tiptap h3,
-	.tiptap h4,
-	.tiptap h5,
-	.tiptap h6 {
-	}
-}
-
 .tiptap h1 {
-	font-size: 2rem;
+	font-size: 2.25rem;
+	font-weight: 800;
+	line-height: 2.5rem;
+	letter-spacing: -0.015em;
+	scroll-margin: 5rem;
 }
 
 .tiptap h2 {
 	font-size: 1.5rem;
+	font-weight: 700;
 }
 
 .tiptap h3 {
 	font-size: 1.25rem;
+	font-weight: 600;
 }
 
 .tiptap h4,
 .tiptap h5,
 .tiptap h6 {
 	font-size: 1rem;
+	font-weight: 600;
 }
 
-/* Blockquote Styles */
+.tiptap em {
+	font-weight: 200;
+}
+
 .tiptap blockquote {
-	border-left: 0.5rem solid var(--blockquote-border);
-	border-radius: 0.5rem;
-	background-color: var(--code-bg);
-	margin: 1rem 2.25rem;
-	padding: 0.5rem 1rem;
+	position: relative;
+	padding: 0.5rem 0;
+	padding-left: 0.75rem;
+	margin: 1rem 0rem;
+	font-style: italic;
+	color: var(--blockquote-color);
 }
 
-@media (max-width: 768px) {
-	.tiptap blockquote {
-		margin: 1rem 2rem;
-	}
+.tiptap blockquote::before {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 0.4rem;
+	content: ' ';
+	background-color: var(--blockquote-border);
+	border-radius: 0.5rem;
 }
 
 .tiptap blockquote p {
 	margin: 0;
-	padding-left: 0;
-	padding-right: 0;
-}
-
-.tiptap blockquote p:not(:last-child) {
-	margin-bottom: 0.5rem;
 }
 
 /* Horizontal Rule */
 .tiptap hr {
+	margin: 1.5rem 0;
 	border: none;
 	border-top: 1px solid var(--border-color);
-	margin: 1rem 2.25rem;
 }
 
-@media (max-width: 768px) {
-	.tiptap hr {
-		margin: 1rem 2rem;
-	}
+.tiptap code {
+	font-family: 'Fira Code Variable', monospace;
 }
 
 /* Inline Code */
 .tiptap code:not(pre code) {
-	border-radius: 0.25rem;
-	color: var(--code-color);
+	padding: 0.2rem 0.3rem;
+	font-size: 0.9rem;
+	font-weight: 500;
+	color: var(--color-primary);
 	background-color: var(--code-bg);
-	border: 0.5px solid var(--code-border) !important;
-	padding: 0.25rem;
-	font-family: 'JetBrains Mono', monospace, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono';
+	border-radius: 0.25rem;
 }
 
 /* List Styling */
+
 .tiptap ul,
 .tiptap ol {
-	margin-top: 0;
-	margin-bottom: 1rem;
-	margin-left: 2.25rem;
-	margin-right: 2.25rem;
-	padding-left: 1.5rem;
-}
-
-@media (max-width: 768px) {
-	.tiptap ul,
-	.tiptap ol {
-		margin-left: 2rem;
-		margin-right: 2rem;
-	}
+	padding: 0 1rem;
+	margin: 0.5rem;
 }
 
 .tiptap ul li,
 .tiptap ol li {
-	margin-bottom: 0.25rem;
+	margin: 0.5rem 0;
+}
+
+.tiptap ul li::marker,
+.tiptap ol li::marker {
+	color: var(--muted-foreground);
 }
 
 .tiptap ul li p,
 .tiptap ol li p {
-	margin-top: 0;
+	margin-top: 0.25rem;
 	margin-bottom: 0.25rem;
-	padding-left: 0;
-	padding-right: 0;
-}
-
-.tiptap ul li:last-child,
-.tiptap ol li:last-child {
-	margin-bottom: 0;
 }
 
 /* Task List Styling */
 .tiptap ul[data-type='taskList'] {
-	list-style: none;
-	margin: 0;
 	padding: 0;
+	margin: 0;
+	list-style: none;
 }
 
 .tiptap ul[data-type='taskList'] li {
-	align-items: flex-start;
 	display: flex;
+	align-items: start;
+	margin: 0.5rem 0 !important;
 }
 
 .tiptap ul[data-type='taskList'] li > label {
-	margin-right: 0.5rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	height: 100%;
+	margin-right: 0.5rem;
 	user-select: none;
 }
 
-.tiptap ul[data-type='taskList'] li > div {
-	flex: 1 1 auto;
+.tiptap ul[data-type='taskList'] li > div > p {
+	margin: 0;
 }
 
 .tiptap ul[data-type='taskList'] input[type='checkbox'] {
@@ -210,16 +179,49 @@ ul[data-type='taskList'] li[data-checked='true'] div {
 	text-decoration: line-through;
 }
 
-input[type='checkbox'] {
+.edra-editor input[type='checkbox'] {
 	position: relative;
-	top: 0.25rem;
-	margin: 0;
+	top: 0rem;
 	display: grid;
 	place-content: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	margin: 0;
+	-webkit-appearance: none;
+	appearance: none;
 	cursor: pointer;
-	width: 1rem;
-	height: 1rem;
+	background-color: transparent;
+	border: 1px solid var(--border-color);
 	border-radius: 0.25rem;
+}
+
+.edra-editor input[type='checkbox']:hover {
+	background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+.edra-editor input[type='checkbox']:active {
+	background-color: var(--muted);
+}
+
+.edra-editor input[type='checkbox']::before {
+	width: 0.75rem;
+	height: 0.75rem;
+	padding: 0.25rem;
+	color: var(--secondary);
+	content: '';
+	box-shadow: inset 1em 1em;
+	clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+	transform: scale(0);
+	transform-origin: center;
+	transition: 200ms transform ease-in-out;
+}
+
+.edra-editor input[type='checkbox']:checked {
+	background-color: var(--secondary-foreground);
+}
+
+.edra-editor input[type='checkbox']:checked::before {
+	transform: scale(1);
 }
 
 /* Color Swatches */
@@ -228,77 +230,379 @@ input[type='checkbox'] {
 }
 
 .color::before {
-	margin-bottom: 0.15rem;
-	margin-right: 0.1rem;
 	display: inline-block;
 	width: 1rem;
 	height: 1rem;
-	border-radius: 0.25rem;
-	border: 1px solid var(--border-color);
+	margin-right: 0.1rem;
+	margin-bottom: 0.15rem;
 	vertical-align: middle;
-	background-color: var(--color);
 	content: ' ';
+	background-color: var(--color);
+	border: 1px solid var(--border-color);
+	border-radius: 0.25rem;
 }
 
 /* Code Block Styling */
 .tiptap pre {
-	margin: 0;
 	display: flex;
 	height: fit-content;
+	padding: 0;
+	margin: 0;
 	overflow: auto;
 	background-color: transparent;
-	padding: 0;
 }
 
 .tiptap pre code {
 	flex: 1;
-	border-radius: 0 !important;
-	background-color: transparent;
 	padding: 0;
 	color: inherit;
-	font-family: 'JetBrains Mono', monospace, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono';
+	background-color: transparent;
+	border-radius: 0 !important;
+}
+
+/* Math Equations (KaTeX) */
+.katex:hover {
+	background-color: var(--code-bg);
+}
+
+.katex.result {
+	background-color: var(--highlight-color);
+	border-bottom: 1px dashed var(--highlight-border);
+}
+
+/* Table Styling */
+.tiptap,
+.ProseMirror {
+	/* New CSS variables for easy theming */
+	--table-border-size: 1px;
+	--table-selected-border-size: 2px;
+	--table-resize-handle-thickness: 2px;
+	--table-hover-transition: 200ms ease-in-out;
+	--table-focus-ring: 2px;
+}
+.ProseMirror .tableWrapper {
+	padding: 1.25rem 1rem;
+	margin: 0;
+	margin: 0.5rem 0;
+	overflow-x: auto;
+}
+
+.ProseMirror table {
+	box-sizing: border-box;
+	width: 100%;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	border-collapse: collapse;
+	border: var(--table-border-size) solid var(--table-border);
+	border-radius: 0.25rem;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+	position: relative;
+	min-width: 100px;
+	padding: 0.5rem;
+	vertical-align: top;
+	text-align: left;
+	border: var(--table-border-size) solid var(--table-border);
+}
+
+.ProseMirror table td:first-of-type:not(a),
+.ProseMirror table th:first-of-type:not(a) {
+	margin-top: 0;
+}
+
+.ProseMirror table td p,
+.ProseMirror table th p {
+	margin: 0;
+}
+
+.ProseMirror table td p + p,
+.ProseMirror table th p + p {
+	margin-top: 0.75rem;
+}
+
+.ProseMirror table th {
+	font-weight: bold;
+	background-color: var(--table-bg-selected);
+}
+
+.ProseMirror table .column-resize-handle {
+	position: absolute;
+	top: 0;
+	right: -2px;
+	bottom: -2px;
+	width: 2px;
+	cursor: col-resize;
+	background-color: var(--primary);
+}
+
+.ProseMirror table .selectedCell {
+	/* Stronger visual, avoids collapse issues */
+	z-index: 1;
+	/* Stronger visual, avoids collapse issues */
+	outline: 1px solid var(--primary);
+	background-color: var(--table-bg-selected);
+}
+
+.ProseMirror .tableWrapper .grip-column,
+.ProseMirror .tableWrapper .grip-row {
+	position: absolute;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	cursor: pointer;
+	background-color: var(--table-bg-selected);
+	opacity: 0;
+	transition: opacity 150ms ease-in-out;
+}
+
+.ProseMirror table .grip-column {
+	top: -0.9rem;
+	left: 0;
+	width: 100%;
+	height: 0.8rem;
+	margin-left: -1px;
+	border: 0.25px solid var(--table-border);
+	border-radius: 1rem;
+}
+
+.ProseMirror table .grip-column::before,
+.ProseMirror table .grip-column.selected::before {
+	width: 0.625rem;
+	content: '';
+}
+
+.ProseMirror table .grip-column:hover {
+	background-color: var(--table-bg-hover);
+}
+
+.ProseMirror table .grip-column::before {
+	border-bottom: 2px dotted var(--border-color-hover);
+}
+
+.ProseMirror table .grip-column.selected {
+	background-color: var(--table-bg-hover);
+	border-color: var(--table-border);
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.ProseMirror table .grip-row {
+	top: 0;
+	left: -0.9rem;
+	width: 0.8rem;
+	height: calc(100%);
+	margin-top: -1px;
+	border: 0.5px solid var(--table-border);
+	border-radius: 1rem;
+}
+
+.ProseMirror table .grip-row::before {
+	height: 0.625rem;
+	content: '';
+	border-left: 2px dotted var(--border-color-hover);
+}
+
+.ProseMirror table .grip-row:hover {
+	background-color: var(--table-bg-hover);
+}
+
+.ProseMirror table .grip-row.selected {
+	background-color: var(--table-bg-hover);
+	border-color: var(--table-border);
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Cell grip — appears on cell hover or when selected */
+/* .ProseMirror table .grip-cell {
+	position: absolute;
+	right: -0.125rem;
+	translate: 0 calc(50% - 0.25rem);
+	width: 0.5rem;
+	height: 1rem;
+	border-radius: 2px;
+	background-color: var(--color-primary);
+	opacity: 0;
+	transition: all 200ms ease-in-out;
+} */
+
+.ProseMirror table td:hover .grip-cell,
+.ProseMirror table th:hover .grip-cell,
+.ProseMirror table .grip-cell.selected {
+	opacity: 1;
+}
+
+/* Dynamic visibility classes for row/column grips */
+.ProseMirror .tableWrapper .grip-row.show-row-grip,
+.ProseMirror .tableWrapper .grip-column.show-col-grip {
+	pointer-events: auto;
+	opacity: 1;
+}
+
+/* Edge add buttons (Notion-like) */
+.ProseMirror .add-column-btn,
+.ProseMirror .add-row-btn {
+	position: absolute;
+	z-index: 20;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--foreground);
+	cursor: pointer;
+	background-color: var(--muted);
+	border: var(--table-border-size) solid var(--table-border);
+	border-radius: 0.5rem;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	opacity: 0;
+	transform: scale(0.95);
+	transition:
+		opacity var(--table-hover-transition),
+		transform var(--table-hover-transition),
+		background-color var(--table-hover-transition);
+}
+
+/* Only show add buttons when flagged by wrapper classes */
+.ProseMirror .tableWrapper.last-column-hover .add-column-btn,
+.ProseMirror .tableWrapper.last-row-hover .add-row-btn {
+	opacity: 1;
+	transform: scale(1);
+}
+
+.ProseMirror .add-column-btn:hover,
+.ProseMirror .add-row-btn:hover {
+	background-color: var(--table-bg-hover);
+	opacity: 0.95;
+}
+
+/* Positioning: column button flush right, full height. Row button flush bottom, full width */
+.ProseMirror .add-column-btn {
+	top: 0;
+	right: -0.85rem;
+	width: 0.75rem;
+	height: 100%;
+}
+
+.ProseMirror .add-row-btn {
+	bottom: -0.9rem;
+	left: 0;
+	width: 100%;
+	height: 0.75rem;
+}
+
+/* Improve button hit areas via padding for better accessibility */
+.ProseMirror .add-column-btn {
+	padding: 0.25rem 0.125rem;
+}
+.ProseMirror .add-row-btn {
+	padding: 0.125rem 0.25rem;
+}
+
+/* Focus states for accessibility */
+.ProseMirror .add-column-btn:focus-visible,
+.ProseMirror .add-row-btn:focus-visible {
+	outline: var(--table-focus-ring) solid var(--primary);
+	outline-offset: 2px;
+}
+
+.tiptap .search-result {
+	color: black;
+	background-color: var(--search-result-bg);
+}
+
+.tiptap .search-result-current {
+	color: black;
+	background-color: var(--search-result-current-bg);
+}
+
+.code-wrapper {
+	position: relative;
+	width: 100%;
+	height: fit-content;
+	padding: 1.5rem;
+	margin: 1rem 0 !important;
+	background-color: var(--codeblock-bg);
+	border-radius: 0.5rem;
+}
+
+.code-wrapper-tile {
+	position: absolute;
+	top: 2px;
+	right: 0;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: end;
+	width: 100%;
+	padding: 0 0.25rem;
+	opacity: 0;
+	transition: opacity 300ms ease-in-out;
+}
+
+.code-wrapper:hover .code-wrapper-tile {
+	opacity: 1;
+}
+
+.tiptap iframe {
+	aspect-ratio: 16 / 9;
+}
+
+/* Mathematics extension styles */
+.tiptap .tiptap-mathematics-render {
+	padding: 0 0.25rem;
+	border-radius: 0.25rem;
+}
+
+/* Editable math block */
+.tiptap .tiptap-mathematics-render--editable {
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.tiptap .tiptap-mathematics-render--editable:hover {
+	background: var(--code-bg);
+}
+
+/* Inline math */
+.tiptap .tiptap-mathematics-render[data-type='inline-math'] {
+	display: inline-block;
+}
+
+/* Block math */
+.tiptap .tiptap-mathematics-render[data-type='block-math'] {
+	display: block;
+	padding: 0.5rem;
+	margin: 1rem 0;
+	font-size: 1.25rem;
+	text-align: center;
+}
+
+/* Error styles */
+.tiptap .tiptap-mathematics-render.inline-math-error,
+.tiptap .tiptap-mathematics-render.block-math-error {
+	color: var(--destructive);
+	background: var(--code-bg);
+	border: 1px solid darkred;
 }
 
 /* Drag Handle Styling */
 .drag-handle {
 	position: fixed;
 	z-index: 50;
-	width: 1.25rem;
-	height: 1.25rem;
+	width: 1.5rem;
+	height: 1.5rem;
 	display: flex;
-	flex-direction: row;
-	align-items: center;
+	padding-right: 0.5rem;
+	flex-direction: column;
 	justify-content: center;
+	align-items: center;
+	cursor: grab;
 	opacity: 100;
-	transition-property: opacity, background-color;
-	transition-duration: 200ms;
+	transition-property: all;
+	transition-duration: 300ms;
 	transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 	color: var(--border-color-hover);
-	cursor: grab;
-	padding: 0.125rem;
-	border-radius: 4px; /* $corner-radius-sm */
-}
-
-.drag-handle svg {
-	width: 0.875rem;
-	height: 0.875rem;
-}
-
-/* Invisible hover zone to bridge the gap */
-.drag-handle::after {
-	content: '';
-	position: absolute;
-	left: 100%;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 16px; /* Slightly larger than the 12px gap */
-	height: 100%;
-	pointer-events: auto;
-}
-
-.drag-handle:hover {
-	opacity: 100 !important;
-	background-color: #e8e8e8; /* $grey-80 */
 }
 
 .drag-handle:active {
@@ -310,11 +614,6 @@ input[type='checkbox'] {
 	pointer-events: none;
 }
 
-.drag-handle.hide.menu-open {
-	opacity: 100;
-	pointer-events: auto;
-}
-
 @media screen and (max-width: 600px) {
 	.drag-handle {
 		display: none;
@@ -322,301 +621,7 @@ input[type='checkbox'] {
 	}
 }
 
-/* Highlight Styles */
-.tiptap mark {
-	font-style: normal !important;
-	padding: 0.125rem 0;
-	border-radius: 0.25rem;
-	text-decoration: none;
-}
-
-.tiptap mark[data-color] {
-	background-color: var(--highlight-color);
-	color: inherit;
-}
-
-/* Math Equations (KaTeX) */
-.katex:hover {
-	background-color: var(--code-bg);
-}
-
-.katex.result {
-	border-bottom: 1px dashed var(--highlight-border);
-	background-color: var(--highlight-color);
-}
-
-/* Table Styling */
-.ProseMirror .tableWrapper {
-	margin: 0 2.25rem 1rem 2.25rem;
-	overflow: auto;
-	padding: 1rem;
-}
-
-@media (max-width: 768px) {
-	.ProseMirror .tableWrapper {
-		margin: 0 2rem 1rem 2rem;
-	}
-}
-
-.ProseMirror table {
-	margin-top: 1rem;
-	margin-bottom: 1rem;
-	box-sizing: border-box;
-	width: 100%;
-	border-collapse: collapse;
-	border-radius: 0.25rem;
-	border: 1px solid var(--table-border);
-}
-
-.ProseMirror table td,
-.ProseMirror table th {
-	position: relative;
-	min-width: 100px;
-	border: 1px solid var(--table-border);
-	padding: 0.5rem;
-	text-align: left;
-	vertical-align: top;
-}
-
-.ProseMirror table td:first-of-type:not(a),
-.ProseMirror table th:first-of-type:not(a) {
-	margin-top: 0;
-}
-
-.ProseMirror table td p,
-.ProseMirror table th p {
-	margin: 0;
-	padding-left: 0;
-	padding-right: 0;
-}
-
-.ProseMirror table td p + p,
-.ProseMirror table th p + p {
-	margin-top: 0.75rem;
-}
-
-.ProseMirror table th {
-	font-weight: bold;
-}
-
-.ProseMirror table .column-resize-handle {
-	pointer-events: none;
-	position: absolute;
-	top: 0;
-	right: -0.25rem;
-	bottom: -2px;
-	display: flex;
-	width: 0.5rem;
-}
-
-.ProseMirror table .column-resize-handle::before {
-	content: '';
-	margin-left: 0.5rem;
-	height: 100%;
-	width: 1px;
-	background-color: var(--table-border);
-}
-
-.ProseMirror table .selectedCell {
-	border-style: double;
-	border-color: var(--table-border);
-	background-color: var(--table-bg-selected);
-}
-
-.ProseMirror table .grip-column,
-.ProseMirror table .grip-row {
-	position: absolute;
-	z-index: 10;
-	display: flex;
-	cursor: pointer;
-	align-items: center;
-	justify-content: center;
-	background-color: var(--table-bg-selected);
-}
-
-.ProseMirror table .grip-column {
-	top: -0.75rem;
-	left: 0;
-	margin-left: -1px;
-	height: 0.75rem;
-	width: calc(100% + 1px);
-	border-left: 1px solid var(--table-border);
-}
-
-.ProseMirror table .grip-column:hover::before,
-.ProseMirror table .grip-column.selected::before {
-	content: '';
-	width: 0.625rem;
-}
-
-.ProseMirror table .grip-column:hover {
-	background-color: var(--table-bg-hover);
-}
-
-.ProseMirror table .grip-column:hover::before {
-	border-bottom: 2px dotted var(--border-color-hover);
-}
-
-.ProseMirror table .grip-column.first {
-	border-top-left-radius: 0.125rem;
-	border-color: transparent;
-}
-
-.ProseMirror table .grip-column.last {
-	border-top-right-radius: 0.125rem;
-}
-
-.ProseMirror table .grip-column.selected {
-	border-color: var(--table-border);
-	background-color: var(--table-bg-hover);
-	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.ProseMirror table .grip-column.selected::before {
-	border-bottom: 2px dotted var(--border-color-hover);
-}
-
-.ProseMirror table .grip-row {
-	left: -0.75rem;
-	top: 0;
-	margin-top: -1px;
-	height: calc(100% + 1px);
-	width: 0.75rem;
-	border-top: 1px solid var(--table-border);
-}
-
-.ProseMirror table .grip-row:hover::before,
-.ProseMirror table .grip-row.selected::before {
-	content: '';
-	height: 0.625rem;
-}
-
-.ProseMirror table .grip-row:hover {
-	background-color: var(--table-bg-hover);
-}
-
-.ProseMirror table .grip-row:hover::before {
-	border-left: 2px dotted var(--border-color-hover);
-}
-
-.ProseMirror table .grip-row.first {
-	border-top-left-radius: 0.125rem;
-	border-color: transparent;
-}
-
-.ProseMirror table .grip-row.last {
-	border-bottom-left-radius: 0.125rem;
-}
-
-.ProseMirror table .grip-row.selected {
-	border-color: var(--table-border);
-	background-color: var(--table-bg-hover);
-	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.ProseMirror table .grip-row.selected::before {
-	border-left: 2px dotted var(--border-color-hover);
-}
-
-.tiptap .search-result {
-	background-color: var(--search-result-bg);
-	color: black;
-}
-
-.tiptap .search-result-current {
-	background-color: var(--search-result-current-bg);
-	color: black;
-}
-
-.code-wrapper {
-	background-color: var(--code-bg);
-	border-radius: 0.25rem;
-	padding: 1.5rem;
-	position: relative;
-	height: fit-content;
-	margin: 0 2.25rem 1rem 2.25rem;
-}
-
-@media (max-width: 768px) {
-	.code-wrapper {
-		margin: 0 2rem 1rem 2rem;
-	}
-}
-
-.code-wrapper-tile {
-	opacity: 0;
-	width: 100%;
-	display: flex;
-	position: absolute;
-	top: 0;
-	padding: 0.25rem;
-	right: 0;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	transition: opacity 0.2s ease-in-out;
-}
-
-.code-wrapper:hover .code-wrapper-tile {
-	opacity: 1;
-}
-
-.tiptap iframe {
-	aspect-ratio: 16 / 9;
-}
-
-/* Content Embeds - Consistent spacing with text blocks */
-.tiptap .node-urlEmbed,
-.tiptap .node-iframe,
-.tiptap .node-video,
-.tiptap .node-image,
-.tiptap .node-gallery,
-.tiptap .node-audio,
-.tiptap .node-geolocation,
-.tiptap .node-audio-placeholder,
-.tiptap .node-gallery-placeholder,
-.tiptap .node-iframe-placeholder,
-.tiptap .node-video-placeholder,
-.tiptap .node-geolocation-placeholder,
-.tiptap .node-image-placeholder,
-.tiptap .node-urlEmbedPlaceholder {
-	margin-bottom: 1rem;
-	margin-left: 2.25rem;
-	margin-right: 2.25rem;
-}
-
-/* YouTube embeds within urlEmbed */
-.tiptap .edra-youtube-embed-wrapper {
-	margin-bottom: 1rem;
-}
-
-/* URL embed cards */
-.tiptap .edra-url-embed-wrapper {
-	margin-bottom: 1rem;
-}
-
-/* Remove double margins if wrapper already has margin */
-.tiptap .edra-url-embed-wrapper + *,
-.tiptap .edra-youtube-embed-wrapper + * {
-	margin-top: 0;
-}
-
-@media (max-width: 768px) {
-	.tiptap .node-urlEmbed,
-	.tiptap .node-iframe,
-	.tiptap .node-video,
-	.tiptap .node-image,
-	.tiptap .node-gallery,
-	.tiptap .node-audio,
-	.tiptap .node-geolocation,
-	.tiptap .node-audio-placeholder,
-	.tiptap .node-gallery-placeholder,
-	.tiptap .node-iframe-placeholder,
-	.tiptap .node-video-placeholder,
-	.tiptap .node-geolocation-placeholder,
-	.tiptap .node-image-placeholder,
-	.tiptap .node-urlEmbedPlaceholder {
-		margin-left: 2rem;
-		margin-right: 2rem;
-	}
+.drag-handle svg {
+	height: 1rem;
+	width: 1rem;
 }
