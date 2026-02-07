@@ -11,6 +11,7 @@ import { VideoPlaceholder } from './extensions/video/VideoPlaceholder.js';
 import { AudioExtended } from './extensions/audio/AudiExtended.js';
 import { ImageExtended } from './extensions/image/ImageExtended.js';
 import { VideoExtended } from './extensions/video/VideoExtended.js';
+import slashcommand from './extensions/slash-command/slashcommand.js';
 
 // Component imports
 import AudioPlaceholderComponent from './headless/components/AudioPlaceholder.svelte';
@@ -19,6 +20,7 @@ import ImagePlaceholderComponent from './headless/components/ImagePlaceholder.sv
 import ImageExtendedComponent from './headless/components/ImageExtended.svelte';
 import VideoPlaceholderComponent from './headless/components/VideoPlaceholder.svelte';
 import VideoExtendedComponent from './headless/components/VideoExtended.svelte';
+import SlashCommandList from './headless/components/SlashCommandList.svelte';
 
 // Create lowlight instance
 const lowlight = createLowlight(all);
@@ -51,13 +53,17 @@ export function getEditorExtensions(options: EditorExtensionOptions = {}): Exten
 		VideoExtended(VideoExtendedComponent)
 	];
 
+	// Add slash commands if enabled
+	if (showSlashCommands) {
+		extensions.push(slashcommand(SlashCommandList));
+	}
+
 	// TODO: Add back when we migrate these extensions:
 	// - Gallery (custom, doesn't exist in upstream)
 	// - IFrame
 	// - URL Embed (with dropdown callback)
 	// - Geolocation (Leaflet maps)
 	// - Link Context Menu (with callback)
-	// - Slash Commands
 
 	return extensions;
 }
