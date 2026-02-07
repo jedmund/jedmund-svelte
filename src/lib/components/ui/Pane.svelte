@@ -1,6 +1,6 @@
 <script lang="ts">
 	import BasePane from './BasePane.svelte'
-	import X from 'lucide-svelte/icons/x'
+	import X from '@lucide/svelte/icons/x'
 	import type { Snippet } from 'svelte'
 
 	interface PaneProps {
