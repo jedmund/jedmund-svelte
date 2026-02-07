@@ -187,7 +187,7 @@
 	<UnifiedMediaModal
 		bind:isOpen={isMediaLibraryOpen}
 		mode={allowMultiple ? 'multiple' : 'single'}
-		fileType={mediaType}
+		fileType={mediaType === 'audio' ? 'all' : mediaType}
 		onSelect={handleMediaSelect}
 		onClose={handleMediaLibraryClose}
 	/>
