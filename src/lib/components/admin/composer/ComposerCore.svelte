@@ -196,7 +196,6 @@
 					handleDrop: eventHandlers.handleDrop
 				}
 			}
-			placeholder
 		)
 
 		editor = newEditor
