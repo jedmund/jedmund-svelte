@@ -1,20 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { goto, beforeNavigate } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import { api } from '$lib/admin/api'
-	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
-	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
-	import { useDraftRecovery } from '$lib/admin/useDraftRecovery.svelte'
-	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
-	import DraftPrompt from '$lib/components/admin/DraftPrompt.svelte'
+	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
-	import AutoSaveStatus from '$lib/components/admin/AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Post } from '@prisma/client'
 
@@ -29,18 +24,6 @@
 			alt?: string
 			caption?: string
 		}>
-	}
-
-	// Type for draft payload
-	interface DraftPayload {
-		title: string | null
-		slug: string
-		type: string
-		status: string
-		content: JSONContent | null
-		excerpt?: string
-		tags: string[]
-		updatedAt?: Date
 	}
 
 	let post = $state<Post | null>(null)
@@ -61,9 +44,39 @@
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
+	let showUnsavedChangesModal = $state(false)
+	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
 
-	// Draft key for autosave fallback
-	const draftKey = $derived(makeDraftKey('post', $page.params.id))
+	// Track initial values to detect unsaved changes
+	let initialValues = $state<{
+		title: string
+		postType: 'post' | 'essay'
+		status: 'draft' | 'published'
+		slug: string
+		excerpt: string
+		content: string
+		tags: string[]
+	}>({
+		title: '',
+		postType: 'post',
+		status: 'draft',
+		slug: '',
+		excerpt: '',
+		content: '',
+		tags: []
+	})
+
+	// Check if form has unsaved changes
+	let isDirty = $derived(
+		hasLoaded &&
+		(title !== initialValues.title ||
+			postType !== initialValues.postType ||
+			status !== initialValues.status ||
+			slug !== initialValues.slug ||
+			excerpt !== initialValues.excerpt ||
+			JSON.stringify(content) !== initialValues.content ||
+			JSON.stringify(tags) !== JSON.stringify(initialValues.tags))
+	)
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -72,58 +85,39 @@
 
 	let config = $derived(postTypeConfig[postType])
 
-	// Autosave store
-	const autoSave = createAutoSaveStore({
-		debounceMs: 2000,
-		getPayload: () => {
-			if (!hasLoaded) return null
-			return {
-				title: config?.showTitle ? title : null,
-				slug,
-				type: postType,
-				status,
-				content: config?.showContent ? content : null,
-				excerpt: postType === 'essay' ? excerpt : undefined,
-				tags,
-				updatedAt: post?.updatedAt
+	// Cmd+S keyboard shortcut
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+				e.preventDefault()
+				handleSave()
 			}
-		},
-		save: async (payload, { signal }) => {
-			const saved = await api.put(`/api/posts/${$page.params.id}`, payload, { signal })
-			return saved
-		},
-		onSaved: (saved: Post, { prime }) => {
-			post = saved
-			prime({
-				title: config?.showTitle ? title : null,
-				slug,
-				type: postType,
-				status,
-				content: config?.showContent ? content : null,
-				excerpt: postType === 'essay' ? excerpt : undefined,
-				tags,
-				updatedAt: saved.updatedAt
-			})
-			if (draftKey) clearDraft(draftKey)
 		}
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Draft recovery helper
-	const draftRecovery = useDraftRecovery<DraftPayload>({
-		draftKey: () => draftKey,
-		onRestore: (payload) => {
-			if (payload.title !== undefined) title = payload.title ?? ''
-			if (payload.slug !== undefined) slug = payload.slug
-			if (payload.type !== undefined) postType = payload.type as 'post' | 'essay'
-			if (payload.status !== undefined) status = payload.status as 'draft' | 'published'
-			if (payload.content !== undefined) content = payload.content ?? { type: 'doc', content: [] }
-			if (payload.excerpt !== undefined) excerpt = payload.excerpt ?? ''
-			if (payload.tags !== undefined) tags = payload.tags
+	// Browser warning for page unloads (refresh/close) - required for these events
+	$effect(() => {
+		function handleBeforeUnload(e: BeforeUnloadEvent) {
+			if (isDirty) {
+				e.preventDefault()
+				e.returnValue = ''
+			}
 		}
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 	})
 
-	// Form guards (navigation protection, Cmd+S, beforeunload)
-	useFormGuards(autoSave)
+	// Navigation guard for unsaved changes (in-app navigation only)
+	beforeNavigate((navigation) => {
+		// Only intercept in-app navigation, not page unloads (refresh/close)
+		if (isDirty && navigation.type !== 'leave') {
+			pendingNavigation = navigation
+			navigation.cancel()
+			showUnsavedChangesModal = true
+		}
+	})
 
 	// Convert blocks format (from database) to Tiptap format
 	function convertBlocksToTiptap(blocksContent: BlockContent): JSONContent {
@@ -262,20 +256,19 @@
 
 				tags = post.tags || []
 
+				// Store initial values for dirty tracking
+				initialValues = {
+					title,
+					postType,
+					status,
+					slug,
+					excerpt,
+					content: JSON.stringify(content),
+					tags: [...tags]
+				}
+
 				// Set content ready after all data is loaded
 				contentReady = true
-
-				// Prime autosave with initial data to prevent immediate save
-				autoSave.prime({
-					title: config?.showTitle ? title : null,
-					slug,
-					type: postType,
-					status,
-					content: config?.showContent ? content : null,
-					excerpt: postType === 'essay' ? excerpt : undefined,
-					tags,
-					updatedAt: post.updatedAt
-				})
 				hasLoaded = true
 			} else {
 				// Fallback error messaging
@@ -323,6 +316,17 @@
 			if (saved) {
 				post = saved
 				if (newStatus) status = newStatus
+
+				// Update initial values to reflect saved state
+				initialValues = {
+					title,
+					postType,
+					status,
+					slug,
+					excerpt,
+					content: JSON.stringify(content),
+					tags: [...tags]
+				}
 			}
 		} catch (error) {
 			console.error('Failed to save post:', error)
@@ -346,6 +350,21 @@
 		}
 	}
 
+	function handleContinueEditing() {
+		showUnsavedChangesModal = false
+		pendingNavigation = null
+	}
+
+	function handleLeaveWithoutSaving() {
+		showUnsavedChangesModal = false
+		if (pendingNavigation) {
+			// Temporarily allow dirty navigation
+			const nav = pendingNavigation
+			pendingNavigation = null
+			nav.to && goto(nav.to.url.pathname)
+		}
+	}
+
 	function handleMetadataPopover(event: MouseEvent) {
 		const target = event.target as Node
 		// Don't close if clicking inside the metadata button or anywhere in a metadata popover
@@ -365,38 +384,6 @@
 		}
 	})
 
-	// Trigger autosave when form data changes
-	$effect(() => {
-		// Establish dependencies
-		void title; void slug; void status; void content; void tags; void excerpt; void postType
-		if (hasLoaded) {
-			autoSave.schedule()
-		}
-	})
-
-	// Save draft only when autosave fails
-	$effect(() => {
-		if (hasLoaded) {
-			const saveStatus = autoSave.status
-			if (saveStatus === 'error' || saveStatus === 'offline') {
-				saveDraft(draftKey, {
-					title: config?.showTitle ? title : null,
-					slug,
-					type: postType,
-					status,
-					content: config?.showContent ? content : null,
-					excerpt: postType === 'essay' ? excerpt : undefined,
-					tags,
-					updatedAt: post?.updatedAt
-				})
-			}
-		}
-	})
-
-	// Cleanup autosave on unmount
-	$effect(() => {
-		return () => autoSave.destroy()
-	})
 </script>
 
 <svelte:head>
@@ -469,18 +456,9 @@
 						: [{ label: 'Save as Draft', status: 'draft' }]}
 					viewUrl={slug ? `/universe/${slug}` : undefined}
 				/>
-				<AutoSaveStatus status={autoSave.status} error={autoSave.lastError} />
 			</div>
 		{/if}
 	</header>
-
-	{#if draftRecovery.showPrompt}
-		<DraftPrompt
-			timeAgo={draftRecovery.draftTimeText}
-			onRestore={draftRecovery.restore}
-			onDismiss={draftRecovery.dismiss}
-		/>
-	{/if}
 
 	{#if loading}
 		<div class="loading-container">
@@ -518,6 +496,12 @@
 	confirmText="Delete Post"
 	onConfirm={handleDelete}
 	onCancel={() => (showDeleteConfirmation = false)}
+/>
+
+<UnsavedChangesModal
+	isOpen={showUnsavedChangesModal}
+	onContinueEditing={handleContinueEditing}
+	onLeave={handleLeaveWithoutSaving}
 />
 
 <style lang="scss">
