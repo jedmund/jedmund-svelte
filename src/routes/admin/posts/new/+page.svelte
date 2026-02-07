@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-import { goto } from '$app/navigation'
+import { goto, beforeNavigate } from '$app/navigation'
 import { api } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
@@ -62,7 +62,7 @@ import { api } from '$lib/admin/api'
 		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Beforeunload guard for unsaved changes
+	// Beforeunload guard for unsaved changes (page close/refresh)
 	$effect(() => {
 		function handleBeforeUnload(e: BeforeUnloadEvent) {
 			if (isDirty) {
@@ -72,6 +72,13 @@ import { api } from '$lib/admin/api'
 		}
 		window.addEventListener('beforeunload', handleBeforeUnload)
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	})
+
+	// Navigation guard for unsaved changes (in-app navigation)
+	beforeNavigate(({ cancel }) => {
+		if (isDirty && !confirm('You have unsaved changes. Are you sure you want to leave?')) {
+			cancel()
+		}
 	})
 
 	onMount(() => {

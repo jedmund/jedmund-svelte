@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, beforeNavigate } from '$app/navigation'
 	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
@@ -78,7 +78,7 @@
 		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Beforeunload guard for unsaved changes
+	// Beforeunload guard for unsaved changes (page close/refresh)
 	$effect(() => {
 		function handleBeforeUnload(e: BeforeUnloadEvent) {
 			if (formStore.isDirty) {
@@ -88,6 +88,13 @@
 		}
 		window.addEventListener('beforeunload', handleBeforeUnload)
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	})
+
+	// Navigation guard for unsaved changes (in-app navigation)
+	beforeNavigate(({ cancel }) => {
+		if (formStore.isDirty && !confirm('You have unsaved changes. Are you sure you want to leave?')) {
+			cancel()
+		}
 	})
 
 	async function handleSave(newStatus?: string) {
