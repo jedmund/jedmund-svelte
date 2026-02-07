@@ -218,7 +218,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: $unit;
-		padding: $unit-half $unit-2x;
+		padding: $unit $unit-2x;
 		border: 1px solid $gray-85;
 		border-radius: $corner-radius-sm;
 		background: $white;
