@@ -8,6 +8,7 @@
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Post } from '@prisma/client'
@@ -43,6 +44,8 @@
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
+	let showUnsavedChangesModal = $state(false)
+	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
 
 	// Track initial values to detect unsaved changes
 	let initialValues = $state<{
@@ -94,7 +97,7 @@
 		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Beforeunload guard for unsaved changes (page close/refresh)
+	// Browser warning for page unloads (refresh/close) - required for these events
 	$effect(() => {
 		function handleBeforeUnload(e: BeforeUnloadEvent) {
 			if (isDirty) {
@@ -106,10 +109,13 @@
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 	})
 
-	// Navigation guard for unsaved changes (in-app navigation)
-	beforeNavigate(({ cancel }) => {
-		if (isDirty && !confirm('You have unsaved changes. Are you sure you want to leave?')) {
-			cancel()
+	// Navigation guard for unsaved changes (in-app navigation only)
+	beforeNavigate((navigation) => {
+		// Only intercept in-app navigation, not page unloads (refresh/close)
+		if (isDirty && navigation.type !== 'leave') {
+			pendingNavigation = navigation
+			navigation.cancel()
+			showUnsavedChangesModal = true
 		}
 	})
 
@@ -344,6 +350,21 @@
 		}
 	}
 
+	function handleContinueEditing() {
+		showUnsavedChangesModal = false
+		pendingNavigation = null
+	}
+
+	function handleLeaveWithoutSaving() {
+		showUnsavedChangesModal = false
+		if (pendingNavigation) {
+			// Temporarily allow dirty navigation
+			const nav = pendingNavigation
+			pendingNavigation = null
+			nav.to && goto(nav.to.url.pathname)
+		}
+	}
+
 	function handleMetadataPopover(event: MouseEvent) {
 		const target = event.target as Node
 		// Don't close if clicking inside the metadata button or anywhere in a metadata popover
@@ -475,6 +496,12 @@
 	confirmText="Delete Post"
 	onConfirm={handleDelete}
 	onCancel={() => (showDeleteConfirmation = false)}
+/>
+
+<UnsavedChangesModal
+	isOpen={showUnsavedChangesModal}
+	onContinueEditing={handleContinueEditing}
+	onLeave={handleLeaveWithoutSaving}
 />
 
 <style lang="scss">

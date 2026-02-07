@@ -6,6 +6,7 @@ import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
+	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
@@ -22,6 +23,8 @@ import { api } from '$lib/admin/api'
 	let tagInput = $state('')
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
+	let showUnsavedChangesModal = $state(false)
+	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
 
 	// Check if form has any content (unsaved changes for new post)
 	let isDirty = $derived(
@@ -62,7 +65,7 @@ import { api } from '$lib/admin/api'
 		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Beforeunload guard for unsaved changes (page close/refresh)
+	// Browser warning for page unloads (refresh/close) - required for these events
 	$effect(() => {
 		function handleBeforeUnload(e: BeforeUnloadEvent) {
 			if (isDirty) {
@@ -74,10 +77,13 @@ import { api } from '$lib/admin/api'
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 	})
 
-	// Navigation guard for unsaved changes (in-app navigation)
-	beforeNavigate(({ cancel }) => {
-		if (isDirty && !confirm('You have unsaved changes. Are you sure you want to leave?')) {
-			cancel()
+	// Navigation guard for unsaved changes (in-app navigation only)
+	beforeNavigate((navigation) => {
+		// Only intercept in-app navigation, not page unloads (refresh/close)
+		if (isDirty && navigation.type !== 'leave') {
+			pendingNavigation = navigation
+			navigation.cancel()
+			showUnsavedChangesModal = true
 		}
 	})
 
@@ -140,6 +146,21 @@ import { api } from '$lib/admin/api'
 		updatedAt: new Date().toISOString(),
 		publishedAt: null
 	})
+
+	function handleContinueEditing() {
+		showUnsavedChangesModal = false
+		pendingNavigation = null
+	}
+
+	function handleLeaveWithoutSaving() {
+		showUnsavedChangesModal = false
+		if (pendingNavigation) {
+			// Temporarily allow dirty navigation
+			const nav = pendingNavigation
+			pendingNavigation = null
+			nav.to && goto(nav.to.url.pathname)
+		}
+	}
 </script>
 
 <svelte:head>
@@ -224,6 +245,12 @@ import { api } from '$lib/admin/api'
 		</div>
 	</div>
 </AdminPage>
+
+<UnsavedChangesModal
+	isOpen={showUnsavedChangesModal}
+	onContinueEditing={handleContinueEditing}
+	onLeave={handleLeaveWithoutSaving}
+/>
 
 <style lang="scss">
 	@import '$styles/variables.scss';
