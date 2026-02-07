@@ -80,7 +80,7 @@
 	<div
 		class="lightbox-backdrop"
 		onclick={handleBackgroundClick}
-		onkeydown={(e) => e.key === 'Enter' && handleBackgroundClick()}
+		onkeydown={(e) => e.key === 'Enter' && handleBackgroundClick(e as unknown as MouseEvent)}
 		transition:fade={{ duration: TRANSITION_NORMAL_MS }}
 		role="button"
 		tabindex="-1"

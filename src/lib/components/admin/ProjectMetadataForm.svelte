@@ -126,13 +126,6 @@
 		&:last-child {
 			margin-bottom: 0;
 		}
-
-		h2 {
-			font-size: 1.25rem;
-			font-weight: 600;
-			margin: 0;
-			color: $gray-10;
-		}
 	}
 
 	.form-row {
@@ -140,10 +133,6 @@
 		grid-template-columns: 1fr 1fr;
 		gap: $unit-4x;
 		padding-bottom: $unit-3x;
-
-		&.three-column {
-			grid-template-columns: 1fr 1fr 1fr;
-		}
 
 		@include breakpoint('phone') {
 			grid-template-columns: 1fr;

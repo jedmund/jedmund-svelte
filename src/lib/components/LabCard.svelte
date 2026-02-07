@@ -65,11 +65,10 @@
 					target="_blank"
 					rel="noopener noreferrer"
 					iconPosition="right"
-					on:click={(e) => e.stopPropagation()}
+					onclick={(e) => e.stopPropagation()}
 				>
 					Visit
-					<svg
-						slot="icon"
+					{#snippet icon()}<svg
 						width="16"
 						height="16"
 						viewBox="0 0 24 24"
@@ -81,7 +80,7 @@
 					>
 						<path d="M5 12h14" />
 						<path d="m12 5 7 7-7 7" />
-					</svg>
+					</svg>{/snippet}
 				</Button>
 			{/if}
 		</div>
@@ -301,21 +300,6 @@
 			&:hover {
 				background: darken($labs-color, 10%);
 				transform: translateY(-1px);
-			}
-
-			&.external {
-				pointer-events: none; // Prevent clicking when it's inside a clickable card
-			}
-		}
-
-		&.secondary {
-			background: transparent;
-			color: $gray-20;
-			border-color: rgba(0, 0, 0, 0.1);
-
-			&:hover {
-				background: rgba(0, 0, 0, 0.05);
-				color: $gray-00;
 			}
 		}
 

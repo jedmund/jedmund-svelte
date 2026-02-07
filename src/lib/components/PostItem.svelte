@@ -2,7 +2,7 @@
 	import type { Post } from '$lib/posts'
 	import ImagePost from './ImagePost.svelte'
 	import LinkCard from './LinkCard.svelte'
-	import UniverseIcon from '$icons/universe.svg'
+	import UniverseIcon from '$icons/universe.svg?component'
 
 	let { post }: { post: Post } = $props()
 
@@ -112,6 +112,7 @@
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		overflow: hidden;
 	}
 

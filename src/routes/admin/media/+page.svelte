@@ -206,7 +206,7 @@
 	}
 
 	function selectAllMedia() {
-		selectedMediaIds = new Set(media.map((m) => m.id))
+		selectedMediaIds = new Set(media.map((m: Media) => m.id))
 	}
 
 	function clearSelection() {
@@ -334,7 +334,8 @@
 </svelte:head>
 
 <AdminPage>
-	<AdminHeader title="Media Library" slot="header">
+	{#snippet header()}
+	<AdminHeader title="Media Library">
 		{#snippet actions()}
 			<div class="actions-dropdown">
 				<Button variant="primary" buttonSize="medium" onclick={openUploadModal}>Upload</Button>
@@ -358,6 +359,7 @@
 			</div>
 		{/snippet}
 	</AdminHeader>
+	{/snippet}
 
 	<!-- Filters -->
 		<AdminFilters>
@@ -389,13 +391,12 @@
 					type="search"
 					bind:value={searchQuery}
 					placeholder="Search files..."
-					buttonSize="small"
+					size="small"
 					fullWidth={false}
 					pill={true}
 					prefixIcon
 				>
-					<svg
-						slot="prefix"
+					{#snippet prefix()}<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
@@ -407,7 +408,7 @@
 							stroke-linejoin="round"
 							d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
 						/>
-					</svg>
+					</svg>{/snippet}
 				</Input>
 			{/snippet}
 		</AdminFilters>
@@ -605,15 +606,6 @@
 		border: none;
 		cursor: pointer;
 
-		&.btn-primary {
-			background-color: $gray-10;
-			color: white;
-
-			&:hover {
-				background-color: $gray-20;
-			}
-		}
-
 		&.btn-secondary {
 			background-color: $gray-95;
 			color: $gray-20;
@@ -656,18 +648,6 @@
 				max-width: 160px;
 			}
 		}
-	}
-
-	.error {
-		text-align: center;
-		padding: $unit-6x;
-		color: $error-text;
-	}
-
-	.loading {
-		text-align: center;
-		padding: $unit-6x;
-		color: $gray-40;
 	}
 
 	.media-grid {
@@ -803,134 +783,6 @@
 		}
 	}
 
-	.media-list {
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
-		margin-bottom: $unit-4x;
-	}
-
-	.media-row {
-		display: flex;
-		align-items: center;
-		gap: $unit-3x;
-		padding: $unit-2x;
-		background: $gray-95;
-		border: none;
-		border-radius: $unit-2x;
-		transition: all 0.2s ease;
-		cursor: pointer;
-		text-align: left;
-		width: 100%;
-
-		&:hover {
-			background-color: $gray-90;
-			transform: translateY(-1px);
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		}
-
-		&:focus {
-			outline: 2px solid #3b82f6;
-			outline-offset: 2px;
-		}
-
-		.media-preview {
-			width: 60px;
-			height: 60px;
-			flex-shrink: 0;
-
-			img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				border-radius: $unit;
-			}
-
-			.file-icon {
-				width: 100%;
-				height: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background: $gray-90;
-				border-radius: $unit;
-				font-size: 0.75rem;
-				color: $gray-40;
-			}
-		}
-
-		.media-details {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			gap: $unit-half;
-
-			.filename-row {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: $unit-2x;
-
-				.filename {
-					font-size: 0.925rem;
-					color: $gray-20;
-					font-weight: 500;
-					flex: 1;
-				}
-
-				.media-indicators {
-					display: flex;
-					gap: $unit-half;
-					flex-wrap: wrap;
-					flex-shrink: 0;
-				}
-			}
-
-			.file-meta {
-				font-size: 0.75rem;
-				color: $gray-40;
-			}
-
-			.alt-text-preview {
-				font-size: 0.75rem;
-				color: $gray-30;
-				font-style: italic;
-			}
-
-			.no-alt-text-preview {
-				font-size: 0.75rem;
-				color: $red-60;
-				font-style: italic;
-			}
-		}
-
-		.media-indicator {
-			color: $gray-50;
-			flex-shrink: 0;
-		}
-
-		.media-actions {
-			display: flex;
-			gap: $unit;
-
-			.action-btn {
-				padding: $unit $unit-2x;
-				background: transparent;
-				border: 1px solid $gray-80;
-				border-radius: 50px;
-				font-size: 0.75rem;
-				color: $gray-30;
-				cursor: pointer;
-				transition: all 0.2s ease;
-
-				&:hover {
-					border-color: $gray-40;
-					color: $gray-10;
-				}
-			}
-		}
-	}
-
 	.pagination {
 		display: flex;
 		justify-content: center;
@@ -1002,8 +854,7 @@
 		}
 	}
 
-	.media-item-wrapper,
-	.media-row-wrapper {
+	.media-item-wrapper {
 		position: relative;
 
 		&.multiselect {
@@ -1055,30 +906,12 @@
 				}
 			}
 
-			.media-item,
-			.media-row {
+			.media-item {
 				&.selected {
 					background-color: rgba(59, 130, 246, 0.1);
 					border: 2px solid #3b82f6;
 				}
 			}
-		}
-	}
-
-	.media-row-wrapper.multiselect {
-		display: flex;
-		align-items: center;
-		gap: $unit-2x;
-
-		.selection-checkbox {
-			position: static;
-			top: auto;
-			left: auto;
-			z-index: auto;
-		}
-
-		.media-row {
-			flex: 1;
 		}
 	}
 
@@ -1093,19 +926,9 @@
 		font-weight: 500;
 		line-height: 1;
 
-		svg {
-			width: 10px;
-			height: 10px;
-			flex-shrink: 0;
-		}
-
 		&.photography {
 			background-color: rgba(139, 92, 246, 0.1);
 			color: #7c3aed;
-
-			svg {
-				fill: #7c3aed;
-			}
 		}
 
 		&.alt-text {

@@ -167,10 +167,10 @@ export function createRequestLogger() {
 
 		logger.apiRequest(method, path, {
 			ip: event.getClientAddress()
-		})
+		});
 
 		// Log response after it's sent
-		event.locals.logResponse = (status: number) => {
+		(event.locals as Record<string, unknown>).logResponse = (status: number) => {
 			const duration = Date.now() - start
 			logger.apiResponse(method, path, status, duration)
 		}

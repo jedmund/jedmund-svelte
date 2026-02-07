@@ -133,7 +133,7 @@ export class SimpleNowPlayingDetector {
 				} else {
 					logger.music('debug', `⚠️ No duration found for track "${mostRecentTrack.name}"`)
 					// Fallback: assume track is playing if scrobbled within last 5 minutes
-					const timeSinceScrobble = Date.now() - mostRecentTrack.date.getTime()
+					const timeSinceScrobble = Date.now() - mostRecentTime.getTime()
 					if (timeSinceScrobble < 5 * 60 * 1000) { // 5 minutes
 						isPlaying = true
 						playingTrack = mostRecentTrack.name
@@ -146,7 +146,7 @@ export class SimpleNowPlayingDetector {
 			logger.music('debug', `❌ Failed to get Apple Music data for ${mostRecentTrack.artist.name} - ${mostRecentTrack.album.name}`)
 			
 			// Fallback when Apple Music lookup fails
-			const timeSinceScrobble = Date.now() - mostRecentTrack.date.getTime()
+			const timeSinceScrobble = Date.now() - mostRecentTime.getTime()
 			if (timeSinceScrobble < 5 * 60 * 1000) { // 5 minutes
 				isPlaying = true
 				playingTrack = mostRecentTrack.name
@@ -162,7 +162,7 @@ export class SimpleNowPlayingDetector {
 				...album,
 				isNowPlaying: isThisAlbumPlaying,
 				nowPlayingTrack: isThisAlbumPlaying ? playingTrack : undefined,
-				lastScrobbleTime: isThisAlbumPlaying ? mostRecentTrack.date : album.lastScrobbleTime
+				lastScrobbleTime: isThisAlbumPlaying ? mostRecentTime : album.lastScrobbleTime
 			}
 		})
 	}

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements'
+	import type { Snippet } from 'svelte'
 
-	type Props = HTMLInputAttributes & {
+	type Props = Omit<HTMLInputAttributes, 'size' | 'prefix' | 'type'> & {
 		type?:
 			| 'text'
 			| 'email'
@@ -28,6 +29,8 @@
 		showCharCount?: boolean
 		maxLength?: number
 		colorSwatch?: boolean // Show color swatch based on input value
+		prefix?: Snippet
+		suffix?: Snippet
 	}
 
 	let {
@@ -50,6 +53,8 @@
 		showCharCount = false,
 		maxLength,
 		colorSwatch = false,
+		prefix,
+		suffix,
 		id = `input-${Math.random().toString(36).substr(2, 9)}`,
 		// eslint-disable-next-line svelte/valid-compile
 		...restProps
@@ -118,7 +123,7 @@
 	<div class="input-container">
 		{#if prefixIcon}
 			<span class="input-icon prefix-icon">
-				<slot name="prefix" />
+				{#if prefix}{@render prefix()}{/if}
 			</span>
 		{/if}
 
@@ -141,14 +146,14 @@
 			{disabled}
 			{readonly}
 			{required}
-			{maxLength}
+			maxlength={maxLength ?? undefined}
 			class={inputClasses()}
 			{...restProps}
 		/>
 
 		{#if suffixIcon}
 			<span class="input-icon suffix-icon">
-				<slot name="suffix" />
+				{#if suffix}{@render suffix()}{/if}
 			</span>
 		{/if}
 
@@ -439,6 +444,7 @@
 
 	input[type='number'].input {
 		-moz-appearance: textfield;
+		appearance: textfield;
 
 		&::-webkit-outer-spin-button,
 		&::-webkit-inner-spin-button {

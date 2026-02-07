@@ -15,6 +15,7 @@
 		class?: string
 		icon?: Snippet
 		children?: Snippet
+		[key: string]: unknown
 	}
 
 	let {
@@ -71,7 +72,7 @@
 </script>
 
 {#if href}
-	<a {href} class={buttonClass} class:disabled={disabled || loading} {...restProps}>
+	<a {href} class={buttonClass} class:disabled={disabled || loading}>
 		{#if showSpinner}
 			<svg class="btn-spinner" width="16" height="16" viewBox="0 0 16 16">
 				<circle
@@ -99,21 +100,21 @@
 
 		{#if hasIcon && iconPosition === 'left' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				{@render icon()}
+				{@render icon?.()}
 			</span>
 		{/if}
 
 		{#if hasDefaultSlot && !iconOnly}
 			<span class="btn-label">
-				{@render children()}
+				{@render children?.()}
 			</span>
 		{:else if iconOnly && hasIcon}
-			{@render icon()}
+			{@render icon?.()}
 		{/if}
 
 		{#if hasIcon && iconPosition === 'right' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				{@render icon()}
+				{@render icon?.()}
 			</span>
 		{/if}
 	</a>
@@ -146,21 +147,21 @@
 
 		{#if hasIcon && iconPosition === 'left' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				{@render icon()}
+				{@render icon?.()}
 			</span>
 		{/if}
 
 		{#if hasDefaultSlot && !iconOnly}
 			<span class="btn-label">
-				{@render children()}
+				{@render children?.()}
 			</span>
 		{:else if iconOnly && hasIcon}
-			{@render icon()}
+			{@render icon?.()}
 		{/if}
 
 		{#if hasIcon && iconPosition === 'right' && !iconOnly}
 			<span class="btn-icon-wrapper">
-				{@render icon()}
+				{@render icon?.()}
 			</span>
 		{/if}
 	</button>

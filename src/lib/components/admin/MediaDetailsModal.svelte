@@ -243,10 +243,10 @@
 					<div class="header-actions">
 						{#if !isSaving}
 							<Button variant="ghost" onclick={copyUrl} iconOnly aria-label="Copy URL">
-								<CopyIcon slot="icon" size={20} />
+								{#snippet icon()}<CopyIcon size={20} />{/snippet}
 							</Button>
 							<Button variant="ghost" onclick={handleClose} iconOnly aria-label="Close modal">
-								<CloseButton slot="icon" />
+								{#snippet icon()}<CloseButton />{/snippet}
 							</Button>
 						{/if}
 					</div>
@@ -589,7 +589,6 @@
 				color: $gray-20;
 			}
 
-			svg,
 			:global(svg) {
 				width: $unit-2x;
 				height: $unit-2x;
@@ -679,10 +678,6 @@
 
 		.pane-header {
 			padding: $unit-3x;
-		}
-
-		.pane-body {
-			// padding: $unit-3x;
 		}
 
 		.pane-footer {

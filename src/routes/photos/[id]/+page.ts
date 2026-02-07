@@ -1,3 +1,4 @@
+import type { PhotoItem } from '$lib/types/photos'
 import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ params, fetch }) => {
@@ -20,7 +21,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 
 		// Fetch all photos for the filmstrip navigation
 		const allPhotosResponse = await fetch('/api/photos?limit=100')
-		let photoItems = []
+		let photoItems: PhotoItem[] = []
 		if (allPhotosResponse.ok) {
 			const data = await allPhotosResponse.json()
 			photoItems = data.photoItems || []

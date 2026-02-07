@@ -4,6 +4,7 @@ import redis from '../redis-client'
 import GiantBombAPI from 'giantbombing-api'
 
 import type { RequestHandler } from './$types'
+import type { SerializableGameInfo } from '$lib/types/steam'
 
 const CACHE_TTL = 60 * 60 // 1 hour
 

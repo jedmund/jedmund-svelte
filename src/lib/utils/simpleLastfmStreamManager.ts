@@ -55,22 +55,22 @@ export class SimpleLastfmStreamManager {
 			logger.music('debug', `📊 Got ${recentTracksResponse.tracks?.length || 0} tracks from Last.fm`)
 
 			// Cache for other uses but always use fresh for now playing
-			await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse)
+			await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse as any)
 
 			// Get recent albums (top 4)
-			const albums = await this.getRecentAlbums(4, recentTracksResponse)
+			const albums = await this.getRecentAlbums(4, recentTracksResponse as unknown as RecentTracksResponse)
 
 			// Debug the response structure
 			logger.music('debug', `📊 Response structure check:`, {
 				hasTracksProp: !!recentTracksResponse.tracks,
 				trackCount: recentTracksResponse.tracks?.length || 0,
-				firstTrack: recentTracksResponse.tracks?.[0]
+				firstTrackName: recentTracksResponse.tracks?.[0]?.name
 			})
 			
 			// Process now playing status
 			const albumsWithNowPlaying = await this.detector.processAlbums(
 				albums,
-				recentTracksResponse.tracks,
+				recentTracksResponse.tracks as any,
 				(artistName, albumName) =>
 					this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
 			)
@@ -119,7 +119,7 @@ export class SimpleLastfmStreamManager {
 
 			const albumKey = track.album.mbid || track.album.name
 			if (!uniqueAlbums.has(albumKey)) {
-				uniqueAlbums.set(albumKey, trackToAlbum(track, uniqueAlbums.size + 1))
+				uniqueAlbums.set(albumKey, trackToAlbum(track as any, uniqueAlbums.size + 1))
 			}
 		}
 

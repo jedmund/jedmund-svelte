@@ -5,6 +5,7 @@
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import Textarea from './Textarea.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
 	import type { JSONContent } from '@tiptap/core'
@@ -42,15 +43,14 @@
 		}
 	)
 	let characterCount = $state(0)
-	let editorInstance: { save: () => Promise<JSONContent>; clear: () => void } | undefined =
-		$state.raw()
+	let editorInstance: any = $state.raw()
 
 	// Essay metadata
 	let essayTitle = $state('')
 	let essaySlug = $state('')
 	let essayExcerpt = $state('')
 	let essayTags = $state('')
-	let essayTab = $state(0)
+	let essayTab = $state('metadata')
 
 	// Photo attachment state
 	let attachedPhotos: Media[] = $state([])
@@ -111,7 +111,7 @@
 	})
 
 	function handlePhotoUpload() {
-		fileInput.click()
+		fileInput?.click()
 	}
 
 	async function handleFileUpload(event: Event) {
@@ -242,7 +242,7 @@
 </script>
 
 {#if mode === 'modal'}
-	<Modal bind:isOpen size="medium" on:close={handleClose} showCloseButton={false}>
+	<Modal bind:isOpen size="medium" onClose={handleClose} showCloseButton={false}>
 		<div class="composer">
 			<div class="composer-header">
 				<Button variant="ghost" onclick={handleClose}>Cancel</Button>
@@ -254,7 +254,7 @@
 						title="Expand to essay"
 						class="expand-button"
 					>
-						<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+						{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 							<path
 								d="M10 6L14 2M14 2H10M14 2V6"
 								stroke="currentColor"
@@ -269,7 +269,7 @@
 								stroke-linecap="round"
 								stroke-linejoin="round"
 							/>
-						</svg>
+						</svg>{/snippet}
 					</Button>
 					<Button variant="primary" onclick={handleSave} disabled={!canSave}>Post</Button>
 				</div>
@@ -333,7 +333,7 @@
 							title="Add image"
 							class="tool-button"
 						>
-							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
 								<rect
 									x="2"
 									y="2"
@@ -351,7 +351,7 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 								/>
-							</svg>
+							</svg>{/snippet}
 						</Button>
 
 						<Button
@@ -362,7 +362,7 @@
 							title="Browse library"
 							class="tool-button"
 						>
-							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
 								<path
 									d="M2 5L9 12L16 5"
 									stroke="currentColor"
@@ -370,7 +370,7 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 								/>
-							</svg>
+							</svg>{/snippet}
 						</Button>
 					</div>
 
@@ -400,20 +400,20 @@
 				</div>
 			</div>
 
-			<AdminSegmentedControl bind:selectedIndex={essayTab}>
-				<button slot="0">Metadata</button>
-				<button slot="1">Content</button>
-			</AdminSegmentedControl>
+			<AdminSegmentedControl
+				options={[{ value: 'metadata', label: 'Metadata' }, { value: 'content', label: 'Content' }]}
+				value={essayTab}
+				onChange={(v) => essayTab = v}
+			/>
 
 			<div class="essay-content">
-				{#if essayTab === 0}
+				{#if essayTab === 'metadata'}
 					<div class="metadata-section">
 						<Input label="Title" bind:value={essayTitle} placeholder="Essay title" required />
 
 						<Input label="Slug" bind:value={essaySlug} placeholder="essay-slug" />
 
-						<Input
-							type="textarea"
+						<Textarea
 							label="Excerpt"
 							bind:value={essayExcerpt}
 							placeholder="Brief description of your essay"
@@ -458,7 +458,7 @@
 					title="Switch to essay mode"
 					class="floating-expand-button"
 				>
-					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+					{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 						<path
 							d="M10 6L14 2M14 2H10M14 2V6"
 							stroke="currentColor"
@@ -473,7 +473,7 @@
 							stroke-linecap="round"
 							stroke-linejoin="round"
 						/>
-					</svg>
+					</svg>{/snippet}
 				</Button>
 			{/if}
 			<div class="composer-body">
@@ -534,7 +534,7 @@
 							title="Add image"
 							class="tool-button"
 						>
-							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
 								<rect
 									x="2"
 									y="2"
@@ -552,7 +552,7 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 								/>
-							</svg>
+							</svg>{/snippet}
 						</Button>
 
 						<Button
@@ -563,7 +563,7 @@
 							title="Browse library"
 							class="tool-button"
 						>
-							<svg slot="icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
 								<path
 									d="M2 5L9 12L16 5"
 									stroke="currentColor"
@@ -571,7 +571,7 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 								/>
-							</svg>
+							</svg>{/snippet}
 						</Button>
 					</div>
 
@@ -645,13 +645,6 @@
 	.composer-body {
 		display: flex;
 		flex-direction: column;
-	}
-
-	.link-fields {
-		padding: 0 $unit-2x $unit-2x;
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
 	}
 
 	.composer-footer {
@@ -758,14 +751,6 @@
 		&:hover {
 			background-color: rgba(255, 255, 255, 0.95) !important;
 		}
-	}
-
-	.inline-composer .link-fields {
-		padding: 0 $unit-3x;
-		display: flex;
-		flex-direction: column;
-		gap: $unit-2x;
-		margin-top: $unit-2x;
 	}
 
 	.inline-composer .composer-footer {

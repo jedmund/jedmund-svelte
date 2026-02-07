@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import Input from './Input.svelte'
+	import Textarea from './Textarea.svelte'
 	import type { Post } from '@prisma/client'
 
 	type Props = {
@@ -136,8 +137,7 @@
 		<Input label="Slug" bind:value={slug} placeholder="post-slug" />
 
 		{#if postType === 'essay'}
-			<Input
-				type="textarea"
+			<Textarea
 				label="Excerpt"
 				bind:value={excerpt}
 				rows={3}
@@ -304,11 +304,6 @@
 		&:disabled {
 			opacity: 0.6;
 			cursor: not-allowed;
-		}
-
-		&.btn-small {
-			padding: $unit $unit-2x;
-			font-size: 0.875rem;
 		}
 
 		&.btn-danger {

@@ -65,7 +65,7 @@ function extractTextSummary(content: Prisma.JsonValue, maxLength: number = 300):
 	}
 	// Handle TipTap/Edra format
 	else if (typeof content === 'object' && content !== null && 'type' in content && content.type === 'doc' && 'content' in content && Array.isArray(content.content)) {
-		const docContent = content as DocContent
+		const docContent = content as unknown as DocContent
 		text = docContent.content
 			?.filter((node): node is ParagraphNode => node.type === 'paragraph')
 			.map((node) => {
@@ -104,20 +104,18 @@ export const GET: RequestHandler = async (event) => {
 		})
 
 		// TODO: Re-enable albums once database schema is updated
-		const universeAlbums: never[] = []
-		const photoAlbums: never[] = []
 
 		// Combine all content types
 		const items = [
 			...posts.map((post) => ({
-				type: 'post',
+				type: 'post' as const,
 				section: 'universe',
 				id: post.id.toString(),
 				title:
-					post.title || new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', { 
-						year: 'numeric', 
-						month: 'long', 
-						day: 'numeric' 
+					post.title || new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', {
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric'
 					}),
 				description: extractTextSummary(post.content) || '',
 				content: convertContentToHTML(post.content),
@@ -127,44 +125,7 @@ export const GET: RequestHandler = async (event) => {
 				updatedDate: post.updatedAt,
 				postType: post.postType,
 				featuredImage: post.featuredImage || null
-			})),
-			...universeAlbums.map((album) => ({
-				type: 'album',
-				section: 'universe',
-				id: album.id.toString(),
-				title: album.title,
-				description:
-					album.description ||
-					`Photo album with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
-				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
-				link: `${event.url.origin}/photos/${album.slug}`,
-				guid: `${event.url.origin}/photos/${album.slug}`,
-				pubDate: album.createdAt,
-				updatedDate: album.updatedAt,
-				photoCount: album._count.media,
-				coverPhoto: album.media[0]?.media,
-				location: album.location
-			})),
-			...photoAlbums
-				.filter((album) => !universeAlbums.some((ua) => ua.id === album.id)) // Avoid duplicates
-				.map((album) => ({
-					type: 'album',
-					section: 'photos',
-					id: album.id.toString(),
-					title: album.title,
-					description:
-						album.description ||
-						`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
-					content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
-					link: `${event.url.origin}/photos/${album.slug}`,
-					guid: `${event.url.origin}/photos/${album.slug}`,
-					pubDate: album.createdAt,
-					updatedDate: album.updatedAt,
-					photoCount: album._count.media,
-					coverPhoto: album.media[0]?.media,
-					location: album.location,
-					date: album.date
-				}))
+			}))
 		].sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 
 		const now = new Date()
@@ -197,20 +158,14 @@ ${item.content ? `<content:encoded><![CDATA[${item.content}]]></content:encoded>
 <pubDate>${formatRFC822Date(new Date(item.pubDate))}</pubDate>
 ${item.updatedDate ? `<atom:updated>${new Date(item.updatedDate).toISOString()}</atom:updated>` : ''}
 <category>${item.section}</category>
-<category>${item.type === 'post' ? item.postType : 'album'}</category>
+<category>${item.postType}</category>
 ${
-	item.type === 'album' && item.coverPhoto
-		? `
-<enclosure url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg" length="${item.coverPhoto.size || 0}"/>
-<media:thumbnail url="${(item.coverPhoto.thumbnailUrl || item.coverPhoto.url).startsWith('http') ? (item.coverPhoto.thumbnailUrl || item.coverPhoto.url) : event.url.origin + (item.coverPhoto.thumbnailUrl || item.coverPhoto.url)}"/>
-<media:content url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg"/>`
-		: item.type === 'post' && item.featuredImage
+	item.featuredImage
 		? `
 <enclosure url="${item.featuredImage.startsWith('http') ? item.featuredImage : event.url.origin + item.featuredImage}" type="image/jpeg" length="0"/>
 <media:content url="${item.featuredImage.startsWith('http') ? item.featuredImage : event.url.origin + item.featuredImage}" type="image/jpeg"/>`
 		: ''
 }
-${item.location ? `<category domain="location">${escapeXML(item.location)}</category>` : ''}
 <author>noreply@jedmund.com (Justin Edmund)</author>
 </item>`
 	)

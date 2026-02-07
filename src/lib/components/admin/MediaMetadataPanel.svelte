@@ -3,6 +3,21 @@
 	import { formatFileSize, getFileType, isVideoFile, formatDuration, formatBitrate } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
 
+	interface ExifData {
+		camera?: string
+		lens?: string
+		focalLength?: string
+		aperture?: string
+		shutterSpeed?: string
+		iso?: string | number
+		dateTaken?: string
+		coordinates?: {
+			latitude: number
+			longitude: number
+		}
+		[key: string]: unknown
+	}
+
 	interface Props {
 		media: Media
 		showExifToggle?: boolean
@@ -12,6 +27,8 @@
 	let { media, showExifToggle = true, class: className = '' }: Props = $props()
 
 	let showExif = $state(false)
+
+	const exifData = $derived(media.exifData as ExifData | null)
 </script>
 
 <div class="media-metadata-panel {className}">
@@ -81,57 +98,57 @@
 			</div>
 
 			<!-- EXIF metadata -->
-			{#if media.exifData && typeof media.exifData === 'object' && Object.keys(media.exifData).length > 0}
+			{#if exifData && typeof exifData === 'object' && Object.keys(exifData).length > 0}
 				<div class="metadata-divider"></div>
 				<div class="exif-metadata">
-					{#if media.exifData.camera}
+					{#if exifData.camera}
 						<div class="info-item">
 							<span class="label">Camera</span>
-							<span class="value">{media.exifData.camera}</span>
+							<span class="value">{exifData.camera}</span>
 						</div>
 					{/if}
-					{#if media.exifData.lens}
+					{#if exifData.lens}
 						<div class="info-item">
 							<span class="label">Lens</span>
-							<span class="value">{media.exifData.lens}</span>
+							<span class="value">{exifData.lens}</span>
 						</div>
 					{/if}
-					{#if media.exifData.focalLength}
+					{#if exifData.focalLength}
 						<div class="info-item">
 							<span class="label">Focal Length</span>
-							<span class="value">{media.exifData.focalLength}</span>
+							<span class="value">{exifData.focalLength}</span>
 						</div>
 					{/if}
-					{#if media.exifData.aperture}
+					{#if exifData.aperture}
 						<div class="info-item">
 							<span class="label">Aperture</span>
-							<span class="value">{media.exifData.aperture}</span>
+							<span class="value">{exifData.aperture}</span>
 						</div>
 					{/if}
-					{#if media.exifData.shutterSpeed}
+					{#if exifData.shutterSpeed}
 						<div class="info-item">
 							<span class="label">Shutter Speed</span>
-							<span class="value">{media.exifData.shutterSpeed}</span>
+							<span class="value">{exifData.shutterSpeed}</span>
 						</div>
 					{/if}
-					{#if media.exifData.iso}
+					{#if exifData.iso}
 						<div class="info-item">
 							<span class="label">ISO</span>
-							<span class="value">{media.exifData.iso}</span>
+							<span class="value">{exifData.iso}</span>
 						</div>
 					{/if}
-					{#if media.exifData.dateTaken}
+					{#if exifData.dateTaken}
 						<div class="info-item">
 							<span class="label">Date Taken</span>
-							<span class="value">{new Date(media.exifData.dateTaken).toLocaleDateString()}</span>
+							<span class="value">{new Date(exifData.dateTaken).toLocaleDateString()}</span>
 						</div>
 					{/if}
-					{#if media.exifData.coordinates}
+					{#if exifData.coordinates}
 						<div class="info-item">
 							<span class="label">GPS</span>
 							<span class="value">
-								{media.exifData.coordinates.latitude.toFixed(6)},
-								{media.exifData.coordinates.longitude.toFixed(6)}
+								{exifData.coordinates.latitude.toFixed(6)},
+								{exifData.coordinates.longitude.toFixed(6)}
 							</span>
 						</div>
 					{/if}

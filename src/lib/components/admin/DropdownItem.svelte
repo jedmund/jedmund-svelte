@@ -1,10 +1,13 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	interface Props {
 		onclick?: (event: MouseEvent) => void
 		variant?: 'default' | 'danger'
 		disabled?: boolean
 		label?: string
 		description?: string
+		children?: Snippet
 	}
 
 	let {
@@ -38,7 +41,7 @@
 				<div class="dropdown-item-description">{description}</div>
 			{/if}
 		</div>
-	{:else}
+	{:else if children}
 		{@render children()}
 	{/if}
 </button>

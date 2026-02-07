@@ -78,7 +78,7 @@ export async function ensureUniqueSlug(
 	let counter = 1
 
 	while (true) {
-		const existingRecord = await prisma[model].findFirst({
+		const existingRecord = await (prisma[model] as any).findFirst({
 			where: {
 				slug: uniqueSlug,
 				...(excludeId ? { NOT: { id: excludeId } } : {})

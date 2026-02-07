@@ -38,11 +38,24 @@
 				thumbnailUrl: formData.featuredImage,
 				width: null,
 				height: null,
-				altText: null,
 				description: null,
 				usedIn: [],
 				createdAt: new Date(),
-				updatedAt: new Date()
+				updatedAt: new Date(),
+				isPhotography: false,
+				exifData: null,
+				photoCaption: null,
+				photoTitle: null,
+				photoDescription: null,
+				photoSlug: null,
+				photoPublishedAt: null,
+				dominantColor: null,
+				colors: null,
+				aspectRatio: null,
+				duration: null,
+				videoCodec: null,
+				audioCodec: null,
+				bitrate: null
 			}
 		}
 	})
@@ -81,8 +94,7 @@
 				onclick={() => (showFeaturedImage = true)}
 				iconPosition="left"
 			>
-				<svg
-					slot="icon"
+				{#snippet icon()}<svg
 					width="16"
 					height="16"
 					viewBox="0 0 24 24"
@@ -93,7 +105,7 @@
 					<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
 					<circle cx="8.5" cy="8.5" r="1.5"></circle>
 					<polyline points="21 15 16 10 5 21"></polyline>
-				</svg>
+				</svg>{/snippet}
 				Add Featured Image
 			</Button>
 		{/if}

@@ -1,14 +1,13 @@
 <script lang="ts">
 	import Select from './Select.svelte'
 	import FormField from './FormField.svelte'
-	import type { HTMLSelectAttributes } from 'svelte/elements'
 
 	interface Option {
 		value: string
 		label: string
 	}
 
-	interface Props extends Omit<HTMLSelectAttributes, 'size'> {
+	interface Props {
 		label: string
 		options: Option[]
 		value?: string
@@ -19,6 +18,8 @@
 		required?: boolean
 		helpText?: string
 		error?: string
+		onchange?: (event: Event) => void
+		[key: string]: unknown
 	}
 
 	let {

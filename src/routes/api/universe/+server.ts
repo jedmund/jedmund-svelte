@@ -4,12 +4,12 @@ import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 
-// Type for photo in album
+// Type for photo in album (after transformation from Prisma's photoCaption to caption)
 interface AlbumPhoto {
 	id: number
 	url: string
 	thumbnailUrl: string | null
-	photoCaption: string | null
+	caption: string | null
 	width: number | null
 	height: number | null
 }

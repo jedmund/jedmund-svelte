@@ -7,7 +7,7 @@
 	let { post }: { post: UniverseItem } = $props()
 
 	// Extract embeds from content
-	const embeds = $derived(post.content ? extractEmbeds(post.content) : [])
+	const embeds = $derived(post.content ? extractEmbeds(post.content as unknown as import('$lib/types/editor').TiptapNode) : [])
 	const firstEmbed = $derived(embeds[0])
 
 	// Check if content is truncated
@@ -31,7 +31,7 @@
 	}
 </script>
 
-<UniverseCard item={post} type="post">
+<UniverseCard item={post as unknown as { slug: string; publishedAt: string; [key: string]: unknown }} type="post">
 	{#if post.title}
 		<h2 class="card-title">
 			<a href="/universe/{post.slug}" class="card-title-link" tabindex="-1">{post.title}</a>
@@ -116,34 +116,6 @@
 		transition: all 0.2s ease;
 	}
 
-	.link-preview {
-		background: $gray-97;
-		border: 1px solid $gray-90;
-		border-radius: $card-corner-radius;
-		padding: $unit-2x;
-		margin-bottom: $unit-3x;
-
-		.link-url {
-			display: block;
-			color: $blue-60;
-			text-decoration: none;
-			font-size: 0.875rem;
-			margin-bottom: $unit;
-			word-break: break-all;
-
-			&:hover {
-				text-decoration: underline;
-			}
-		}
-
-		.link-description {
-			margin: 0;
-			color: $gray-30;
-			font-size: 0.875rem;
-			line-height: 1.4;
-		}
-	}
-
 	.post-excerpt {
 		p {
 			margin: 0;
@@ -157,6 +129,7 @@
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 2;
+			line-clamp: 2;
 			overflow: hidden;
 		}
 
@@ -315,6 +288,7 @@
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 2;
+			line-clamp: 2;
 			overflow: hidden;
 		}
 
@@ -326,6 +300,7 @@
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 3;
+			line-clamp: 3;
 			overflow: hidden;
 		}
 	}

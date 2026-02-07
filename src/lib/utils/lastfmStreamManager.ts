@@ -103,8 +103,8 @@ export class LastfmStreamManager {
 			extended: true
 		})
 		// Still cache it for other uses, but always fetch fresh for now playing
-		await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse)
-		return recentTracksResponse
+		await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse as any)
+		return recentTracksResponse as unknown as RecentTracksResponse
 	}
 
 	/**
@@ -127,7 +127,7 @@ export class LastfmStreamManager {
 
 			const albumKey = track.album.mbid || track.album.name
 			if (!uniqueAlbums.has(albumKey)) {
-				uniqueAlbums.set(albumKey, trackToAlbum(track, uniqueAlbums.size + 1))
+				uniqueAlbums.set(albumKey, trackToAlbum(track as any, uniqueAlbums.size + 1))
 			} else if (track.nowPlaying) {
 				// Update existing album if this track is now playing
 				const existingAlbum = uniqueAlbums.get(albumKey)!
@@ -156,7 +156,7 @@ export class LastfmStreamManager {
 
 		// Process now playing detection
 		const nowPlayingMap = await this.nowPlayingDetector.processNowPlayingTracks(
-			recentTracksResponse,
+			recentTracksResponse as any,
 			(artistName, albumName) =>
 				this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
 		)
@@ -271,7 +271,7 @@ export class LastfmStreamManager {
 		}
 
 		const nowPlayingMap = await this.nowPlayingDetector.processNowPlayingTracks(
-			recentTracksResponse,
+			recentTracksResponse as any,
 			(artistName, albumName) =>
 				this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
 		)

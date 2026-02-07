@@ -2,13 +2,15 @@
 	import type { Editor } from '@tiptap/core'
 	import EdraToolBarIcon from '$lib/components/edra/headless/components/EdraToolBarIcon.svelte'
 	import type { ComposerVariant } from './types'
+	import type { FilteredCommands } from './editorConfig'
+	import type { EdraCommand } from '$lib/components/edra/commands/types'
 
 	interface Props {
 		editor: Editor
 		variant: ComposerVariant
 		currentTextStyle: string
-		filteredCommands: unknown
-		colorCommands: unknown[]
+		filteredCommands: FilteredCommands
+		colorCommands: EdraCommand[]
 		excludedCommands: string[]
 		showMediaLibrary: boolean
 		onTextStyleDropdownToggle: () => void
@@ -272,15 +274,15 @@
 			background-color: rgba($gray-85, 0.7);
 			transform: translateY(0);
 		}
+	}
 
-		&.active {
-			background-color: rgba($blue-50, 0.1);
-			color: $blue-40;
+	:global(.editor-toolbar .edra-command-button.active) {
+		background-color: rgba($blue-50, 0.1);
+		color: $blue-40;
+	}
 
-			&:hover {
-				background-color: rgba($blue-50, 0.15);
-			}
-		}
+	:global(.editor-toolbar .edra-command-button.active:hover) {
+		background-color: rgba($blue-50, 0.15);
 	}
 
 	:global(.editor-toolbar .edra-toolbar-icon) {

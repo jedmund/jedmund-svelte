@@ -10,8 +10,6 @@
 	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
-	import type { EditorData } from '$lib/types/editor'
-
 	interface Photo {
 		id: number
 		url: string
@@ -33,7 +31,7 @@
 		createdAt: string
 		updatedAt: string
 		photos: Photo[]
-		content?: EditorData
+		content?: unknown
 		_count: {
 			media: number
 		}
@@ -70,8 +68,8 @@
 		{ value: 'status-draft', label: 'Draft first' }
 	]
 
-	onMount(async () => {
-		await loadAlbums()
+	onMount(() => {
+		loadAlbums()
 		// Close dropdown when clicking outside
 		document.addEventListener('click', handleOutsideClick)
 		return () => document.removeEventListener('click', handleOutsideClick)
@@ -263,11 +261,13 @@
 </svelte:head>
 
 <AdminPage>
-	<AdminHeader title="Albums" slot="header">
+	{#snippet header()}
+	<AdminHeader title="Albums">
 		{#snippet actions()}
 			<Button variant="primary" buttonSize="medium" onclick={handleNewAlbum}>New Album</Button>
 		{/snippet}
 	</AdminHeader>
+	{/snippet}
 
 	{#if error}
 		<ErrorMessage message={error} />

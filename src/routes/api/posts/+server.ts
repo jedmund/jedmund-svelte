@@ -170,7 +170,7 @@ export const POST: RequestHandler = async (event) => {
 				await trackMediaUsage(usageReferences)
 			}
 		} catch (error) {
-			logger.warn('Failed to track media usage for post', { postId: post.id, error })
+			logger.warn('Failed to track media usage for post', { postId: post.id })
 		}
 
 		logger.info('Post created', { id: post.id, title: post.title })

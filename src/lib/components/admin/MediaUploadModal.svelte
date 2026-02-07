@@ -244,34 +244,12 @@
 			}
 		}
 
-		.error-messages {
-			h4 {
-				color: $red-60;
-				margin-bottom: $unit-2x;
-			}
-
-			.error-item {
-				color: $red-60;
-				margin-bottom: $unit;
-				font-size: 0.925rem;
-			}
-		}
 	}
 
 	// Responsive adjustments
 	@media (max-width: 768px) {
 		.upload-modal-content {
 			max-height: 80vh;
-		}
-
-		.drop-zone {
-			padding: $unit-4x $unit-2x;
-		}
-
-		.file-item {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: $unit-2x;
 		}
 	}
 </style>

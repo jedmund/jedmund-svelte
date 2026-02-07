@@ -5,7 +5,7 @@
 	import Button from '$lib/components/admin/Button.svelte'
 	import Modal from '$lib/components/admin/Modal.svelte'
 	import { Play, Palette, Image, Sparkles } from 'lucide-svelte'
-	import ChevronLeft from '$icons/chevron-left.svg'
+	import ChevronLeft from '$icons/chevron-left.svg?component'
 
 	let extractingColors = $state(false)
 	let regeneratingThumbnails = $state(false)
@@ -162,7 +162,8 @@
 </svelte:head>
 
 <AdminPage>
-	<header slot="header">
+	{#snippet header()}
+	<header>
 		<div class="header-left">
 			<button class="btn-icon" onclick={() => goto('/admin/media')}>
 				<ChevronLeft />
@@ -170,6 +171,7 @@
 			<h1>Regenerate Cloudinary Data</h1>
 		</div>
 	</header>
+	{/snippet}
 
 	{#if error}
 		<div class="error-message">
@@ -224,7 +226,7 @@
 				variant="primary"
 				onclick={extractColors}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play}
+				icon={Play as any}
 				iconPosition="left"
 			>
 				{extractingColors ? 'Extracting Colors...' : 'Extract Colors'}
@@ -252,7 +254,7 @@
 				variant="primary"
 				onclick={regenerateThumbnails}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play}
+				icon={Play as any}
 				iconPosition="left"
 			>
 				{regeneratingThumbnails ? 'Regenerating Thumbnails...' : 'Regenerate Thumbnails'}
@@ -279,7 +281,7 @@
 				variant="primary"
 				onclick={reanalyzeColors}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play}
+				icon={Play as any}
 				iconPosition="left"
 			>
 				{reanalyzingColors ? 'Reanalyzing Colors...' : 'Reanalyze Colors'}

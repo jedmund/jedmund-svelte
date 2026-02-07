@@ -27,12 +27,12 @@ export const renderEdraContent = (content: unknown, options: { albumSlug?: strin
 	if (!content) return ''
 
 	// Handle Tiptap format first (has type: 'doc')
-	if (content.type === 'doc' && content.content) {
-		return renderTiptapContent(content)
+	const contentObj = content as Record<string, unknown>
+	if (contentObj.type === 'doc' && contentObj.content) {
+		return renderTiptapContent(contentObj)
 	}
 
 	// Handle both { blocks: [...] } and { content: [...] } formats
-	const contentObj = content as Record<string, unknown>
 	const blocks = (contentObj.blocks || contentObj.content || []) as ContentNode[]
 	if (!Array.isArray(blocks)) return ''
 
@@ -52,8 +52,9 @@ export const renderEdraContent = (content: unknown, options: { albumSlug?: strin
 
 			case 'bulletList':
 			case 'ul': {
-				const listItems = (block.content || [])
-					.map((item) => {
+				const listContentArr = Array.isArray(block.content) ? block.content : []
+				const listItems = listContentArr
+					.map((item: ContentNode) => {
 						const itemText = item.content || item.text || ''
 						return `<li>${itemText}</li>`
 					})
@@ -63,8 +64,9 @@ export const renderEdraContent = (content: unknown, options: { albumSlug?: strin
 
 			case 'orderedList':
 			case 'ol': {
-				const orderedItems = (block.content || [])
-					.map((item) => {
+				const orderedContentArr = Array.isArray(block.content) ? block.content : []
+				const orderedItems = orderedContentArr
+					.map((item: ContentNode) => {
 						const itemText = item.content || item.text || ''
 						return `<li>${itemText}</li>`
 					})
@@ -85,9 +87,9 @@ export const renderEdraContent = (content: unknown, options: { albumSlug?: strin
 			}
 
 			case 'image': {
-				const src = block.attrs?.src || block.src || ''
-				const alt = block.attrs?.alt || block.alt || ''
-				const caption = block.attrs?.caption || block.caption || ''
+				const src = (block.attrs?.src || block.src || '') as string
+				const alt = (block.attrs?.alt || block.alt || '') as string
+				const caption = (block.attrs?.caption || block.caption || '') as string
 
 				// Check if we have a media ID stored in attributes first
 				const mediaId = block.attrs?.mediaId || block.mediaId || extractMediaIdFromUrl(src)
@@ -128,21 +130,22 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 	const renderNode = (node: ContentNode): string => {
 		switch (node.type) {
 			case 'paragraph': {
-				const content = renderInlineContent(node.content || [])
+				const content = renderInlineContent(Array.isArray(node.content) ? node.content : [])
 				if (!content) return '<p><br></p>'
 				return `<p>${content}</p>`
 			}
 
 			case 'heading': {
 				const level = node.attrs?.level || 1
-				const content = renderInlineContent(node.content || [])
+				const content = renderInlineContent(Array.isArray(node.content) ? node.content : [])
 				return `<h${level}>${content}</h${level}>`
 			}
 
 			case 'bulletList': {
-				const items = (node.content || [])
-					.map((item) => {
-						const itemContent = item.content ? (item.content as ContentNode[]).map(renderNode) : [].join('') || ''
+				const bulletItems = Array.isArray(node.content) ? node.content : []
+				const items = bulletItems
+					.map((item: ContentNode) => {
+						const itemContent = Array.isArray(item.content) ? item.content.map(renderNode).join('') : ''
 						return `<li>${itemContent}</li>`
 					})
 					.join('')
@@ -150,9 +153,10 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 			}
 
 			case 'orderedList': {
-				const items = (node.content || [])
-					.map((item) => {
-						const itemContent = item.content ? (item.content as ContentNode[]).map(renderNode) : [].join('') || ''
+				const orderedItems = Array.isArray(node.content) ? node.content : []
+				const items = orderedItems
+					.map((item: ContentNode) => {
+						const itemContent = Array.isArray(item.content) ? item.content.map(renderNode).join('') : ''
 						return `<li>${itemContent}</li>`
 					})
 					.join('')
@@ -161,24 +165,24 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 
 			case 'listItem': {
 				// List items are handled by their parent list
-				return node.content?.map(renderNode).join('') || ''
+				return Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
 			}
 
 			case 'blockquote': {
-				const content = node.content?.map(renderNode).join('') || ''
+				const content = Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
 				return `<blockquote>${content}</blockquote>`
 			}
 
 			case 'codeBlock': {
-				const language = node.attrs?.language || ''
-				const content = node.content?.[0]?.text || ''
-				return `<pre><code class="language-${language}">${escapeHtml(content)}</code></pre>`
+				const language = (node.attrs?.language || '') as string
+				const codeContent = Array.isArray(node.content) ? node.content[0]?.text || '' : ''
+				return `<pre><code class="language-${language}">${escapeHtml(codeContent)}</code></pre>`
 			}
 
 			case 'image': {
-				const src = node.attrs?.src || ''
-				const alt = node.attrs?.alt || ''
-				const title = node.attrs?.title || ''
+				const src = (node.attrs?.src || '') as string
+				const alt = (node.attrs?.alt || '') as string
+				const title = (node.attrs?.title || '') as string
 				const width = node.attrs?.width
 				const height = node.attrs?.height
 				const widthAttr = width ? ` width="${width}"` : ''
@@ -205,12 +209,12 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 			}
 
 			case 'urlEmbed': {
-				const url = node.attrs?.url || ''
-				const title = node.attrs?.title || ''
-				const description = node.attrs?.description || ''
-				const image = node.attrs?.image || ''
-				const favicon = node.attrs?.favicon || ''
-				const siteName = node.attrs?.siteName || ''
+				const url = (node.attrs?.url || '') as string
+				const title = (node.attrs?.title || '') as string
+				const description = (node.attrs?.description || '') as string
+				const image = (node.attrs?.image || '') as string
+				const favicon = (node.attrs?.favicon || '') as string
+				const siteName = (node.attrs?.siteName || '') as string
 
 				// Helper to get domain from URL
 				const getDomain = (url: string) => {
@@ -291,7 +295,7 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 			default: {
 				// For any unknown block types, try to render their content
 				if (node.content) {
-					return Array.isArray(node.content) ? node.content.map(renderNode as (node: unknown) => string) : [].join('')
+					return Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
 				}
 				return ''
 			}
@@ -356,7 +360,7 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 			.replace(/'/g, '&#039;')
 	}
 
-	return doc.content.map(renderNode).join('')
+	return (doc.content as ContentNode[]).map(renderNode).join('')
 }
 
 // Extract text content from Edra JSON for excerpt

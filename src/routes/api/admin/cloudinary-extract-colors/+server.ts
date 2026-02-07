@@ -120,10 +120,8 @@ export const POST: RequestHandler = async (event) => {
 				results.processed++
 				const errorMsg = error instanceof Error ? error.message : 'Unknown error'
 				results.errors.push(`Media ID ${media.id}: ${errorMsg}`)
-				logger.error(`Failed to extract colors for media ${media.id}:`, {
-					error: error as Error,
-					url: media.url,
-					publicId: extractPublicId(media.url)
+				logger.error(`Failed to extract colors for media ${media.id}:`, error instanceof Error ? error : undefined, {
+					url: media.url
 				})
 			}
 		}
@@ -154,14 +152,19 @@ export const POST: RequestHandler = async (event) => {
 					where: { id: photo.id },
 					data: {
 						dominantColor: photo.media.dominantColor,
-						colors: photo.media.colors,
+						colors: photo.media.colors ?? undefined,
 						aspectRatio: photo.media.aspectRatio
 					}
 				})
 			}
 		}
 
-		logger.info('Color extraction completed', results)
+		logger.info('Color extraction completed', {
+			processed: results.processed,
+			succeeded: results.succeeded,
+			failed: results.failed,
+			errorCount: results.errors.length
+		})
 
 		return jsonResponse({
 			message: 'Color extraction completed',

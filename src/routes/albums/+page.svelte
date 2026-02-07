@@ -155,13 +155,13 @@
 							<SmartImage
 								media={{
 									url: album.coverPhoto.url,
-									thumbnailUrl: album.coverPhoto.thumbnailUrl,
-									width: album.coverPhoto.width,
-									height: album.coverPhoto.height,
-									dominantColor: album.coverPhoto.dominantColor,
-									colors: album.coverPhoto.colors,
-									aspectRatio: album.coverPhoto.aspectRatio
-								}}
+									thumbnailUrl: album.coverPhoto.thumbnailUrl ?? null,
+									width: album.coverPhoto.width ?? null,
+									height: album.coverPhoto.height ?? null,
+									dominantColor: album.coverPhoto.dominantColor ?? null,
+									colors: album.coverPhoto.colors ?? null,
+									aspectRatio: album.coverPhoto.aspectRatio ?? null
+								} as import('@prisma/client').Media}
 								alt={album.title}
 								loading="lazy"
 							/>
@@ -367,6 +367,7 @@
 		line-height: 1.5;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

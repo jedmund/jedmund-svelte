@@ -1,8 +1,8 @@
 <script lang="ts">
-	import WorkIcon from '$icons/work.svg'
-	import LabsIcon from '$icons/labs.svg'
-	import UniverseIcon from '$icons/universe.svg'
-	import PhotosIcon from '$icons/photos.svg'
+	import WorkIcon from '$icons/work.svg?component'
+	import LabsIcon from '$icons/labs.svg?component'
+	import UniverseIcon from '$icons/universe.svg?component'
+	import PhotosIcon from '$icons/photos.svg?component'
 	import { page } from '$app/stores'
 
 	const currentPath = $derived($page.url.pathname)
@@ -175,10 +175,10 @@
 			flex-shrink: 0;
 			fill: currentColor;
 			transition: fill 0.2s ease;
+		}
 
-			&.animate {
-				animation: iconPulse 0.6s ease;
-			}
+		:global(svg.nav-icon.animate) {
+			animation: iconPulse 0.6s ease;
 		}
 	}
 

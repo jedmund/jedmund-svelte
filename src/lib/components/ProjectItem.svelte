@@ -47,29 +47,26 @@
 	// Logo gravity effect
 	let logoTransform = $state('')
 
-	onMount(async () => {
+	onMount(() => {
 		// Load SVG content
 		if (logoUrl) {
-			try {
-				const response = await fetch(logoUrl)
-				if (response.ok) {
-					const text = await response.text()
-					const parser = new DOMParser()
-					const doc = parser.parseFromString(text, 'image/svg+xml')
-					const svgElement = doc.querySelector('svg')
-					if (svgElement) {
-						svgElement.removeAttribute('width')
-						svgElement.removeAttribute('height')
-						svgContent = svgElement.outerHTML
+			fetch(logoUrl)
+				.then(async (response) => {
+					if (response.ok) {
+						const text = await response.text()
+						const parser = new DOMParser()
+						const doc = parser.parseFromString(text, 'image/svg+xml')
+						const svgElement = doc.querySelector('svg')
+						if (svgElement) {
+							svgElement.removeAttribute('width')
+							svgElement.removeAttribute('height')
+							svgContent = svgElement.outerHTML
+						}
 					}
-				}
-			} catch (error) {
-				console.error('Failed to load SVG:', error)
-			}
-		}
-
-		return () => {
-			// Cleanup if needed
+				})
+				.catch((error) => {
+					console.error('Failed to load SVG:', error)
+				})
 		}
 	})
 
@@ -233,14 +230,6 @@
 		&.list-only {
 			opacity: 0.7;
 			background: $gray-97;
-		}
-
-		&.password-protected {
-			// Keep full interactivity for password-protected items
-		}
-
-		&.odd {
-			// flex-direction: row-reverse;
 		}
 	}
 

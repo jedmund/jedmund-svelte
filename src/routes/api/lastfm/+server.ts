@@ -96,9 +96,9 @@ async function getRecentAlbums(
 		recentTracksResponse = JSON.parse(cached)
 		// Convert date strings back to Date objects
 		if (recentTracksResponse.tracks) {
-			recentTracksResponse.tracks = recentTracksResponse.tracks.map((track) => ({
+			recentTracksResponse.tracks = recentTracksResponse.tracks.map((track: Record<string, unknown>) => ({
 				...track,
-				date: track.date ? new Date(track.date) : undefined
+				date: track.date ? new Date(track.date as string | number) : undefined
 			}))
 		}
 	} else {

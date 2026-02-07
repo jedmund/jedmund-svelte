@@ -208,7 +208,7 @@ export class NowPlayingDetector {
 				newRecentTracks.push({
 					albumName: track.album.name,
 					trackName: track.name,
-					scrobbleTime: track.date
+					scrobbleTime: new Date(Number(track.date.uts) * 1000)
 				})
 			}
 

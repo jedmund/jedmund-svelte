@@ -6,6 +6,8 @@
 	// Convert CSS transition durations to milliseconds for Svelte transitions
 	const TRANSITION_FAST_MS = 150 // $transition-fast: 0.15s
 
+	import type { Snippet } from 'svelte'
+
 	interface Props {
 		isOpen: boolean
 		size?: 'small' | 'medium' | 'large' | 'jumbo' | 'full' | 'auto'
@@ -13,6 +15,7 @@
 		closeOnEscape?: boolean
 		onClose?: () => void
 		class?: string
+		children?: Snippet
 		scale?: boolean // Enable scale animation
 	}
 
@@ -23,6 +26,7 @@
 		closeOnEscape = true,
 		onClose,
 		class: className = '',
+		children
 		scale = false
 	}: Props = $props()
 
@@ -122,7 +126,7 @@
 			role="dialog"
 			aria-modal="true"
 		>
-			<slot />
+			{#if children}{@render children()}{/if}
 		</div>
 	</div>
 {/if}

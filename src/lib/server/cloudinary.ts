@@ -147,8 +147,7 @@ export async function uploadFile(
 			filename: file.name,
 			mimeType: file.type,
 			size: file.size,
-			isSvg,
-			uploadOptions
+			isSvg
 		})
 
 		// Upload to Cloudinary
@@ -218,7 +217,7 @@ export async function uploadFile(
 			format: result.format,
 			size: result.bytes,
 			dominantColor,
-			colors: result.colors,
+			colors: result.colors as unknown as UploadResult['colors'],
 			aspectRatio,
 			duration,
 			videoCodec,
@@ -231,12 +230,10 @@ export async function uploadFile(
 
 		// Enhanced error logging
 		if (error instanceof Error) {
-			logger.error('Upload error details:', {
+			logger.error('Upload error details:', error, {
 				filename: file.name,
 				mimeType: file.type,
-				size: file.size,
-				errorMessage: error.message,
-				errorStack: error.stack
+				size: file.size
 			})
 		}
 

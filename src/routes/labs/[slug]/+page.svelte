@@ -23,7 +23,7 @@
 					title: project.title,
 					description: project.description || `${project.title} — An experimental project`,
 					url: pageUrl,
-					image: project.thumbnailUrl,
+					image: project.featuredImage || undefined,
 					type: 'article',
 					titleFormat: { type: 'by' }
 				})
@@ -40,12 +40,12 @@
 		project
 			? generateCreativeWorkJsonLd({
 					name: project.title,
-					description: project.description,
+					description: project.description ?? undefined,
 					url: pageUrl,
-					image: project.thumbnailUrl,
+					image: project.featuredImage || undefined,
 					creator: 'Justin Edmund',
 					dateCreated: project.year ? `${project.year}-01-01` : undefined,
-					keywords: project.tags || []
+					keywords: []
 				})
 			: null
 	)

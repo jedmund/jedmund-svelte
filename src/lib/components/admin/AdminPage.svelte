@@ -1,5 +1,14 @@
 <script lang="ts">
-	const { noHorizontalPadding = false } = $props<{ noHorizontalPadding?: boolean }>()
+	import type { Snippet } from 'svelte'
+
+	interface Props {
+		noHorizontalPadding?: boolean
+		header?: Snippet
+		children?: Snippet
+		fullwidth?: Snippet
+	}
+
+	const { noHorizontalPadding = false, header, children, fullwidth }: Props = $props()
 
 	let scrollContainer: HTMLElement
 	let isScrolled = $state(false)
@@ -17,16 +26,16 @@
 	onscroll={handleScroll}
 >
 	<div class="page-header" class:scrolled={isScrolled}>
-		<slot name="header" />
+		{#if header}{@render header()}{/if}
 	</div>
 
 	<div class="page-content">
-		<slot />
+		{#if children}{@render children()}{/if}
 	</div>
 
-	{#if $$slots.fullwidth}
+	{#if fullwidth}
 		<div class="page-fullwidth">
-			<slot name="fullwidth" />
+			{@render fullwidth()}
 		</div>
 	{/if}
 </section>

@@ -312,23 +312,23 @@
 
 	:global(.bubble-color-picker .input) {
 		margin-top: 8px;
+	}
 
-		input {
-			width: 100%;
-			padding: 6px 10px;
-			background: rgba($gray-95, 0.5);
-			border: 1px solid rgba($gray-85, 0.3);
-			border-radius: $corner-radius-sm;
-			font-size: 13px;
-			color: $gray-10;
-			text-align: center;
-			font-family: monospace;
+	:global(.bubble-color-picker .input input) {
+		width: 100%;
+		padding: 6px 10px;
+		background: rgba($gray-95, 0.5);
+		border: 1px solid rgba($gray-85, 0.3);
+		border-radius: $corner-radius-sm;
+		font-size: 13px;
+		color: $gray-10;
+		text-align: center;
+		font-family: monospace;
+	}
 
-			&:focus {
-				background: rgba($gray-90, 0.5);
-				border-color: rgba($blue-50, 0.5);
-				outline: none;
-			}
-		}
+	:global(.bubble-color-picker .input input:focus) {
+		background: rgba($gray-90, 0.5);
+		border-color: rgba($blue-50, 0.5);
+		outline: none;
 	}
 </style>

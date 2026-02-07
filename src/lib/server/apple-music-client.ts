@@ -54,12 +54,8 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 	const url = `${APPLE_MUSIC_API_BASE}${endpoint}`
 	const headers = getAppleMusicHeaders()
 
-	logger.music('debug', 'Making Apple Music API request:', {
-		url,
-		headers: {
-			...headers,
-			Authorization: headers.Authorization ? 'Bearer [TOKEN]' : 'Missing'
-		}
+	logger.music('debug', `Making Apple Music API request: ${url}`, {
+		hasAuth: !!headers.Authorization
 	})
 
 	try {
@@ -218,9 +214,7 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		const searchQuery = `${artist} ${searchAlbum}`
 		const response = await searchAlbums(searchQuery, 5, storefront)
 
-		logger.music('debug', `Search results for "${searchQuery}" in ${storefront} storefront:`, {
-			response
-		})
+		logger.music('debug', `Search results for "${searchQuery}" in ${storefront} storefront: ${JSON.stringify(response.results?.albums?.data?.length ?? 0)} albums`)
 
 		if (!response.results?.albums?.data?.length) {
 			logger.music('debug', `No albums found in ${storefront} storefront`)
@@ -495,8 +489,8 @@ export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum | Synt
 
 				// Process all tracks
 				tracks = tracksData
-					.filter((item: AppleMusicTrack) => item.type === 'songs')
-					.map((track: AppleMusicTrack) => {
+					.filter((item) => item.type === 'songs')
+					.map((track) => {
 						return {
 							name: track.attributes?.name || 'Unknown',
 							previewUrl: track.attributes?.previews?.[0]?.url,

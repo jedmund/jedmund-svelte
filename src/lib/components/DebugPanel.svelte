@@ -5,10 +5,10 @@
 	import { toast } from 'svelte-sonner'
 	
 	// Import SVG icons
-	import CheckIcon from '$icons/check.svg'
-	import XIcon from '$icons/x.svg'
-	import TrashIcon from '$icons/trash.svg'
-	import LoaderIcon from '$icons/loader.svg'
+	import CheckIcon from '$icons/check.svg?component'
+	import XIcon from '$icons/x.svg?component'
+	import TrashIcon from '$icons/trash.svg?component'
+	import LoaderIcon from '$icons/loader.svg?component'
 	import AppleMusicSearchModal from './AppleMusicSearchModal.svelte'
 
 	// Only show in development
@@ -106,7 +106,7 @@
 		
 		// Calculate initial remaining time
 		const calculateRemaining = () => {
-			const elapsed = Date.now() - lastUpdate.getTime()
+			const elapsed = Date.now() - lastUpdate!.getTime()
 			const remaining = (updateInterval * 1000) - elapsed
 			return Math.max(0, Math.ceil(remaining / 1000))
 		}

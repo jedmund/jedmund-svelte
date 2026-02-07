@@ -19,7 +19,7 @@ export const GET: RequestHandler = async () => {
 			}
 		}
 
-		logger.info('Health check passed', health)
+		logger.info('Health check passed', { status: health.status })
 		return jsonResponse(health)
 	} catch (error) {
 		logger.error('Health check failed', error as Error)

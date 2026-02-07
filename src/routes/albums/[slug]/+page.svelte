@@ -91,12 +91,12 @@
 	const generateAlbumJsonLd = (album: AlbumData, pageUrl: string) => {
 		const baseJsonLd = generateImageGalleryJsonLd({
 			name: album.title,
-			description: album.description,
+			description: album.description ?? undefined,
 			url: pageUrl,
 			images:
 				album.photos?.map((photo: AlbumPhoto) => ({
 					url: photo.url,
-					caption: photo.caption
+					caption: photo.caption ?? undefined
 				})) || []
 		})
 
@@ -208,8 +208,7 @@
 <style lang="scss">
 	/* Container Styles */
 	.error-container,
-	.album-wrapper,
-	.photo-wrapper {
+	.album-wrapper {
 		width: 100%;
 		max-width: 900px;
 		margin: 0 auto;
@@ -392,45 +391,4 @@
 		}
 	}
 
-	/* Photo Page Styles */
-	.photo-header {
-		margin-bottom: $unit-3x;
-	}
-
-	.photo-container {
-		margin-bottom: $unit-4x;
-		text-align: center;
-
-		.photo-image {
-			max-width: 100%;
-			height: auto;
-			border-radius: $unit;
-			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-		}
-	}
-
-	.photo-info {
-		text-align: center;
-
-		.photo-title {
-			font-size: 1.75rem;
-			font-weight: 700;
-			margin: 0 0 $unit-2x;
-			color: $gray-10;
-
-			@include breakpoint('phone') {
-				font-size: 1.5rem;
-			}
-		}
-
-		.photo-description {
-			font-size: 1rem;
-			color: $gray-30;
-			line-height: 1.6;
-			margin: 0;
-			max-width: 600px;
-			margin-left: auto;
-			margin-right: auto;
-		}
-	}
 </style>

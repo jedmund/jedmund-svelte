@@ -16,16 +16,16 @@ export function tooltip(element: HTMLElement, options: TooltipOptions | string) 
 		if (config.enabled === false) return
 
 		// Create tippy instance with sensible defaults
+		const { enabled: _enabled, ...tippyConfig } = config
 		instance = tippy(element, {
-			content: config.content,
-			placement: config.placement || 'top',
-			arrow: config.arrow !== false,
-			animation: config.animation || 'scale',
-			theme: config.theme || 'link-tooltip',
-			delay: config.delay || [200, 0],
-			duration: config.duration || [200, 150],
-			offset: config.offset || [0, 10],
-			...config
+			placement: 'top',
+			arrow: true,
+			animation: 'scale',
+			theme: 'link-tooltip',
+			delay: [200, 0] as [number, number],
+			duration: [200, 150] as [number, number],
+			offset: [0, 10] as [number, number],
+			...tippyConfig
 		})
 	}
 

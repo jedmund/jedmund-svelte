@@ -1,4 +1,5 @@
 <script module>
+	// @ts-nocheck
 	import { defineMeta } from '@storybook/addon-svelte-csf'
 	import { expect, userEvent, waitFor, within } from 'storybook/test'
 	import Page from './Page.svelte'

@@ -3,7 +3,8 @@
 	import HorizontalPhotoScroll from '$components/HorizontalPhotoScroll.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import ViewModeSelector from '$components/ViewModeSelector.svelte'
-	import type { ViewMode } from '$components/ViewModeSelector.svelte'
+
+	type ViewMode = 'masonry' | 'single' | 'two-column' | 'horizontal'
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
@@ -32,7 +33,7 @@
 	)
 
 	// Track loaded photo IDs to prevent duplicates
-	let loadedPhotoIds = $state(new Set(data.photos?.map((photo) => photo.id) || []))
+	let loadedPhotoIds = $state(new Set(data.photos?.map((photo: Photo) => photo.id) || []))
 
 	const error = $derived(data.error)
 	const pageUrl = $derived($page.url.href)

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte'
 	import { Spring } from 'svelte/motion'
 	import { musicStream } from '$lib/stores/music-stream'
@@ -28,11 +28,11 @@
 		scale.target = 1
 	}
 
-	function sleep(ms) {
+	function sleep(ms: number) {
 		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
 
-	async function singleBlink(duration) {
+	async function singleBlink(duration: number) {
 		isBlinking = true
 		await sleep(duration)
 		isBlinking = false
@@ -52,7 +52,7 @@
 		}
 	}
 
-	let blinkInterval
+	let blinkInterval: ReturnType<typeof setInterval> | undefined
 
 	onMount(() => {
 		blinkInterval = setInterval(() => {
@@ -92,8 +92,8 @@
 	style="transform: scale({scale.current})"
 >
 	<AvatarSVG>
-		<!-- Face group -->
-		<g slot="face" class="face" class:hover={isHovering} class:blink={isBlinking}>
+		{#snippet face()}
+		<g class="face" class:hover={isHovering} class:blink={isBlinking}>
 			<!-- Normal face -->
 			<g class="normal">
 				<path
@@ -197,6 +197,7 @@
 				/>
 			</g>
 		</g>
+		{/snippet}
 	</AvatarSVG>
 
 	<!-- Headphones overlay when playing music -->

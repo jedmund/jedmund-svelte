@@ -36,7 +36,7 @@ export function extractEmbeds(content: TiptapNode): ExtractedEmbed[] {
 	// Recursive function to find embed nodes
 	const findEmbeds = (node: TiptapNode) => {
 		if (node.type === 'urlEmbed' && node.attrs?.url) {
-			const url = node.attrs.url
+			const url = node.attrs.url as string
 			const isYouTube = /(?:youtube\.com|youtu\.be)/.test(url)
 
 			if (isYouTube) {
@@ -46,22 +46,22 @@ export function extractEmbeds(content: TiptapNode): ExtractedEmbed[] {
 						type: 'youtube',
 						url,
 						videoId,
-						title: node.attrs.title,
-						description: node.attrs.description,
-						image: node.attrs.image,
-						favicon: node.attrs.favicon,
-						siteName: node.attrs.siteName
+						title: node.attrs.title as string | undefined,
+						description: node.attrs.description as string | undefined,
+						image: node.attrs.image as string | undefined,
+						favicon: node.attrs.favicon as string | undefined,
+						siteName: node.attrs.siteName as string | undefined
 					})
 				}
 			} else {
 				embeds.push({
 					type: 'urlEmbed',
 					url,
-					title: node.attrs.title,
-					description: node.attrs.description,
-					image: node.attrs.image,
-					favicon: node.attrs.favicon,
-					siteName: node.attrs.siteName
+					title: node.attrs.title as string | undefined,
+					description: node.attrs.description as string | undefined,
+					image: node.attrs.image as string | undefined,
+					favicon: node.attrs.favicon as string | undefined,
+					siteName: node.attrs.siteName as string | undefined
 				})
 			}
 		}

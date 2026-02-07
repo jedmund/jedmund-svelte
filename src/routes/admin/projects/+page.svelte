@@ -112,7 +112,8 @@
 </svelte:head>
 
 <AdminPage>
-	<AdminHeader title="Work" slot="header">
+	{#snippet header()}
+	<AdminHeader title="Work">
 		{#snippet actions()}
 			<Button
 				variant="primary"
@@ -123,18 +124,19 @@
 			</Button>
 		{/snippet}
 	</AdminHeader>
+	{/snippet}
 
 	<AdminFilters>
 		{#snippet left()}
 				<Select
-					value={filters.values.type}
+					value={String(filters.values.type)}
 					options={typeFilterOptions}
 					size="small"
 					variant="minimal"
 					onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
 				/>
 				<Select
-					value={filters.values.status}
+					value={String(filters.values.status)}
 					options={statusFilterOptions}
 					size="small"
 					variant="minimal"

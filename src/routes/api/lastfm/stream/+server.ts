@@ -67,13 +67,7 @@ export const GET: RequestHandler = async ({ request }) => {
 								nowPlaying: nowPlayingAlbum
 									? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
 									: 'none',
-								remainingMs: remainingMs,
-								albumsWithStatus: update.albums.map(a => ({
-									name: a.name,
-									artist: a.artist.name,
-									isNowPlaying: a.isNowPlaying,
-									track: a.nowPlayingTrack
-								}))
+								remainingMs: remainingMs
 							})
 
 							// Smart interval adjustment based on remaining track time

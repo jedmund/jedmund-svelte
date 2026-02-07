@@ -90,7 +90,7 @@
 			{disabled}
 			{readonly}
 			{required}
-			{maxLength}
+			maxlength={maxLength ?? undefined}
 			{rows}
 			class={getTextareaClasses()}
 			{...restProps}

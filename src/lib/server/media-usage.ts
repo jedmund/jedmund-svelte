@@ -186,7 +186,7 @@ function getFieldDisplayName(fieldName: string): string {
  * Extract media IDs from various data structures
  */
 export function extractMediaIds(data: unknown, fieldName: string): number[] {
-	const value = data[fieldName]
+	const value = (data as Record<string, unknown>)[fieldName]
 	if (!value) return []
 
 	switch (fieldName) {
@@ -221,6 +221,14 @@ export function extractMediaIds(data: unknown, fieldName: string): number[] {
 	}
 }
 
+// Type for rich text content nodes (TipTap/Edra JSON)
+interface RichTextNode {
+	type?: string
+	attrs?: Record<string, unknown>
+	content?: RichTextNode[]
+	[key: string]: unknown
+}
+
 /**
  * Extract media IDs from rich text content (TipTap/Edra JSON)
  */
@@ -229,12 +237,12 @@ function extractMediaFromRichText(content: unknown): number[] {
 
 	const mediaIds: number[] = []
 
-	function traverse(node: unknown) {
+	function traverse(node: RichTextNode) {
 		if (!node) return
 
 		// Handle image nodes
 		if (node.type === 'image' && node.attrs?.src) {
-			const match = node.attrs.src.match(/\/api\/media\/(\d+)/)
+			const match = String(node.attrs.src).match(/\/api\/media\/(\d+)/)
 			if (match) {
 				mediaIds.push(parseInt(match[1]))
 			}
@@ -242,7 +250,7 @@ function extractMediaFromRichText(content: unknown): number[] {
 
 		// Handle gallery nodes
 		if (node.type === 'gallery' && node.attrs?.images) {
-			for (const image of node.attrs.images) {
+			for (const image of node.attrs.images as Array<{ id?: number }>) {
 				if (image.id) {
 					mediaIds.push(image.id)
 				}
@@ -257,6 +265,6 @@ function extractMediaFromRichText(content: unknown): number[] {
 		}
 	}
 
-	traverse(content)
+	traverse(content as RichTextNode)
 	return [...new Set(mediaIds)] // Remove duplicates
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ArrowRight from '$icons/arrow-right.svg'
+	import ArrowRight from '$icons/arrow-right.svg?component'
 	import type { Project } from '$lib/types/project'
 
 	interface Props {
@@ -27,11 +27,6 @@
 </div>
 
 <style lang="scss">
-	/* Project Header */
-	.project-header {
-		width: 100%;
-	}
-
 	.project-header-content {
 		display: flex;
 		justify-content: space-between;
@@ -57,16 +52,6 @@
 
 		@include breakpoint('phone') {
 			font-size: 2rem;
-		}
-	}
-
-	.project-subtitle {
-		font-size: 1.25rem;
-		color: $gray-40;
-		margin: 0;
-
-		@include breakpoint('phone') {
-			font-size: 1rem;
 		}
 	}
 

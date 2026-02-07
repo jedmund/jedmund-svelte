@@ -58,10 +58,6 @@
 			font-size: 1rem;
 			flex-grow: 2;
 			margin: 0;
-
-			cite {
-				font-style: normal;
-			}
 		}
 
 		footer {

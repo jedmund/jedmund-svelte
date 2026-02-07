@@ -241,7 +241,7 @@
 				url += `&albumId=${albumId}`
 			}
 
-			const data = await (await import('$lib/admin/api')).api.get(url)
+			const data = await (await import('$lib/admin/api')).api.get<{ media: Media[]; pagination: { totalPages: number } }>(url)
 
 			if (page === 1) {
 				// Only clear media after we have new data to prevent flash
@@ -394,8 +394,7 @@
 						prefixIcon
 						class="search-input"
 					>
-						<svg
-							slot="prefix"
+						{#snippet prefix()}<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
 							viewBox="0 0 24 24"
@@ -407,7 +406,7 @@
 								stroke-linejoin="round"
 								d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
 							/>
-						</svg>
+						</svg>{/snippet}
 					</Input>
 				{/snippet}
 			</AdminFilters>
@@ -470,7 +469,7 @@
 				<Button variant="ghost" onclick={handleCancel}>Cancel</Button>
 				<Button variant="primary" onclick={handleConfirm} disabled={!canConfirm || isSaving}>
 					{#if isSaving}
-						<LoadingSpinner buttonSize="small" />
+						<LoadingSpinner size="small" />
 						{showInAlbumMode ? 'Updating...' : 'Selecting...'}
 					{:else}
 						{computedConfirmText}
@@ -539,7 +538,7 @@
 			color: $gray-10;
 		}
 
-		svg {
+		:global(svg) {
 			flex-shrink: 0;
 		}
 	}

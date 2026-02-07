@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { uploadFile, isCloudinaryConfigured } from '$lib/server/cloudinary'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
@@ -13,7 +14,7 @@ interface ExifData {
 	focalLength?: string
 	aperture?: string
 	shutterSpeed?: string
-	iso?: number
+	iso?: string
 	dateTaken?: string
 	gps?: {
 		latitude: number
@@ -201,7 +202,7 @@ export const POST: RequestHandler = async (event) => {
 				videoCodec: uploadResult.videoCodec,
 				audioCodec: uploadResult.audioCodec,
 				bitrate: uploadResult.bitrate,
-				exifData: exifData,
+				exifData: (exifData ?? undefined) as Prisma.InputJsonValue | undefined,
 				description: description?.trim() || null,
 				isPhotography: isPhotography
 			}

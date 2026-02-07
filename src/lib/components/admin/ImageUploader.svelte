@@ -2,6 +2,7 @@
 	import type { Media } from '@prisma/client'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
+	import Textarea from './Textarea.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import RefreshIcon from '$icons/refresh.svg?component'
@@ -49,7 +50,7 @@
 
 	// Computed properties
 	const hasValue = $derived(!!value)
-	const aspectRatioStyle = $derived(() => {
+	const aspectRatioStyle = $derived.by(() => {
 		if (!aspectRatio) return ''
 		const [w, h] = aspectRatio.split(':').map(Number)
 		const ratio = (h / w) * 100
@@ -250,7 +251,7 @@
 				<div class="compact-preview">
 					<div class="compact-image">
 						<SmartImage
-							media={value}
+							media={value!}
 							alt={value?.description || value?.filename || 'Uploaded image'}
 							containerWidth={100}
 							loading="eager"
@@ -262,12 +263,11 @@
 						<div class="preview-overlay">
 							<div class="preview-actions">
 								<Button variant="overlay" buttonSize="small" onclick={handleBrowseClick}>
-									<RefreshIcon slot="icon" width="12" height="12" />
+									{#snippet icon()}<RefreshIcon width="12" height="12" />{/snippet}
 								</Button>
 
 								<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
-									<svg
-										slot="icon"
+									{#snippet icon()}<svg
 										width="12"
 										height="12"
 										viewBox="0 0 24 24"
@@ -288,7 +288,7 @@
 											stroke-linecap="round"
 											stroke-linejoin="round"
 										/>
-									</svg>
+									</svg>{/snippet}
 								</Button>
 							</div>
 						</div>
@@ -297,13 +297,12 @@
 					<div class="compact-info">
 						<!-- Description Input in compact mode -->
 						<div class="compact-metadata">
-							<Input
-								type="textarea"
+							<Textarea
 								label="Description"
 								bind:value={descriptionValue}
 								placeholder="Describe this image for accessibility and SEO"
 								rows={2}
-								buttonSize="small"
+								size="small"
 								onblur={handleDescriptionChange}
 							/>
 						</div>
@@ -313,8 +312,8 @@
 				<!-- Standard Layout: Image preview -->
 				<div class="image-preview" style={aspectRatioStyle}>
 					<SmartImage
-						media={value}
-						alt={value?.altText || value?.filename || 'Uploaded image'}
+						media={value!}
+						alt={value?.description || value?.filename || 'Uploaded image'}
 						containerWidth={800}
 						loading="eager"
 						{aspectRatio}
@@ -325,13 +324,12 @@
 					<div class="preview-overlay">
 						<div class="preview-actions">
 							<Button variant="overlay" buttonSize="small" onclick={handleBrowseClick}>
-								<RefreshIcon slot="icon" width="16" height="16" />
+								{#snippet icon()}<RefreshIcon width="16" height="16" />{/snippet}
 								Replace
 							</Button>
 
 							<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
-								<svg
-									slot="icon"
+								{#snippet icon()}<svg
 									width="16"
 									height="16"
 									viewBox="0 0 24 24"
@@ -352,7 +350,7 @@
 										stroke-linecap="round"
 										stroke-linejoin="round"
 									/>
-								</svg>
+								</svg>{/snippet}
 								Remove
 							</Button>
 						</div>
@@ -492,8 +490,7 @@
 	<!-- Description Input (only in standard mode, compact mode has it inline) -->
 	{#if hasValue && !compact}
 		<div class="metadata-section">
-			<Input
-				type="textarea"
+			<Textarea
 				label="Description"
 				bind:value={descriptionValue}
 				placeholder="Describe this image for accessibility and SEO"

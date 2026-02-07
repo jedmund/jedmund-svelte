@@ -126,13 +126,6 @@
 		text-align: center;
 		max-width: 500px;
 
-		h1 {
-			font-size: 2rem;
-			font-weight: 600;
-			margin: 0 0 $unit-2x;
-			color: $red-60;
-		}
-
 		p {
 			margin: 0 0 $unit-3x;
 			color: $gray-40;

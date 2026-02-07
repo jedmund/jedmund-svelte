@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import ArrowLeft from '$icons/arrow-left.svg'
+	import ArrowLeft from '$icons/arrow-left.svg?component'
 
 	interface Props {
 		href?: string
