@@ -3,18 +3,12 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import { api } from '$lib/admin/api'
-	import { makeDraftKey, saveDraft, clearDraft } from '$lib/admin/draftStore'
-	import { createAutoSaveStore } from '$lib/admin/autoSave.svelte'
-	import { useDraftRecovery } from '$lib/admin/useDraftRecovery.svelte'
-	import { useFormGuards } from '$lib/admin/useFormGuards.svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
-	import DraftPrompt from '$lib/components/admin/DraftPrompt.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
-	import AutoSaveStatus from '$lib/components/admin/AutoSaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Post } from '@prisma/client'
 
@@ -29,18 +23,6 @@
 			alt?: string
 			caption?: string
 		}>
-	}
-
-	// Type for draft payload
-	interface DraftPayload {
-		title: string | null
-		slug: string
-		type: string
-		status: string
-		content: JSONContent | null
-		excerpt?: string
-		tags: string[]
-		updatedAt?: Date
 	}
 
 	let post = $state<Post | null>(null)
@@ -62,9 +44,6 @@
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
 
-	// Draft key for autosave fallback
-	const draftKey = $derived(makeDraftKey('post', $page.params.id))
-
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
 		essay: { icon: '📝', label: 'Essay', showTitle: true, showContent: true }
@@ -72,58 +51,29 @@
 
 	let config = $derived(postTypeConfig[postType])
 
-	// Autosave store
-	const autoSave = createAutoSaveStore({
-		debounceMs: 2000,
-		getPayload: () => {
-			if (!hasLoaded) return null
-			return {
-				title: config?.showTitle ? title : null,
-				slug,
-				type: postType,
-				status,
-				content: config?.showContent ? content : null,
-				excerpt: postType === 'essay' ? excerpt : undefined,
-				tags,
-				updatedAt: post?.updatedAt
+	// Cmd+S keyboard shortcut
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+				e.preventDefault()
+				handleSave()
 			}
-		},
-		save: async (payload, { signal }) => {
-			const saved = await api.put(`/api/posts/${$page.params.id}`, payload, { signal })
-			return saved
-		},
-		onSaved: (saved: Post, { prime }) => {
-			post = saved
-			prime({
-				title: config?.showTitle ? title : null,
-				slug,
-				type: postType,
-				status,
-				content: config?.showContent ? content : null,
-				excerpt: postType === 'essay' ? excerpt : undefined,
-				tags,
-				updatedAt: saved.updatedAt
-			})
-			if (draftKey) clearDraft(draftKey)
 		}
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Draft recovery helper
-	const draftRecovery = useDraftRecovery<DraftPayload>({
-		draftKey: () => draftKey,
-		onRestore: (payload) => {
-			if (payload.title !== undefined) title = payload.title ?? ''
-			if (payload.slug !== undefined) slug = payload.slug
-			if (payload.type !== undefined) postType = payload.type as 'post' | 'essay'
-			if (payload.status !== undefined) status = payload.status as 'draft' | 'published'
-			if (payload.content !== undefined) content = payload.content ?? { type: 'doc', content: [] }
-			if (payload.excerpt !== undefined) excerpt = payload.excerpt ?? ''
-			if (payload.tags !== undefined) tags = payload.tags
+	// Beforeunload guard for unsaved changes
+	$effect(() => {
+		function handleBeforeUnload(e: BeforeUnloadEvent) {
+			if (hasLoaded) {
+				e.preventDefault()
+				e.returnValue = ''
+			}
 		}
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 	})
-
-	// Form guards (navigation protection, Cmd+S, beforeunload)
-	useFormGuards(autoSave)
 
 	// Convert blocks format (from database) to Tiptap format
 	function convertBlocksToTiptap(blocksContent: BlockContent): JSONContent {
@@ -264,18 +214,6 @@
 
 				// Set content ready after all data is loaded
 				contentReady = true
-
-				// Prime autosave with initial data to prevent immediate save
-				autoSave.prime({
-					title: config?.showTitle ? title : null,
-					slug,
-					type: postType,
-					status,
-					content: config?.showContent ? content : null,
-					excerpt: postType === 'essay' ? excerpt : undefined,
-					tags,
-					updatedAt: post.updatedAt
-				})
 				hasLoaded = true
 			} else {
 				// Fallback error messaging
@@ -365,38 +303,6 @@
 		}
 	})
 
-	// Trigger autosave when form data changes
-	$effect(() => {
-		// Establish dependencies
-		void title; void slug; void status; void content; void tags; void excerpt; void postType
-		if (hasLoaded) {
-			autoSave.schedule()
-		}
-	})
-
-	// Save draft only when autosave fails
-	$effect(() => {
-		if (hasLoaded) {
-			const saveStatus = autoSave.status
-			if (saveStatus === 'error' || saveStatus === 'offline') {
-				saveDraft(draftKey, {
-					title: config?.showTitle ? title : null,
-					slug,
-					type: postType,
-					status,
-					content: config?.showContent ? content : null,
-					excerpt: postType === 'essay' ? excerpt : undefined,
-					tags,
-					updatedAt: post?.updatedAt
-				})
-			}
-		}
-	})
-
-	// Cleanup autosave on unmount
-	$effect(() => {
-		return () => autoSave.destroy()
-	})
 </script>
 
 <svelte:head>
@@ -469,18 +375,9 @@
 						: [{ label: 'Save as Draft', status: 'draft' }]}
 					viewUrl={slug ? `/universe/${slug}` : undefined}
 				/>
-				<AutoSaveStatus status={autoSave.status} error={autoSave.lastError} />
 			</div>
 		{/if}
 	</header>
-
-	{#if draftRecovery.showPrompt}
-		<DraftPrompt
-			timeAgo={draftRecovery.draftTimeText}
-			onRestore={draftRecovery.restore}
-			onDismiss={draftRecovery.dismiss}
-		/>
-	{/if}
 
 	{#if loading}
 		<div class="loading-container">

@@ -41,6 +41,18 @@ import { api } from '$lib/admin/api'
 
 	let config = $derived(postTypeConfig[postType])
 
+	// Cmd+S keyboard shortcut
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+				e.preventDefault()
+				handleSave()
+			}
+		}
+		document.addEventListener('keydown', handleKeydown)
+		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
 	onMount(() => {
 		// Get post type from URL params
 		const type = $page.url.searchParams.get('type')
