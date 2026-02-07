@@ -26,7 +26,7 @@
 		closeOnEscape = true,
 		onClose,
 		class: className = '',
-		children
+		children,
 		scale = false
 	}: Props = $props()
 
