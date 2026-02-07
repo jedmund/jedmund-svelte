@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { type Editor } from '@tiptap/core'
 	import { onMount, setContext } from 'svelte'
-	import { initiateEditor } from '$lib/components/edra/editor'
-	import { getEditorExtensions } from '$lib/components/edra/editor-extensions.js'
+	import { initiateEditor, getEditorExtensions } from '$lib/components/edra/editor-extensions.js'
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle'
-	import LinkMenu from '$lib/components/edra/headless/menus/link-menu.svelte'
-	import TableRowMenu from '$lib/components/edra/headless/menus/table/table-row-menu.svelte'
-	import TableColMenu from '$lib/components/edra/headless/menus/table/table-col-menu.svelte'
-	import DragHandle from '$lib/components/edra/drag-handle.svelte'
-	import EnhancedImagePlaceholder from '$lib/components/edra/headless/components/EnhancedImagePlaceholder.svelte'
+	import LinkMenu from '$lib/components/edra/headless/menus/Link.svelte'
+	import TableRowMenu from '$lib/components/edra/headless/menus/TableRow.svelte'
+	import TableColMenu from '$lib/components/edra/headless/menus/TableCol.svelte'
+	import DragHandle from '$lib/components/edra/components/DragHandle.svelte'
+	import ImagePlaceholder from '$lib/components/edra/headless/components/ImagePlaceholder.svelte'
 	import UnifiedMediaModal from '../UnifiedMediaModal.svelte'
 	import { mediaSelectionStore } from '$lib/stores/media-selection'
 	import type { Media } from '@prisma/client'
@@ -177,7 +176,7 @@
 				? linkManagerRef?.handleShowUrlConvertDropdown
 				: undefined,
 			onShowLinkContextMenu: linkManagerRef?.handleShowLinkContextMenu,
-			imagePlaceholderComponent: EnhancedImagePlaceholder as any
+			imagePlaceholderComponent: ImagePlaceholder as any
 		})
 
 		// Initialize editor
