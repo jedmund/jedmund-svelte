@@ -113,19 +113,24 @@ This document evaluates new features available in Edra 2.4.0 and TipTap 2.27.2 t
 
 ## Testing Checklist
 
-Before completing Phase 5, verify these work:
+Testing Status: ⚠️ **Partially Complete** - Core functionality working, some features need design/quality pass
+
 - [x] All custom extensions load
 - [x] Slash commands work
 - [x] Bubble menu works
 - [x] Link functionality works
-- [ ] Media upload and insertion
-- [ ] Gallery creation
-- [ ] Geolocation insertion
-- [ ] URL embed conversion
-- [ ] IFrame insertion
-- [ ] Math equation rendering
-- [ ] Table creation and editing
-- [ ] Content rendering on frontend
+- [x] Audio upload (fixed - added audio MIME types)
+- [x] Production build succeeds
+- [⚠️] Media upload and insertion (working but needs polish)
+- [⚠️] Gallery creation (not fully tested)
+- [⚠️] Geolocation insertion (not fully tested)
+- [⚠️] URL embed conversion (not fully tested)
+- [⚠️] IFrame insertion (not fully tested)
+- [⚠️] Math equation rendering (not fully tested)
+- [⚠️] Table creation and editing (not fully tested)
+- [⚠️] Content rendering on frontend (not fully tested)
+
+**Note:** User reported "not everything works, but it works well enough" to continue. Remaining issues will be addressed during design and quality pass.
 
 ## Next Steps
 
