@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, beforeNavigate } from '$app/navigation'
 	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
+	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
 	import Composer from './composer'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
@@ -26,6 +27,8 @@
 	let hasLoaded = $state(mode === 'create')
 	let isSaving = $state(false)
 	let activeTab = $state('metadata')
+	let showUnsavedChangesModal = $state(false)
+	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -78,7 +81,7 @@
 		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Beforeunload guard for unsaved changes
+	// Browser warning for page unloads (refresh/close) - required for these events
 	$effect(() => {
 		function handleBeforeUnload(e: BeforeUnloadEvent) {
 			if (formStore.isDirty) {
@@ -88,6 +91,16 @@
 		}
 		window.addEventListener('beforeunload', handleBeforeUnload)
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	})
+
+	// Navigation guard for unsaved changes (in-app navigation only)
+	beforeNavigate((navigation) => {
+		// Only intercept in-app navigation, not page unloads (refresh/close)
+		if (formStore.isDirty && navigation.type !== 'leave') {
+			pendingNavigation = navigation
+			navigation.cancel()
+			showUnsavedChangesModal = true
+		}
 	})
 
 	async function handleSave(newStatus?: string) {
@@ -142,6 +155,21 @@
 			console.error(err)
 		} finally {
 			isSaving = false
+		}
+	}
+
+	function handleContinueEditing() {
+		showUnsavedChangesModal = false
+		pendingNavigation = null
+	}
+
+	function handleLeaveWithoutSaving() {
+		showUnsavedChangesModal = false
+		if (pendingNavigation) {
+			// Temporarily allow dirty navigation
+			const nav = pendingNavigation
+			pendingNavigation = null
+			nav.to && goto(nav.to.url.pathname)
 		}
 	}
 </script>
@@ -220,6 +248,12 @@
 		{/if}
 	</div>
 </AdminPage>
+
+<UnsavedChangesModal
+	isOpen={showUnsavedChangesModal}
+	onContinueEditing={handleContinueEditing}
+	onLeave={handleLeaveWithoutSaving}
+/>
 
 <style lang="scss">
 	header {

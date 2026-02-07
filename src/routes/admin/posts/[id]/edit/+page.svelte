@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { goto, beforeNavigate } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
@@ -8,6 +8,7 @@
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
@@ -59,6 +60,39 @@
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
+	let showUnsavedChangesModal = $state(false)
+	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
+
+	// Track initial values to detect unsaved changes
+	let initialValues = $state<{
+		title: string
+		postType: 'post' | 'essay'
+		status: 'draft' | 'published'
+		slug: string
+		excerpt: string
+		content: string
+		tags: string[]
+	}>({
+		title: '',
+		postType: 'post',
+		status: 'draft',
+		slug: '',
+		excerpt: '',
+		content: '',
+		tags: []
+	})
+
+	// Check if form has unsaved changes
+	let isDirty = $derived(
+		hasLoaded &&
+		(title !== initialValues.title ||
+			postType !== initialValues.postType ||
+			status !== initialValues.status ||
+			slug !== initialValues.slug ||
+			excerpt !== initialValues.excerpt ||
+			JSON.stringify(content) !== initialValues.content ||
+			JSON.stringify(tags) !== JSON.stringify(initialValues.tags))
+	)
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -79,16 +113,26 @@
 		return () => document.removeEventListener('keydown', handleKeydown)
 	})
 
-	// Beforeunload guard for unsaved changes
+	// Browser warning for page unloads (refresh/close) - required for these events
 	$effect(() => {
 		function handleBeforeUnload(e: BeforeUnloadEvent) {
-			if (hasLoaded) {
+			if (isDirty) {
 				e.preventDefault()
 				e.returnValue = ''
 			}
 		}
 		window.addEventListener('beforeunload', handleBeforeUnload)
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	})
+
+	// Navigation guard for unsaved changes (in-app navigation only)
+	beforeNavigate((navigation) => {
+		// Only intercept in-app navigation, not page unloads (refresh/close)
+		if (isDirty && navigation.type !== 'leave') {
+			pendingNavigation = navigation
+			navigation.cancel()
+			showUnsavedChangesModal = true
+		}
 	})
 
 	// Convert blocks format (from database) to Tiptap format
@@ -229,6 +273,17 @@
 
 				tags = (data.tags as string[]) || []
 
+				// Store initial values for dirty tracking
+				initialValues = {
+					title,
+					postType,
+					status,
+					slug,
+					excerpt,
+					content: JSON.stringify(content),
+					tags: [...tags]
+				}
+
 				// Set content ready after all data is loaded
 				contentReady = true
 				hasLoaded = true
@@ -278,6 +333,17 @@
 			if (saved) {
 				post = saved
 				if (newStatus) status = newStatus as 'draft' | 'published'
+        
+				// Update initial values to reflect saved stat
+				initialValues = {
+					title,
+					postType,
+					status,
+					slug,
+					excerpt,
+					content: JSON.stringify(content),
+					tags: [...tags]
+				}
 			}
 		} catch (error) {
 			console.error('Failed to save post:', error)
@@ -298,6 +364,21 @@
 			goto('/admin/posts')
 		} catch (error) {
 			console.error('Failed to delete post:', error)
+		}
+	}
+
+	function handleContinueEditing() {
+		showUnsavedChangesModal = false
+		pendingNavigation = null
+	}
+
+	function handleLeaveWithoutSaving() {
+		showUnsavedChangesModal = false
+		if (pendingNavigation) {
+			// Temporarily allow dirty navigation
+			const nav = pendingNavigation
+			pendingNavigation = null
+			nav.to && goto(nav.to.url.pathname)
 		}
 	}
 
@@ -434,6 +515,12 @@
 	confirmText="Delete Post"
 	onConfirm={handleDelete}
 	onCancel={() => (showDeleteConfirmation = false)}
+/>
+
+<UnsavedChangesModal
+	isOpen={showUnsavedChangesModal}
+	onContinueEditing={handleContinueEditing}
+	onLeave={handleLeaveWithoutSaving}
 />
 
 <style lang="scss">
