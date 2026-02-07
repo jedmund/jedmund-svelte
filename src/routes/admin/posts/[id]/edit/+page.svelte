@@ -61,7 +61,8 @@
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
 	let showUnsavedChangesModal = $state(false)
-	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
+	let pendingNavigationUrl = $state<string | null>(null)
+	let allowNavigation = $state(false)
 
 	// Track initial values to detect unsaved changes
 	let initialValues = $state<{
@@ -127,9 +128,15 @@
 
 	// Navigation guard for unsaved changes (in-app navigation only)
 	beforeNavigate((navigation) => {
+		// Allow navigation if explicitly permitted
+		if (allowNavigation) {
+			allowNavigation = false
+			return
+		}
+
 		// Only intercept in-app navigation, not page unloads (refresh/close)
-		if (isDirty && navigation.type !== 'leave') {
-			pendingNavigation = navigation
+		if (isDirty && navigation.type !== 'leave' && navigation.to) {
+			pendingNavigationUrl = navigation.to.url.pathname
 			navigation.cancel()
 			showUnsavedChangesModal = true
 		}
@@ -369,16 +376,16 @@
 
 	function handleContinueEditing() {
 		showUnsavedChangesModal = false
-		pendingNavigation = null
+		pendingNavigationUrl = null
 	}
 
 	function handleLeaveWithoutSaving() {
 		showUnsavedChangesModal = false
-		if (pendingNavigation) {
-			// Temporarily allow dirty navigation
-			const nav = pendingNavigation
-			pendingNavigation = null
-			nav.to && goto(nav.to.url.pathname)
+		if (pendingNavigationUrl) {
+			const url = pendingNavigationUrl
+			pendingNavigationUrl = null
+			allowNavigation = true
+			goto(url)
 		}
 	}
 
