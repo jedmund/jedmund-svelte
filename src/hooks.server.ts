@@ -1,32 +1,33 @@
 import type { Handle } from '@sveltejs/kit'
 
-// --- Login rate limiter ---
-const loginAttempts = new Map<string, { count: number; resetAt: number }>()
-const MAX_LOGIN_ATTEMPTS = 5
+// --- Rate limiter ---
+const attempts = new Map<string, { count: number; resetAt: number }>()
+const MAX_ATTEMPTS = 5
 const WINDOW_MS = 60_000 // 1 minute
 
-function isLoginRateLimited(ip: string): boolean {
+function isRateLimited(key: string): boolean {
 	const now = Date.now()
-	const entry = loginAttempts.get(ip)
+	const entry = attempts.get(key)
 
 	if (!entry || now > entry.resetAt) {
-		loginAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS })
+		attempts.set(key, { count: 1, resetAt: now + WINDOW_MS })
 		return false
 	}
 
 	entry.count++
-	return entry.count > MAX_LOGIN_ATTEMPTS
+	return entry.count > MAX_ATTEMPTS
 }
 
 // Periodically clean up stale entries
-setInterval(() => {
+const cleanup = setInterval(() => {
 	const now = Date.now()
-	for (const [ip, entry] of loginAttempts) {
+	for (const [key, entry] of attempts) {
 		if (now > entry.resetAt) {
-			loginAttempts.delete(ip)
+			attempts.delete(key)
 		}
 	}
 }, 5 * 60_000)
+cleanup.unref()
 
 // --- Security headers ---
 const securityHeaders: Record<string, string> = {
@@ -46,24 +47,40 @@ const securityHeaders: Record<string, string> = {
 	].join('; ')
 }
 
+function withSecurityHeaders(response: Response): Response {
+	for (const [header, value] of Object.entries(securityHeaders)) {
+		response.headers.set(header, value)
+	}
+	return response
+}
+
+// Paths that accept passwords and should be rate-limited
+const RATE_LIMITED_POSTS = [
+	'/admin/login',
+	'/api/projects/' // matches /api/projects/123/unlock
+]
+
+function shouldRateLimit(pathname: string, method: string): boolean {
+	if (method !== 'POST') return false
+	return RATE_LIMITED_POSTS.some((prefix) => pathname.startsWith(prefix))
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
-	// Rate limit login attempts
-	if (event.url.pathname === '/admin/login' && event.request.method === 'POST') {
+	const { pathname } = event.url
+	const method = event.request.method
+
+	if (shouldRateLimit(pathname, method)) {
 		const ip = event.getClientAddress()
-		if (isLoginRateLimited(ip)) {
-			return new Response('Too many login attempts. Try again in a minute.', {
-				status: 429,
-				headers: { 'Retry-After': '60' }
-			})
+		if (isRateLimited(ip)) {
+			return withSecurityHeaders(
+				new Response('Too many attempts. Try again in a minute.', {
+					status: 429,
+					headers: { 'Retry-After': '60' }
+				})
+			)
 		}
 	}
 
 	const response = await resolve(event)
-
-	// Add security headers to all responses
-	for (const [header, value] of Object.entries(securityHeaders)) {
-		response.headers.set(header, value)
-	}
-
-	return response
+	return withSecurityHeaders(response)
 }
