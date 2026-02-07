@@ -77,7 +77,10 @@ function parseToken(token: string): SessionPayload | null {
 export function validateAdminPassword(password: string): SessionUser | null {
 	const expected = process.env.ADMIN_PASSWORD
 	if (!expected) {
-		if (dev) return null
+		if (dev) {
+			console.warn('ADMIN_PASSWORD not set — login disabled in dev')
+			return null
+		}
 		throw new Error('ADMIN_PASSWORD environment variable is required in production')
 	}
 	const providedBuf = Buffer.from(password)

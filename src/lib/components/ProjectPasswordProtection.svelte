@@ -7,7 +7,7 @@
 		projectId: number
 		projectSlug: string
 		projectType?: 'work' | 'labs'
-		onUnlocked?: () => void
+		onUnlocked?: () => void | Promise<void>
 		children?: Snippet
 	}
 
@@ -35,7 +35,7 @@
 			})
 
 			if (response.ok) {
-				onUnlocked?.()
+				await onUnlocked?.()
 			} else {
 				error = 'Incorrect password. Please try again.'
 				password = ''

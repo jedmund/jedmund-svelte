@@ -236,16 +236,3 @@ export const POST: RequestHandler = async (event) => {
 	}
 }
 
-// Handle preflight requests
-export const OPTIONS: RequestHandler = async ({ request }) => {
-	const origin = request.headers.get('origin') || ''
-	return new Response(null, {
-		status: 204,
-		headers: {
-			'Access-Control-Allow-Origin': origin,
-			'Access-Control-Allow-Methods': 'POST, OPTIONS',
-			'Access-Control-Allow-Headers': 'Content-Type',
-			'Access-Control-Allow-Credentials': 'true'
-		}
-	})
-}

@@ -103,12 +103,12 @@ export const GET: RequestHandler = async (event) => {
 		const unlockedIds = isAdmin ? [] : getUnlockedProjectIds(event.cookies)
 		const safeProjects = isAdmin
 			? projects
-			: projects.map(({ password: _, ...rest }) => {
+			: projects.map(({ password, ...rest }) => {
 					const isLocked = rest.status === 'password-protected' && !unlockedIds.includes(rest.id)
 					if (isLocked) {
 						return { ...rest, caseStudyContent: null, gallery: [], hasPassword: true, locked: true }
 					}
-					return { ...rest, hasPassword: !!_, locked: false }
+					return { ...rest, hasPassword: !!password, locked: false }
 				})
 
 		return jsonResponse({
