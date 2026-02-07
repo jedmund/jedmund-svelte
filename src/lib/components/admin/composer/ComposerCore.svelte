@@ -183,8 +183,7 @@
 		const newEditor = initiateEditor(
 			element,
 			data, // content
-			undefined, // limit
-			extensions,
+			extensions, // extensions
 			{
 				onCreate: () => {
 					isLoading = false
@@ -196,7 +195,7 @@
 					handlePaste: eventHandlers.handlePaste,
 					handleDrop: eventHandlers.handleDrop
 				}
-			},
+			}
 			placeholder
 		)
 
