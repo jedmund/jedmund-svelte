@@ -8,7 +8,7 @@
 	--edra-separator-color: currentColor; /* Default, can be customized */
 
 	/* Size and Spacing Variables */
-	--edra-gap: 0.5rem;
+	--edra-gap: 0.25rem;
 	--edra-border-radius: 0.5rem;
 	--edra-button-border-radius: 0.5rem;
 	--edra-padding: 0.5rem;
@@ -37,51 +37,21 @@
 	--search-result-current-bg: orange;
 }
 
-.edra {
-	display: flex;
-	flex-direction: column;
-	gap: var(--edra-gap);
-	overflow: visible;
-}
-
 .edra-editor {
-	padding: 0 var(--edra-padding);
-	flex-grow: 1;
-	padding-left: 2rem;
-	overflow: visible;
-	box-sizing: border-box;
-}
-
-.edra-toolbar {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: var(--edra-gap);
-	padding: var(--edra-padding);
-	width: fit-content;
-	overflow: auto;
-}
-
-.edra-loading {
-	width: 100%;
 	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: var(--edra-gap);
+	width: 100%;
+	cursor: auto;
+	outline: none !important;
 }
 
-.animate-spin {
-	animation: animate-spin 1s linear infinite;
+.tiptap,
+.ProseMirror {
+	outline: none !important;
 }
 
-@keyframes animate-spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
+.tiptap a {
+	color: blue;
+	text-decoration: underline;
 }
 
 .edra-command-button {
@@ -112,25 +82,12 @@
 	color: var(--edra-icon-color);
 }
 
-.separator {
-	width: var(--edra-separator-width);
-	/* background-color: var(--edra-separator-color); */
-}
-
 .edra-media-placeholder-wrapper {
-	width: 100%;
-	height: fit-content;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	margin: 0.5rem 0;
-}
-
-.edra-media-placeholder-content {
 	height: 100%;
 	width: 100%;
 	padding: 1rem;
 	padding-right: 0;
+	margin: 0.5rem 0;
 	background-color: var(--edra-button-bg-color);
 	border-radius: var(--edra-button-border-radius);
 	border: 1px solid var(--edra-border-color);
@@ -323,7 +280,43 @@ input.invalid {
 	border: 1px solid red;
 }
 
-/* Slash command styles moved to SlashCommandList.svelte component */
+.edra-slash-command-list {
+	margin-bottom: 2rem;
+	max-height: min(80vh, 20rem);
+	width: fit-content;
+	overflow: auto;
+	scroll-behavior: smooth;
+	border-radius: 0.5rem;
+	border: 1px solid var(--edra-border-color);
+	padding: 0.5rem;
+	backdrop-filter: blur(8px);
+}
+
+.edra-slash-command-list-title {
+	margin: 0.5rem;
+	user-select: none;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.025em;
+}
+
+.edra-slash-command-list-item {
+	display: flex;
+	height: fit-content;
+	width: 100%;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 0.5rem;
+	padding: 0.5rem;
+	background: none;
+	border: none;
+	margin: 0.25rem 0;
+	border-radius: 0.25rem;
+}
+.edra-slash-command-list-item.active {
+	background-color: var(--edra-border-color);
+}
 
 .edra-search-and-replace {
 	display: flex;

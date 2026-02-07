@@ -1,98 +1,157 @@
 <script lang="ts">
-	import { type Editor } from '@tiptap/core'
-	import { onMount } from 'svelte'
+	import { onDestroy, onMount } from 'svelte';
+	import type { EdraEditorProps } from '../types.js';
+	import initEditor from '../editor.js';
+	import '../editor.css';
+	import './style.css';
+	import '../onedark.css';
+	import { ImagePlaceholder } from '../extensions/image/ImagePlaceholder.js';
+	import ImagePlaceholderComp from './components/ImagePlaceholder.svelte';
+	import { ImageExtended } from '../extensions/image/ImageExtended.js';
+	import ImageExtendedComp from './components/ImageExtended.svelte';
+	import { VideoPlaceholder } from '../extensions/video/VideoPlaceholder.js';
+	import VideoPlaceHolderComp from './components/VideoPlaceholder.svelte';
+	import { VideoExtended } from '../extensions/video/VideoExtended.js';
+	import VideoExtendedComp from './components/VideoExtended.svelte';
+	import { AudioPlaceholder } from '../extensions/audio/AudioPlaceholder.js';
+	import { AudioExtended } from '../extensions/audio/AudiExtended.js';
+	import AudioPlaceHolderComp from './components/AudioPlaceHolder.svelte';
+	import AudioExtendedComp from './components/AudioExtended.svelte';
+	import { IFramePlaceholder } from '../extensions/iframe/IFramePlaceholder.js';
+	import { IFrameExtended } from '../extensions/iframe/IFrameExtended.js';
+	import IFramePlaceHolderComp from './components/IFramePlaceHolder.svelte';
+	import IFrameExtendedComp from './components/IFrameExtended.svelte';
+	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+	import { all, createLowlight } from 'lowlight';
+	import { SvelteNodeViewRenderer } from 'svelte-tiptap';
+	import CodeBlock from './components/CodeBlock.svelte';
+	import TableCol from './menus/TableCol.svelte';
+	import TableRow from './menus/TableRow.svelte';
+	import Link from './menus/Link.svelte';
+	import slashcommand from '../extensions/slash-command/slashcommand.js';
+	import SlashCommandList from './components/SlashCommandList.svelte';
+	import Mathematics from '@tiptap/extension-mathematics';
+	import TableOfContents, {
+		getHierarchicalIndexes,
+		type TableOfContentData
+	} from '@tiptap/extension-table-of-contents';
+	import ToC from './components/ToC.svelte';
+	import MathMenu from './menus/Math.svelte';
+	import MathInline from './menus/MathInline.svelte';
+	import { FileDrop } from '../extensions/HandleFileDrop.js';
+	import { getHandleDropImage, getHandlePasteImage } from '../utils.js';
 
-	import { initiateEditor } from '../editor.js'
-	import { getEditorExtensions } from '../editor-extensions.js'
-	import './style.css'
-	import 'katex/dist/katex.min.css'
-	import '../editor.css'
-	import '../onedark.css'
-	import LinkMenu from './menus/link-menu.svelte'
-	import TableRowMenu from './menus/table/table-row-menu.svelte'
-	import TableColMenu from './menus/table/table-col-menu.svelte'
-	import LoaderCircle from 'lucide-svelte/icons/loader-circle'
-	import { focusEditor, type EdraProps } from '../utils.js'
+	const lowlight = createLowlight(all);
 
+	let blockMathPos = $state(0);
+	let blockMathLatex = $state('');
+
+	let inlineMathPos = $state(0);
+	let inlineMathLatex = $state('');
+
+	let tocItems = $state<TableOfContentData>();
+
+	/**
+	 * Bind the element to the editor
+	 */
+	let element = $state<HTMLElement>();
 	let {
-		class: className = '',
-		content = undefined,
+		editor = $bindable(),
 		editable = true,
-		limit = undefined,
-		editor = $bindable<Editor | undefined>(),
-		showSlashCommands = true,
-		showLinkBubbleMenu = true,
-		showTableBubbleMenu = true,
+		content,
 		onUpdate,
-		children,
-		placeholder = undefined
-	}: EdraProps & { placeholder?: string } = $props()
-
-	let element = $state<HTMLElement>()
+		autofocus = false,
+		class: className,
+		onFileSelect,
+		onDropOrPaste,
+		getAssets
+	}: EdraEditorProps = $props();
 
 	onMount(() => {
-		const extensions = getEditorExtensions({ showSlashCommands })
-
-		editor = initiateEditor(
+		editor = initEditor(
 			element,
 			content,
-			limit,
-			extensions,
+			[
+				CodeBlockLowlight.configure({
+					lowlight
+				}).extend({
+					addNodeView() {
+						return SvelteNodeViewRenderer(CodeBlock);
+					}
+				}),
+				ImagePlaceholder(ImagePlaceholderComp),
+				ImageExtended(ImageExtendedComp),
+				VideoPlaceholder(VideoPlaceHolderComp),
+				VideoExtended(VideoExtendedComp, onDropOrPaste),
+				AudioPlaceholder(AudioPlaceHolderComp),
+				AudioExtended(AudioExtendedComp, onDropOrPaste),
+				IFramePlaceholder(IFramePlaceHolderComp),
+				IFrameExtended(IFrameExtendedComp),
+				slashcommand(SlashCommandList),
+				FileDrop.configure({
+					handler: onFileSelect,
+					assetsGetter: getAssets
+				}),
+				Mathematics.configure({
+					// Options for the block math node
+					blockOptions: {
+						onClick: (node, pos) => {
+							blockMathPos = pos;
+							blockMathLatex = node.attrs.latex;
+						}
+					},
+					inlineOptions: {
+						onClick: (node, pos) => {
+							inlineMathPos = pos;
+							inlineMathLatex = node.attrs.latex;
+						}
+					},
+					// Options for the KaTeX renderer. See here: https://katex.org/docs/options.html
+					katexOptions: {
+						throwOnError: true, // don't throw an error if the LaTeX code is invalid
+						macros: {
+							'\R': '\mathbb{R}', // add a macro for the real numbers
+							'\N': '\mathbb{N}' // add a macro for the natural numbers
+						}
+					}
+				}),
+				TableOfContents.configure({
+					getIndex: getHierarchicalIndexes,
+					onUpdate: (indexes) => {
+						tocItems = indexes;
+					},
+					scrollParent: () => element || window
+				})
+			],
 			{
-				editable,
 				onUpdate,
-				onTransaction: (props) => {
-					editor = undefined
-					editor = props.editor
-				}
-			},
-			placeholder
-		)
-		return () => editor?.destroy()
-	})
+				onTransaction(props) {
+					editor = undefined;
+					editor = props.editor;
+				},
+				editable,
+				autofocus
+			}
+		);
+		editor.setOptions({
+			editorProps: {
+				handlePaste: getHandlePasteImage(onDropOrPaste),
+				handleDrop: getHandleDropImage(onDropOrPaste)
+			}
+		});
+	});
+
+	onDestroy(() => {
+		if (editor) editor.destroy();
+	});
 </script>
 
-<div class={`edra ${className}`}>
-	{@render children?.()}
-	{#if editor}
-		{#if showLinkBubbleMenu}
-			<LinkMenu {editor} />
-		{/if}
-		{#if showTableBubbleMenu}
-			<TableRowMenu {editor} />
-			<TableColMenu {editor} />
-		{/if}
-	{/if}
-	{#if !editor}
-		<div class="edra-loading">
-			<LoaderCircle class="animate-spin" /> Loading...
-		</div>
-	{/if}
-	<div
-		bind:this={element}
-		role="button"
-		tabindex="0"
-		onclick={(event) => focusEditor(editor, event)}
-		onkeydown={(event) => {
-			if (event.key === 'Enter' || event.key === ' ') {
-				focusEditor(editor, event)
-			}
-		}}
-		class="edra-editor"
-	></div>
-</div>
-
-<style>
-	:global(.ProseMirror) {
-		min-height: 100%;
-		position: relative;
-		word-wrap: break-word;
-		white-space: pre-wrap;
-		cursor: auto;
-		-webkit-font-variant-ligatures: none;
-		font-variant-ligatures: none;
-		&:focus {
-			outline: none;
-		}
-	}
-</style>
+{#if editor && !editor.isDestroyed}
+	<Link {editor} />
+	<TableCol {editor} />
+	<TableRow {editor} />
+	<MathMenu {editor} mathPos={blockMathPos} mathLatex={blockMathLatex} />
+	<MathInline {editor} mathPos={inlineMathPos} mathLatex={inlineMathLatex} />
+	<ToC {editor} items={tocItems} />
+{/if}
+<div bind:this={element} role="button" tabindex="0" class={`edra-editor ${className}`}></div>
