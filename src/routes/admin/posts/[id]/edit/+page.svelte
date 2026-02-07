@@ -44,6 +44,37 @@
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
 
+	// Track initial values to detect unsaved changes
+	let initialValues = $state<{
+		title: string
+		postType: 'post' | 'essay'
+		status: 'draft' | 'published'
+		slug: string
+		excerpt: string
+		content: string
+		tags: string[]
+	}>({
+		title: '',
+		postType: 'post',
+		status: 'draft',
+		slug: '',
+		excerpt: '',
+		content: '',
+		tags: []
+	})
+
+	// Check if form has unsaved changes
+	let isDirty = $derived(
+		hasLoaded &&
+		(title !== initialValues.title ||
+			postType !== initialValues.postType ||
+			status !== initialValues.status ||
+			slug !== initialValues.slug ||
+			excerpt !== initialValues.excerpt ||
+			JSON.stringify(content) !== initialValues.content ||
+			JSON.stringify(tags) !== JSON.stringify(initialValues.tags))
+	)
+
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
 		essay: { icon: '📝', label: 'Essay', showTitle: true, showContent: true }
@@ -66,7 +97,7 @@
 	// Beforeunload guard for unsaved changes
 	$effect(() => {
 		function handleBeforeUnload(e: BeforeUnloadEvent) {
-			if (hasLoaded) {
+			if (isDirty) {
 				e.preventDefault()
 				e.returnValue = ''
 			}
@@ -212,6 +243,17 @@
 
 				tags = post.tags || []
 
+				// Store initial values for dirty tracking
+				initialValues = {
+					title,
+					postType,
+					status,
+					slug,
+					excerpt,
+					content: JSON.stringify(content),
+					tags: [...tags]
+				}
+
 				// Set content ready after all data is loaded
 				contentReady = true
 				hasLoaded = true
@@ -261,6 +303,17 @@
 			if (saved) {
 				post = saved
 				if (newStatus) status = newStatus
+
+				// Update initial values to reflect saved state
+				initialValues = {
+					title,
+					postType,
+					status,
+					slug,
+					excerpt,
+					content: JSON.stringify(content),
+					tags: [...tags]
+				}
 			}
 		} catch (error) {
 			console.error('Failed to save post:', error)

@@ -23,6 +23,15 @@ import { api } from '$lib/admin/api'
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 
+	// Check if form has any content (unsaved changes for new post)
+	let isDirty = $derived(
+		title.trim() !== '' ||
+		slug.trim() !== '' ||
+		excerpt.trim() !== '' ||
+		tags.length > 0 ||
+		(content.content && content.content.length > 0)
+	)
+
 	// Auto-generate slug from title when title changes and slug hasn't been manually set
 	$effect(() => {
 		if (title && !slugManuallySet) {
@@ -51,6 +60,18 @@ import { api } from '$lib/admin/api'
 		}
 		document.addEventListener('keydown', handleKeydown)
 		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Beforeunload guard for unsaved changes
+	$effect(() => {
+		function handleBeforeUnload(e: BeforeUnloadEvent) {
+			if (isDirty) {
+				e.preventDefault()
+				e.returnValue = ''
+			}
+		}
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
 	})
 
 	onMount(() => {
