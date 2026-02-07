@@ -1,8 +1,13 @@
 import type { RequestHandler } from './$types'
 import { searchAlbumsAndSongs } from '$lib/server/apple-music-client'
 import { dev } from '$app/environment'
+import { checkAdminAuth } from '$lib/server/api-utils'
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async (event) => {
+	if (!checkAdminAuth(event)) {
+		return new Response('Unauthorized', { status: 401 })
+	}
+
 	if (!dev) {
 		return new Response('Not found', { status: 404 })
 	}

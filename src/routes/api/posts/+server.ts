@@ -174,7 +174,7 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		logger.info('Post created', { id: post.id, title: post.title })
-		return jsonResponse(post)
+		return jsonResponse(post, 201)
 	} catch (error) {
 		logger.error('Failed to create post', error as Error)
 		return errorResponse('Failed to create post', 500)

@@ -1,14 +1,19 @@
 import type { RequestHandler } from './$types'
 import { findAlbum } from '$lib/server/apple-music-client'
 import { dev } from '$app/environment'
+import { checkAdminAuth } from '$lib/server/api-utils'
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async (event) => {
+	if (!checkAdminAuth(event)) {
+		return new Response('Unauthorized', { status: 401 })
+	}
+
 	if (!dev) {
 		return new Response('Not found', { status: 404 })
 	}
 
-	const artist = url.searchParams.get('artist') || '藤井風'
-	const album = url.searchParams.get('album') || 'Hachikō'
+	const artist = event.url.searchParams.get('artist') || '藤井風'
+	const album = event.url.searchParams.get('album') || 'Hachikō'
 
 	console.log(`Testing findAlbum for "${album}" by "${artist}"`)
 	

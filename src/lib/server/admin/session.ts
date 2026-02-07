@@ -12,7 +12,12 @@ interface SessionPayload {
 }
 
 function sessionSecret(): string {
-	return process.env.ADMIN_SESSION_SECRET ?? 'changeme'
+	const secret = process.env.ADMIN_SESSION_SECRET
+	if (!secret) {
+		if (dev) return 'dev-session-secret'
+		throw new Error('ADMIN_SESSION_SECRET environment variable is required in production')
+	}
+	return secret
 }
 
 function signPayload(payload: string): Buffer {
@@ -70,7 +75,14 @@ function parseToken(token: string): SessionPayload | null {
 }
 
 export function validateAdminPassword(password: string): SessionUser | null {
-	const expected = process.env.ADMIN_PASSWORD ?? 'changeme'
+	const expected = process.env.ADMIN_PASSWORD
+	if (!expected) {
+		if (dev) {
+			console.warn('ADMIN_PASSWORD not set — login disabled in dev')
+			return null
+		}
+		throw new Error('ADMIN_PASSWORD environment variable is required in production')
+	}
 	const providedBuf = Buffer.from(password)
 	const expectedBuf = Buffer.from(expected)
 
@@ -127,3 +139,86 @@ export function getSessionUser(cookies: Cookies): SessionUser | null {
 }
 
 export const ADMIN_SESSION_COOKIE = SESSION_COOKIE_NAME
+
+// --- Project unlock cookies ---
+// Allows visitors to unlock password-protected projects via server-verified password.
+// Uses the same HMAC signing as admin sessions.
+
+const PROJECT_UNLOCK_COOKIE = 'project_unlocks'
+const PROJECT_UNLOCK_TTL = 60 * 60 * 24 // 24 hours
+
+interface ProjectUnlockPayload {
+	ids: number[]
+	exp: number
+}
+
+function buildUnlockToken(payload: ProjectUnlockPayload): string {
+	const payloadStr = JSON.stringify(payload)
+	const signature = signPayload(payloadStr).toString('base64url')
+	return `${Buffer.from(payloadStr, 'utf8').toString('base64url')}.${signature}`
+}
+
+function parseUnlockToken(token: string): ProjectUnlockPayload | null {
+	const [encodedPayload, encodedSignature] = token.split('.')
+	if (!encodedPayload || !encodedSignature) return null
+
+	let payloadStr: string
+	try {
+		payloadStr = Buffer.from(encodedPayload, 'base64url').toString('utf8')
+	} catch {
+		return null
+	}
+
+	let payload: ProjectUnlockPayload
+	try {
+		payload = JSON.parse(payloadStr)
+		if (!payload || !Array.isArray(payload.ids) || typeof payload.exp !== 'number') {
+			return null
+		}
+	} catch {
+		return null
+	}
+
+	const expectedSignature = signPayload(payloadStr)
+	let providedSignature: Buffer
+	try {
+		providedSignature = Buffer.from(encodedSignature, 'base64url')
+	} catch {
+		return null
+	}
+
+	if (expectedSignature.length !== providedSignature.length) return null
+
+	try {
+		if (!timingSafeEqual(expectedSignature, providedSignature)) return null
+	} catch {
+		return null
+	}
+
+	if (Date.now() > payload.exp) return null
+
+	return payload
+}
+
+export function getUnlockedProjectIds(cookies: Cookies): number[] {
+	const token = cookies.get(PROJECT_UNLOCK_COOKIE)
+	if (!token) return []
+	const payload = parseUnlockToken(token)
+	return payload?.ids ?? []
+}
+
+export function addProjectUnlock(cookies: Cookies, projectId: number) {
+	const existing = getUnlockedProjectIds(cookies)
+	const ids = existing.includes(projectId) ? existing : [...existing, projectId]
+	const payload: ProjectUnlockPayload = {
+		ids,
+		exp: Date.now() + PROJECT_UNLOCK_TTL * 1000
+	}
+	cookies.set(PROJECT_UNLOCK_COOKIE, buildUnlockToken(payload), {
+		path: '/',
+		httpOnly: true,
+		secure: !dev,
+		sameSite: 'lax',
+		maxAge: PROJECT_UNLOCK_TTL
+	})
+}

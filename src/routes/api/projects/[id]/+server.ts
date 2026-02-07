@@ -7,6 +7,7 @@ import {
 	checkAdminAuth,
 	parseRequestBody
 } from '$lib/server/api-utils'
+import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { logger } from '$lib/server/logger'
 import { ensureUniqueSlug } from '$lib/server/database'
 import {
@@ -48,6 +49,8 @@ export const GET: RequestHandler = async (event) => {
 		return errorResponse('Invalid project ID', 400)
 	}
 
+	const isAdmin = checkAdminAuth(event)
+
 	try {
 		const project = await prisma.project.findUnique({
 			where: { id }
@@ -55,6 +58,29 @@ export const GET: RequestHandler = async (event) => {
 
 		if (!project) {
 			return errorResponse('Project not found', 404)
+		}
+
+		// Non-admin users can only see published and password-protected projects
+		if (!isAdmin && project.status !== 'published' && project.status !== 'password-protected' && project.status !== 'list-only') {
+			return errorResponse('Project not found', 404)
+		}
+
+		// Strip password and lock content for non-admin users
+		if (!isAdmin) {
+			const { password: _, ...safeProject } = project
+			const isLocked = project.status === 'password-protected' &&
+				!getUnlockedProjectIds(event.cookies).includes(id)
+
+			if (isLocked) {
+				return jsonResponse({
+					...safeProject,
+					caseStudyContent: null,
+					gallery: [],
+					hasPassword: true,
+					locked: true
+				})
+			}
+			return jsonResponse({ ...safeProject, hasPassword: !!project.password, locked: false })
 		}
 
 		return jsonResponse(project)

@@ -10,6 +10,7 @@ import {
 	parseRequestBody
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
+import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { createSlug, ensureUniqueSlug } from '$lib/server/database'
 import {
 	trackMediaUsage,
@@ -98,8 +99,20 @@ export const GET: RequestHandler = async (event) => {
 
 		logger.info('Projects list retrieved', { total, page, limit })
 
+		// Strip passwords and lock content for non-admin responses
+		const unlockedIds = isAdmin ? [] : getUnlockedProjectIds(event.cookies)
+		const safeProjects = isAdmin
+			? projects
+			: projects.map(({ password, ...rest }) => {
+					const isLocked = rest.status === 'password-protected' && !unlockedIds.includes(rest.id)
+					if (isLocked) {
+						return { ...rest, caseStudyContent: null, gallery: [], hasPassword: true, locked: true }
+					}
+					return { ...rest, hasPassword: !!password, locked: false }
+				})
+
 		return jsonResponse({
-			projects,
+			projects: safeProjects,
 			pagination
 		})
 	} catch (error) {

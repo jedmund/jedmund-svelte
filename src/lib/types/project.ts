@@ -21,7 +21,9 @@ export interface Project {
 	projectType: ProjectType
 	displayOrder: number
 	status: ProjectStatus
-	password: string | null
+	password?: string | null
+	hasPassword?: boolean
+	locked?: boolean
 	showFeaturedImageInHeader: boolean
 	showBackgroundColorInHeader: boolean
 	showLogoInHeader: boolean

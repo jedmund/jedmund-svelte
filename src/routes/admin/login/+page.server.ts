@@ -1,11 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
-import { clearSessionCookie, setSessionCookie, validateAdminPassword } from '$lib/server/admin/session'
+import { setSessionCookie, validateAdminPassword } from '$lib/server/admin/session'
 
-export const load = (async ({ cookies }) => {
-	// Ensure we start with a clean session when hitting the login page
-	clearSessionCookie(cookies)
-
+export const load = (async () => {
 	return {
 		form: {
 			message: null

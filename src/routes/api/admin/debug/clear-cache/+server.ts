@@ -2,15 +2,20 @@ import type { RequestHandler } from './$types'
 import redis from '../../../redis-client'
 import { logger } from '$lib/server/logger'
 import { dev } from '$app/environment'
+import { checkAdminAuth } from '$lib/server/api-utils'
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	if (!checkAdminAuth(event)) {
+		return new Response('Unauthorized', { status: 401 })
+	}
+
 	// Only allow in development
 	if (!dev) {
 		return new Response('Not found', { status: 404 })
 	}
 
 	try {
-		const { key, pattern } = await request.json()
+		const { key, pattern } = await event.request.json()
 		
 		if (!key && !pattern) {
 			return new Response('Key or pattern is required', { status: 400 })

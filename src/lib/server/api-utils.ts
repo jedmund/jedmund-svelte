@@ -75,10 +75,3 @@ export function toISOString(date: Date | string | null | undefined): string | nu
 export function checkAdminAuth(event: RequestEvent): boolean {
 	return Boolean(getSessionUser(event.cookies))
 }
-
-// CORS headers for API routes
-export const corsHeaders = {
-	'Access-Control-Allow-Origin': '*', // Update this in production
-	'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-	'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-}
