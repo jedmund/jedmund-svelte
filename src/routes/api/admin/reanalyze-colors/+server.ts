@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types'
+import { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
@@ -21,7 +22,7 @@ export const POST: RequestHandler = async (event) => {
 		// Get all media with color data (prioritize those with grey dominant colors)
 		const mediaWithColors = await prisma.media.findMany({
 			where: {
-				colors: { not: null },
+				colors: { not: Prisma.DbNull },
 				mimeType: { startsWith: 'image/' }
 			},
 			select: {
@@ -88,14 +89,18 @@ export const POST: RequestHandler = async (event) => {
 			} catch (error) {
 				const errorMessage = `Media ID ${media.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
 				results.errors.push(errorMessage)
-				logger.error('Failed to reanalyze colors for media', {
-					mediaId: media.id,
-					error: error as Error
+				logger.error('Failed to reanalyze colors for media', error instanceof Error ? error : undefined, {
+					mediaId: media.id
 				})
 			}
 		}
 
-		logger.info('Color reanalysis completed', results)
+		logger.info('Color reanalysis completed', {
+			processed: results.processed,
+			updated: results.updated,
+			skipped: results.skipped,
+			errorCount: results.errors.length
+		})
 
 		return jsonResponse(results)
 	} catch (error) {

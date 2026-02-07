@@ -143,8 +143,8 @@ export const PUT: RequestHandler = async (event) => {
 		}>(event.request)
 
 		// Also support legacy photoId parameter
-		const mediaId = body?.mediaId || (body as Record<string, unknown>)?.photoId
-		if (!mediaId || body?.displayOrder === undefined) {
+		const mediaId = body?.mediaId || Number((body as Record<string, unknown>)?.photoId)
+		if (!mediaId || isNaN(mediaId) || body?.displayOrder === undefined) {
 			return errorResponse('Media ID and display order are required', 400)
 		}
 
@@ -221,7 +221,7 @@ export const DELETE: RequestHandler = async (event) => {
 		})
 
 		if (!album) {
-			logger.error('Album not found', { albumId })
+			logger.error('Album not found', undefined, { albumId })
 			return errorResponse('Album not found', 404)
 		}
 
@@ -238,7 +238,7 @@ export const DELETE: RequestHandler = async (event) => {
 		logger.info('AlbumMedia lookup result', { mediaId, albumId, found: !!albumMedia })
 
 		if (!albumMedia) {
-			logger.error('Media not found in album', { mediaId, albumId })
+			logger.error('Media not found in album', undefined, { mediaId, albumId })
 			return errorResponse('Media not found in this album', 404)
 		}
 

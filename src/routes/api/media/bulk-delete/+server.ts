@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types'
-import type { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
@@ -101,10 +101,9 @@ export const DELETE: RequestHandler = async (event) => {
 					deleted
 				})
 			} catch (error) {
-				logger.error('Error deleting file from storage', {
+				logger.error('Error deleting file from storage', error instanceof Error ? error : undefined, {
 					mediaId: media.id,
-					url: media.url,
-					error: error instanceof Error ? error.message : 'Unknown error'
+					url: media.url
 				})
 				storageDeleteResults.push({
 					id: media.id,
@@ -138,8 +137,8 @@ export const DELETE: RequestHandler = async (event) => {
 			deletedCount: deleteResult.count,
 			storageDeletedCount: successfulStorageDeletions,
 			storageFailedCount: failedStorageDeletions.length,
-			mediaIds,
-			filenames: mediaRecords.map((m) => m.filename)
+			mediaIds: mediaIds.join(', '),
+			filenames: mediaRecords.map((m) => m.filename).join(', ')
 		})
 
 		return jsonResponse({
@@ -200,7 +199,7 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 				return itemId ? !mediaIds.includes(Number(itemId)) : true
 			})
 			if (filteredGallery.length !== project.gallery.length) {
-				updateData.gallery = filteredGallery.length > 0 ? filteredGallery : null
+				updateData.gallery = filteredGallery.length > 0 ? (filteredGallery as unknown as Prisma.InputJsonValue) : Prisma.DbNull
 				needsUpdate = true
 			}
 		}
@@ -209,7 +208,7 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 		if (project.caseStudyContent) {
 			const cleanedContent = cleanContentFromMedia(project.caseStudyContent, mediaIds, urlsToRemove)
 			if (cleanedContent !== project.caseStudyContent) {
-				updateData.caseStudyContent = cleanedContent
+				updateData.caseStudyContent = (cleanedContent as Prisma.InputJsonValue) ?? Prisma.DbNull
 				needsUpdate = true
 			}
 		}
@@ -250,7 +249,7 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 				return itemId ? !mediaIds.includes(Number(itemId)) : true
 			})
 			if (filteredAttachments.length !== post.attachments.length) {
-				updateData.attachments = filteredAttachments.length > 0 ? filteredAttachments : null
+				updateData.attachments = filteredAttachments.length > 0 ? (filteredAttachments as unknown as Prisma.InputJsonValue) : Prisma.DbNull
 				needsUpdate = true
 			}
 		}
@@ -259,7 +258,7 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 		if (post.content) {
 			const cleanedContent = cleanContentFromMedia(post.content, mediaIds, urlsToRemove)
 			if (cleanedContent !== post.content) {
-				updateData.content = cleanedContent
+				updateData.content = (cleanedContent as Prisma.InputJsonValue) ?? Prisma.DbNull
 				needsUpdate = true
 			}
 		}
@@ -324,5 +323,5 @@ function cleanContentFromMedia(content: Prisma.JsonValue, mediaIds: number[], ur
 		return node
 	}
 
-	return cleanNode(content)
+	return cleanNode(content as unknown as ContentNode) as unknown as Prisma.JsonValue
 }

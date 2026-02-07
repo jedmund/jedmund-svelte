@@ -1,10 +1,10 @@
 <script lang="ts">
-	import WorkIcon from '$icons/work.svg'
-	import LabsIcon from '$icons/labs.svg'
-	import UniverseIcon from '$icons/universe.svg'
-	import PhotosIcon from '$icons/photos.svg'
-	import AboutIcon from '$icons/about.svg'
-	import ChevronDownIcon from '$icons/chevron-down.svg'
+	import WorkIcon from '$icons/work.svg?component'
+	import LabsIcon from '$icons/labs.svg?component'
+	import UniverseIcon from '$icons/universe.svg?component'
+	import PhotosIcon from '$icons/photos.svg?component'
+	import AboutIcon from '$icons/about.svg?component'
+	import ChevronDownIcon from '$icons/chevron-down.svg?component'
 	import { page } from '$app/stores'
 
 	const currentPath = $derived($page.url.pathname)
@@ -186,10 +186,10 @@
 			stroke-width: $unit-2px;
 			stroke-linecap: round;
 			stroke-linejoin: round;
+		}
 
-			&.open {
-				transform: rotate(180deg);
-			}
+		:global(svg.chevron.open) {
+			transform: rotate(180deg);
 		}
 	}
 

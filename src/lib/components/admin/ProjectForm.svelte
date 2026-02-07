@@ -147,7 +147,8 @@
 </script>
 
 <AdminPage>
-	<header slot="header">
+	{#snippet header()}
+	<header>
 		<div class="header-left">
 			<h1 class="form-title">{formStore.fields.title || 'Untitled Project'}</h1>
 		</div>
@@ -170,6 +171,7 @@
 			/>
 		</div>
 	</header>
+	{/snippet}
 
 	<div class="admin-container">
 		{#if isLoading}

@@ -9,8 +9,8 @@
 	import { getCurrentMousePosition } from '$lib/stores/mouse'
 	import type { PageData } from './$types'
 	import { isAlbum, type PhotoItem } from '$lib/types/photos'
-	import ArrowLeft from '$icons/arrow-left.svg'
-	import ArrowRight from '$icons/arrow-right.svg'
+	import ArrowLeft from '$icons/arrow-left.svg?component'
+	import ArrowRight from '$icons/arrow-right.svg?component'
 
 	let { data }: { data: PageData } = $props()
 
@@ -133,7 +133,7 @@
 		// Wait for DOM to update and image to load
 		const checkAndSetPositions = () => {
 			const pageContainer = document.querySelector('.photo-page') as HTMLElement
-			const photoImage = pageContainer?.querySelector('.photo-content-wrapper img') as HTMLElement
+			const photoImage = pageContainer?.querySelector('.photo-content-wrapper img') as HTMLImageElement | null
 
 			if (photoImage && photoImage.complete) {
 				const imageRect = photoImage.getBoundingClientRect()

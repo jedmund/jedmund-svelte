@@ -21,11 +21,11 @@
 	{/if}
 
 	<!-- Gallery (if available) -->
-	{#if project.gallery && project.gallery.length > 0}
+	{#if (project as any).gallery && (project as any).gallery.length > 0}
 		<div class="gallery-section">
 			<h2>Gallery</h2>
 			<div class="gallery-grid">
-				{#each project.gallery as image}
+				{#each (project as any).gallery as image}
 					<img src={image} alt="Gallery item" />
 				{/each}
 			</div>

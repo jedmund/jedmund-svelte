@@ -8,31 +8,31 @@ datasource db {
 }
 
 model Project {
-  id               Int       @id @default(autoincrement())
-  slug             String    @unique @db.VarChar(255)
-  title            String    @db.VarChar(255)
-  subtitle         String?   @db.VarChar(255)
-  description      String?
-  year             Int
-  client           String?   @db.VarChar(255)
-  role             String?   @db.VarChar(255)
-  featuredImage    String?   @db.VarChar(500)
-  gallery          Json?
-  externalUrl      String?   @db.VarChar(500)
-  caseStudyContent Json?
-  displayOrder     Int       @default(0)
-  status           String    @default("draft") @db.VarChar(50)
-  publishedAt      DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  backgroundColor              String?  @db.VarChar(50)
-  highlightColor               String?  @db.VarChar(50)
-  logoUrl                      String?  @db.VarChar(500)
-  password                     String?  @db.VarChar(255)
-  projectType                  String   @default("work") @db.VarChar(50)
-  showFeaturedImageInHeader    Boolean  @default(true)
-  showBackgroundColorInHeader  Boolean  @default(true)
-  showLogoInHeader             Boolean  @default(true)
+  id                          Int       @id @default(autoincrement())
+  slug                        String    @unique @db.VarChar(255)
+  title                       String    @db.VarChar(255)
+  subtitle                    String?   @db.VarChar(255)
+  description                 String?
+  year                        Int
+  client                      String?   @db.VarChar(255)
+  role                        String?   @db.VarChar(255)
+  featuredImage               String?   @db.VarChar(500)
+  gallery                     Json?
+  externalUrl                 String?   @db.VarChar(500)
+  caseStudyContent            Json?
+  displayOrder                Int       @default(0)
+  status                      String    @default("draft") @db.VarChar(50)
+  publishedAt                 DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+  backgroundColor             String?   @db.VarChar(50)
+  highlightColor              String?   @db.VarChar(50)
+  logoUrl                     String?   @db.VarChar(500)
+  password                    String?   @db.VarChar(255)
+  projectType                 String    @default("work") @db.VarChar(50)
+  showFeaturedImageInHeader   Boolean   @default(true)
+  showBackgroundColorInHeader Boolean   @default(true)
+  showLogoInHeader            Boolean   @default(true)
 
   @@index([slug])
   @@index([status])
@@ -130,10 +130,10 @@ model Media {
   dominantColor    String?      @db.VarChar(7)
   colors           Json?
   aspectRatio      Float?
-  duration         Float?       // Video duration in seconds
+  duration         Float? // Video duration in seconds
   videoCodec       String?      @db.VarChar(50)
   audioCodec       String?      @db.VarChar(50)
-  bitrate          Int?         // Bitrate in bits per second
+  bitrate          Int? // Bitrate in bits per second
   albums           AlbumMedia[]
   usage            MediaUsage[]
   photos           Photo[]

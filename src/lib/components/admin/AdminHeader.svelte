@@ -1,7 +1,9 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+
 	interface Props {
 		title: string
-		actions?: unknown
+		actions?: Snippet
 	}
 
 	let { title, actions }: Props = $props()

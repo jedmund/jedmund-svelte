@@ -77,7 +77,7 @@ export const GET: RequestHandler = async (event) => {
 			},
 			include: {
 				_count: {
-					select: { photos: true }
+					select: { media: true }
 				}
 			},
 			orderBy: { createdAt: 'desc' },
@@ -87,7 +87,7 @@ export const GET: RequestHandler = async (event) => {
 		// Combine and sort by date
 		const items = [
 			...posts.map((post) => ({
-				type: 'post',
+				type: 'post' as const,
 				id: post.id.toString(),
 				title:
 					post.title || `${post.postType.charAt(0).toUpperCase() + post.postType.slice(1)} Post`,
@@ -101,18 +101,18 @@ export const GET: RequestHandler = async (event) => {
 				featuredImage: post.featuredImage || null
 			})),
 			...albums.map((album) => ({
-				type: 'album',
+				type: 'album' as const,
 				id: album.id.toString(),
 				title: album.title,
 				description:
 					album.description ||
-					`Photo album with ${album._count.photos} photo${album._count.photos !== 1 ? 's' : ''}`,
+					`Photo album with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
 				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
 				link: `${event.url.origin}/photos/${album.slug}`,
 				guid: `${event.url.origin}/photos/${album.slug}`,
 				pubDate: album.createdAt,
 				updatedDate: album.updatedAt,
-				photoCount: album._count.photos
+				photoCount: album._count.media
 			}))
 		].sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 

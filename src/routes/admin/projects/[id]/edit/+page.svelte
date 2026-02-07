@@ -17,7 +17,7 @@ import { api } from '$lib/admin/api'
 
 	async function loadProject() {
 		try {
-			const data = await api.get(`/api/projects/${projectId}`)
+			const data = await api.get<Project>(`/api/projects/${projectId}`)
 			project = data
 		} catch (err) {
 			error = 'Failed to load project'

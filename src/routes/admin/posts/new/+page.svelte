@@ -96,7 +96,7 @@ import { api } from '$lib/admin/api'
 		}
 
 		try {
-			const newPost = await api.post('/api/posts', postData)
+			const newPost = await api.post<{ id: number }>('/api/posts', postData)
 			goto(`/admin/posts/${newPost.id}/edit`)
 		} catch (error) {
 			console.error('Failed to create post:', error)
@@ -107,10 +107,9 @@ import { api } from '$lib/admin/api'
 
 	// Mock post object for metadata popover
 	const mockPost = $derived({
-		id: null,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
-		publishedAt: null
+		publishedAt: null as string | null
 	})
 </script>
 
@@ -119,7 +118,8 @@ import { api } from '$lib/admin/api'
 </svelte:head>
 
 <AdminPage>
-	<header slot="header">
+	{#snippet header()}
+	<header>
 		<div class="header-left">
 			<button class="btn-icon" onclick={() => goto('/admin/posts')} aria-label="Back to posts">
 				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -181,6 +181,7 @@ import { api } from '$lib/admin/api'
 			/>
 		</div>
 	</header>
+	{/snippet}
 
 	<div class="post-composer">
 		<div class="main-content">
@@ -264,39 +265,6 @@ import { api } from '$lib/admin/api'
 		&:disabled {
 			opacity: 0.6;
 			cursor: not-allowed;
-		}
-	}
-
-	.dropdown-menu {
-		position: absolute;
-		top: calc(100% + $unit);
-		right: 0;
-		background: white;
-		border: 1px solid $gray-80;
-		border-radius: 8px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		min-width: 150px;
-		z-index: 1050;
-		overflow: hidden;
-	}
-
-	.dropdown-item {
-		width: 100%;
-		padding: $unit-2x;
-		border: none;
-		background: none;
-		cursor: pointer;
-		text-align: left;
-		transition: background 0.2s ease;
-		font-size: 0.875rem;
-		color: $gray-10;
-
-		&:hover {
-			background: $gray-95;
-		}
-
-		&:not(:last-child) {
-			border-bottom: 1px solid $gray-90;
 		}
 	}
 

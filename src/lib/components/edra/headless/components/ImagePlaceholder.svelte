@@ -35,7 +35,7 @@
 						type: 'image',
 						attrs: {
 							src: selectedMedia.url,
-							alt: selectedMedia.altText || '',
+							alt: selectedMedia.description || '',
 							title: selectedMedia.description || '',
 							mediaId: selectedMedia.id?.toString()
 						}

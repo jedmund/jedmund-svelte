@@ -1,9 +1,4 @@
-<script lang="ts">
-	import { onMount } from 'svelte'
-	import { clickOutside } from '$lib/actions/clickOutside'
-	import Input from './Input.svelte'
-	import Button from './Button.svelte'
-
+<script lang="ts" module>
 	export interface MetadataField {
 		type: 'input' | 'textarea' | 'date' | 'toggle' | 'tags' | 'metadata' | 'custom' | 'section'
 		key: string
@@ -11,7 +6,7 @@
 		placeholder?: string
 		rows?: number
 		helpText?: string
-		component?: unknown // For custom components
+		component?: any // For custom components
 		props?: Record<string, unknown> // Additional props for custom components
 	}
 
@@ -23,10 +18,18 @@
 			action: () => void
 		}
 	}
+</script>
+
+<script lang="ts">
+	import { onMount } from 'svelte'
+	import { clickOutside } from '$lib/actions/clickOutside'
+	import Input from './Input.svelte'
+	import Textarea from './Textarea.svelte'
+	import Button from './Button.svelte'
 
 	type Props = {
 		config: MetadataConfig
-		data: Record<string, unknown>
+		data: Record<string, any>
 		triggerElement: HTMLElement
 		onUpdate?: (key: string, value: unknown) => void
 		onAddTag?: () => void
@@ -177,8 +180,7 @@
 					onchange={() => handleFieldUpdate(field.key, data[field.key])}
 				/>
 			{:else if field.type === 'textarea'}
-				<Input
-					type="textarea"
+				<Textarea
 					label={field.label}
 					bind:value={data[field.key]}
 					rows={field.rows || 3}
@@ -254,7 +256,7 @@
 	{#if config.deleteButton}
 		<div class="popover-footer">
 			<Button variant="danger-text" pill={false} onclick={config.deleteButton.action}>
-				<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+				{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 					<path
 						d="M4 4L12 12M4 12L12 4"
 						stroke="currentColor"
@@ -262,7 +264,7 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 					/>
-				</svg>
+				</svg>{/snippet}
 				{config.deleteButton.label}
 			</Button>
 		</div>

@@ -199,7 +199,7 @@
 						{editor}
 						isOpen={showTextStyleMenu}
 						onClose={() => (showTextStyleMenu = false)}
-						{features}
+						features={{ ...features }}
 					/>
 				</div>
 

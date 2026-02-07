@@ -51,6 +51,7 @@ export interface ProjectFormData {
 	showFeaturedImageInHeader: boolean
 	showBackgroundColorInHeader: boolean
 	showLogoInHeader: boolean
+	gallery?: unknown[]
 }
 
 export const defaultProjectFormData: ProjectFormData = {

@@ -29,7 +29,7 @@
 		const newImages = mediaArray.map((m) => ({
 			id: m.id,
 			url: m.url,
-			alt: m.altText || '',
+			alt: m.description || '',
 			title: m.description || ''
 		}))
 
@@ -164,7 +164,7 @@
 	/>
 </NodeViewWrapper>
 
-<style>
+<style lang="scss">
 	.edra-gallery-container {
 		border: $unit-2px solid transparent;
 		border-radius: $corner-radius-md;

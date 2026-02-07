@@ -10,16 +10,16 @@
 		album.photos && album.photos.length > 0
 			? album.photos.map((photo) => ({
 					url: photo.url,
-					thumbnailUrl: photo.thumbnailUrl,
-					caption: photo.caption,
+					thumbnailUrl: photo.thumbnailUrl ?? undefined,
+					caption: photo.caption ?? undefined,
 					alt: photo.caption || album.title
 				}))
 			: album.coverPhoto
 				? [
 						{
 							url: album.coverPhoto.url,
-							thumbnailUrl: album.coverPhoto.thumbnailUrl,
-							caption: album.coverPhoto.caption,
+							thumbnailUrl: album.coverPhoto.thumbnailUrl ?? undefined,
+							caption: album.coverPhoto.caption ?? undefined,
 							alt: album.coverPhoto.caption || album.title
 						}
 					]
@@ -27,7 +27,7 @@
 	)
 </script>
 
-<UniverseCard item={album} type="album">
+<UniverseCard item={album as unknown as { slug: string; publishedAt: string; [key: string]: unknown }} type="album">
 	{#if slideshowItems.length > 0}
 		<div class="album-slideshow">
 			<Slideshow
@@ -95,6 +95,7 @@
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		overflow: hidden;
 	}
 

@@ -118,13 +118,15 @@ const statusFilterOptions = [
 </svelte:head>
 
 <AdminPage>
-	<AdminHeader title="Universe" slot="header">
+	{#snippet header()}
+	<AdminHeader title="Universe">
 		{#snippet actions()}
 			<Button variant="primary" buttonSize="medium" onclick={handleNewEssay}>
 				New Essay
 			</Button>
 		{/snippet}
 	</AdminHeader>
+	{/snippet}
 
 	{#if showInlineComposer}
 		<div class="composer-section">
@@ -141,14 +143,14 @@ const statusFilterOptions = [
 	<AdminFilters>
 		{#snippet left()}
 			<Select
-				value={filters.values.type}
+				value={String(filters.values.type)}
 				options={typeFilterOptions}
 				size="small"
 				variant="minimal"
 				onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
 			/>
 			<Select
-				value={filters.values.status}
+				value={String(filters.values.status)}
 				options={statusFilterOptions}
 				size="small"
 				variant="minimal"

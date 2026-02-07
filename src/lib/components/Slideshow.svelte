@@ -50,7 +50,7 @@
 	)
 
 	const remainingCount = $derived(
-		showMoreThumbnail ? (totalCount || items.length) - (responsiveMaxThumbnails - 1) : 0
+		showMoreThumbnail ? (totalCount || items.length) - (responsiveMaxThumbnails! - 1) : 0
 	)
 
 	const totalSlots = $derived(

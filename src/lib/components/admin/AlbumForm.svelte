@@ -38,7 +38,8 @@
 	let validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
-	let editorInstance = $state<{ save: () => Promise<JSONContent>; clear: () => void } | undefined>()
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let editorInstance = $state<any>()
 	let activeTab = $state('metadata')
 	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
 
@@ -257,13 +258,15 @@
 		formData.content = content
 	}
 
-	function handlePhotoSelection(media: Media[]) {
-		pendingMediaIds = media.map((m) => m.id)
+	function handlePhotoSelection(media: Media | Media[]) {
+		const mediaArray = Array.isArray(media) ? media : [media]
+		pendingMediaIds = mediaArray.map((m) => m.id)
 	}
 </script>
 
 <AdminPage>
-	<header slot="header">
+	{#snippet header()}
+	<header>
 		<div class="header-left">
 			<h1 class="form-title">{formData.title || 'Untitled Album'}</h1>
 		</div>
@@ -284,6 +287,7 @@
 			</Button>
 		</div>
 	</header>
+	{/snippet}
 
 	<div class="admin-container">
 		{#if isLoading}

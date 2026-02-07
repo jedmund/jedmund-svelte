@@ -75,7 +75,7 @@
 
 <div class={gridClass}>
 	{#if masonry && masonryConfig()}
-		{@const config = masonryConfig()}
+		{@const config = masonryConfig()!}
 		<!-- Masonry layout using svelte-bricks -->
 		<Masonry
 			items={photos}
@@ -87,7 +87,7 @@
 			duration={0}
 			class="photo-masonry"
 		>
-			{#snippet children({ item })}
+			{#snippet children({ item }: { item: Photo })}
 				<div class="photo-grid__item">
 					<PhotoItem {item} />
 					{#if showCaptions}

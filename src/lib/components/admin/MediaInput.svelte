@@ -210,7 +210,7 @@
 			<Button variant="ghost" onclick={openModal}>Browse</Button>
 			{#if hasValue}
 				<Button variant="ghost" onclick={handleClear} aria-label="Clear selection">
-					<CloseButton slot="icon" size={16} />
+					{#snippet icon()}<CloseButton size={16} />{/snippet}
 				</Button>
 			{/if}
 		</div>

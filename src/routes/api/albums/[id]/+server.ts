@@ -130,7 +130,7 @@ export const PUT: RequestHandler = async (event) => {
 				status: body.status !== undefined ? body.status : existing.status,
 				showInUniverse:
 					body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse,
-				content: body.content !== undefined ? body.content : existing.content
+				content: (body.content !== undefined ? body.content : existing.content) as Prisma.InputJsonValue ?? undefined
 			}
 		})
 

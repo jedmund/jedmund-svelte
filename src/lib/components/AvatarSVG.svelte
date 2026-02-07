@@ -1,3 +1,8 @@
+<script lang="ts">
+	import type { Snippet } from 'svelte'
+	let { face }: { face?: Snippet } = $props()
+</script>
+
 <svg width="497" height="497" viewBox="0 0 497 497" fill="none" xmlns="http://www.w3.org/2000/svg">
 	<g>
 		<!-- Common elements -->
@@ -58,7 +63,7 @@
 		/>
 
 		<!-- Face slot -->
-		<slot name="face" />
+		{#if face}{@render face()}{/if}
 
 		<!-- Additional elements that should always be visible -->
 		<path

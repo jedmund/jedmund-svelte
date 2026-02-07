@@ -109,7 +109,7 @@ export async function uploadFileLocally(
 					}
 					
 					duration = metadata.format.duration
-					bitrate = metadata.format.bit_rate ? parseInt(metadata.format.bit_rate) : undefined
+					bitrate = metadata.format.bit_rate ? Number(metadata.format.bit_rate) : undefined
 
 					// Generate thumbnail
 					ffmpeg(filepath)
@@ -159,16 +159,16 @@ export async function uploadFileLocally(
 					.toFile(thumbnailPath)
 			} catch (imageError) {
 				// If sharp fails (e.g., for SVG), just save the original
-				logger.warn('Sharp processing failed, saving original only', imageError as Error)
+				logger.warn('Sharp processing failed, saving original only', { error: (imageError as Error).message })
 				await writeFile(filepath, buffer)
 			}
 		}
 
 		// Construct URLs
 		const url = `${PUBLIC_PATH}/${type}/${filename}`
-		const thumbnailUrl = existsSync(thumbnailPath) 
+		const thumbnailUrl = existsSync(thumbnailPath)
 			? `${PUBLIC_PATH}/thumbnails/${thumbnailFilename}`
-			: null
+			: undefined
 
 		logger.info('File uploaded locally', {
 			filename,

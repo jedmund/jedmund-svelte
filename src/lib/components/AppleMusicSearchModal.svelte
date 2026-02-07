@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import XIcon from '$icons/x.svg'
-	import LoaderIcon from '$icons/loader.svg'
+	import XIcon from '$icons/x.svg?component'
+	import LoaderIcon from '$icons/loader.svg?component'
 	
 	let isOpen = $state(false)
 	let searchQuery = $state('')

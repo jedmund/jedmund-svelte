@@ -16,7 +16,7 @@
 	$effect(() => {
 		if (formData.gallery && Array.isArray(formData.gallery)) {
 			// Convert gallery URLs/objects to Media objects
-			galleryMedia = formData.gallery.map((item, index) => {
+			galleryMedia = formData.gallery.map((item: unknown, index: number) => {
 				if (typeof item === 'string') {
 					// Handle legacy URL strings
 					return {
@@ -39,21 +39,21 @@
 					// Already a Media object
 					return item
 				}
-			})
+			}) as Media[]
 		} else {
 			galleryMedia = []
 		}
 	})
 
-	function handleGalleryUpload(media: Media[]) {
+	function handleGalleryUpload(media: (Media | (Partial<Media> & { mediaId?: number }))[]) {
 		// Store as Media objects in the gallery field
 		formData.gallery = media
-		galleryMedia = media
+		galleryMedia = media as Media[]
 	}
 
-	function handleGalleryReorder(media: Media[]) {
+	function handleGalleryReorder(media: (Media | (Partial<Media> & { mediaId?: number }))[]) {
 		formData.gallery = media
-		galleryMedia = media
+		galleryMedia = media as Media[]
 	}
 </script>
 

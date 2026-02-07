@@ -25,7 +25,7 @@
 					description:
 						project.description || `${project.title} — A professional project by Justin Edmund`,
 					url: pageUrl,
-					image: project.thumbnailUrl || project.logoUrl,
+					image: project.featuredImage || project.logoUrl || undefined,
 					type: 'article',
 					titleFormat: { type: 'by' }
 				})
@@ -42,12 +42,12 @@
 		project
 			? generateCreativeWorkJsonLd({
 					name: project.title,
-					description: project.description,
+					description: project.description ?? undefined,
 					url: pageUrl,
-					image: project.thumbnailUrl || project.logoUrl,
+					image: project.featuredImage || project.logoUrl || undefined,
 					creator: 'Justin Edmund',
 					dateCreated: project.year ? `${project.year}-01-01` : undefined,
-					keywords: project.tags || []
+					keywords: []
 				})
 			: null
 	)
@@ -133,9 +133,11 @@
 {#if error}
 	<div class="error-container">
 		<Page>
-			<div slot="header" class="error-header">
+			{#snippet header()}
+			<div class="error-header">
 				<h1>Error</h1>
 			</div>
+			{/snippet}
 			<div class="error-content">
 				<p>{error}</p>
 				<BackButton href="/" label="Back to projects" />
@@ -148,9 +150,11 @@
 	</Page>
 {:else if project.status === 'list-only'}
 	<Page>
-		<div slot="header" class="error-header">
+		{#snippet header()}
+		<div class="error-header">
 			<h1>Project Not Available</h1>
 		</div>
+		{/snippet}
 		<div class="error-content">
 			<p>This project is not yet available for viewing. Please check back later.</p>
 			<BackButton href="/" label="Back to projects" />

@@ -138,17 +138,14 @@
 			background-color: $salmon-pink;
 		}
 
-		.nav-icon {
+		:global(.nav-icon) {
 			font-size: 1.5rem;
 			line-height: 1;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-
-			:global(svg) {
-				width: 24px;
-				height: 24px;
-			}
+			width: 24px;
+			height: 24px;
 		}
 
 		.nav-text {

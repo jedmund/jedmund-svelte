@@ -70,7 +70,7 @@
 		if (post.content) {
 			let textContent = ''
 
-			if (typeof post.content === 'object' && post.content.content) {
+			if (typeof post.content === 'object' && post.content && (post.content as Record<string, unknown>).content) {
 				// BlockNote/TipTap format
 				function extractText(node: Record<string, unknown>): string {
 					if (typeof node.text === 'string') return node.text
@@ -127,7 +127,7 @@
 	role="button"
 	tabindex="0"
 	onclick={handlePostClick}
-	onkeydown={(e) => e.key === 'Enter' && handlePostClick()}
+	onkeydown={(e) => e.key === 'Enter' && handlePostClick(e as unknown as MouseEvent)}
 >
 	<div class="post-main">
 		{#if post.title}
@@ -226,13 +226,6 @@
 		gap: $unit;
 	}
 
-	.post-link-url {
-		margin: 0;
-		font-size: 0.875rem;
-		color: $blue-60;
-		word-break: break-all;
-	}
-
 	.post-preview {
 		margin: 0;
 		font-size: 0.925rem;
@@ -240,6 +233,7 @@
 		color: $gray-30;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

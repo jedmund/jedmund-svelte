@@ -99,7 +99,7 @@
 			{#if exifData?.dateTaken}
 				<div class="metadata-item">
 					<span class="metadata-label">Date Taken</span>
-					<span class="metadata-value">{formatDate(exifData.dateTaken)}</span>
+					<span class="metadata-value">{formatDate(exifData.dateTaken as string)}</span>
 				</div>
 			{:else if createdAt}
 				<div class="metadata-item">
@@ -230,50 +230,6 @@
 			color: $gray-10;
 			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
 				monospace;
-		}
-	}
-
-	.albums-section {
-		margin-bottom: $unit-4x;
-		padding-bottom: $unit-4x;
-		border-bottom: 1px solid $gray-90;
-
-		@include breakpoint('phone') {
-			margin-bottom: $unit-3x;
-			padding-bottom: $unit-3x;
-		}
-
-		.albums-title {
-			font-size: 0.875rem;
-			font-weight: 600;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-			color: $gray-40;
-			margin: 0 0 $unit-2x;
-		}
-
-		.albums-list {
-			display: flex;
-			flex-wrap: wrap;
-			gap: $unit $unit-2x;
-		}
-
-		.album-link {
-			font-size: 0.875rem;
-			color: $red-60;
-			text-decoration: none;
-			transition: color 0.2s ease;
-
-			&:hover {
-				color: $red-50;
-				text-decoration: underline;
-			}
-
-			&:not(:last-child)::after {
-				content: ',';
-				color: $gray-40;
-				margin-left: 2px;
-			}
 		}
 	}
 

@@ -49,9 +49,11 @@
 		</Button>
 	{/snippet}
 
-	{#if showDropdown}
-		<DropdownItem onclick={handleSaveDraftClick}>
-			{saveDraftText}
-		</DropdownItem>
-	{/if}
+	{#snippet dropdown()}
+		{#if showDropdown}
+			<DropdownItem onclick={handleSaveDraftClick}>
+				{saveDraftText}
+			</DropdownItem>
+		{/if}
+	{/snippet}
 </BaseDropdown>

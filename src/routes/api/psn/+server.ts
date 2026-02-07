@@ -7,6 +7,7 @@ import type {
 	GetUserPlayedTimeResponse
 } from 'psn-api'
 import type { RequestHandler } from './$types'
+import type { SerializableGameInfo } from '$lib/types/steam'
 
 const require = Module.createRequire(import.meta.url)
 const {
@@ -52,7 +53,8 @@ async function getSerializedGames(_psnId: string): Promise<SerializableGameInfo[
 	})
 
 	// Map the games to a serializable format that the frontend understands.
-	const games: SerializableGameInfo[] = response.titles.map((game: GetUserPlayedTimeResponse) => ({
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const games: SerializableGameInfo[] = response.titles.map((game: any) => ({
 		id: game.concept.id,
 		name: game.name,
 		playtime: game.playDuration,

@@ -1,9 +1,15 @@
 import 'dotenv/config'
 import { error } from '@sveltejs/kit'
 import redis from '../redis-client'
-import SteamAPI from 'steamapi'
+import SteamAPI, {
+	UserPlaytime,
+	GameInfoExtended,
+	Game,
+	GameInfo
+} from 'steamapi'
 
 import type { RequestHandler } from './$types'
+import type { SerializableGameInfo } from '$lib/types/steam'
 
 const CACHE_TTL = 60 * 60 // 1 hour
 const STEAM_ID = '76561197997279808'

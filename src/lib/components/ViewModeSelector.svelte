@@ -6,7 +6,7 @@
 	import WidthNormalIcon from '$icons/width-normal.svg?component'
 	import WidthWideIcon from '$icons/width-wide.svg?component'
 
-	export type ViewMode = 'masonry' | 'single' | 'two-column' | 'horizontal'
+	type ViewMode = 'masonry' | 'single' | 'two-column' | 'horizontal'
 
 	interface Props {
 		mode?: ViewMode

@@ -6,7 +6,7 @@
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
 
 	// Gallery items can be either Media objects or objects with a mediaId reference
-	type GalleryItem = Media | (Partial<Media> & { mediaId?: number })
+	type GalleryItem = (Media & { mediaId?: number }) | (Partial<Media> & { mediaId?: number })
 
 	interface Props {
 		label: string
@@ -335,7 +335,7 @@
 
 		// Filter out any media that already exists (check both id and potential mediaId)
 		const newMedia = mediaArray.filter((media) => {
-			return !existingIds.has(media.id) && !existingIds.has(media.mediaId)
+			return !existingIds.has(media.id) && !existingIds.has((media as Media & { mediaId?: number }).mediaId)
 		})
 
 		console.log('[GalleryUploader] Filtered new media:', {
@@ -359,22 +359,22 @@
 		// Convert to Media format if needed
 		selectedImage = {
 			id: ('mediaId' in media && media.mediaId) || media.id!,
-			filename: media.filename,
-			originalName: media.originalName || media.filename,
+			filename: media.filename ?? '',
+			originalName: media.originalName || media.filename || null,
 			mimeType: media.mimeType || 'image/jpeg',
 			size: media.size || 0,
-			url: media.url,
-			thumbnailUrl: media.thumbnailUrl,
-			width: media.width,
-			height: media.height,
+			url: media.url ?? '',
+			thumbnailUrl: media.thumbnailUrl ?? null,
+			width: media.width ?? null,
+			height: media.height ?? null,
 			// altText removed - using description only
 			description: media.description || '',
 			isPhotography: media.isPhotography || false,
-			createdAt: media.createdAt,
-			updatedAt: media.updatedAt,
+			createdAt: media.createdAt ?? new Date(),
+			updatedAt: media.updatedAt ?? new Date(),
 			exifData: media.exifData || null,
 			usedIn: media.usedIn || []
-		}
+		} as Media
 		isImageModalOpen = true
 	}
 
@@ -584,20 +584,20 @@
 							<SmartImage
 								media={{
 									id: media.mediaId || media.id,
-									filename: media.filename,
-									originalName: media.originalName || media.filename,
+									filename: media.filename ?? '',
+									originalName: media.originalName || media.filename || null,
 									mimeType: media.mimeType || 'image/jpeg',
 									size: media.size || 0,
-									url: media.url,
-									thumbnailUrl: media.thumbnailUrl,
-									width: media.width,
-									height: media.height,
+									url: media.url ?? '',
+									thumbnailUrl: media.thumbnailUrl ?? null,
+									width: media.width ?? null,
+									height: media.height ?? null,
 									// altText removed - using description only
-									description: media.description,
+									description: media.description ?? null,
 									isPhotography: media.isPhotography || false,
-									createdAt: media.createdAt,
-									updatedAt: media.updatedAt
-								}}
+									createdAt: media.createdAt ?? new Date(),
+									updatedAt: media.updatedAt ?? new Date()
+								} as Media}
 								alt={media.description || media.filename || 'Gallery image'}
 								containerWidth={300}
 								loading="lazy"
@@ -706,24 +706,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit-2x;
-	}
-
-	.uploader-label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: $gray-20;
-
-		.required {
-			color: $red-60;
-			margin-left: $unit-half;
-		}
-	}
-
-	.help-text {
-		margin: 0;
-		font-size: 0.8rem;
-		color: $gray-40;
-		line-height: 1.4;
 	}
 
 	// Drop Zone Styles

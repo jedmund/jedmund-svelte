@@ -52,8 +52,8 @@
 				</div>
 				<div class="album-overlay">
 					<div class="album-info">
-						<span class="album-title">{item.title}</span>
-						<span class="album-count">{item.photos.length} photos</span>
+						<span class="album-title">{(item as import('$lib/types/photos').PhotoAlbum).title}</span>
+						<span class="album-count">{(item as import('$lib/types/photos').PhotoAlbum).photos.length} photos</span>
 					</div>
 				</div>
 			</div>

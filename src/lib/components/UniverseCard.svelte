@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import UniverseIcon from '$icons/universe.svg'
-	import PhotosIcon from '$icons/photos.svg'
+	import UniverseIcon from '$icons/universe.svg?component'
+	import PhotosIcon from '$icons/photos.svg?component'
 	import { formatDate } from '$lib/utils/date'
 	import { goto } from '$app/navigation'
 
@@ -46,7 +46,7 @@
 		onclick={handleCardClick}
 		role="button"
 		tabindex="0"
-		onkeydown={(e) => e.key === 'Enter' && handleCardClick(e)}
+		onkeydown={(e) => e.key === 'Enter' && handleCardClick(e as unknown as MouseEvent)}
 	>
 		{@render children?.()}
 
@@ -154,24 +154,28 @@
 				fill: $red-60;
 			}
 
+			/* svelte-ignore css_unknown_property */
 			:global(.card-icon rect:nth-child(1)) {
 				transition: all $transition-medium ease;
 				height: $unit-6px;
 				y: $unit-2px;
 			}
 
+			/* svelte-ignore css_unknown_property */
 			:global(.card-icon rect:nth-child(2)) {
 				transition: all $transition-medium ease;
 				height: $unit-10px;
 				y: $unit-2px;
 			}
 
+			/* svelte-ignore css_unknown_property */
 			:global(.card-icon rect:nth-child(3)) {
 				transition: all $transition-medium ease;
 				height: $unit;
 				y: $unit-10px;
 			}
 
+			/* svelte-ignore css_unknown_property */
 			:global(.card-icon rect:nth-child(4)) {
 				transition: all $transition-medium ease;
 				height: $unit-half;

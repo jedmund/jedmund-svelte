@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Editor } from '@tiptap/core'
 	import { onMount, setContext } from 'svelte'
-	import { initiateEditor } from '$lib/components/edra/editor.ts'
+	import { initiateEditor } from '$lib/components/edra/editor'
 	import { getEditorExtensions } from '$lib/components/edra/editor-extensions.js'
 	import LoaderCircle from 'lucide-svelte/icons/loader-circle'
 	import LinkMenu from '$lib/components/edra/headless/menus/link-menu.svelte'
@@ -134,7 +134,10 @@
 			mode: 'single',
 			fileType: 'image',
 			albumId,
-			onSelect: handleGlobalMediaSelect,
+			onSelect: (media: Media | Media[]) => {
+				const single = Array.isArray(media) ? media[0] : media
+				if (single) handleGlobalMediaSelect(single)
+			},
 			onClose: handleGlobalMediaClose
 		})
 	}
@@ -174,7 +177,7 @@
 				? linkManagerRef?.handleShowUrlConvertDropdown
 				: undefined,
 			onShowLinkContextMenu: linkManagerRef?.handleShowLinkContextMenu,
-			imagePlaceholderComponent: EnhancedImagePlaceholder
+			imagePlaceholderComponent: EnhancedImagePlaceholder as any
 		})
 
 		// Initialize editor

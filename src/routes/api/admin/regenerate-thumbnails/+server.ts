@@ -155,7 +155,12 @@ export const POST: RequestHandler = async (event) => {
 			}
 		}
 
-		logger.info('Thumbnail regeneration completed', results)
+		logger.info('Thumbnail regeneration completed', {
+			processed: results.processed,
+			succeeded: results.succeeded,
+			failed: results.failed,
+			errorCount: results.errors.length
+		})
 
 		return jsonResponse({
 			message: 'Thumbnail regeneration completed',

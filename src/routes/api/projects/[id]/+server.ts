@@ -11,7 +11,7 @@ import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { logger } from '$lib/server/logger'
 import { ensureUniqueSlug } from '$lib/server/database'
 import {
-	updateMediaUsage,
+	trackMediaUsage,
 	removeMediaUsage,
 	extractMediaIds,
 	type MediaUsageReference
@@ -40,6 +40,7 @@ interface ProjectUpdateBody {
 	showFeaturedImageInHeader?: boolean
 	showBackgroundColorInHeader?: boolean
 	showLogoInHeader?: boolean
+	updatedAt?: string
 }
 
 // GET /api/projects/[id] - Get a single project
@@ -145,10 +146,10 @@ export const PUT: RequestHandler = async (event) => {
 				featuredImage:
 					body.featuredImage !== undefined ? body.featuredImage : existing.featuredImage,
 				logoUrl: body.logoUrl !== undefined ? body.logoUrl : existing.logoUrl,
-				gallery: body.gallery !== undefined ? body.gallery : existing.gallery,
+				gallery: (body.gallery !== undefined ? body.gallery : existing.gallery) as Prisma.InputJsonValue ?? undefined,
 				externalUrl: body.externalUrl !== undefined ? body.externalUrl : existing.externalUrl,
 				caseStudyContent:
-					body.caseStudyContent !== undefined ? body.caseStudyContent : existing.caseStudyContent,
+					(body.caseStudyContent !== undefined ? body.caseStudyContent : existing.caseStudyContent) as Prisma.InputJsonValue ?? undefined,
 				backgroundColor:
 					body.backgroundColor !== undefined ? body.backgroundColor : existing.backgroundColor,
 				highlightColor:
@@ -227,10 +228,10 @@ export const PUT: RequestHandler = async (event) => {
 			})
 
 			if (usageReferences.length > 0) {
-				await updateMediaUsage(usageReferences)
+				await trackMediaUsage(usageReferences)
 			}
 		} catch (error) {
-			logger.warn('Failed to update media usage tracking for project', { projectId: id, error })
+			logger.warn('Failed to update media usage tracking for project', { projectId: id, error: error instanceof Error ? error.message : String(error) })
 		}
 
 		logger.info('Project updated', { id: project.id, slug: project.slug })
@@ -302,9 +303,9 @@ export const PATCH: RequestHandler = async (event) => {
 		if (body.role !== undefined) updateData.role = body.role
 		if (body.featuredImage !== undefined) updateData.featuredImage = body.featuredImage
 		if (body.logoUrl !== undefined) updateData.logoUrl = body.logoUrl
-		if (body.gallery !== undefined) updateData.gallery = body.gallery
+		if (body.gallery !== undefined) updateData.gallery = (body.gallery as Prisma.InputJsonValue) ?? undefined
 		if (body.externalUrl !== undefined) updateData.externalUrl = body.externalUrl
-		if (body.caseStudyContent !== undefined) updateData.caseStudyContent = body.caseStudyContent
+		if (body.caseStudyContent !== undefined) updateData.caseStudyContent = (body.caseStudyContent as Prisma.InputJsonValue) ?? undefined
 		if (body.backgroundColor !== undefined) updateData.backgroundColor = body.backgroundColor
 		if (body.highlightColor !== undefined) updateData.highlightColor = body.highlightColor
 		if (body.projectType !== undefined) updateData.projectType = body.projectType
@@ -327,7 +328,7 @@ export const PATCH: RequestHandler = async (event) => {
 			data: updateData
 		})
 
-		logger.info('Project partially updated', { id: project.id, fields: Object.keys(updateData) })
+		logger.info('Project partially updated', { id: project.id, fields: Object.keys(updateData).join(', ') })
 
 		return jsonResponse(project)
 	} catch (error) {

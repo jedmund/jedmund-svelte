@@ -24,10 +24,6 @@
 		color: $gray-40;
 		flex-wrap: wrap;
 
-		.byline-section {
-			// Remove text-transform: capitalize to allow proper sentence case
-		}
-
 		.separator {
 			color: $gray-40;
 		}

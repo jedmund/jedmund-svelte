@@ -6,7 +6,7 @@
 	import Modal from '$lib/components/admin/Modal.svelte'
 	import { formatBytes } from '$lib/utils/format'
 	import { CheckCircle, Trash2, AlertCircle, RefreshCw } from 'lucide-svelte'
-	import ChevronLeft from '$icons/chevron-left.svg'
+	import ChevronLeft from '$icons/chevron-left.svg?component'
 
 	interface AuditSummary {
 		totalCloudinaryFiles: number
@@ -206,7 +206,8 @@
 </svelte:head>
 
 <AdminPage>
-	<header slot="header">
+	{#snippet header()}
+	<header>
 		<div class="header-left">
 			<button class="btn-icon" onclick={() => goto('/admin/media')}>
 				<ChevronLeft />
@@ -218,13 +219,14 @@
 				variant="secondary"
 				onclick={runAudit}
 				disabled={loading}
-				icon={RefreshCw}
+				icon={RefreshCw as any}
 				iconPosition="left"
 			>
 				{loading ? 'Running Audit...' : 'Run Audit'}
 			</Button>
 		</div>
 	</header>
+	{/snippet}
 
 	{#if loading}
 		<div class="loading">
@@ -294,7 +296,7 @@
 							showDeleteModal = true
 						}}
 						disabled={!hasSelection || deleting}
-						icon={Trash2}
+						icon={Trash2 as any}
 						iconPosition="left"
 					>
 						Delete Selected
@@ -397,7 +399,7 @@
 						showCleanupModal = true
 					}}
 					disabled={cleaningUp}
-					icon={AlertCircle}
+					icon={AlertCircle as any}
 					iconPosition="left"
 				>
 					Clean Up Broken References

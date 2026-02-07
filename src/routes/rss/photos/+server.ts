@@ -18,31 +18,56 @@ function formatRFC822Date(date: Date): string {
 	return date.toUTCString()
 }
 
+interface AlbumItem {
+	type: 'album'
+	id: string
+	title: string
+	description: string
+	content: string
+	link: string
+	pubDate: Date
+	updatedDate: Date
+	guid: string
+	photoCount: number
+	coverPhoto: { url: string; thumbnailUrl: string | null } | null
+	location: string | null
+	date: Date | null
+}
+
+interface PhotoItem {
+	type: 'photo'
+	id: string
+	title: string
+	description: string
+	content: string
+	link: string
+	pubDate: Date
+	updatedDate: Date
+	guid: string
+	url: string
+	thumbnailUrl: string | null
+}
+
+type FeedItem = AlbumItem | PhotoItem
+
 export const GET: RequestHandler = async (event) => {
 	try {
 		// Get published photography albums
 		const albums = await prisma.album.findMany({
 			where: {
-				status: 'published',
-				isPhotography: true
+				status: 'published'
 			},
 			include: {
-				photos: {
-					where: {
-						status: 'published',
-						showInPhotos: true
-					},
+				media: {
 					orderBy: { displayOrder: 'asc' },
-					take: 1 // Get first photo for cover image
+					take: 1, // Get first media for cover image
+					include: {
+						media: true
+					}
 				},
 				_count: {
 					select: {
-						photos: {
-							where: {
-								status: 'published',
-								showInPhotos: true
-							}
-						}
+						media: true
 					}
 				}
 			},
@@ -50,37 +75,38 @@ export const GET: RequestHandler = async (event) => {
 			take: 50 // Limit to most recent 50 albums
 		})
 
-		// Get individual published photos not in albums
+		// Get individual published photos
 		const standalonePhotos = await prisma.photo.findMany({
 			where: {
 				status: 'published',
-				showInPhotos: true,
-				albumId: null
+				showInPhotos: true
 			},
 			orderBy: { publishedAt: 'desc' },
 			take: 25
 		})
 
 		// Combine albums and standalone photos
-		const items = [
-			...albums.map((album) => ({
+		const items: FeedItem[] = [
+			...albums.map((album): AlbumItem => ({
 				type: 'album',
 				id: album.id.toString(),
 				title: album.title,
 				description:
 					album.description ||
-					`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.photos} photo${album._count.photos !== 1 ? 's' : ''}`,
+					`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
 				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
 				link: `${event.url.origin}/photos/${album.slug}`,
 				pubDate: album.createdAt,
 				updatedDate: album.updatedAt,
 				guid: `${event.url.origin}/photos/${album.slug}`,
-				photoCount: album._count.photos,
-				coverPhoto: album.photos[0],
+				photoCount: album._count.media,
+				coverPhoto: album.media[0]?.media
+					? { url: album.media[0].media.url, thumbnailUrl: album.media[0].media.thumbnailUrl }
+					: null,
 				location: album.location,
 				date: album.date
 			})),
-			...standalonePhotos.map((photo) => ({
+			...standalonePhotos.map((photo): PhotoItem => ({
 				type: 'photo',
 				id: photo.id.toString(),
 				title: photo.title || photo.filename,
@@ -92,7 +118,7 @@ export const GET: RequestHandler = async (event) => {
 						: '',
 				link: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
 				pubDate: photo.publishedAt || photo.createdAt,
-				updatedDate: photo.updatedAt,
+				updatedDate: photo.createdAt,
 				guid: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
 				url: photo.url,
 				thumbnailUrl: photo.thumbnailUrl
@@ -145,7 +171,7 @@ ${
 <media:content url="${event.url.origin}${item.url}" type="image/jpeg"/>`
 		: ''
 }
-${item.location ? `<category domain="location">${escapeXML(item.location)}</category>` : ''}
+${item.type === 'album' && item.location ? `<category domain="location">${escapeXML(item.location)}</category>` : ''}
 <author>noreply@jedmund.com (Justin Edmund)</author>
 </item>`
 	)

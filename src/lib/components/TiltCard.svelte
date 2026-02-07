@@ -1,7 +1,9 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
+	let { children }: { children?: Snippet } = $props()
 	let cardElement: HTMLDivElement
-	let isHovering = false
-	let transform = ''
+	let isHovering = $state(false)
+	let transform = $state('')
 
 	function handleMouseMove(e: MouseEvent) {
 		if (!cardElement || !isHovering) return
@@ -33,12 +35,12 @@
 	class="tilt-card"
 	bind:this={cardElement}
 	role="presentation"
-	on:mousemove={handleMouseMove}
-	on:mouseenter={handleMouseEnter}
-	on:mouseleave={handleMouseLeave}
+	onmousemove={handleMouseMove}
+	onmouseenter={handleMouseEnter}
+	onmouseleave={handleMouseLeave}
 	style="transform: {transform};"
 >
-	<slot />
+	{#if children}{@render children()}{/if}
 </div>
 
 <style lang="scss">

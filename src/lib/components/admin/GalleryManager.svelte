@@ -26,7 +26,12 @@
 	let draggedIndex = $state<number | null>(null)
 	let dragOverIndex = $state<number | null>(null)
 
-	function handleImagesSelect(media: Media[]) {
+	function handleImagesSelect(media: Media | Media[]) {
+		const mediaArray = Array.isArray(media) ? media : [media]
+		handleImagesSelectArray(mediaArray)
+	}
+
+	function handleImagesSelectArray(media: Media[]) {
 		// Add new images to existing ones, avoiding duplicates
 		const existingIds = new Set(value.map((item) => item.id))
 		const newImages = media.filter((item) => !existingIds.has(item.id))
@@ -285,8 +290,7 @@
 				</div>
 				<p class="empty-text">No images added yet</p>
 				<Button variant="primary" onclick={openModal}>
-					<svg
-						slot="icon"
+					{#snippet icon()}<svg
 						width="16"
 						height="16"
 						viewBox="0 0 24 24"
@@ -299,7 +303,7 @@
 							stroke-width="2"
 							stroke-linecap="round"
 						/>
-					</svg>
+					</svg>{/snippet}
 					Add Images
 				</Button>
 			</div>
@@ -310,8 +314,7 @@
 	{#if hasImages && canAddMore}
 		<div class="add-more-container">
 			<Button variant="ghost" onclick={openModal}>
-				<svg
-					slot="icon"
+				{#snippet icon()}<svg
 					width="16"
 					height="16"
 					viewBox="0 0 24 24"
@@ -324,7 +327,7 @@
 						stroke-width="2"
 						stroke-linecap="round"
 					/>
-				</svg>
+				</svg>{/snippet}
 				Add More Images
 			</Button>
 		</div>

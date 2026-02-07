@@ -1,13 +1,19 @@
-import type { Editor, EditorView } from '@tiptap/core'
+import type { Editor } from '@tiptap/core'
+import type { EditorView } from '@tiptap/pm/view'
+import { Selection } from '@tiptap/pm/state'
 import type { ComposerMediaHandler } from './ComposerMediaHandler.svelte'
 import { focusEditor } from '$lib/components/edra/utils'
 
 export interface UseComposerEventsOptions {
-	editor: Editor | undefined
-	mediaHandler: ComposerMediaHandler | undefined
+	editor: (() => Editor | undefined) | Editor | undefined
+	mediaHandler: (() => ComposerMediaHandler | undefined) | ComposerMediaHandler | undefined
 	features: {
 		imageUpload?: boolean
 	}
+}
+
+function resolve<T>(value: (() => T) | T): T {
+	return typeof value === 'function' ? (value as () => T)() : value
 }
 
 export function useComposerEvents(options: UseComposerEventsOptions) {
@@ -16,9 +22,10 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 		const clipboardData = event.clipboardData
 		if (!clipboardData) return false
 
+		const mediaHandler = resolve(options.mediaHandler)
 		// Let media handler check for images first
-		if (options.mediaHandler && options.features.imageUpload) {
-			const handled = options.mediaHandler.handlePasteImage(clipboardData)
+		if (mediaHandler && options.features.imageUpload) {
+			const handled = mediaHandler.handlePasteImage(clipboardData)
 			if (handled) return true
 		}
 
@@ -30,7 +37,7 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 			event.preventDefault()
 
 			// Use editor commands to insert HTML content
-			const editorInstance = options.editor
+			const editorInstance = resolve(options.editor)
 			if (editorInstance) {
 				editorInstance
 					.chain()
@@ -53,21 +60,24 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 
 	// Handle editor click
 	function handleEditorClick(event: MouseEvent) {
-		if (options.editor) {
-			focusEditor(options.editor, event)
+		const editorVal = resolve(options.editor)
+		if (editorVal) {
+			focusEditor(editorVal, event)
 		}
 	}
 
 	// Handle editor keyboard events
 	function handleEditorKeydown(event: KeyboardEvent) {
-		if (options.editor && (event.key === 'Enter' || event.key === ' ')) {
-			focusEditor(options.editor, event)
+		const editorVal = resolve(options.editor)
+		if (editorVal && (event.key === 'Enter' || event.key === ' ')) {
+			focusEditor(editorVal, event)
 		}
 	}
 
 	// Handle drag and drop for images
 	function handleDrop(view: EditorView, event: DragEvent): boolean {
-		if (!options.features.imageUpload || !options.mediaHandler) return false
+		const mediaHandlerVal = resolve(options.mediaHandler)
+		if (!options.features.imageUpload || !mediaHandlerVal) return false
 
 		const files = event.dataTransfer?.files
 		if (!files || files.length === 0) return false
@@ -86,12 +96,12 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 		// Set cursor position to drop location
 		const { state, dispatch } = view
 		const transaction = state.tr.setSelection(
-			state.selection.constructor.near(state.doc.resolve(pos.pos))
+			Selection.near(state.doc.resolve(pos.pos))
 		)
 		dispatch(transaction)
 
 		// Upload the image
-		options.mediaHandler.uploadImage(imageFile)
+		mediaHandlerVal.uploadImage(imageFile)
 		return true
 	}
 
@@ -99,10 +109,11 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 	function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement
 		const file = input.files?.[0]
-		if (!file || !options.mediaHandler) return
+		const mediaHandlerVal = resolve(options.mediaHandler)
+		if (!file || !mediaHandlerVal) return
 
 		if (file.type.startsWith('image/')) {
-			options.mediaHandler.uploadImage(file)
+			mediaHandlerVal.uploadImage(file)
 		}
 
 		// Clear the input

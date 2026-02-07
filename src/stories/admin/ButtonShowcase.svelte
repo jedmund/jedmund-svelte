@@ -30,8 +30,7 @@
 		<h4>With Icons</h4>
 		<div class="button-grid">
 			<Button variant="primary" iconPosition="left">
-				<svg
-					slot="icon"
+				{#snippet icon()}<svg
 					width="16"
 					height="16"
 					viewBox="0 0 24 24"
@@ -45,14 +44,13 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 					/>
-				</svg>
+				</svg>{/snippet}
 				Add Item
 			</Button>
 
 			<Button variant="secondary" iconPosition="right">
 				Download
-				<svg
-					slot="icon"
+				{#snippet icon()}<svg
 					width="16"
 					height="16"
 					viewBox="0 0 24 24"
@@ -82,12 +80,11 @@
 						stroke-width="2"
 						stroke-linecap="round"
 					/>
-				</svg>
+				</svg>{/snippet}
 			</Button>
 
 			<Button variant="ghost" iconOnly={true}>
-				<svg
-					slot="icon"
+				{#snippet icon()}<svg
 					width="16"
 					height="16"
 					viewBox="0 0 24 24"
@@ -101,7 +98,7 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 					/>
-				</svg>
+				</svg>{/snippet}
 			</Button>
 		</div>
 	</div>

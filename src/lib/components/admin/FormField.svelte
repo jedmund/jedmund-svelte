@@ -47,7 +47,7 @@
 		{/if}
 	</label>
 
-	{#if isWrapper}
+	{#if isWrapper && children}
 		{@render children()}
 	{:else if type === 'textarea'}
 		<textarea

@@ -90,10 +90,11 @@
 						document.querySelector('[data-smiz-overlay]') ||
 						document.querySelector('.medium-image-zoom-overlay') ||
 						document.querySelector('[data-rmiz-modal-overlay]')
-					const zoomedImage =
+					const zoomedImage = (
 						document.querySelector('[data-smiz-modal] img') ||
 						document.querySelector('.medium-image-zoom-image') ||
-						(document.querySelector('[data-rmiz-modal-img]') as HTMLImageElement)
+						document.querySelector('[data-rmiz-modal-img]')
+					) as HTMLElement | null
 
 					console.log('Checking for zoom elements:', {
 						zoomOverlay: !!zoomOverlay,
@@ -282,14 +283,15 @@
 				border-radius: $unit-2x 0 0 $unit-2x;
 			}
 
-			// Hide indicators when scrolled to edges
-			&[data-at-start]::before {
-				opacity: 0;
-			}
+		}
 
-			&[data-at-end]::after {
-				opacity: 0;
-			}
+		// Hide indicators when scrolled to edges
+		:global([data-smiz-modal][data-at-start])::before {
+			opacity: 0;
+		}
+
+		:global([data-smiz-modal][data-at-end])::after {
+			opacity: 0;
 		}
 
 		// Scrollbar styling for ultrawide images

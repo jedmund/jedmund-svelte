@@ -62,12 +62,6 @@
 		color: $text-color-subdued;
 	}
 
-	.music-note {
-		font-size: $font-size-small;
-		opacity: 0.8;
-		animation: pulse 2s ease-in-out infinite;
-	}
-
 	.album-thumbnail {
 		width: 32px;
 		height: 32px;
@@ -132,13 +126,4 @@
 		}
 	}
 
-	@keyframes pulse {
-		0%,
-		100% {
-			opacity: 0.8;
-		}
-		50% {
-			opacity: 0.4;
-		}
-	}
 </style>

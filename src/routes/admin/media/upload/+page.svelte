@@ -124,7 +124,8 @@
 </svelte:head>
 
 <AdminPage>
-	<header slot="header">
+	{#snippet header()}
+	<header>
 		<h1>Upload Media</h1>
 		<div class="header-actions">
 			<Button variant="secondary" onclick={() => goto('/admin/media')}>
@@ -132,6 +133,7 @@
 			</Button>
 		</div>
 	</header>
+	{/snippet}
 
 	<div class="upload-container">
 		<!-- File List -->
@@ -158,8 +160,7 @@
 							disabled={isUploading}
 							title="Clear all files"
 						>
-							<svg
-								slot="icon"
+							{#snippet icon()}<svg
 								width="16"
 								height="16"
 								viewBox="0 0 24 24"
@@ -170,7 +171,7 @@
 								<circle cx="12" cy="12" r="10"></circle>
 								<line x1="8" y1="8" x2="16" y2="16"></line>
 								<line x1="16" y1="8" x2="8" y2="16"></line>
-							</svg>
+							</svg>{/snippet}
 						</Button>
 					</div>
 				</div>

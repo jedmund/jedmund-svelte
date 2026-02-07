@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
 	import BaseModal from './BaseModal.svelte'
 	import Button from './Button.svelte'
 	import CloseButton from '$components/icons/CloseButton.svelte'
@@ -10,6 +11,7 @@
 		closeOnEscape?: boolean
 		showCloseButton?: boolean
 		onClose?: () => void
+		children?: Snippet
 	}
 
 	let {
@@ -18,7 +20,8 @@
 		closeOnBackdrop = true,
 		closeOnEscape = true,
 		showCloseButton = true,
-		onClose
+		onClose,
+		children
 	}: Props = $props()
 
 	function handleClose() {
@@ -36,12 +39,12 @@
 			aria-label="Close modal"
 			class="close-button"
 		>
-			<CloseButton slot="icon" />
+			{#snippet icon()}<CloseButton />{/snippet}
 		</Button>
 	{/if}
 
 	<div class="modal-content">
-		<slot />
+		{#if children}{@render children()}{/if}
 	</div>
 </BaseModal>
 

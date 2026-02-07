@@ -6,17 +6,43 @@
 
 	import type { Post } from '@prisma/client'
 
-	let { post }: { post: Post } = $props()
+	interface AlbumPhoto {
+		url: string
+		thumbnailUrl?: string
+		caption?: string
+	}
+
+	interface PostAlbum {
+		title: string
+		description?: string
+		photos: AlbumPhoto[]
+	}
+
+	interface Attachment {
+		url: string
+		thumbnailUrl?: string
+		caption?: string
+	}
+
+	type PostWithRelations = Post & {
+		album?: PostAlbum | null
+	}
+
+	let { post }: { post: PostWithRelations } = $props()
 
 	const renderedContent = $derived(post.content ? renderEdraContent(post.content) : '')
+	const publishedAtStr = $derived(post.publishedAt ? post.publishedAt.toString() : '')
+	const attachments = $derived(
+		Array.isArray(post.attachments) ? (post.attachments as unknown as Attachment[]) : []
+	)
 </script>
 
 <article class="post-content {post.postType}">
 	<header class="post-header">
 		<div class="post-meta">
 			<a href="/universe/{post.slug}" class="post-date-link">
-				<time class="post-date" datetime={post.publishedAt}>
-					{formatDate(post.publishedAt)}
+				<time class="post-date" datetime={publishedAtStr}>
+					{publishedAtStr ? formatDate(publishedAtStr) : ''}
 				</time>
 			</a>
 		</div>
@@ -36,22 +62,22 @@
 				{/if}
 			</div>
 			<Slideshow
-				items={post.album.photos.map((photo) => ({
+				items={post.album.photos.map((photo: AlbumPhoto) => ({
 					url: photo.url,
 					thumbnailUrl: photo.thumbnailUrl,
 					caption: photo.caption,
-					alt: photo.caption || post.album.title
+					alt: photo.caption || post.album?.title || 'Photo'
 				}))}
 				alt={post.album.title}
 				aspectRatio="4/3"
 			/>
 		</div>
-	{:else if post.attachments && Array.isArray(post.attachments) && post.attachments.length > 0}
+	{:else if attachments.length > 0}
 		<!-- Regular attachments -->
 		<div class="post-attachments">
 			<h3>Photos</h3>
 			<Slideshow
-				items={post.attachments.map((attachment) => ({
+				items={attachments.map((attachment: Attachment) => ({
 					url: attachment.url,
 					thumbnailUrl: attachment.thumbnailUrl,
 					caption: attachment.caption,
@@ -388,6 +414,7 @@
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 2;
+			line-clamp: 2;
 			overflow: hidden;
 		}
 
@@ -399,6 +426,7 @@
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 3;
+			line-clamp: 3;
 			overflow: hidden;
 		}
 

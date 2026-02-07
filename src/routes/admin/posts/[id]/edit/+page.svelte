@@ -10,7 +10,23 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
-	import type { Post } from '@prisma/client'
+
+	// Type for what the API actually returns (JSON-serialized Post)
+	interface ApiPost {
+		id: number
+		slug: string
+		postType: string
+		title: string | null
+		content: Record<string, unknown> | null
+		featuredImage: string | null
+		tags: string[] | null
+		status: string
+		publishedAt: string | null
+		createdAt: string
+		updatedAt: string
+		attachments: unknown
+		excerpt?: string | null
+	}
 
 	// Type for the old blocks format from database
 	interface BlockContent {
@@ -25,7 +41,7 @@
 		}>
 	}
 
-	let post = $state<Post | null>(null)
+	let post = $state<ApiPost | null>(null)
 	let loading = $state(true)
 	let hasLoaded = $state(false)
 	let saving = $state(false)
@@ -170,7 +186,7 @@
 
 		return {
 			type: 'doc',
-			content: tiptapContent
+			content: tiptapContent as JSONContent[]
 		}
 	}
 
@@ -190,27 +206,28 @@
 		}
 
 		try {
-			const data = await api.get(`/api/posts/${postId}`)
+			const data = await api.get<ApiPost>(`/api/posts/${postId}`)
 			if (data) {
 				post = data
 
 				// Populate form fields
-				title = post.title || ''
-				postType = post.postType // No mapping needed anymore
-				status = post.status || 'draft'
-				slug = post.slug || ''
-				excerpt = post.excerpt || ''
+				title = data.title || ''
+				postType = (data.postType as 'post' | 'essay') || 'post'
+				status = (data.status as 'draft' | 'published') || 'draft'
+				slug = data.slug || ''
+				excerpt = data.excerpt || ''
 
 				// Convert blocks format to Tiptap format if needed
-				if (post.content && post.content.blocks) {
-					content = convertBlocksToTiptap(post.content)
-				} else if (post.content && post.content.type === 'doc') {
-					content = post.content
+				const postContent = data.content
+				if (postContent && 'blocks' in postContent) {
+					content = convertBlocksToTiptap(postContent as unknown as BlockContent)
+				} else if (postContent && postContent.type === 'doc') {
+					content = postContent as unknown as JSONContent
 				} else {
 					content = { type: 'doc', content: [] }
 				}
 
-				tags = post.tags || []
+				tags = (data.tags as string[]) || []
 
 				// Set content ready after all data is loaded
 				contentReady = true
@@ -254,13 +271,13 @@
 		}
 
 		try {
-			const saved = await api.put(`/api/posts/${$page.params.id}`, {
+			const saved = await api.put<ApiPost>(`/api/posts/${$page.params.id}`, {
 				...postData,
 				updatedAt: post?.updatedAt
 			})
 			if (saved) {
 				post = saved
-				if (newStatus) status = newStatus
+				if (newStatus) status = newStatus as 'draft' | 'published'
 			}
 		} catch (error) {
 			console.error('Failed to save post:', error)
@@ -312,7 +329,8 @@
 </svelte:head>
 
 <AdminPage>
-	<header slot="header">
+	{#snippet header()}
+	<header>
 		{#if !loading && post}
 			<div class="header-left">
 				<button class="btn-icon" onclick={() => goto('/admin/posts')} aria-label="Back to posts">
@@ -378,6 +396,7 @@
 			</div>
 		{/if}
 	</header>
+	{/snippet}
 
 	{#if loading}
 		<div class="loading-container">
@@ -494,39 +513,6 @@
 		&:hover {
 			background: $gray-90;
 			color: $gray-10;
-		}
-	}
-
-	.dropdown-menu {
-		position: absolute;
-		top: calc(100% + $unit);
-		right: 0;
-		background: white;
-		border: 1px solid $gray-80;
-		border-radius: 8px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		min-width: 150px;
-		z-index: 1050;
-		overflow: hidden;
-	}
-
-	.dropdown-item {
-		width: 100%;
-		padding: $unit-2x;
-		border: none;
-		background: none;
-		cursor: pointer;
-		text-align: left;
-		transition: background 0.2s ease;
-		font-size: 0.875rem;
-		color: $gray-10;
-
-		&:hover {
-			background: $gray-95;
-		}
-
-		&:not(:last-child) {
-			border-bottom: 1px solid $gray-90;
 		}
 	}
 

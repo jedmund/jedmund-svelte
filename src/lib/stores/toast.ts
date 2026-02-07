@@ -71,9 +71,10 @@ export const toast = {
 		},
 		options?: ToastOptions
 	) => {
-		return sonnerToast.promise(promise, messages, {
+		return sonnerToast.promise(promise, {
 			...defaultOptions,
-			...options
+			...options,
+			...messages
 		})
 	},
 
@@ -82,7 +83,7 @@ export const toast = {
 	},
 
 	// Custom toast with full control
-	custom: (component: unknown, options?: ToastOptions) => {
+	custom: (component: Parameters<typeof sonnerToast.custom>[0], options?: ToastOptions) => {
 		return sonnerToast.custom(component, {
 			...defaultOptions,
 			...options

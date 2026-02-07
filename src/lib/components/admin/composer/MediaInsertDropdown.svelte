@@ -6,11 +6,12 @@
 		editor: Editor
 		position: DropdownPosition
 		features: ComposerFeatures
+		albumId?: number
 		onDismiss: () => void
 		onOpenMediaLibrary: () => void
 	}
 
-	let { editor, position, features, onDismiss, onOpenMediaLibrary }: Props = $props()
+	let { editor, position, features, albumId, onDismiss, onOpenMediaLibrary }: Props = $props()
 
 	function insertMedia(type: string) {
 		switch (type) {

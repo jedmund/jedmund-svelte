@@ -155,9 +155,9 @@ export const POST: RequestHandler = async (event) => {
 				role: body.role,
 				featuredImage: body.featuredImage,
 				logoUrl: body.logoUrl,
-				gallery: body.gallery || [],
+				gallery: (body.gallery || []) as Prisma.InputJsonValue,
 				externalUrl: body.externalUrl,
-				caseStudyContent: body.caseStudyContent,
+				caseStudyContent: (body.caseStudyContent ?? undefined) as Prisma.InputJsonValue | undefined,
 				backgroundColor: body.backgroundColor,
 				highlightColor: body.highlightColor,
 				projectType: body.projectType || 'work',
@@ -223,7 +223,7 @@ export const POST: RequestHandler = async (event) => {
 				await trackMediaUsage(usageReferences)
 			}
 		} catch (error) {
-			logger.warn('Failed to track media usage for project', { projectId: project.id, error })
+			logger.warn('Failed to track media usage for project', { projectId: project.id, error: error instanceof Error ? error.message : String(error) })
 		}
 
 		logger.info('Project created', { id: project.id, slug: project.slug })

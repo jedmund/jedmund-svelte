@@ -140,7 +140,7 @@ export const PUT: RequestHandler = async (event) => {
 				await trackMediaUsage(usageReferences)
 			}
 		} catch (error) {
-			logger.warn('Failed to update media usage for post', { postId: id, error })
+			logger.warn('Failed to update media usage for post', { postId: id })
 		}
 
 		logger.info('Post updated', { id })
@@ -197,7 +197,7 @@ export const PATCH: RequestHandler = async (event) => {
 
     const post = await prisma.post.update({ where: { id }, data: updateData })
 
-    logger.info('Post partially updated', { id: post.id, fields: Object.keys(updateData) })
+    logger.info('Post partially updated', { id: post.id, fields: Object.keys(updateData).join(', ') })
     return jsonResponse(post)
   } catch (error) {
     logger.error('Failed to partially update post', error as Error)

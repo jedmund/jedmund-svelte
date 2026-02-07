@@ -15,8 +15,8 @@ export function errorResponse(message: string, status = 400): Response {
 
 // Pagination helper
 export interface PaginationParams {
-	page?: number
-	limit?: number
+	page: number
+	limit: number
 }
 
 export function getPaginationParams(url: URL): PaginationParams {
@@ -44,7 +44,7 @@ export const VALID_STATUSES = ['draft', 'published'] as const
 export type Status = (typeof VALID_STATUSES)[number]
 
 export function isValidStatus(status: unknown): status is Status {
-	return VALID_STATUSES.includes(status)
+	return VALID_STATUSES.includes(status as Status)
 }
 
 // Post type validation
@@ -52,7 +52,7 @@ export const VALID_POST_TYPES = ['post', 'essay'] as const
 export type PostType = (typeof VALID_POST_TYPES)[number]
 
 export function isValidPostType(type: unknown): type is PostType {
-	return VALID_POST_TYPES.includes(type)
+	return VALID_POST_TYPES.includes(type as PostType)
 }
 
 // Request body parser with error handling

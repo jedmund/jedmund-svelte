@@ -134,9 +134,10 @@
 
 	// Dismiss dropdowns on typing
 	export function dismissOnTyping(transaction: unknown) {
-		if (showUrlConvertDropdown && transaction.docChanged) {
-			const hasTextChange = transaction.steps.some(
-				(step: unknown) =>
+		const tr = transaction as { docChanged?: boolean; steps?: { toJSON(): { stepType: string } }[] }
+		if (showUrlConvertDropdown && tr.docChanged) {
+			const hasTextChange = tr.steps?.some(
+				(step) =>
 					step.toJSON().stepType === 'replace' || step.toJSON().stepType === 'replaceAround'
 			)
 			if (hasTextChange) {
@@ -180,7 +181,7 @@
 		x={linkContextMenuPosition.x}
 		y={linkContextMenuPosition.y}
 		url={linkContextUrl}
-		onConvertToCard={features.urlEmbed ? handleConvertLinkToEmbed : undefined}
+		onConvertToCard={features.urlEmbed ? handleConvertLinkToEmbed : () => {}}
 		onEditLink={handleEditLink}
 		onCopyLink={handleCopyLink}
 		onRemoveLink={handleRemoveLink}

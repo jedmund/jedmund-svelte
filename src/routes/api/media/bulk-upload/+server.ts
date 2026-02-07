@@ -5,6 +5,24 @@ import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-uti
 import { logger } from '$lib/server/logger'
 import exifr from 'exifr'
 
+// Type for formatted EXIF data
+interface ExifData {
+	camera?: string
+	lens?: string
+	focalLength?: string
+	aperture?: string
+	shutterSpeed?: string
+	iso?: string
+	dateTaken?: Date | string
+	coordinates?: {
+		latitude: number
+		longitude: number
+	}
+	orientation?: string
+	colorSpace?: number
+	[key: string]: unknown
+}
+
 // Extract EXIF data from image file
 async function extractExifData(file: File) {
 	try {
@@ -20,7 +38,7 @@ async function extractExifData(file: File) {
 		const fullExif = await exifr.parse(buffer)
 		logger.info(`Full EXIF data available for ${file.name}:`, {
 			hasData: !!fullExif,
-			availableFields: fullExif ? Object.keys(fullExif).slice(0, 10) : [] // First 10 fields
+			availableFields: fullExif ? Object.keys(fullExif).slice(0, 10).join(', ') : ''
 		})
 
 		// Now parse with specific fields
@@ -45,7 +63,7 @@ async function extractExifData(file: File) {
 
 		logger.info(`EXIF parse result for ${file.name}:`, {
 			hasExif: !!exif,
-			exifKeys: exif ? Object.keys(exif) : []
+			exifKeys: exif ? Object.keys(exif).join(', ') : ''
 		})
 
 		if (!exif) return null
@@ -116,7 +134,7 @@ async function extractExifData(file: File) {
 		const result = Object.keys(formattedExif).length > 0 ? formattedExif : null
 		logger.info(`Final EXIF result for ${file.name}:`, {
 			hasData: !!result,
-			fields: result ? Object.keys(result) : []
+			fields: result ? Object.keys(result).join(', ') : ''
 		})
 		return result
 	} catch (error) {

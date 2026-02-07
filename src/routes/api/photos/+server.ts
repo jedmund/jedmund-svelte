@@ -66,7 +66,7 @@ export const GET: RequestHandler = async (event) => {
 				// Check for common EXIF date fields
 				const exif = media.exifData as Record<string, unknown>
 				const dateTaken = exif.DateTimeOriginal || exif.DateTime || exif.dateTaken
-				if (dateTaken) {
+				if (dateTaken && typeof dateTaken === 'string') {
 					// Parse EXIF date format (typically "YYYY:MM:DD HH:MM:SS")
 					const parsedDate = new Date(dateTaken.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3'))
 					if (!isNaN(parsedDate.getTime())) {
@@ -85,7 +85,7 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Transform individual media to Photo format
-		const photos: Photo[] = individualMedia.map((media) => {
+		const photos: Photo[] = individualMedia.map((media: PhotoMedia) => {
 			// Use the same helper function to get the photo date
 			const photoDate = getPhotoDate(media)
 
@@ -97,7 +97,7 @@ export const GET: RequestHandler = async (event) => {
 				width: media.width || 400,
 				height: media.height || 400,
 				dominantColor: media.dominantColor || undefined,
-				colors: media.colors || undefined,
+				colors: (media.colors as Photo['colors']) || undefined,
 				aspectRatio: media.aspectRatio || undefined,
 				createdAt: photoDate.toISOString()
 			}
@@ -105,8 +105,8 @@ export const GET: RequestHandler = async (event) => {
 
 		// Sort photos by the actual date taken (from EXIF or fallback dates)
 		photos.sort((a, b) => {
-			const dateA = new Date(a.createdAt).getTime()
-			const dateB = new Date(b.createdAt).getTime()
+			const dateA = new Date(a.createdAt || 0).getTime()
+			const dateB = new Date(b.createdAt || 0).getTime()
 			return dateB - dateA // Descending order (newest first)
 		})
 

@@ -122,56 +122,56 @@
 		padding: $unit-2x !important;
 		gap: $unit !important;
 		max-width: 420px !important;
+	}
 
-		&[data-type='success'] {
-			background: $blue-10 !important;
-			border-color: $blue-40 !important;
-			color: $blue-40 !important;
+	:global(.sonner-toast[data-type='success']) {
+		background: $blue-10 !important;
+		border-color: $blue-40 !important;
+		color: $blue-40 !important;
+	}
 
-			[data-icon] {
-				color: $blue-50 !important;
-			}
-		}
+	:global(.sonner-toast[data-type='success'] [data-icon]) {
+		color: $blue-50 !important;
+	}
 
-		&[data-type='error'] {
-			background: #fef2f2 !important;
-			border-color: $red-50 !important;
-			color: $red-40 !important;
+	:global(.sonner-toast[data-type='error']) {
+		background: #fef2f2 !important;
+		border-color: $red-50 !important;
+		color: $red-40 !important;
+	}
 
-			[data-icon] {
-				color: $red-50 !important;
-			}
-		}
+	:global(.sonner-toast[data-type='error'] [data-icon]) {
+		color: $red-50 !important;
+	}
 
-		&[data-type='warning'] {
-			background: $yellow-90 !important;
-			border-color: $yellow-40 !important;
-			color: $yellow-20 !important;
+	:global(.sonner-toast[data-type='warning']) {
+		background: $yellow-90 !important;
+		border-color: $yellow-40 !important;
+		color: $yellow-20 !important;
+	}
 
-			[data-icon] {
-				color: $yellow-40 !important;
-			}
-		}
+	:global(.sonner-toast[data-type='warning'] [data-icon]) {
+		color: $yellow-40 !important;
+	}
 
-		&[data-type='info'] {
-			background: var(--page-color) !important;
-			border-color: $gray-70 !important;
-			color: var(--text-color) !important;
+	:global(.sonner-toast[data-type='info']) {
+		background: var(--page-color) !important;
+		border-color: $gray-70 !important;
+		color: var(--text-color) !important;
+	}
 
-			[data-icon] {
-				color: $gray-40 !important;
-			}
-		}
+	:global(.sonner-toast[data-type='info'] [data-icon]) {
+		color: $gray-40 !important;
+	}
 
-		&[data-type='loading'] {
-			background: var(--page-color) !important;
-			border-color: $primary-color !important;
-			color: var(--text-color) !important;
+	:global(.sonner-toast[data-type='loading']) {
+		background: var(--page-color) !important;
+		border-color: $primary-color !important;
+		color: var(--text-color) !important;
+	}
 
-			[data-icon] {
-				color: $primary-color !important;
-			}
-		}
+	:global(.sonner-toast[data-type='loading'] [data-icon]) {
+		color: $primary-color !important;
 	}
 
 	:global(.sonner-toast-description) {

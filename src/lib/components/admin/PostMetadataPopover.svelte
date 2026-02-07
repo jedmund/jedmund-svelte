@@ -1,10 +1,18 @@
 <script lang="ts">
 	import GenericMetadataPopover, { type MetadataConfig } from './GenericMetadataPopover.svelte'
-	import type { Post } from '@prisma/client'
+
+	interface PostLike {
+		id?: number | null
+		createdAt: Date | string
+		updatedAt: Date | string
+		publishedAt: Date | string | null
+	}
 
 	type Props = {
-		post: Post
+		post: PostLike
+		postType?: string
 		slug: string
+		excerpt?: string
 		tags: string[]
 		tagInput: string
 		triggerElement: HTMLElement
@@ -17,7 +25,9 @@
 
 	let {
 		post,
+		postType,
 		slug = $bindable(),
+		excerpt = $bindable(''),
 		tags = $bindable(),
 		tagInput = $bindable(),
 		triggerElement,

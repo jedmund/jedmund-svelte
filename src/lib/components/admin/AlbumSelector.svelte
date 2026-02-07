@@ -14,13 +14,16 @@
 	}
 
 	interface Props {
-		mediaId: number
-		currentAlbums: Album[]
-		onUpdate: (albums: Album[]) => void
-		onClose: () => void
+		mediaId?: number
+		currentAlbums?: Album[]
+		onUpdate?: (albums: Album[]) => void
+		onClose?: () => void
+		selectedAlbumId?: number | null
+		onSelect?: (albumId: number | null) => void
+		placeholder?: string
 	}
 
-	let { mediaId, currentAlbums = [], onUpdate, onClose }: Props = $props()
+	let { mediaId, currentAlbums = [], onUpdate, onClose, selectedAlbumId, onSelect, placeholder }: Props = $props()
 
 	// State
 	let albums = $state<Album[]>([])
@@ -181,8 +184,8 @@
 
 			// Get updated album list
 			const updatedAlbums = albums.filter((a) => selectedAlbumIds.has(a.id))
-			onUpdate(updatedAlbums)
-			onClose()
+			onUpdate?.(updatedAlbums)
+			onClose?.()
 		} catch (err) {
 			console.error('Failed to update albums:', err)
 			error = 'Failed to update albums'
@@ -216,14 +219,14 @@
 			<div class="search-section">
 				<Input type="search" bind:value={searchQuery} placeholder="Search albums..." fullWidth />
 				<Button variant="ghost" onclick={() => (showCreateNew = true)} buttonSize="small">
-					<svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+					{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 						<path
 							d="M8 3v10M3 8h10"
 							stroke="currentColor"
 							stroke-width="2"
 							stroke-linecap="round"
 						/>
-					</svg>
+					</svg>{/snippet}
 					New Album
 				</Button>
 			</div>
@@ -292,7 +295,7 @@
 
 	{#if !showCreateNew}
 		<div class="selector-footer">
-			<Button variant="ghost" onclick={onClose}>Cancel</Button>
+			<Button variant="ghost" onclick={() => onClose?.()}>Cancel</Button>
 			<Button variant="primary" onclick={handleSave} disabled={!hasChanges() || isSaving}>
 				{isSaving ? 'Saving...' : 'Save Changes'}
 			</Button>

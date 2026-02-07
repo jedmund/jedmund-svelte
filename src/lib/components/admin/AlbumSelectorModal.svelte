@@ -115,7 +115,7 @@
 				<Button variant="ghost" onclick={handleCancel}>Cancel</Button>
 				<Button variant="primary" onclick={handleSave} disabled={!canSave || isSaving}>
 					{#if isSaving}
-						<LoadingSpinner buttonSize="small" />
+						<LoadingSpinner size="small" />
 						Adding...
 					{:else}
 						Add to Album
@@ -181,7 +181,7 @@
 			color: $gray-10;
 		}
 
-		svg {
+		:global(svg) {
 			flex-shrink: 0;
 		}
 	}
