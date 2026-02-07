@@ -1,22 +1,17 @@
 <script lang="ts">
-	import MediaPlaceHolder from '../../components/MediaPlaceHolder.svelte';
 	import type { NodeViewProps } from '@tiptap/core';
-	import strings from '../../strings.js';
-
-	const { editor }: NodeViewProps = $props();
 	import Video from '@lucide/svelte/icons/video';
+	import UnifiedMediaPlaceholder from './UnifiedMediaPlaceholder.svelte';
 
-	function handleClick() {
-		const videoUrl = prompt(strings.extension.video.enterURLPrompt);
-		if (videoUrl) {
-			editor.chain().focus().setVideo(videoUrl).run();
-		}
-	}
+	const { editor, deleteNode }: NodeViewProps = $props();
 </script>
 
-<MediaPlaceHolder
-	class="edra-media-placeholder-wrapper"
+<UnifiedMediaPlaceholder
+	{editor}
+	{deleteNode}
+	mediaType="video"
 	icon={Video}
-	title={strings.extension.video.insertPlaceholder}
-	onClick={handleClick}
+	title="Video"
+	accept="video/*"
+	nodeType="video"
 />
