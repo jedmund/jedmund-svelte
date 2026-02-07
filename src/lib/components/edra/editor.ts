@@ -2,6 +2,7 @@ import { type Content, Editor, type EditorOptions, type Extensions } from '@tipt
 import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
+import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
@@ -46,16 +47,17 @@ export default (
 				heading: {
 					levels: [1, 2, 3, 4]
 				},
-				link: {
-					openOnClick: false,
-					autolink: true,
-					linkOnPaste: true,
-					HTMLAttributes: {
-						target: '_tab',
-						rel: 'noopener noreferrer nofollow'
-					}
-				},
+				link: false, // Disabled in StarterKit, using separate Link extension
 				codeBlock: false
+			}),
+			Link.configure({
+				openOnClick: false,
+				autolink: true,
+				linkOnPaste: true,
+				HTMLAttributes: {
+					target: '_blank',
+					rel: 'noopener noreferrer nofollow'
+				}
 			}),
 			CharacterCount,
 			Highlight.configure({
