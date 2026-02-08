@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
+	import TagPill from '$lib/components/TagPill.svelte'
 	import type { AdminPost } from '$lib/types/admin'
 
 	interface Props {
@@ -138,6 +139,14 @@
 			<p class="post-preview">{getPostSnippet(post)}</p>
 		</div>
 
+		{#if post.tags && post.tags.length > 0}
+			<div class="post-tags">
+				{#each post.tags as tag (tag.id)}
+					<TagPill {tag} size="small" clickable={false} />
+				{/each}
+			</div>
+		{/if}
+
 		<AdminByline
 			sections={[
 				postTypeLabels[post.postType] || post.postType,
@@ -236,6 +245,13 @@
 		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.post-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $unit-half;
+		margin-top: $unit-half;
 	}
 
 	.dropdown-container {
