@@ -43,6 +43,7 @@ const securityHeaders: Record<string, string> = {
 		"font-src 'self'",
 		"connect-src 'self'",
 		"media-src 'self' blob: https://res.cloudinary.com",
+		"frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
 		"frame-ancestors 'none'"
 	].join('; ')
 }

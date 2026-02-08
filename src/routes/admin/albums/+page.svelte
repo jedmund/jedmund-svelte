@@ -264,7 +264,7 @@
 	{#snippet header()}
 	<AdminHeader title="Albums">
 		{#snippet actions()}
-			<Button variant="primary" buttonSize="medium" onclick={handleNewAlbum}>New Album</Button>
+			<Button variant="primary" buttonSize="medium" onclick={handleNewAlbum}>New album</Button>
 		{/snippet}
 	</AdminHeader>
 	{/snippet}

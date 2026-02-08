@@ -26,14 +26,13 @@
 	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import Button from './Button.svelte'
+	import TagInput from './TagInput.svelte'
 
 	type Props = {
 		config: MetadataConfig
 		data: Record<string, any>
 		triggerElement: HTMLElement
 		onUpdate?: (key: string, value: unknown) => void
-		onAddTag?: () => void
-		onRemoveTag?: (tag: string) => void
 		onClose?: () => void
 	}
 
@@ -42,8 +41,6 @@
 		data = $bindable(),
 		triggerElement,
 		onUpdate = () => {},
-		onAddTag = () => {},
-		onRemoveTag = () => {},
 		onClose = () => {}
 	}: Props = $props()
 
@@ -216,24 +213,12 @@
 				</div>
 			{:else if field.type === 'tags'}
 				<div class="tags-section">
-					<Input
-						label={field.label}
-						bind:value={data.tagInput}
-						onkeydown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddTag())}
+					<label class="field-label">{field.label}</label>
+					<TagInput
+						bind:tags={data[field.key]}
 						placeholder={field.placeholder || 'Add tags...'}
+						maxTags={10}
 					/>
-					<button type="button" onclick={onAddTag} class="add-tag-btn">Add</button>
-
-					{#if data[field.key] && data[field.key].length > 0}
-						<div class="tags">
-							{#each data[field.key] as tag}
-								<span class="tag">
-									{tag}
-									<button onclick={() => onRemoveTag(tag)}>×</button>
-								</span>
-							{/each}
-						</div>
-					{/if}
 				</div>
 			{:else if field.type === 'metadata'}
 				<div class="metadata">

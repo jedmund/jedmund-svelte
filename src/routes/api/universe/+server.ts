@@ -14,6 +14,13 @@ interface AlbumPhoto {
 	height: number | null
 }
 
+interface Tag {
+	id: number
+	name: string
+	displayName: string
+	slug: string
+}
+
 export interface UniverseItem {
 	id: number
 	type: 'post' | 'album'
@@ -27,6 +34,7 @@ export interface UniverseItem {
 	postType?: string
 	attachments?: Prisma.JsonValue
 	featuredImage?: string
+	tags?: Tag[]
 
 	// Album-specific fields
 	description?: string
@@ -60,7 +68,19 @@ export const GET: RequestHandler = async (event) => {
 				attachments: true,
 				featuredImage: true,
 				publishedAt: true,
-				createdAt: true
+				createdAt: true,
+				tags: {
+					include: {
+						tag: {
+							select: {
+								id: true,
+								name: true,
+								displayName: true,
+								slug: true
+							}
+						}
+					}
+				}
 			},
 			orderBy: { publishedAt: 'desc' }
 		})
@@ -113,6 +133,7 @@ export const GET: RequestHandler = async (event) => {
 			postType: post.postType,
 			attachments: post.attachments,
 			featuredImage: post.featuredImage || undefined,
+			tags: post.tags.map(pt => pt.tag),
 			publishedAt: post.publishedAt!.toISOString(),
 			createdAt: post.createdAt.toISOString()
 		}))
