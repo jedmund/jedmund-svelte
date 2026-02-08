@@ -2,8 +2,8 @@ import { LastClient } from '@musicorum/lastfm'
 import type { RequestHandler } from './$types'
 import { SimpleLastfmStreamManager } from '$lib/utils/simpleLastfmStreamManager'
 import { logger } from '$lib/server/logger'
+import { getConfig } from '$lib/server/config'
 
-const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
 const UPDATE_INTERVAL = 30000 // 30 seconds default
 const FAST_UPDATE_INTERVAL = 10000 // 10 seconds when music is playing
@@ -13,7 +13,8 @@ export const GET: RequestHandler = async ({ request }) => {
 
 	const stream = new ReadableStream({
 		async start(controller) {
-			const client = new LastClient(LASTFM_API_KEY || '')
+			const apiKey = await getConfig('lastfm.api_key')
+			const client = new LastClient(apiKey || '')
 			const streamManager = new SimpleLastfmStreamManager(client, USERNAME)
 			let intervalId: NodeJS.Timeout | null = null
 			let isClosed = false

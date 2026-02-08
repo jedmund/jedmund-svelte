@@ -15,7 +15,7 @@ export const GET: RequestHandler = async (event) => {
 			return json({ error: 'Unauthorized' }, { status: 401 })
 		}
 
-		if (!isCloudinaryConfigured()) {
+		if (!(await isCloudinaryConfigured())) {
 			return json({ error: 'Cloudinary is not configured' }, { status: 503 })
 		}
 
@@ -63,7 +63,7 @@ export const DELETE: RequestHandler = async (event) => {
 			return json({ error: 'Unauthorized' }, { status: 401 })
 		}
 
-		if (!isCloudinaryConfigured()) {
+		if (!(await isCloudinaryConfigured())) {
 			return json({ error: 'Cloudinary is not configured' }, { status: 503 })
 		}
 
