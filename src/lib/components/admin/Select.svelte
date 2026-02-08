@@ -124,20 +124,22 @@
 		&.select-default {
 			&.select-small {
 				padding: calc($unit - 1px) calc($unit * 1.5);
+				padding-right: 32px;
 				font-size: 13px;
 				min-height: 28px;
 				min-width: 120px;
 			}
 
 			&.select-medium {
-				padding: calc($unit - 1px) $unit-2x;
+				padding: calc($unit * 1.5 - 1px) $unit-2x;
+				padding-right: 36px;
 				font-size: 14px;
-				min-height: 36px;
 				min-width: 160px;
 			}
 
 			&.select-large {
 				padding: calc($unit * 1.5 - 1px) $unit-3x;
+				padding-right: 40px;
 				font-size: 15px;
 				min-height: 44px;
 				min-width: 180px;
