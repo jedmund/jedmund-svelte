@@ -5,7 +5,7 @@
 	import Button from '$lib/components/admin/Button.svelte'
 	import Modal from '$lib/components/admin/Modal.svelte'
 	import { formatBytes } from '$lib/utils/format'
-	import { CheckCircle, Trash2, AlertCircle, RefreshCw } from 'lucide-svelte'
+	import { CheckCircle, Trash2, AlertCircle, RefreshCw } from '@lucide/svelte'
 	import ChevronLeft from '$icons/chevron-left.svg?component'
 
 	interface AuditSummary {

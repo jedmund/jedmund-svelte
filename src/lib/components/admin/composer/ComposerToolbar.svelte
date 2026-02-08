@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Editor } from '@tiptap/core'
-	import EdraToolBarIcon from '$lib/components/edra/headless/components/EdraToolBarIcon.svelte'
+	import ToolBarIcon from '$lib/components/edra/headless/components/ToolBarIcon.svelte'
 	import type { ComposerVariant } from './types'
 	import type { FilteredCommands } from './editorConfig'
 	import type { EdraCommand } from '$lib/components/edra/commands/types'
@@ -74,7 +74,7 @@
 			{#each Object.keys(filteredCommands).filter((key) => !excludedCommands.includes(key)) as keys}
 				{@const groups = filteredCommands[keys].commands}
 				{#each groups as command}
-					<EdraToolBarIcon {command} {editor} />
+					<ToolBarIcon {command} {editor} />
 				{/each}
 				<span class="separator"></span>
 			{/each}
@@ -110,7 +110,7 @@
 			{/if}
 
 			{#if colorCommands.length > 0}
-				<EdraToolBarIcon
+				<ToolBarIcon
 					command={colorCommands[0]}
 					{editor}
 					style={`color: ${editor.getAttributes('textStyle').color};`}
@@ -127,7 +127,7 @@
 						}
 					}}
 				/>
-				<EdraToolBarIcon
+				<ToolBarIcon
 					command={colorCommands[1]}
 					{editor}
 					style={`background-color: ${editor.getAttributes('highlight').color};`}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
-	import CodeXML from 'lucide-svelte/icons/code-xml'
+	import Link from '@lucide/svelte/icons/link'
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import { getContext } from 'svelte'
 	import ContentInsertionPane from './ContentInsertionPane.svelte'
@@ -13,7 +13,7 @@
 	const albumId = $derived(editorContext.albumId)
 
 	// Generate unique pane ID based on node position
-	const paneId = $derived(`iframe-${getPos?.() ?? Math.random()}`)
+	const paneId = $derived(`urlembed-${getPos?.() ?? Math.random()}`)
 
 	let showPane = $state(false)
 	let panePosition = $state({ x: 0, y: 0 })
@@ -52,23 +52,23 @@
 	}
 </script>
 
-<NodeViewWrapper class="edra-iframe-placeholder-wrapper" contenteditable={false} spellcheck={false}>
+<NodeViewWrapper class="edra-url-embed-placeholder-wrapper" contenteditable="false">
 	<button
-		class="edra-iframe-placeholder-content"
+		class="edra-url-embed-placeholder-content"
 		onclick={handleClick}
 		onkeydown={handleKeyDown}
 		tabindex="0"
-		aria-label="Insert embed"
+		aria-label="Embed a link"
 	>
-		<CodeXML class="edra-iframe-placeholder-icon" />
-		<span class="edra-iframe-placeholder-text">Insert embed</span>
+		<Link class="edra-url-embed-placeholder-icon" />
+		<span class="edra-url-embed-placeholder-text">Embed a link</span>
 	</button>
 
 	{#if showPane}
 		<ContentInsertionPane
 			{editor}
 			position={panePosition}
-			contentType="video"
+			contentType="image"
 			onClose={() => paneManager.close()}
 			{deleteNode}
 			{albumId}
@@ -79,7 +79,7 @@
 <style lang="scss">
 	@import '$styles/variables';
 
-	.edra-iframe-placeholder-content {
+	.edra-url-embed-placeholder-content {
 		width: 100%;
 		padding: $unit-3x;
 		background-color: $gray-95;
@@ -106,12 +106,12 @@
 		}
 	}
 
-	:global(.edra-iframe-placeholder-icon) {
+	:global(.edra-url-embed-placeholder-icon) {
 		width: $unit-3x;
 		height: $unit-3x;
 	}
 
-	.edra-iframe-placeholder-text {
+	.edra-url-embed-placeholder-text {
 		font-size: $font-size-small;
 		font-weight: 500;
 	}

@@ -2,7 +2,7 @@
 	import { type Editor } from '@tiptap/core'
 	import { onMount, setContext } from 'svelte'
 	import { initiateEditor, getEditorExtensions } from '$lib/components/edra/editor-extensions.js'
-	import LoaderCircle from 'lucide-svelte/icons/loader-circle'
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle'
 	import LinkMenu from '$lib/components/edra/headless/menus/Link.svelte'
 	import TableRowMenu from '$lib/components/edra/headless/menus/TableRow.svelte'
 	import TableColMenu from '$lib/components/edra/headless/menus/TableCol.svelte'
@@ -183,8 +183,7 @@
 		const newEditor = initiateEditor(
 			element,
 			data, // content
-			undefined, // limit
-			extensions,
+			extensions, // extensions
 			{
 				onCreate: () => {
 					isLoading = false
@@ -196,8 +195,7 @@
 					handlePaste: eventHandlers.handlePaste,
 					handleDrop: eventHandlers.handleDrop
 				}
-			},
-			placeholder
+			}
 		)
 
 		editor = newEditor

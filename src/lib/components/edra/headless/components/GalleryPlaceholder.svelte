@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
-	import AudioLines from 'lucide-svelte/icons/audio-lines'
+	import Grid3x3 from '@lucide/svelte/icons/grid-3x3'
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import { getContext } from 'svelte'
 	import ContentInsertionPane from './ContentInsertionPane.svelte'
@@ -13,7 +13,7 @@
 	const albumId = $derived(editorContext.albumId)
 
 	// Generate unique pane ID based on node position
-	const paneId = $derived(`audio-${getPos?.() ?? Math.random()}`)
+	const paneId = $derived(`gallery-${getPos?.() ?? Math.random()}`)
 
 	let showPane = $state(false)
 	let panePosition = $state({ x: 0, y: 0 })
@@ -52,23 +52,23 @@
 	}
 </script>
 
-<NodeViewWrapper class="edra-audio-placeholder-wrapper" contenteditable="false">
+<NodeViewWrapper class="edra-gallery-placeholder-wrapper" contenteditable="false">
 	<button
-		class="edra-audio-placeholder-content"
+		class="edra-gallery-placeholder-content"
 		onclick={handleClick}
 		onkeydown={handleKeyDown}
 		tabindex="0"
-		aria-label="Insert audio"
+		aria-label="Insert a gallery"
 	>
-		<AudioLines class="edra-audio-placeholder-icon" />
-		<span class="edra-audio-placeholder-text">Insert audio</span>
+		<Grid3x3 class="edra-gallery-placeholder-icon" />
+		<span class="edra-gallery-placeholder-text">Insert a gallery</span>
 	</button>
 
 	{#if showPane}
 		<ContentInsertionPane
 			{editor}
 			position={panePosition}
-			contentType="audio"
+			contentType="gallery"
 			onClose={() => paneManager.close()}
 			{deleteNode}
 			{albumId}
@@ -79,7 +79,7 @@
 <style lang="scss">
 	@import '$styles/variables';
 
-	.edra-audio-placeholder-content {
+	.edra-gallery-placeholder-content {
 		width: 100%;
 		padding: $unit-3x;
 		background-color: $gray-95;
@@ -106,12 +106,12 @@
 		}
 	}
 
-	:global(.edra-audio-placeholder-icon) {
+	:global(.edra-gallery-placeholder-icon) {
 		width: $unit-3x;
 		height: $unit-3x;
 	}
 
-	.edra-audio-placeholder-text {
+	.edra-gallery-placeholder-text {
 		font-size: $font-size-small;
 		font-weight: 500;
 	}

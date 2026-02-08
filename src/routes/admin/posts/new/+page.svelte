@@ -24,7 +24,8 @@ import { api } from '$lib/admin/api'
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showUnsavedChangesModal = $state(false)
-	let pendingNavigation = $state<Parameters<typeof beforeNavigate>[0] | null>(null)
+	let pendingNavigationUrl = $state<string | null>(null)
+	let allowNavigation = $state(false)
 
 	// Check if form has any content (unsaved changes for new post)
 	let isDirty = $derived(
@@ -79,9 +80,15 @@ import { api } from '$lib/admin/api'
 
 	// Navigation guard for unsaved changes (in-app navigation only)
 	beforeNavigate((navigation) => {
+		// Allow navigation if explicitly permitted
+		if (allowNavigation) {
+			allowNavigation = false
+			return
+		}
+
 		// Only intercept in-app navigation, not page unloads (refresh/close)
-		if (isDirty && navigation.type !== 'leave') {
-			pendingNavigation = navigation
+		if (isDirty && navigation.type !== 'leave' && navigation.to) {
+			pendingNavigationUrl = navigation.to.url.pathname
 			navigation.cancel()
 			showUnsavedChangesModal = true
 		}
@@ -148,16 +155,16 @@ import { api } from '$lib/admin/api'
 
 	function handleContinueEditing() {
 		showUnsavedChangesModal = false
-		pendingNavigation = null
+		pendingNavigationUrl = null
 	}
 
 	function handleLeaveWithoutSaving() {
 		showUnsavedChangesModal = false
-		if (pendingNavigation) {
-			// Temporarily allow dirty navigation
-			const nav = pendingNavigation
-			pendingNavigation = null
-			nav.to && goto(nav.to.url.pathname)
+		if (pendingNavigationUrl) {
+			const url = pendingNavigationUrl
+			pendingNavigationUrl = null
+			allowNavigation = true
+			goto(url)
 		}
 	}
 </script>
@@ -357,6 +364,7 @@ import { api } from '$lib/admin/api'
 	.editor-wrapper {
 		width: 100%;
 		min-height: 400px;
+		padding: 0 $unit-4x;
 	}
 
 	.metadata-popover-container {

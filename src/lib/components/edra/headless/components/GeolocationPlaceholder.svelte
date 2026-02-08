@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
-	import Video from 'lucide-svelte/icons/video'
+	import MapPin from '@lucide/svelte/icons/map-pin'
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import { getContext } from 'svelte'
 	import ContentInsertionPane from './ContentInsertionPane.svelte'
@@ -13,7 +13,7 @@
 	const albumId = $derived(editorContext.albumId)
 
 	// Generate unique pane ID based on node position
-	const paneId = $derived(`video-${getPos?.() ?? Math.random()}`)
+	const paneId = $derived(`location-${getPos?.() ?? Math.random()}`)
 
 	let showPane = $state(false)
 	let panePosition = $state({ x: 0, y: 0 })
@@ -52,23 +52,23 @@
 	}
 </script>
 
-<NodeViewWrapper class="edra-video-placeholder-wrapper" contenteditable="false">
+<NodeViewWrapper class="edra-geolocation-placeholder-wrapper" contenteditable="false">
 	<button
-		class="edra-video-placeholder-content"
+		class="edra-geolocation-placeholder-content"
 		onclick={handleClick}
 		onkeydown={handleKeyDown}
 		tabindex="0"
-		aria-label="Insert video"
+		aria-label="Insert location"
 	>
-		<Video class="edra-video-placeholder-icon" />
-		<span class="edra-video-placeholder-text">Insert video</span>
+		<MapPin class="edra-geolocation-placeholder-icon" />
+		<span class="edra-geolocation-placeholder-text">Insert location</span>
 	</button>
 
 	{#if showPane}
 		<ContentInsertionPane
 			{editor}
 			position={panePosition}
-			contentType="video"
+			contentType="location"
 			onClose={() => paneManager.close()}
 			{deleteNode}
 			{albumId}
@@ -79,7 +79,7 @@
 <style lang="scss">
 	@import '$styles/variables';
 
-	.edra-video-placeholder-content {
+	.edra-geolocation-placeholder-content {
 		width: 100%;
 		padding: $unit-3x;
 		background-color: $gray-95;
@@ -106,12 +106,12 @@
 		}
 	}
 
-	:global(.edra-video-placeholder-icon) {
+	:global(.edra-geolocation-placeholder-icon) {
 		width: $unit-3x;
 		height: $unit-3x;
 	}
 
-	.edra-video-placeholder-text {
+	.edra-geolocation-placeholder-text {
 		font-size: $font-size-small;
 		font-weight: 500;
 	}

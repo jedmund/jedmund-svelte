@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
 	import { NodeViewWrapper } from 'svelte-tiptap'
-	import MoreHorizontal from 'lucide-svelte/icons/more-horizontal'
+	import MoreHorizontal from '@lucide/svelte/icons/more-horizontal'
 	import EmbedContextMenu from './EmbedContextMenu.svelte'
 
 	const { editor, node, deleteNode, getPos, selected }: NodeViewProps = $props()

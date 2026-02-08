@@ -45,12 +45,12 @@ model Post {
   title         String?   @db.VarChar(255)
   content       Json?
   featuredImage String?   @db.VarChar(500)
-  tags          Json?
   status        String    @default("draft") @db.VarChar(50)
   publishedAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   attachments   Json?
+  tags          PostTag[]
 
   @@index([slug])
   @@index([status])
@@ -182,4 +182,33 @@ model GeoLocation {
   album       Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
 
   @@index([albumId])
+}
+
+model Tag {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  displayName String    @db.VarChar(100)
+  slug        String    @unique @db.VarChar(100)
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  posts       PostTag[]
+
+  @@index([name])
+  @@index([slug])
+  @@map("tags")
+}
+
+model PostTag {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  tagId     Int
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
+  @@map("post_tags")
 }

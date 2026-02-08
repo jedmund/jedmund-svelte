@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { fly } from 'svelte/transition'
-	import Check from 'lucide-svelte/icons/check'
-	import X from 'lucide-svelte/icons/x'
+	import Check from '@lucide/svelte/icons/check'
+	import X from '@lucide/svelte/icons/x'
 
 	// Convert CSS transition durations to milliseconds for Svelte transitions
 	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s

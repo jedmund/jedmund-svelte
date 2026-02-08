@@ -1,7 +1,7 @@
 import { textInputRule } from '@tiptap/core';
-import { InlineMath } from '@tiptap/extension-mathematics';
+import Mathematics from '@tiptap/extension-mathematics';
 
-export const InlineMathReplacer = InlineMath.extend({
+export const InlineMathReplacer = Mathematics.extend({
 	name: 'inlineMathReplacer',
 	addInputRules() {
 		return [

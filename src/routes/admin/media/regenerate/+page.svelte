@@ -4,7 +4,7 @@
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Modal from '$lib/components/admin/Modal.svelte'
-	import { Play, Palette, Image, Sparkles } from 'lucide-svelte'
+	import { Play, Palette, Image, Sparkles } from '@lucide/svelte'
 	import ChevronLeft from '$icons/chevron-left.svg?component'
 
 	let extractingColors = $state(false)

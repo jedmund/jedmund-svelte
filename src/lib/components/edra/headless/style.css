@@ -83,19 +83,10 @@
 }
 
 .edra-media-placeholder-wrapper {
-	height: 100%;
-	width: 100%;
-	padding: 1rem;
-	padding-right: 0;
+	display: block;
+	width: fit-content;
+	max-width: 100%;
 	margin: 0.5rem 0;
-	background-color: var(--edra-button-bg-color);
-	border-radius: var(--edra-button-border-radius);
-	border: 1px solid var(--edra-border-color);
-	display: inline-flex;
-	align-items: center;
-	justify-content: start;
-	gap: 1rem;
-	cursor: pointer;
 }
 
 .edra-media-placeholder-icon {
@@ -297,7 +288,6 @@ input.invalid {
 	user-select: none;
 	font-size: 0.875rem;
 	font-weight: 600;
-	text-transform: uppercase;
 	letter-spacing: 0.025em;
 }
 
@@ -313,6 +303,11 @@ input.invalid {
 	border: none;
 	margin: 0.25rem 0;
 	border-radius: 0.25rem;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+.edra-slash-command-list-item:hover {
+	background-color: var(--edra-border-color);
 }
 .edra-slash-command-list-item.active {
 	background-color: var(--edra-border-color);

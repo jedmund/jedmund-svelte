@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import type { NodeViewProps } from '@tiptap/core'
-	import Grid from 'lucide-svelte/icons/grid-3x3'
-	import Columns from 'lucide-svelte/icons/columns'
-	import Trash from 'lucide-svelte/icons/trash'
-	import Edit from 'lucide-svelte/icons/edit'
-	import Plus from 'lucide-svelte/icons/plus'
+	import Grid from '@lucide/svelte/icons/grid-3x3'
+	import Columns from '@lucide/svelte/icons/columns'
+	import Trash from '@lucide/svelte/icons/trash'
+	import Edit from '@lucide/svelte/icons/edit'
+	import Plus from '@lucide/svelte/icons/plus'
 	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 

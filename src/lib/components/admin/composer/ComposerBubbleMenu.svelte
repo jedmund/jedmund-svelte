@@ -2,16 +2,16 @@
 	import { BubbleMenu } from 'svelte-tiptap'
 	import { isTextSelection, type Editor } from '@tiptap/core'
 	import type { ShouldShowProps } from '$lib/components/edra/utils'
-	import EdraToolBarIcon from '$lib/components/edra/headless/components/EdraToolBarIcon.svelte'
+	import ToolBarIcon from '$lib/components/edra/headless/components/ToolBarIcon.svelte'
 	import type { ComposerFeatures } from './types'
 	import { getBubbleMenuCommands, getCurrentTextStyle } from './editorConfig'
-	import Link from 'lucide-svelte/icons/link'
-	import Check from 'lucide-svelte/icons/check'
-	import X from 'lucide-svelte/icons/x'
-	import ChevronDown from 'lucide-svelte/icons/chevron-down'
-	import Type from 'lucide-svelte/icons/type'
-	import Palette from 'lucide-svelte/icons/palette'
-	import Highlighter from 'lucide-svelte/icons/highlighter'
+	import Link from '@lucide/svelte/icons/link'
+	import Check from '@lucide/svelte/icons/check'
+	import X from '@lucide/svelte/icons/x'
+	import ChevronDown from '@lucide/svelte/icons/chevron-down'
+	import Type from '@lucide/svelte/icons/type'
+	import Palette from '@lucide/svelte/icons/palette'
+	import Highlighter from '@lucide/svelte/icons/highlighter'
 	import BubbleTextStyleMenu from './BubbleTextStyleMenu.svelte'
 	import BubbleColorPicker from './BubbleColorPicker.svelte'
 
@@ -206,7 +206,7 @@
 				<span class="separator"></span>
 
 				{#each formattingCommands as command}
-					<EdraToolBarIcon {command} {editor} />
+					<ToolBarIcon {command} {editor} />
 				{/each}
 
 				<button
@@ -405,7 +405,7 @@
 		}
 	}
 
-	// Override EdraToolBarIcon styles for bubble menu
+	// Override ToolBarIcon styles for bubble menu
 	:global(.bubble-menu-content .edra-command-button) {
 		min-width: 32px;
 		min-height: 32px;

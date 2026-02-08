@@ -193,63 +193,65 @@
 	/>
 </NodeViewWrapper>
 
-<style>
+<style lang="scss">
+	@import '$styles/variables';
+
 	.edra-media-placeholder-container {
 		display: flex;
-		gap: 12px;
-		padding: 16px;
-		border: 2px dashed #e5e7eb;
-		border-radius: 8px;
-		background: #f9fafb;
+		gap: $unit-half;
+		padding: $unit-2x;
+		border: 2px dashed $gray-85;
+		border-radius: $corner-radius-md;
+		background: $gray-97;
 		transition: all 0.2s ease;
 		justify-content: center;
 		align-items: center;
 	}
 
 	.edra-media-placeholder-container:hover {
-		border-color: #d1d5db;
-		background: #f3f4f6;
+		border-color: $gray-80;
+		background: $gray-95;
 	}
 
 	.edra-media-placeholder-option {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 8px;
-		padding: 12px 16px;
-		border: 1px solid #e5e7eb;
-		border-radius: 6px;
-		background: white;
+		gap: $unit;
+		padding: $unit $unit-2x;
+		border: 1px solid $gray-85;
+		border-radius: $corner-radius-sm;
+		background: $white;
 		cursor: pointer;
 		transition: all 0.2s ease;
 		min-width: 120px;
 	}
 
 	.edra-media-placeholder-option:hover {
-		border-color: #d1d5db;
-		background: #f9fafb;
+		border-color: $gray-80;
+		background: $gray-97;
 		transform: translateY(-1px);
 	}
 
 	.edra-media-placeholder-option:focus {
 		outline: none;
-		border-color: #3b82f6;
-		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+		border-color: $blue-50;
+		box-shadow: 0 0 0 3px rgba($blue-50, 0.1);
 	}
 
 	.edra-media-placeholder-uploading {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		padding: 16px;
-		color: #6b7280;
+		gap: $unit;
+		padding: $unit-2x;
+		color: $gray-40;
 	}
 
 	.spinner {
-		width: 16px;
-		height: 16px;
-		border: 2px solid #f3f4f6;
-		border-top: 2px solid #3b82f6;
+		width: $unit-2x;
+		height: $unit-2x;
+		border: 2px solid $gray-90;
+		border-top: 2px solid $blue-50;
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
 	}
@@ -264,14 +266,14 @@
 	}
 
 	:global(.edra-media-placeholder-icon) {
-		width: 24px;
-		height: 24px;
-		color: #6b7280;
+		width: $unit-3x;
+		height: $unit-3x;
+		color: $gray-40;
 	}
 
 	.edra-media-placeholder-text {
 		font-size: 14px;
-		color: #6b7280;
+		color: $gray-40;
 		font-weight: 500;
 	}
 </style>
