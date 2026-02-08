@@ -463,7 +463,7 @@
 	.edra-youtube-embed-card {
 		position: relative;
 		width: 100%;
-		margin: 0 auto;
+		max-width: 800px;
 	}
 
 	.edra-youtube-embed-actions {
