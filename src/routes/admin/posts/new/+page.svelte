@@ -337,6 +337,8 @@ import { api } from '$lib/admin/api'
 
 	.title-input {
 		width: 100%;
+		max-width: clamp(600px, 70%, 840px);
+		margin-inline: auto;
 		padding: 0 $unit-4x;
 		border: none;
 		font-size: 2.5rem;

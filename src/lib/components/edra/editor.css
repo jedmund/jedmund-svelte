@@ -1,7 +1,7 @@
 /* Base TipTap Editor Styles with Light/Dark Theme Support */
 .edra-editor .tiptap.ProseMirror {
 	margin-inline: auto;
-	max-width: 720px;
+	max-width: clamp(600px, 70%, 840px);
 }
 
 .tiptap :first-child {
