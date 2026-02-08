@@ -39,17 +39,13 @@ function escapeXML(str: string): string {
 }
 
 // Helper function to convert content to HTML for full content
-// Uses the same rendering logic as the website for consistency
 function convertContentToHTML(content: Prisma.JsonValue): string {
 	if (!content) return ''
 
-	// Handle legacy content format (if it's just a string)
 	if (typeof content === 'string') {
 		return `<p>${escapeXML(content)}</p>`
 	}
 
-	// Use the existing renderEdraContent function which properly handles TipTap marks
-	// including links, bold, italic, etc.
 	return renderEdraContent(content)
 }
 
@@ -59,29 +55,33 @@ function extractTextSummary(content: Prisma.JsonValue, maxLength: number = 300):
 
 	let text = ''
 
-	// Handle string content
 	if (typeof content === 'string') {
 		text = content
-	}
-	// Handle TipTap/Edra format
-	else if (typeof content === 'object' && content !== null && 'type' in content && content.type === 'doc' && 'content' in content && Array.isArray(content.content)) {
+	} else if (
+		typeof content === 'object' &&
+		content !== null &&
+		'type' in content &&
+		content.type === 'doc' &&
+		'content' in content &&
+		Array.isArray(content.content)
+	) {
 		const docContent = content as unknown as DocContent
-		text = docContent.content
-			?.filter((node): node is ParagraphNode => node.type === 'paragraph')
-			.map((node) => {
-				if (node.content && Array.isArray(node.content)) {
-					return node.content
-						.filter((child): child is TextNode => 'type' in child && child.type === 'text')
-						.map((child) => child.text || '')
-						.join('')
-				}
-				return ''
-			})
-			.filter((t) => t.length > 0)
-			.join(' ') || ''
+		text =
+			docContent.content
+				?.filter((node): node is ParagraphNode => node.type === 'paragraph')
+				.map((node) => {
+					if (node.content && Array.isArray(node.content)) {
+						return node.content
+							.filter((child): child is TextNode => 'type' in child && child.type === 'text')
+							.map((child) => child.text || '')
+							.join('')
+					}
+					return ''
+				})
+				.filter((t) => t.length > 0)
+				.join(' ') || ''
 	}
 
-	// Clean up and truncate
 	text = text.replace(/\s+/g, ' ').trim()
 	return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
 }
@@ -93,26 +93,40 @@ function formatRFC822Date(date: Date): string {
 
 export const GET: RequestHandler = async (event) => {
 	try {
-		// Get published posts from Universe
+		// Get published posts
 		const posts = await prisma.post.findMany({
 			where: {
 				status: 'published',
 				publishedAt: { not: null }
 			},
 			orderBy: { publishedAt: 'desc' },
+			take: 50
+		})
+
+		// Get published albums that show in universe
+		const albums = await prisma.album.findMany({
+			where: {
+				status: 'published',
+				showInUniverse: true
+			},
+			include: {
+				_count: {
+					select: { media: true }
+				}
+			},
+			orderBy: { createdAt: 'desc' },
 			take: 25
 		})
 
-		// TODO: Re-enable albums once database schema is updated
-
-		// Combine all content types
+		// Combine and sort by date
 		const items = [
 			...posts.map((post) => ({
 				type: 'post' as const,
 				section: 'universe',
 				id: post.id.toString(),
 				title:
-					post.title || new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', {
+					post.title ||
+					new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', {
 						year: 'numeric',
 						month: 'long',
 						day: 'numeric'
@@ -125,14 +139,31 @@ export const GET: RequestHandler = async (event) => {
 				updatedDate: post.updatedAt,
 				postType: post.postType,
 				featuredImage: post.featuredImage || null
+			})),
+			...albums.map((album) => ({
+				type: 'album' as const,
+				section: 'photos',
+				id: album.id.toString(),
+				title: album.title,
+				description:
+					album.description ||
+					`Photo album with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
+				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
+				link: `${event.url.origin}/photos/${album.slug}`,
+				guid: `${event.url.origin}/photos/${album.slug}`,
+				pubDate: album.createdAt,
+				updatedDate: album.updatedAt,
+				postType: 'album' as const,
+				featuredImage: null
 			}))
 		].sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 
 		const now = new Date()
 		const lastBuildDate = formatRFC822Date(now)
 
-		// Build RSS XML following best practices
+		// Build RSS XML
 		const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/rss.xsl" type="text/xsl"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
 <channel>
 <title>jedmund.com</title>
@@ -173,38 +204,38 @@ ${
 </channel>
 </rss>`
 
-		logger.info('Combined RSS feed generated', { itemCount: items.length })
+		logger.info('RSS feed generated', { itemCount: items.length })
 
 		// Generate ETag based on content
 		const etag = `W/"${Buffer.from(rssXml).length}-${Date.now()}"`
-		
+
 		// Check for conditional requests
 		const ifNoneMatch = event.request.headers.get('if-none-match')
 		const ifModifiedSince = event.request.headers.get('if-modified-since')
-		
+
 		if (ifNoneMatch === etag) {
 			return new Response(null, { status: 304 })
 		}
-		
+
 		if (ifModifiedSince && new Date(ifModifiedSince) >= new Date(lastBuildDate)) {
 			return new Response(null, { status: 304 })
 		}
 
 		return new Response(rssXml, {
 			headers: {
-				'Content-Type': 'application/rss+xml; charset=utf-8',
+				'Content-Type': 'application/xml; charset=utf-8',
 				'Cache-Control': 'public, max-age=300, s-maxage=600, stale-while-revalidate=86400',
 				'Last-Modified': lastBuildDate,
-				'ETag': etag,
+				ETag: etag,
 				'X-Content-Type-Options': 'nosniff',
-				'Vary': 'Accept-Encoding',
+				Vary: 'Accept-Encoding',
 				'Access-Control-Allow-Origin': '*',
 				'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
 				'Access-Control-Max-Age': '86400'
 			}
 		})
 	} catch (error) {
-		logger.error('Failed to generate combined RSS feed', error as Error)
+		logger.error('Failed to generate RSS feed', error as Error)
 		return new Response('Failed to generate RSS feed', { status: 500 })
 	}
 }

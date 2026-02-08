@@ -130,6 +130,7 @@ export const GET: RequestHandler = async (event) => {
 
 		// Build RSS XML following best practices
 		const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/rss.xsl" type="text/xsl"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
 <channel>
 <title>Photos - jedmund.com</title>
@@ -158,17 +159,17 @@ ${item.updatedDate ? `<atom:updated>${new Date(item.updatedDate).toISOString()}<
 ${
 	item.type === 'album' && item.coverPhoto
 		? `
-<enclosure url="${event.url.origin}${item.coverPhoto.url}" type="image/jpeg" length="0"/>
-<media:thumbnail url="${event.url.origin}${item.coverPhoto.thumbnailUrl || item.coverPhoto.url}"/>
-<media:content url="${event.url.origin}${item.coverPhoto.url}" type="image/jpeg"/>`
+<enclosure url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg" length="0"/>
+<media:thumbnail url="${(item.coverPhoto.thumbnailUrl || item.coverPhoto.url).startsWith('http') ? (item.coverPhoto.thumbnailUrl || item.coverPhoto.url) : event.url.origin + (item.coverPhoto.thumbnailUrl || item.coverPhoto.url)}"/>
+<media:content url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg"/>`
 		: ''
 }
 ${
 	item.type === 'photo'
 		? `
-<enclosure url="${event.url.origin}${item.url}" type="image/jpeg" length="0"/>
-<media:thumbnail url="${event.url.origin}${item.thumbnailUrl || item.url}"/>
-<media:content url="${event.url.origin}${item.url}" type="image/jpeg"/>`
+<enclosure url="${item.url.startsWith('http') ? item.url : event.url.origin + item.url}" type="image/jpeg" length="0"/>
+<media:thumbnail url="${(item.thumbnailUrl || item.url).startsWith('http') ? (item.thumbnailUrl || item.url) : event.url.origin + (item.thumbnailUrl || item.url)}"/>
+<media:content url="${item.url.startsWith('http') ? item.url : event.url.origin + item.url}" type="image/jpeg"/>`
 		: ''
 }
 ${item.type === 'album' && item.location ? `<category domain="location">${escapeXML(item.location)}</category>` : ''}
@@ -183,7 +184,7 @@ ${item.type === 'album' && item.location ? `<category domain="location">${escape
 
 		return new Response(rssXml, {
 			headers: {
-				'Content-Type': 'application/rss+xml; charset=utf-8',
+				'Content-Type': 'application/xml; charset=utf-8',
 				'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
 				'Last-Modified': lastBuildDate,
 				ETag: `"${Buffer.from(rssXml).toString('base64').slice(0, 16)}"`,
