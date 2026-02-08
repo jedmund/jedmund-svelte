@@ -18,6 +18,7 @@
 			show?: boolean
 		}>
 		viewUrl?: string
+		onDelete?: () => void
 	}
 
 	let {
@@ -27,7 +28,8 @@
 		isLoading = false,
 		primaryAction,
 		dropdownActions = [],
-		viewUrl
+		viewUrl,
+		onDelete
 	}: Props = $props()
 
 	let isDropdownOpen = $state(false)
@@ -46,7 +48,12 @@
 	)
 
 	const showViewInDropdown = $derived(viewUrl && currentStatus === 'published')
-	const hasDropdownContent = $derived(availableActions.length > 0 || showViewInDropdown)
+	const hasDropdownContent = $derived(availableActions.length > 0 || showViewInDropdown || onDelete)
+
+	function handleDelete() {
+		onDelete?.()
+		isDropdownOpen = false
+	}
 </script>
 
 <BaseDropdown bind:isOpen={isDropdownOpen} {disabled} {isLoading} class="status-dropdown">
@@ -78,6 +85,14 @@
 					View on site
 				</a>
 			{/if}
+			{#if onDelete}
+				{#if availableActions.length > 0 || showViewInDropdown}
+					<div class="dropdown-divider"></div>
+				{/if}
+				<button type="button" class="dropdown-item delete-item" onclick={handleDelete}>
+					Delete
+				</button>
+			{/if}
 		{/if}
 	{/snippet}
 </BaseDropdown>
@@ -89,7 +104,7 @@
 		margin: $unit-half 0;
 	}
 
-	.dropdown-item.view-link {
+	.dropdown-item {
 		display: block;
 		width: 100%;
 		padding: $unit-2x $unit-3x;
@@ -97,13 +112,25 @@
 		border: none;
 		text-align: left;
 		font-size: 0.875rem;
-		color: $gray-20;
 		cursor: pointer;
 		transition: background-color $transition-normal ease;
-		text-decoration: none;
 
-		&:hover {
-			background-color: $gray-95;
+		&.view-link {
+			color: $gray-20;
+			text-decoration: none;
+
+			&:hover {
+				background-color: $gray-95;
+			}
+		}
+
+		&.delete-item {
+			color: #c53030;
+			font-weight: 500;
+
+			&:hover {
+				background-color: #fff5f5;
+			}
 		}
 	}
 </style>

@@ -11,18 +11,22 @@
 
 	interface TagInputProps {
 		tags?: Tag[]
+		label?: string
 		placeholder?: string
 		maxTags?: number
 		disabled?: boolean
+		size?: 'small' | 'medium' | 'large' | 'jumbo'
 		onTagAdd?: (tag: Tag) => void
 		onTagRemove?: (tag: Tag) => void
 	}
 
 	let {
 		tags = $bindable([]),
+		label,
 		placeholder = 'Add tags...',
 		maxTags = 10,
 		disabled = false,
+		size = 'medium',
 		onTagAdd,
 		onTagRemove
 	}: TagInputProps = $props()
@@ -166,9 +170,14 @@
 		}
 	}
 
+	// Focus input when clicking container
+	function handleContainerClick() {
+		inputElement?.focus()
+	}
+
 	// Click outside to close
 	function handleClickOutside(e: MouseEvent) {
-		if (!(e.target as Element).closest('.tag-input-container')) {
+		if (!(e.target as Element).closest('.tag-input-wrapper')) {
 			showSuggestions = false
 			selectedIndex = -1
 		}
@@ -180,78 +189,98 @@
 	})
 </script>
 
-<div class="tag-input-container">
-	<!-- Tag pills -->
-	<div class="tag-pills">
-		{#each tags as tag (tag.id)}
-			<span class="tag-pill">
-				{tag.displayName}
-				<button
-					type="button"
-					onclick={() => removeTag(tag)}
-					aria-label="Remove {tag.displayName}"
-					{disabled}
-				>
-					×
-				</button>
-			</span>
-		{/each}
+<div class="tag-input-wrapper">
+	{#if label}
+		<label class="input-label">{label}</label>
+	{/if}
 
-		<!-- Input -->
-		{#if tags.length < maxTags}
-			<input
-				bind:this={inputElement}
-				type="text"
-				bind:value={inputValue}
-				oninput={handleInput}
-				onkeydown={handleKeydown}
-				placeholder={tags.length === 0 ? placeholder : ''}
-				{disabled}
-				class="tag-input"
-				role="combobox"
-				aria-expanded={showSuggestions}
-				aria-haspopup="listbox"
-				aria-controls="tag-suggestions"
-				aria-activedescendant={selectedIndex >= 0 ? `tag-option-${selectedIndex}` : undefined}
-				aria-label="Add tags"
-			/>
-		{/if}
-	</div>
-
-	<!-- Suggestions dropdown -->
-	{#if showSuggestions}
-		<div class="tag-suggestions" id="tag-suggestions" role="listbox">
-			{#if isLoadingSuggestions}
-				<div class="suggestion-loading">
-					<span class="spinner"></span>
-					Searching...
-				</div>
-			{:else if filteredSuggestions.length > 0}
-				{#each filteredSuggestions as tag, i (tag.id)}
+	<div class="tag-input-container">
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="tag-pills tag-pills-{size}" class:has-tags={tags.length > 0} onclick={handleContainerClick}>
+			{#each tags as tag (tag.id)}
+				<span class="tag-pill">
+					{tag.displayName}
 					<button
 						type="button"
-						class="suggestion-item"
-						class:selected={selectedIndex === i}
-						onclick={() => addExistingTag(tag)}
-						id="tag-option-{i}"
-						role="option"
-						aria-selected={selectedIndex === i}
+						onclick={(e) => { e.stopPropagation(); removeTag(tag) }}
+						aria-label="Remove {tag.displayName}"
+						{disabled}
 					>
-						<span class="suggestion-name">{tag.displayName}</span>
-						{#if tag.usageCount !== undefined}
-							<span class="suggestion-count">{tag.usageCount}</span>
-						{/if}
+						×
 					</button>
-				{/each}
-			{:else}
-				<div class="suggestion-empty">No matching tags</div>
+				</span>
+			{/each}
+
+			<!-- Input -->
+			{#if tags.length < maxTags}
+				<input
+					bind:this={inputElement}
+					type="text"
+					value={inputValue}
+					oninput={handleInput}
+					onkeydown={handleKeydown}
+					placeholder={tags.length === 0 ? placeholder : ''}
+					{disabled}
+					class="tag-text-input"
+					role="combobox"
+					aria-expanded={showSuggestions}
+					aria-haspopup="listbox"
+					aria-controls="tag-suggestions"
+					aria-activedescendant={selectedIndex >= 0 ? `tag-option-${selectedIndex}` : undefined}
+					aria-label={label || 'Add tags'}
+				/>
 			{/if}
 		</div>
-	{/if}
+
+		<!-- Suggestions dropdown -->
+		{#if showSuggestions}
+			<div class="tag-suggestions" id="tag-suggestions" role="listbox">
+				{#if isLoadingSuggestions}
+					<div class="suggestion-loading">
+						<span class="spinner"></span>
+						Searching...
+					</div>
+				{:else if filteredSuggestions.length > 0}
+					{#each filteredSuggestions as tag, i (tag.id)}
+						<button
+							type="button"
+							class="suggestion-item"
+							class:selected={selectedIndex === i}
+							onclick={() => addExistingTag(tag)}
+							id="tag-option-{i}"
+							role="option"
+							aria-selected={selectedIndex === i}
+						>
+							<span class="suggestion-name">{tag.displayName}</span>
+							{#if tag.usageCount !== undefined}
+								<span class="suggestion-count">{tag.usageCount}</span>
+							{/if}
+						</button>
+					{/each}
+				{:else}
+					<div class="suggestion-empty">No matching tags</div>
+				{/if}
+			</div>
+		{/if}
+	</div>
 </div>
 
 <style lang="scss">
 	@import '$styles/variables';
+
+	.tag-input-wrapper {
+		display: block;
+		width: 100%;
+	}
+
+	.input-label {
+		display: block;
+		margin-bottom: $unit;
+		font-size: 14px;
+		font-weight: 500;
+		color: $gray-20;
+	}
 
 	.tag-input-container {
 		position: relative;
@@ -262,17 +291,49 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: $unit-half;
-		padding: $unit;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-sm;
-		background: $white;
-		min-height: 40px;
+		border: 1px solid transparent;
+		background-color: $input-background-color;
+		color: $input-text-color;
 		align-items: center;
+		cursor: text;
+		transition: all $transition-fast ease;
+
+		&:hover {
+			background-color: $input-background-color-hover;
+		}
 
 		&:focus-within {
-			outline: none;
-			border-color: $blue-50;
-			box-shadow: 0 0 0 3px rgba($blue-50, 0.1);
+			background-color: $input-background-color-hover;
+			color: $input-text-color-hover;
+		}
+	}
+
+	// Size variations matching Input component
+	.tag-pills-small {
+		padding: $unit calc($unit * 1.5);
+		font-size: 0.75rem;
+		border-radius: $corner-radius-lg;
+	}
+
+	.tag-pills-medium {
+		padding: calc($unit * 1.5) $unit-2x;
+		font-size: 1rem;
+		border-radius: $corner-radius-2xl;
+	}
+
+	.tag-pills-large {
+		padding: $unit-2x $unit-3x;
+		font-size: 1.25rem;
+		border-radius: $corner-radius-2xl;
+	}
+
+	.tag-pills-jumbo {
+		padding: $unit-2x $unit-2x;
+		font-size: 1.33rem;
+		border-radius: $corner-radius-2xl;
+
+		&.has-tags {
+			padding: $unit;
 		}
 	}
 
@@ -280,28 +341,35 @@
 		display: inline-flex;
 		align-items: center;
 		gap: $unit-half;
-		padding: 4px $unit;
-		background: $gray-90;
-		border-radius: $corner-radius-sm;
+		padding: $unit $unit-2x;
+		background: $accent-color;
+		border-radius: $corner-radius-lg;
 		font-size: 14px;
-		color: $gray-20;
+		color: $white;
+		transition: background-color $transition-fast ease;
+
+		&:hover {
+			background: $red-50;
+		}
 
 		button {
 			border: none;
 			background: none;
-			color: $gray-40;
+			color: rgba(255, 255, 255, 0.7);
 			cursor: pointer;
 			font-size: 18px;
 			line-height: 1;
-			padding: 0;
+			padding: $unit;
+			margin: (-$unit) (-$unit) (-$unit) (-$unit-half);
 			width: 16px;
 			height: 16px;
+			box-sizing: content-box;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 
 			&:hover {
-				color: $gray-10;
+				color: $white;
 			}
 
 			&:disabled {
@@ -311,16 +379,18 @@
 		}
 	}
 
-	.tag-input {
+	.tag-text-input {
 		flex: 1;
 		border: none;
 		outline: none;
 		background: none;
-		font-size: 14px;
+		font-size: inherit;
+		color: inherit;
 		min-width: 120px;
+		padding: 0;
 
 		&::placeholder {
-			color: $gray-60;
+			color: $gray-50;
 		}
 
 		&:disabled {
@@ -337,7 +407,7 @@
 		z-index: 100;
 		background: $white;
 		border: 1px solid $gray-85;
-		border-radius: $corner-radius-sm;
+		border-radius: $corner-radius-2xl;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		max-height: 200px;
 		overflow-y: auto;
@@ -348,12 +418,12 @@
 		justify-content: space-between;
 		align-items: center;
 		width: 100%;
-		padding: $unit $unit-2x;
+		padding: $unit-2x $unit-3x;
 		border: none;
 		background: none;
 		cursor: pointer;
 		text-align: left;
-		font-size: 14px;
+		font-size: $font-size;
 
 		&:hover,
 		&.selected {
@@ -367,7 +437,7 @@
 
 	.suggestion-count {
 		color: $gray-60;
-		font-size: 12px;
+		font-size: $font-size-small;
 	}
 
 	.suggestion-loading,

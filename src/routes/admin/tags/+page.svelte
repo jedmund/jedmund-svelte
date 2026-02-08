@@ -2,11 +2,14 @@
 	import type { PageData } from './$types'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
+	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import BaseModal from '$lib/components/admin/BaseModal.svelte'
 	import Input from '$lib/components/admin/Input.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 	import EmptyState from '$lib/components/admin/EmptyState.svelte'
+	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
+	import TagListItem from '$lib/components/admin/TagListItem.svelte'
 	import { debounce } from '$lib/utils/debounce'
 
 	interface Tag {
@@ -25,13 +28,23 @@
 	let tags = $state<Tag[]>(data.tags)
 	let isLoading = $state(false)
 	let searchQuery = $state('')
-	let sortBy = $state<'name' | 'usage' | 'recent'>('name')
-	let sortOrder = $state<'asc' | 'desc'>('asc')
+	let sort = $state('name-asc')
+
+	const sortOptions = [
+		{ value: 'name-asc', label: 'Name (A-Z)' },
+		{ value: 'name-desc', label: 'Name (Z-A)' },
+		{ value: 'usage-desc', label: 'Most used' },
+		{ value: 'usage-asc', label: 'Least used' },
+		{ value: 'recent-desc', label: 'Newest' },
+		{ value: 'recent-asc', label: 'Oldest' }
+	]
 	let selectedTags = $state<number[]>([])
 	let showMergeModal = $state(false)
 	let mergeTargetId = $state<number | null>(null)
 	let editingTag = $state<Tag | null>(null)
 	let showCreateModal = $state(false)
+	let showDeleteConfirmation = $state(false)
+	let deletingTagId = $state<number | null>(null)
 	let newTagName = $state('')
 	let newTagDescription = $state('')
 
@@ -39,6 +52,7 @@
 	async function fetchTags() {
 		isLoading = true
 		try {
+			const [sortBy, sortOrder] = sort.split('-') as [string, string]
 			const params = new URLSearchParams({
 				sort: sortBy,
 				order: sortOrder,
@@ -70,8 +84,7 @@
 
 	// Watch for sort changes
 	$effect(() => {
-		sortBy
-		sortOrder
+		sort
 		fetchTags()
 	})
 
@@ -136,13 +149,16 @@
 	}
 
 	// Delete tag
-	async function handleDeleteTag(tagId: number) {
-		if (!confirm('Are you sure you want to delete this tag? It will be removed from all posts.')) {
-			return
-		}
+	function handleDeleteTag(tagId: number) {
+		deletingTagId = tagId
+		showDeleteConfirmation = true
+	}
+
+	async function confirmDelete() {
+		if (!deletingTagId) return
 
 		try {
-			const res = await fetch(`/api/tags/${tagId}`, {
+			const res = await fetch(`/api/tags/${deletingTagId}`, {
 				method: 'DELETE',
 				credentials: 'same-origin'
 			})
@@ -156,6 +172,8 @@
 		} catch (error) {
 			console.error('Failed to delete tag:', error)
 			alert('Failed to delete tag')
+		} finally {
+			deletingTagId = null
 		}
 	}
 
@@ -222,117 +240,69 @@
 	{#snippet header()}
 		<AdminHeader title="Tags">
 			{#snippet actions()}
-				{#if selectedTags.length > 0}
+				{#if selectedTags.length >= 2}
 					<Button variant="secondary" onclick={() => (showMergeModal = true)}>
-						Merge {selectedTags.length} Tags
+						Merge {selectedTags.length} tags
 					</Button>
 				{/if}
-				<Button variant="primary" onclick={() => (showCreateModal = true)}>Create Tag</Button>
+				<Button variant="primary" onclick={() => (showCreateModal = true)}>New tag</Button>
 			{/snippet}
 		</AdminHeader>
 	{/snippet}
 
-	<div class="tags-container">
-		<!-- Filters -->
-		<div class="filters">
+	<AdminFilters>
+		{#snippet left()}
 			<Input
 				type="search"
 				placeholder="Search tags..."
 				bind:value={searchQuery}
-				size="medium"
-				fullWidth={true}
+				size="small"
 			/>
+		{/snippet}
+		{#snippet right()}
+			<Select
+				bind:value={sort}
+				options={sortOptions}
+				size="small"
+				variant="minimal"
+			/>
+		{/snippet}
+	</AdminFilters>
 
-			<div class="sort-controls">
-				<Select
-					bind:value={sortBy}
-					options={[
-						{ value: 'name', label: 'Sort by Name' },
-						{ value: 'usage', label: 'Sort by Usage' },
-						{ value: 'recent', label: 'Sort by Recent' }
-					]}
-					size="medium"
+	{#if isLoading}
+		<div class="loading">Loading tags...</div>
+	{:else if tags.length === 0}
+		<EmptyState
+			title="No tags found"
+			message={searchQuery ? 'Try adjusting your search query.' : 'Create your first tag to get started.'}
+		>
+			{#snippet action()}
+				{#if searchQuery}
+					<Button variant="secondary" onclick={() => (searchQuery = '')}>Clear search</Button>
+				{:else}
+					<Button variant="primary" onclick={() => (showCreateModal = true)}>New tag</Button>
+				{/if}
+			{/snippet}
+		</EmptyState>
+	{:else}
+		<div class="tags-list">
+			{#each tags as tag (tag.id)}
+				<TagListItem
+					{tag}
+					selected={selectedTags.includes(tag.id)}
+					ontoggleselect={toggleTagSelection}
+					onedit={(t) => (editingTag = { ...t })}
+					ondelete={handleDeleteTag}
 				/>
-
-				<Button
-					variant="secondary"
-					buttonSize="medium"
-					onclick={() => (sortOrder = sortOrder === 'asc' ? 'desc' : 'asc')}
-					aria-label="Toggle sort order"
-				>
-					{sortOrder === 'asc' ? '↑' : '↓'}
-				</Button>
-			</div>
+			{/each}
 		</div>
-
-		<!-- Tags List -->
-		{#if isLoading}
-			<div class="loading">Loading tags...</div>
-		{:else if tags.length === 0}
-			<EmptyState
-				title="No tags found"
-				message={searchQuery ? 'Try adjusting your search query.' : 'Create your first tag to get started.'}
-			>
-				{#snippet action()}
-					{#if searchQuery}
-						<Button variant="secondary" onclick={() => (searchQuery = '')}>Clear search</Button>
-					{:else}
-						<Button variant="primary" onclick={() => (showCreateModal = true)}>Create Tag</Button>
-					{/if}
-				{/snippet}
-			</EmptyState>
-		{:else}
-			<div class="tags-grid">
-				{#each tags as tag (tag.id)}
-					<div class="tag-card" class:selected={selectedTags.includes(tag.id)}>
-						<div class="tag-card-header">
-							<input
-								type="checkbox"
-								checked={selectedTags.includes(tag.id)}
-								onchange={() => toggleTagSelection(tag.id)}
-								aria-label="Select {tag.displayName}"
-							/>
-							<div class="tag-info">
-								<h3>{tag.displayName}</h3>
-								<p class="tag-slug">{tag.slug}</p>
-								{#if tag.description}
-									<p class="tag-description">{tag.description}</p>
-								{/if}
-							</div>
-						</div>
-
-						<div class="tag-card-meta">
-							<span class="usage-count">{tag.usageCount} posts</span>
-							<div class="tag-actions">
-								<Button
-									variant="ghost"
-									buttonSize="small"
-									onclick={() => (editingTag = { ...tag })}
-									aria-label="Edit tag"
-								>
-									✏️
-								</Button>
-								<Button
-									variant="ghost"
-									buttonSize="small"
-									onclick={() => handleDeleteTag(tag.id)}
-									aria-label="Delete tag"
-								>
-									🗑️
-								</Button>
-							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-		{/if}
-	</div>
+	{/if}
 </AdminPage>
 
-<!-- Create Tag Modal -->
+<!-- New tag Modal -->
 <BaseModal bind:isOpen={showCreateModal} size="medium">
 	<div class="modal-content">
-		<h2>Create New Tag</h2>
+		<h2>New tag</h2>
 		<form
 			onsubmit={(e) => {
 				e.preventDefault()
@@ -365,7 +335,7 @@
 
 			<div class="modal-actions">
 				<Button variant="secondary" onclick={() => (showCreateModal = false)}>Cancel</Button>
-				<Button variant="primary" type="submit">Create Tag</Button>
+				<Button variant="primary" type="submit">New tag</Button>
 			</div>
 		</form>
 	</div>
@@ -439,101 +409,21 @@
 	</div>
 </BaseModal>
 
+<DeleteConfirmationModal
+	bind:isOpen={showDeleteConfirmation}
+	title="Delete Tag?"
+	message="Are you sure you want to delete this tag? It will be removed from all posts."
+	confirmText="Delete Tag"
+	onConfirm={confirmDelete}
+	onCancel={() => (deletingTagId = null)}
+/>
+
 <style lang="scss">
 	@import '$styles/variables';
 
-	.tags-container {
-		max-width: 1200px;
-	}
-
-	.filters {
+	.tags-list {
 		display: flex;
-		gap: $unit-2x;
-		margin-bottom: $unit-3x;
-
-		:global(.input-wrapper) {
-			flex: 1;
-		}
-
-		.sort-controls {
-			display: flex;
-			gap: $unit;
-		}
-	}
-
-	.tags-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: $unit-2x;
-	}
-
-	.tag-card {
-		padding: $unit-2x;
-		border: 2px solid $gray-85;
-		border-radius: $corner-radius-md;
-		background: $white;
-		transition: all 0.2s ease;
-
-		&.selected {
-			border-color: $blue-50;
-			background: rgba($blue-50, 0.05);
-		}
-
-		&:hover {
-			border-color: $gray-70;
-		}
-	}
-
-	.tag-card-header {
-		display: flex;
-		gap: $unit-2x;
-		margin-bottom: $unit-2x;
-
-		input[type='checkbox'] {
-			flex-shrink: 0;
-			margin-top: 2px;
-		}
-
-		.tag-info {
-			flex: 1;
-
-			h3 {
-				margin: 0;
-				font-size: 1.125rem;
-			}
-
-			.tag-slug {
-				margin: $unit-half 0;
-				color: $gray-60;
-				font-size: 0.75rem;
-				font-family: monospace;
-			}
-
-			.tag-description {
-				margin: $unit 0 0;
-				color: $gray-40;
-				font-size: 0.875rem;
-				line-height: 1.4;
-			}
-		}
-	}
-
-	.tag-card-meta {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding-top: $unit-2x;
-		border-top: 1px solid $gray-90;
-
-		.usage-count {
-			color: $gray-40;
-			font-size: 0.875rem;
-		}
-
-		.tag-actions {
-			display: flex;
-			gap: $unit;
-		}
+		flex-direction: column;
 	}
 
 	.loading {
@@ -543,6 +433,8 @@
 	}
 
 	.modal-content {
+		padding: $unit-4x;
+
 		h2 {
 			margin: 0 0 $unit-2x;
 			font-size: 1.5rem;
