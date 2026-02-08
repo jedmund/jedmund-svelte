@@ -1,6 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import type { PageData } from './$types'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
+	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
+	import Button from '$lib/components/admin/Button.svelte'
+	import BaseModal from '$lib/components/admin/BaseModal.svelte'
+	import Input from '$lib/components/admin/Input.svelte'
+	import Select from '$lib/components/admin/Select.svelte'
+	import EmptyState from '$lib/components/admin/EmptyState.svelte'
 	import { debounce } from '$lib/utils/debounce'
 
 	interface Tag {
@@ -14,8 +20,10 @@
 		updatedAt: string
 	}
 
-	let tags = $state<Tag[]>([])
-	let isLoading = $state(true)
+	const { data } = $props<{ data: PageData }>()
+
+	let tags = $state<Tag[]>(data.tags)
+	let isLoading = $state(false)
 	let searchQuery = $state('')
 	let sortBy = $state<'name' | 'usage' | 'recent'>('name')
 	let sortOrder = $state<'asc' | 'desc'>('asc')
@@ -42,8 +50,8 @@
 			}
 
 			const res = await fetch(`/api/tags?${params}`)
-			const data = await res.json()
-			tags = data.tags
+			const fetchedData = await res.json()
+			tags = fetchedData.tags
 		} catch (error) {
 			console.error('Failed to fetch tags:', error)
 		} finally {
@@ -64,10 +72,6 @@
 	$effect(() => {
 		sortBy
 		sortOrder
-		fetchTags()
-	})
-
-	onMount(() => {
 		fetchTags()
 	})
 
@@ -216,48 +220,48 @@
 
 <AdminPage>
 	{#snippet header()}
-		<header class="page-header">
-			<div class="header-left">
-				<h1>Tags</h1>
-				<p class="subtitle">{tags.length} total tags</p>
-			</div>
-			<div class="header-actions">
+		<AdminHeader title="Tags">
+			{#snippet actions()}
 				{#if selectedTags.length > 0}
-					<button class="btn btn-secondary" onclick={() => (showMergeModal = true)}>
+					<Button variant="secondary" onclick={() => (showMergeModal = true)}>
 						Merge {selectedTags.length} Tags
-					</button>
+					</Button>
 				{/if}
-				<button class="btn btn-primary" onclick={() => (showCreateModal = true)}>
-					Create Tag
-				</button>
-			</div>
-		</header>
+				<Button variant="primary" onclick={() => (showCreateModal = true)}>Create Tag</Button>
+			{/snippet}
+		</AdminHeader>
 	{/snippet}
 
 	<div class="tags-container">
 		<!-- Filters -->
 		<div class="filters">
-			<input
-				type="text"
+			<Input
+				type="search"
 				placeholder="Search tags..."
 				bind:value={searchQuery}
-				class="search-input"
+				size="medium"
+				fullWidth={true}
 			/>
 
 			<div class="sort-controls">
-				<select bind:value={sortBy} class="sort-select">
-					<option value="name">Sort by Name</option>
-					<option value="usage">Sort by Usage</option>
-					<option value="recent">Sort by Recent</option>
-				</select>
+				<Select
+					bind:value={sortBy}
+					options={[
+						{ value: 'name', label: 'Sort by Name' },
+						{ value: 'usage', label: 'Sort by Usage' },
+						{ value: 'recent', label: 'Sort by Recent' }
+					]}
+					size="medium"
+				/>
 
-				<button
-					class="btn-icon"
+				<Button
+					variant="secondary"
+					buttonSize="medium"
 					onclick={() => (sortOrder = sortOrder === 'asc' ? 'desc' : 'asc')}
 					aria-label="Toggle sort order"
 				>
 					{sortOrder === 'asc' ? '↑' : '↓'}
-				</button>
+				</Button>
 			</div>
 		</div>
 
@@ -265,12 +269,18 @@
 		{#if isLoading}
 			<div class="loading">Loading tags...</div>
 		{:else if tags.length === 0}
-			<div class="empty-state">
-				<p>No tags found</p>
-				{#if searchQuery}
-					<button class="btn" onclick={() => (searchQuery = '')}>Clear search</button>
-				{/if}
-			</div>
+			<EmptyState
+				title="No tags found"
+				message={searchQuery ? 'Try adjusting your search query.' : 'Create your first tag to get started.'}
+			>
+				{#snippet action()}
+					{#if searchQuery}
+						<Button variant="secondary" onclick={() => (searchQuery = '')}>Clear search</Button>
+					{:else}
+						<Button variant="primary" onclick={() => (showCreateModal = true)}>Create Tag</Button>
+					{/if}
+				{/snippet}
+			</EmptyState>
 		{:else}
 			<div class="tags-grid">
 				{#each tags as tag (tag.id)}
@@ -294,20 +304,22 @@
 						<div class="tag-card-meta">
 							<span class="usage-count">{tag.usageCount} posts</span>
 							<div class="tag-actions">
-								<button
-									class="btn-icon-small"
+								<Button
+									variant="ghost"
+									buttonSize="small"
 									onclick={() => (editingTag = { ...tag })}
 									aria-label="Edit tag"
 								>
 									✏️
-								</button>
-								<button
-									class="btn-icon-small"
+								</Button>
+								<Button
+									variant="ghost"
+									buttonSize="small"
 									onclick={() => handleDeleteTag(tag.id)}
 									aria-label="Delete tag"
 								>
 									🗑️
-								</button>
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -318,53 +330,51 @@
 </AdminPage>
 
 <!-- Create Tag Modal -->
-{#if showCreateModal}
-	<div class="modal-overlay" onclick={() => (showCreateModal = false)}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
-			<h2>Create New Tag</h2>
-			<form
-				onsubmit={(e) => {
-					e.preventDefault()
-					handleCreateTag()
-				}}
-			>
-				<div class="form-group">
-					<label for="tag-name">Tag Name</label>
-					<input
-						id="tag-name"
-						type="text"
-						bind:value={newTagName}
-						placeholder="e.g., JavaScript"
-						required
-						autofocus
-					/>
-				</div>
+<BaseModal bind:isOpen={showCreateModal} size="medium">
+	<div class="modal-content">
+		<h2>Create New Tag</h2>
+		<form
+			onsubmit={(e) => {
+				e.preventDefault()
+				handleCreateTag()
+			}}
+		>
+			<div class="form-group">
+				<Input
+					id="tag-name"
+					type="text"
+					label="Tag Name"
+					bind:value={newTagName}
+					placeholder="e.g., JavaScript"
+					required={true}
+					size="medium"
+					fullWidth={true}
+				/>
+			</div>
 
-				<div class="form-group">
-					<label for="tag-description">Description (optional)</label>
-					<textarea
-						id="tag-description"
-						bind:value={newTagDescription}
-						placeholder="Brief description of this tag..."
-						rows="3"
-					></textarea>
-				</div>
+			<div class="form-group">
+				<label for="tag-description" class="input-label">Description (optional)</label>
+				<textarea
+					id="tag-description"
+					bind:value={newTagDescription}
+					placeholder="Brief description of this tag..."
+					rows="3"
+					class="textarea"
+				></textarea>
+			</div>
 
-				<div class="modal-actions">
-					<button type="button" class="btn btn-secondary" onclick={() => (showCreateModal = false)}>
-						Cancel
-					</button>
-					<button type="submit" class="btn btn-primary">Create Tag</button>
-				</div>
-			</form>
-		</div>
+			<div class="modal-actions">
+				<Button variant="secondary" onclick={() => (showCreateModal = false)}>Cancel</Button>
+				<Button variant="primary" type="submit">Create Tag</Button>
+			</div>
+		</form>
 	</div>
-{/if}
+</BaseModal>
 
 <!-- Edit Tag Modal -->
-{#if editingTag}
-	<div class="modal-overlay" onclick={() => (editingTag = null)}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
+<BaseModal isOpen={!!editingTag} onClose={() => (editingTag = null)} size="medium">
+	{#if editingTag}
+		<div class="modal-content">
 			<h2>Edit Tag</h2>
 			<form
 				onsubmit={(e) => {
@@ -373,95 +383,64 @@
 				}}
 			>
 				<div class="form-group">
-					<label for="edit-tag-name">Tag Name</label>
-					<input
+					<Input
 						id="edit-tag-name"
 						type="text"
+						label="Tag Name"
 						bind:value={editingTag.displayName}
-						required
-						autofocus
+						required={true}
+						size="medium"
+						fullWidth={true}
 					/>
 				</div>
 
 				<div class="form-group">
-					<label for="edit-tag-description">Description</label>
+					<label for="edit-tag-description" class="input-label">Description</label>
 					<textarea
 						id="edit-tag-description"
 						bind:value={editingTag.description}
 						placeholder="Brief description of this tag..."
 						rows="3"
+						class="textarea"
 					></textarea>
 				</div>
 
 				<div class="modal-actions">
-					<button type="button" class="btn btn-secondary" onclick={() => (editingTag = null)}>
-						Cancel
-					</button>
-					<button type="submit" class="btn btn-primary">Save Changes</button>
+					<Button variant="secondary" onclick={() => (editingTag = null)}>Cancel</Button>
+					<Button variant="primary" type="submit">Save Changes</Button>
 				</div>
 			</form>
 		</div>
-	</div>
-{/if}
+	{/if}
+</BaseModal>
 
 <!-- Merge Tags Modal -->
-{#if showMergeModal}
-	<div class="modal-overlay" onclick={() => (showMergeModal = false)}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
-			<h2>Merge Tags</h2>
-			<p class="modal-description">
-				Select which tag to keep. All other selected tags will be merged into it and deleted.
-			</p>
+<BaseModal bind:isOpen={showMergeModal} size="medium">
+	<div class="modal-content">
+		<h2>Merge Tags</h2>
+		<p class="modal-description">
+			Select which tag to keep. All other selected tags will be merged into it and deleted.
+		</p>
 
-			<div class="merge-list">
-				{#each tags.filter((t) => selectedTags.includes(t.id)) as tag (tag.id)}
-					<label class="merge-option">
-						<input type="radio" name="merge-target" value={tag.id} bind:group={mergeTargetId} />
-						<span class="merge-tag-name">{tag.displayName}</span>
-						<span class="merge-tag-count">({tag.usageCount} posts)</span>
-					</label>
-				{/each}
-			</div>
+		<div class="merge-list">
+			{#each tags.filter((t) => selectedTags.includes(t.id)) as tag (tag.id)}
+				<label class="merge-option">
+					<input type="radio" name="merge-target" value={tag.id} bind:group={mergeTargetId} />
+					<span class="merge-tag-name">{tag.displayName}</span>
+					<span class="merge-tag-count">({tag.usageCount} posts)</span>
+				</label>
+			{/each}
+		</div>
 
-			<div class="modal-actions">
-				<button type="button" class="btn btn-secondary" onclick={() => (showMergeModal = false)}>
-					Cancel
-				</button>
-				<button type="button" class="btn btn-primary" onclick={handleMergeTags}>
-					Merge Tags
-				</button>
-			</div>
+		<div class="modal-actions">
+			<Button variant="secondary" onclick={() => (showMergeModal = false)}>Cancel</Button>
+			<Button variant="primary" onclick={handleMergeTags}>Merge Tags</Button>
 		</div>
 	</div>
-{/if}
+</BaseModal>
 
 <style lang="scss">
 	@import '$styles/variables';
-
-	.page-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: $unit-4x;
-	}
-
-	.header-left {
-		h1 {
-			margin: 0;
-			font-size: 2rem;
-		}
-
-		.subtitle {
-			margin: $unit-half 0 0;
-			color: $gray-40;
-			font-size: 0.875rem;
-		}
-	}
-
-	.header-actions {
-		display: flex;
-		gap: $unit-2x;
-	}
 
 	.tags-container {
 		max-width: 1200px;
@@ -472,37 +451,13 @@
 		gap: $unit-2x;
 		margin-bottom: $unit-3x;
 
-		.search-input {
+		:global(.input-wrapper) {
 			flex: 1;
-			padding: $unit $unit-2x;
-			border: 1px solid $gray-85;
-			border-radius: $corner-radius-sm;
-			font-size: 0.875rem;
-
-			&:focus {
-				outline: none;
-				border-color: $blue-50;
-				box-shadow: 0 0 0 3px rgba($blue-50, 0.1);
-			}
 		}
 
 		.sort-controls {
 			display: flex;
 			gap: $unit;
-
-			.sort-select {
-				padding: $unit $unit-2x;
-				border: 1px solid $gray-85;
-				border-radius: $corner-radius-sm;
-				font-size: 0.875rem;
-				background: $white;
-				cursor: pointer;
-
-				&:focus {
-					outline: none;
-					border-color: $blue-50;
-				}
-			}
 		}
 	}
 
@@ -581,94 +536,13 @@
 		}
 	}
 
-	.btn {
-		padding: $unit $unit-2x;
-		border: none;
-		border-radius: $corner-radius-sm;
-		font-size: 0.875rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.2s ease;
-
-		&.btn-primary {
-			background: $blue-50;
-			color: $white;
-
-			&:hover {
-				background: darken($blue-50, 5%);
-			}
-		}
-
-		&.btn-secondary {
-			background: $gray-90;
-			color: $gray-20;
-
-			&:hover {
-				background: $gray-85;
-			}
-		}
-	}
-
-	.btn-icon {
-		width: 40px;
-		height: 40px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-sm;
-		background: $white;
-		cursor: pointer;
-		font-size: 1.25rem;
-
-		&:hover {
-			background: $gray-95;
-		}
-	}
-
-	.btn-icon-small {
-		border: none;
-		background: none;
-		cursor: pointer;
-		font-size: 1rem;
-		padding: $unit-half;
-		opacity: 0.7;
-		transition: opacity 0.2s ease;
-
-		&:hover {
-			opacity: 1;
-		}
-	}
-
-	.loading,
-	.empty-state {
+	.loading {
 		text-align: center;
 		padding: $unit-6x;
 		color: $gray-40;
 	}
 
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-	}
-
-	.modal {
-		background: $white;
-		border-radius: $corner-radius-md;
-		padding: $unit-4x;
-		max-width: 500px;
-		width: 90%;
-		max-height: 90vh;
-		overflow-y: auto;
-
+	.modal-content {
 		h2 {
 			margin: 0 0 $unit-2x;
 			font-size: 1.5rem;
@@ -684,31 +558,29 @@
 	.form-group {
 		margin-bottom: $unit-3x;
 
-		label {
+		.input-label {
 			display: block;
 			margin-bottom: $unit;
 			font-weight: 500;
-			font-size: 0.875rem;
+			font-size: 14px;
+			color: $gray-20;
 		}
 
-		input,
-		textarea {
+		.textarea {
 			width: 100%;
 			padding: $unit $unit-2x;
 			border: 1px solid $gray-85;
 			border-radius: $corner-radius-sm;
 			font-size: 0.875rem;
 			font-family: inherit;
+			resize: vertical;
+			box-sizing: border-box;
 
 			&:focus {
 				outline: none;
 				border-color: $blue-50;
 				box-shadow: 0 0 0 3px rgba($blue-50, 0.1);
 			}
-		}
-
-		textarea {
-			resize: vertical;
 		}
 	}
 
