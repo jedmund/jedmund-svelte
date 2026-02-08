@@ -212,3 +212,29 @@ model PostTag {
   @@index([tagId])
   @@map("post_tags")
 }
+
+model Syndication {
+  id           Int       @id @default(autoincrement())
+  contentType  String    @db.VarChar(50)
+  contentId    Int
+  platform     String    @db.VarChar(50)
+  externalId   String?   @db.VarChar(500)
+  externalUrl  String?   @db.VarChar(500)
+  status       String    @db.VarChar(50)
+  errorMessage String?   @db.Text
+  createdAt    DateTime  @default(now())
+
+  @@unique([contentType, contentId, platform])
+  @@index([contentType, contentId])
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(255)
+  value     String   @db.Text
+  isSecret  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
