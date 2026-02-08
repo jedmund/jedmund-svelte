@@ -21,6 +21,7 @@
 		slug: string
 		excerpt?: string
 		tags: Tag[]
+		heartCount?: number
 		triggerElement: HTMLElement
 		onDelete: () => void
 		onClose?: () => void
@@ -33,6 +34,7 @@
 		slug = $bindable(),
 		excerpt = $bindable(''),
 		tags = $bindable(),
+		heartCount,
 		triggerElement,
 		onDelete,
 		onClose = () => {},
@@ -78,7 +80,8 @@
 		tags,
 		createdAt: post.createdAt,
 		updatedAt: post.updatedAt,
-		publishedAt: post.publishedAt
+		publishedAt: post.publishedAt,
+		heartCount
 	})
 
 	// Sync changes back
@@ -88,7 +91,8 @@
 			tags,
 			createdAt: post.createdAt,
 			updatedAt: post.updatedAt,
-			publishedAt: post.publishedAt
+			publishedAt: post.publishedAt,
+			heartCount
 		}
 	})
 </script>

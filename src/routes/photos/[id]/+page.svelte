@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BackButton from '$components/BackButton.svelte'
+	import HeartButton from '$components/HeartButton.svelte'
 	import PhotoViewEnhanced from '$components/PhotoViewEnhanced.svelte'
 	import PhotoMetadata from '$components/PhotoMetadata.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
@@ -434,7 +435,11 @@
 			backHref="/photos"
 			backLabel="Back to Photos"
 			showBackButton={true}
-		/>
+		>
+			{#snippet footerExtra()}
+				<HeartButton path="photos/{photo.id}" />
+			{/snippet}
+		</PhotoMetadata>
 	</div>
 {/if}
 

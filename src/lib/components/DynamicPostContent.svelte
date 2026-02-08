@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Slideshow from './Slideshow.svelte'
 	import BackButton from './BackButton.svelte'
+	import HeartButton from './HeartButton.svelte'
 	import { formatDate } from '$lib/utils/date'
 	import { renderEdraContent } from '$lib/utils/content'
 
@@ -97,6 +98,7 @@
 
 	<footer class="post-footer">
 		<BackButton href="/universe" label="Back to Universe" />
+		<HeartButton path="universe/{post.slug}" />
 	</footer>
 </article>
 
@@ -202,6 +204,12 @@
 			color: $text-color;
 			line-height: 1.5;
 		}
+	}
+
+	.post-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 	}
 
 	.post-body {

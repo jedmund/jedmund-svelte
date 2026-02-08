@@ -2,6 +2,7 @@
 	import Page from '$components/Page.svelte'
 	import PhotoGrid from '$components/PhotoGrid.svelte'
 	import BackButton from '$components/BackButton.svelte'
+	import HeartButton from '$components/HeartButton.svelte'
 	import { generateMetaTags, generateImageGalleryJsonLd } from '$lib/utils/metadata'
 	import { renderEdraContent, getContentExcerpt } from '$lib/utils/content'
 	import { page } from '$app/stores'
@@ -201,6 +202,11 @@
 					</div>
 				{/if}
 			{/if}
+
+			<footer class="album-footer">
+				<BackButton href="/photos" label="Back to Photos" />
+				<HeartButton path="albums/{album.slug}" />
+			</footer>
 		</Page>
 	</div>
 {/if}
@@ -240,6 +246,13 @@
 	}
 
 	.legacy-photos {
+		padding: $unit-2x 0;
+	}
+
+	.album-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		padding: $unit-2x 0;
 	}
 
