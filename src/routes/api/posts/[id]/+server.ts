@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
+import { syndicateContent } from '$lib/server/syndication/syndicate'
 import {
 	removeMediaUsage,
 	extractMediaIds,
@@ -169,6 +170,12 @@ export const PUT: RequestHandler = async (event) => {
 		}
 
 		logger.info('Post updated', { id })
+
+		if (post.status === 'published') {
+			syndicateContent('post', post.id)
+				.catch(err => logger.error('Auto-syndication failed', err as Error))
+		}
+
 		return jsonResponse(post)
 	} catch (error) {
 		logger.error('Failed to update post', error as Error)
@@ -223,6 +230,12 @@ export const PATCH: RequestHandler = async (event) => {
     const post = await prisma.post.update({ where: { id }, data: updateData })
 
     logger.info('Post partially updated', { id: post.id, fields: Object.keys(updateData).join(', ') })
+
+    if (data.status === 'published' && existing.status !== 'published') {
+      syndicateContent('post', post.id)
+        .catch(err => logger.error('Auto-syndication failed', err as Error))
+    }
+
     return jsonResponse(post)
   } catch (error) {
     logger.error('Failed to partially update post', error as Error)

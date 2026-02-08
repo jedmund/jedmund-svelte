@@ -8,6 +8,7 @@ import {
 	parseRequestBody
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
+import { syndicateContent } from '$lib/server/syndication/syndicate'
 
 // GET /api/albums/[id] - Get a single album
 export const GET: RequestHandler = async (event) => {
@@ -135,6 +136,11 @@ export const PUT: RequestHandler = async (event) => {
 		})
 
 		logger.info('Album updated', { id, slug: album.slug })
+
+		if (album.status === 'published' && existing.status !== 'published') {
+			syndicateContent('album', album.id)
+				.catch(err => logger.error('Auto-syndication failed', err as Error))
+		}
 
 		return jsonResponse(album)
 	} catch (error) {

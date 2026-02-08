@@ -9,6 +9,7 @@ import {
 	checkAdminAuth
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
+import { syndicateContent } from '$lib/server/syndication/syndicate'
 import {
 	trackMediaUsage,
 	extractMediaIds,
@@ -216,6 +217,12 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		logger.info('Post created', { id: post.id, title: post.title })
+
+		if (post.status === 'published') {
+			syndicateContent('post', post.id)
+				.catch(err => logger.error('Auto-syndication failed', err as Error))
+		}
+
 		return jsonResponse(post, 201)
 	} catch (error) {
 		logger.error('Failed to create post', error as Error)

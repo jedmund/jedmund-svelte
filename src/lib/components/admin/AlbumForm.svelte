@@ -9,6 +9,7 @@
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import Composer from './composer'
+	import SyndicationStatus from './SyndicationStatus.svelte'
 	import { toast } from '$lib/stores/toast'
 	import type { Album, Media } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
@@ -373,6 +374,10 @@
 							<span class="toggle-slider"></span>
 						</label>
 					</div>
+
+					{#if mode === 'edit' && album?.id}
+						<SyndicationStatus contentType="album" contentId={album.id} contentStatus={formData.status} />
+					{/if}
 
 					<!-- Photos Grid -->
 					<div class="form-section">
