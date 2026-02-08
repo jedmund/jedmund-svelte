@@ -28,6 +28,7 @@ export const GET: RequestHandler = async (event) => {
 		// Get filter parameters
 		const status = event.url.searchParams.get('status')
 		const postType = event.url.searchParams.get('postType')
+		const tagsParam = event.url.searchParams.get('tags')
 
 		// Build where clause
 		const where: Prisma.PostWhereInput = {}
@@ -38,23 +39,57 @@ export const GET: RequestHandler = async (event) => {
 			where.postType = postType
 		}
 
+		// Tag filtering (OR logic - posts with ANY of the tags)
+		if (tagsParam) {
+			const tagSlugs = tagsParam.split(',').map(t => t.trim()).filter(Boolean)
+			if (tagSlugs.length > 0) {
+				where.tags = {
+					some: {
+						tag: {
+							slug: { in: tagSlugs }
+						}
+					}
+				}
+			}
+		}
+
 		// Get total count
 		const total = await prisma.post.count({ where })
 
-		// Get posts
+		// Get posts with tags
 		const posts = await prisma.post.findMany({
 			where,
 			orderBy: { createdAt: 'desc' },
 			skip,
-			take: limit
+			take: limit,
+			include: {
+				tags: {
+					include: {
+						tag: {
+							select: {
+								id: true,
+								name: true,
+								displayName: true,
+								slug: true
+							}
+						}
+					}
+				}
+			}
 		})
+
+		// Format posts with tags
+		const formattedPosts = posts.map(post => ({
+			...post,
+			tags: post.tags.map(pt => pt.tag)
+		}))
 
 		const pagination = getPaginationMeta(total, page, limit)
 
 		logger.info('Posts list retrieved', { total, page, limit })
 
 		return jsonResponse({
-			posts,
+			posts: formattedPosts,
 			pagination
 		})
 	} catch (error) {
@@ -111,8 +146,15 @@ export const POST: RequestHandler = async (event) => {
 				featuredImage: featuredImageId,
 				attachments:
 					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
-				tags: data.tags,
-				publishedAt: data.publishedAt
+				publishedAt: data.publishedAt,
+				// Create tag relationships if tagIds provided
+				tags: data.tagIds && Array.isArray(data.tagIds) && data.tagIds.length > 0
+					? {
+							create: data.tagIds.map((tagId: number) => ({
+								tag: { connect: { id: tagId } }
+							}))
+						}
+					: undefined
 			}
 		})
 
