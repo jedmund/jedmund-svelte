@@ -1,5 +1,6 @@
 <script lang="ts">
 	import UniverseCard from './UniverseCard.svelte'
+	import TagPill from './TagPill.svelte'
 	import { getContentExcerpt, renderEdraContent } from '$lib/utils/content'
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
@@ -88,6 +89,14 @@
 		</div>
 	{/if}
 
+	{#if post.tags && post.tags.length > 0}
+		<div class="post-tags">
+			{#each post.tags as tag (tag.id)}
+				<TagPill {tag} size="small" href="/universe?tags={tag.slug}" />
+			{/each}
+		</div>
+	{/if}
+
 	{#if post.postType === 'essay' && isContentTruncated()}
 		<p>
 			<a href="/universe/{post.slug}" class="read-more" tabindex="-1">Continue reading</a>
@@ -167,6 +176,14 @@
 		:global(.url-embed-rendered) {
 			display: none;
 		}
+	}
+
+	.post-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $unit-half;
+		margin-top: $unit-2x;
+		margin-bottom: $unit-2x;
 	}
 
 	.attachments {

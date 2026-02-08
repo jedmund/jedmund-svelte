@@ -23,7 +23,14 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		const post = await prisma.post.findUnique({
-			where: { id }
+			where: { id },
+			include: {
+				tags: {
+					include: {
+						tag: true
+					}
+				}
+			}
 		})
 
 		if (!post) {
@@ -78,6 +85,24 @@ export const PUT: RequestHandler = async (event) => {
 		const featuredImageId = data.featuredImage
 		const postContent = data.content
 
+		// Handle tag updates if tagIds provided
+		let tagUpdate = {}
+		if (data.tagIds !== undefined) {
+			// Delete existing tags and create new ones
+			tagUpdate = {
+				tags: {
+					deleteMany: {},
+					...(Array.isArray(data.tagIds) && data.tagIds.length > 0
+						? {
+								create: data.tagIds.map((tagId: number) => ({
+									tag: { connect: { id: tagId } }
+								}))
+							}
+						: {})
+				}
+			}
+		}
+
 		const post = await prisma.post.update({
 			where: { id },
 			data: {
@@ -89,8 +114,8 @@ export const PUT: RequestHandler = async (event) => {
 				featuredImage: featuredImageId,
 				attachments:
 					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
-				tags: data.tags,
-				publishedAt: data.publishedAt
+				publishedAt: data.publishedAt,
+				...tagUpdate
 			}
 		})
 

@@ -1,6 +1,13 @@
 <script lang="ts">
 	import GenericMetadataPopover, { type MetadataConfig } from './GenericMetadataPopover.svelte'
 
+	interface Tag {
+		id: number
+		name: string
+		displayName: string
+		slug: string
+	}
+
 	interface PostLike {
 		id?: number | null
 		createdAt: Date | string
@@ -13,11 +20,8 @@
 		postType?: string
 		slug: string
 		excerpt?: string
-		tags: string[]
-		tagInput: string
+		tags: Tag[]
 		triggerElement: HTMLElement
-		onAddTag: () => void
-		onRemoveTag: (tag: string) => void
 		onDelete: () => void
 		onClose?: () => void
 		onFieldUpdate?: (key: string, value: unknown) => void
@@ -29,10 +33,7 @@
 		slug = $bindable(),
 		excerpt = $bindable(''),
 		tags = $bindable(),
-		tagInput = $bindable(),
 		triggerElement,
-		onAddTag,
-		onRemoveTag,
 		onDelete,
 		onClose = () => {},
 		onFieldUpdate
@@ -42,8 +43,6 @@
 		if (key === 'slug' && typeof value === 'string') {
 			slug = value
 			onFieldUpdate?.(key, value)
-		} else if (key === 'tagInput' && typeof value === 'string') {
-			tagInput = value
 		}
 	}
 
@@ -77,7 +76,6 @@
 	let popoverData = $state({
 		slug,
 		tags,
-		tagInput,
 		createdAt: post.createdAt,
 		updatedAt: post.updatedAt,
 		publishedAt: post.publishedAt
@@ -88,7 +86,6 @@
 		popoverData = {
 			slug,
 			tags,
-			tagInput,
 			createdAt: post.createdAt,
 			updatedAt: post.updatedAt,
 			publishedAt: post.publishedAt
@@ -101,7 +98,5 @@
 	bind:data={popoverData}
 	{triggerElement}
 	onUpdate={handleFieldUpdate}
-	{onAddTag}
-	{onRemoveTag}
 	{onClose}
 />

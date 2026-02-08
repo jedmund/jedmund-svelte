@@ -1,3 +1,10 @@
+export interface Tag {
+	id: number
+	name: string
+	displayName: string
+	slug: string
+}
+
 export interface AdminProject {
 	id: number
 	title: string
@@ -22,7 +29,7 @@ export interface AdminPost {
 	content: unknown
 	excerpt?: string | null
 	status: string
-	tags: string[] | null
+	tags?: Tag[] | null
 	featuredImage: string | null
 	publishedAt: string | null
 	createdAt: string

@@ -3,8 +3,9 @@
 	import AvatarSimple from '$lib/components/AvatarSimple.svelte'
 	import WorkIcon from '$icons/work.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
-	import MediaIcon from '$icons/media.svg?component'
 	import AlbumIcon from '$icons/album.svg?component'
+	import MediaIcon from '$icons/media.svg?component'
+	import TagIcon from '$icons/tag.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
 
@@ -20,7 +21,8 @@
 		{ text: 'Projects', href: '/admin/projects', icon: WorkIcon },
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
-		{ text: 'Media', href: '/admin/media', icon: MediaIcon }
+		{ text: 'Media', href: '/admin/media', icon: MediaIcon },
+		{ text: 'Tags', href: '/admin/tags', icon: TagIcon }
 	]
 
 	// Calculate active index based on current path
@@ -33,7 +35,9 @@
 					? 2
 					: currentPath.startsWith('/admin/media')
 						? 3
-						: -1
+						: currentPath.startsWith('/admin/tags')
+							? 4
+							: -1
 	)
 </script>
 

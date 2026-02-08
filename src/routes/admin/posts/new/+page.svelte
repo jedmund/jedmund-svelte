@@ -12,6 +12,13 @@ import { api } from '$lib/admin/api'
 
 	let saving = $state(false)
 
+	interface Tag {
+		id: number
+		name: string
+		displayName: string
+		slug: string
+	}
+
 	let title = $state('')
 	let postType = $state<'post' | 'essay'>('post')
 	let status = $state<'draft' | 'published'>('draft')
@@ -19,8 +26,7 @@ import { api } from '$lib/admin/api'
 	let slugManuallySet = $state(false)
 	let excerpt = $state('')
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
-	let tags = $state<string[]>([])
-	let tagInput = $state('')
+	let tags = $state<Tag[]>([])
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showUnsavedChangesModal = $state(false)
@@ -113,17 +119,6 @@ import { api } from '$lib/admin/api'
 		}
 	})
 
-	function addTag() {
-		if (tagInput && !tags.includes(tagInput)) {
-			tags = [...tags, tagInput]
-			tagInput = ''
-		}
-	}
-
-	function removeTag(tag: string) {
-		tags = tags.filter((t) => t !== tag)
-	}
-
 	async function handleSave(publishStatus?: 'draft' | 'published') {
 		saving = true
 		const postData = {
@@ -133,7 +128,7 @@ import { api } from '$lib/admin/api'
 			status: publishStatus || status,
 			content: config?.showContent ? content : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
-			tags
+			tagIds: tags.map((tag) => tag.id)
 		}
 
 		try {
@@ -216,9 +211,6 @@ import { api } from '$lib/admin/api'
 						bind:slug
 						bind:excerpt
 						bind:tags
-						bind:tagInput
-						onAddTag={addTag}
-						onRemoveTag={removeTag}
 						onDelete={() => {}}
 						onClose={() => (showMetadata = false)}
 						onFieldUpdate={(key, _value) => {
