@@ -4,10 +4,16 @@
 	import Header from '$components/Header.svelte'
 	import Footer from '$components/Footer.svelte'
 	import DebugPanel from '$components/DebugPanel.svelte'
-	import { generatePersonJsonLd } from '$lib/utils/metadata'
+	import { generatePersonJsonLd, setSeoDefaults } from '$lib/utils/metadata'
 	import { Toaster } from 'svelte-sonner'
 
 	let { children } = $props()
+
+	$effect(() => {
+		if ($page.data.seoDefaults) {
+			setSeoDefaults($page.data.seoDefaults)
+		}
+	})
 
 	const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'))
 	const isAboutPage = $derived($page.url.pathname === '/about')
