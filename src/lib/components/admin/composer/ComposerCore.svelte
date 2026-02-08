@@ -36,7 +36,6 @@
 
 	// Import Edra styles
 	import '$lib/components/edra/headless/style.css'
-	import 'katex/dist/katex.min.css'
 	import '$lib/components/edra/editor.css'
 	import '$lib/components/edra/onedark.css'
 

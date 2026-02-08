@@ -18,9 +18,7 @@ import SearchAndReplace from './extensions/FindAndReplace.js';
 import { SmilieReplacer } from './extensions/SmilieReplacer.js';
 import { FontSize } from './extensions/FontSize.js';
 import { Table, TableCell, TableHeader, TableRow } from './extensions/table/index.js';
-import 'katex/dist/katex.min.css';
 import { Markdown } from 'tiptap-markdown';
-import { InlineMathReplacer } from './extensions/InlineMathReplacer.js';
 import strings from './strings.js';
 
 export default (
@@ -98,7 +96,6 @@ export default (
 			TableHeader,
 			TableRow,
 			TableCell,
-			InlineMathReplacer,
 			Markdown,
 
 			...(extensions ?? [])
