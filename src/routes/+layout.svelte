@@ -36,6 +36,17 @@
 <svelte:head>
 	<!-- Site-wide JSON-LD -->
 	{@html personJsonLdScript}
+
+	<!-- RSS autodiscovery -->
+	{#if !isAdminRoute}
+		<link rel="alternate" type="application/rss+xml" title="jedmund.com" href="/rss" />
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title="Photos - jedmund.com"
+			href="/rss/photos"
+		/>
+	{/if}
 </svelte:head>
 
 <div class="layout-wrapper" class:admin-route={isAdminRoute}>

@@ -14,7 +14,7 @@
 		<p class="copyright">
 			&copy; {currentYear} Justin Edmund
 			<span class="separator">&middot;</span>
-			<a href="/rss" class="rss-link">RSS</a>
+			<a href="/feeds" class="rss-link">RSS</a>
 		</p>
 		<nav class="social-links">
 			{#each socialLinks as link, index}
