@@ -12,6 +12,13 @@
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
+	interface Tag {
+		id: number
+		name: string
+		displayName: string
+		slug: string
+	}
+
 	// Type for what the API actually returns (JSON-serialized Post)
 	interface ApiPost {
 		id: number
@@ -20,7 +27,7 @@
 		title: string | null
 		content: Record<string, unknown> | null
 		featuredImage: string | null
-		tags: string[] | null
+		tags: Array<{ tag: Tag }> | null
 		status: string
 		publishedAt: string | null
 		createdAt: string
@@ -55,8 +62,7 @@
 	let slug = $state('')
 	let excerpt = $state('')
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
-	let tags = $state<string[]>([])
-	let tagInput = $state('')
+	let tags = $state<Tag[]>([])
 	let showMetadata = $state(false)
 	let metadataButtonRef: HTMLButtonElement | undefined = $state.raw()
 	let showDeleteConfirmation = $state(false)
@@ -72,7 +78,7 @@
 		slug: string
 		excerpt: string
 		content: string
-		tags: string[]
+		tags: Tag[]
 	}>({
 		title: '',
 		postType: 'post',
@@ -92,7 +98,8 @@
 			slug !== initialValues.slug ||
 			excerpt !== initialValues.excerpt ||
 			JSON.stringify(content) !== initialValues.content ||
-			JSON.stringify(tags) !== JSON.stringify(initialValues.tags))
+			tags.map((t) => t.id).sort().join(',') !==
+				initialValues.tags.map((t) => t.id).sort().join(','))
 	)
 
 	const postTypeConfig = {
@@ -278,7 +285,7 @@
 					content = { type: 'doc', content: [] }
 				}
 
-				tags = (data.tags as string[]) || []
+				tags = data.tags ? data.tags.map((pt) => pt.tag) : []
 
 				// Store initial values for dirty tracking
 				initialValues = {
@@ -305,17 +312,6 @@
 		}
 	}
 
-	function addTag() {
-		if (tagInput && !tags.includes(tagInput)) {
-			tags = [...tags, tagInput]
-			tagInput = ''
-		}
-	}
-
-	function removeTag(tag: string) {
-		tags = tags.filter((t) => t !== tag)
-	}
-
 	async function handleSave(newStatus?: string) {
 		saving = true
 
@@ -329,7 +325,7 @@
 			status: newStatus || status,
 			content: config?.showContent ? saveContent : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
-			tags
+			tagIds: tags.map((tag) => tag.id)
 		}
 
 		try {
@@ -460,9 +456,6 @@
 							bind:slug
 							bind:excerpt
 							bind:tags
-							bind:tagInput
-							onAddTag={addTag}
-							onRemoveTag={removeTag}
 							onDelete={openDeleteConfirmation}
 							onClose={() => (showMetadata = false)}
 						/>
