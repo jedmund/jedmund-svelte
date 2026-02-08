@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types'
 import { json } from '@sveltejs/kit'
 import { prisma } from '$lib/server/database'
-import { redis } from '../../redis-client'
+import redis from '../../redis-client'
 import { checkAdminAuth, errorResponse } from '$lib/server/api-utils'
 import { mergeTagsSchema } from '$lib/server/tags/schemas'
 

@@ -32,7 +32,7 @@
 	let selectedIndex = $state(-1)
 	let suggestions = $state<Tag[]>([])
 	let isLoadingSuggestions = $state(false)
-	let inputElement: HTMLInputElement
+	let inputElement = $state.raw<HTMLInputElement>()
 
 	// Filtered suggestions (exclude already added tags)
 	let filteredSuggestions = $derived(

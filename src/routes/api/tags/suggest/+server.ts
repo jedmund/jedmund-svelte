@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types'
 import { json } from '@sveltejs/kit'
-import { redis } from '../../redis-client'
+import redis from '../../redis-client'
 import { errorResponse } from '$lib/server/api-utils'
 import { suggestTags } from '$lib/server/tags/operations'
 

@@ -50,7 +50,7 @@ export function validateTagName(name: string): ValidationResult {
 
 	// Reserved words
 	const normalized = trimmed.toLowerCase()
-	if (TAG_VALIDATION.reservedWords.includes(normalized)) {
+	if ((TAG_VALIDATION.reservedWords as readonly string[]).includes(normalized)) {
 		return { valid: false, error: 'This tag name is reserved and cannot be used' }
 	}
 
