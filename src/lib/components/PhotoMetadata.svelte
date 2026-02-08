@@ -1,6 +1,8 @@
 <script lang="ts">
 	import BackButton from './BackButton.svelte'
 
+	import type { Snippet } from 'svelte'
+
 	interface Props {
 		title?: string
 		caption?: string
@@ -12,6 +14,7 @@
 		showBackButton?: boolean
 		albums?: Array<{ id: number; title: string; slug: string }>
 		class?: string
+		footerExtra?: Snippet
 	}
 
 	let {
@@ -23,7 +26,8 @@
 		backHref,
 		backLabel,
 		showBackButton = false,
-		class: className = ''
+		class: className = '',
+		footerExtra
 	}: Props = $props()
 
 	const formatDate = (dateString: string) => {
@@ -130,9 +134,14 @@
 		</div>
 	{/if} -->
 
-	{#if showBackButton && backHref && backLabel}
+	{#if (showBackButton && backHref && backLabel) || footerExtra}
 		<div class="card-footer">
-			<BackButton href={backHref} label={backLabel} />
+			{#if showBackButton && backHref && backLabel}
+				<BackButton href={backHref} label={backLabel} />
+			{/if}
+			{#if footerExtra}
+				{@render footerExtra()}
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -235,10 +244,8 @@
 
 	.card-footer {
 		display: flex;
-		justify-content: center;
-
-		@include breakpoint('phone') {
-			margin-top: $unit-3x;
-		}
+		align-items: center;
+		justify-content: space-between;
+		margin-top: $unit-3x;
 	}
 </style>
