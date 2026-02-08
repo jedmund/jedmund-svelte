@@ -42,6 +42,7 @@
 	let editorInstance = $state<any>()
 	let activeTab = $state('metadata')
 	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
+	let heartCount = $state<number | undefined>()
 
 	const tabOptions = [
 		{ value: 'metadata', label: 'Metadata' },
@@ -80,6 +81,9 @@
 		if (album && mode === 'edit' && !hasLoaded) {
 			populateFormData(album)
 			loadAlbumMedia()
+			if (album.slug) {
+				fetchHeartCount(album.slug)
+			}
 			hasLoaded = true
 		} else if (mode === 'create') {
 			isLoading = false
@@ -108,6 +112,18 @@
 		}
 
 		isLoading = false
+	}
+
+	async function fetchHeartCount(slug: string) {
+		try {
+			const res = await fetch(`/api/heart/albums/${slug}`)
+			if (res.ok) {
+				const data = await res.json()
+				heartCount = Object.values(data).reduce((sum: number, n) => sum + (n as number), 0)
+			}
+		} catch {
+			// Silently fail - heart count is non-critical
+		}
 	}
 
 	async function loadAlbumMedia() {
@@ -333,6 +349,13 @@
 							bind:value={formData.status}
 							options={statusOptions}
 						/>
+
+						{#if mode === 'edit' && heartCount != null}
+							<div class="stat-row">
+								<span class="stat-label">Hearts</span>
+								<span class="stat-value">{heartCount}</span>
+							</div>
+						{/if}
 					</div>
 
 					<!-- Display Settings -->
@@ -668,6 +691,25 @@
 		background: $gray-95;
 		border-radius: $unit;
 		margin: 0;
+	}
+
+	.stat-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: $unit-2x 0;
+
+		.stat-label {
+			font-size: 0.875rem;
+			font-weight: 500;
+			color: $gray-40;
+		}
+
+		.stat-value {
+			font-size: 0.875rem;
+			font-weight: 500;
+			color: $gray-20;
+		}
 	}
 
 	.selected-count {

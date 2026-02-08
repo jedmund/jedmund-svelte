@@ -65,6 +65,7 @@
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let tags = $state<Tag[]>([])
 	let activeTab = $state('content')
+	let heartCount = $state<number | undefined>()
 	let showDeleteConfirmation = $state(false)
 	let showUnsavedChangesModal = $state(false)
 	let pendingNavigationUrl = $state<string | null>(null)
@@ -253,6 +254,18 @@
 		}
 	}
 
+	async function fetchHeartCount(postSlug: string) {
+		try {
+			const res = await fetch(`/api/heart/universe/${postSlug}`)
+			if (res.ok) {
+				const data = await res.json()
+				heartCount = Object.values(data).reduce((sum: number, n) => sum + (n as number), 0)
+			}
+		} catch {
+			// Silently fail - heart count is non-critical
+		}
+	}
+
 	onMount(async () => {
 		// Wait a tick to ensure page params are loaded
 		await new Promise((resolve) => setTimeout(resolve, 0))
@@ -306,6 +319,11 @@
 				// Set content ready after all data is loaded
 				contentReady = true
 				hasLoaded = true
+
+				// Fetch heart count (non-blocking)
+				if (data.slug) {
+					fetchHeartCount(data.slug)
+				}
 			} else {
 				// Fallback error messaging
 					loadError = 'Post not found'
@@ -466,6 +484,7 @@
 						bind:slug
 						bind:excerpt
 						bind:tags
+						{heartCount}
 						createdAt={post.createdAt}
 						updatedAt={post.updatedAt}
 						publishedAt={post.publishedAt}

@@ -1,6 +1,6 @@
 <script lang="ts" module>
 	export interface MetadataField {
-		type: 'input' | 'textarea' | 'date' | 'toggle' | 'tags' | 'metadata' | 'custom' | 'section'
+		type: 'input' | 'textarea' | 'date' | 'toggle' | 'tags' | 'metadata' | 'hearts' | 'custom' | 'section'
 		key: string
 		label?: string
 		placeholder?: string
@@ -226,6 +226,9 @@
 					<p>Updated: {new Date(data.updatedAt).toLocaleString()}</p>
 					{#if data.publishedAt}
 						<p>Published: {new Date(data.publishedAt).toLocaleString()}</p>
+					{/if}
+					{#if data.heartCount != null}
+						<p>Hearts: {data.heartCount}</p>
 					{/if}
 				</div>
 			{:else if field.type === 'section'}

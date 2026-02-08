@@ -20,11 +20,12 @@
 
 	interface Props {
 		media: Media
+		heartCount?: number
 		showExifToggle?: boolean
 		class?: string
 	}
 
-	let { media, showExifToggle = true, class: className = '' }: Props = $props()
+	let { media, heartCount, showExifToggle = true, class: className = '' }: Props = $props()
 
 	let showExif = $state(false)
 
@@ -41,6 +42,12 @@
 			<span class="label">Size</span>
 			<span class="value">{formatFileSize(media.size)}</span>
 		</div>
+		{#if heartCount != null}
+			<div class="info-item">
+				<span class="label">Hearts</span>
+				<span class="value">{heartCount}</span>
+			</div>
+		{/if}
 	</div>
 
 	{#if showExif}

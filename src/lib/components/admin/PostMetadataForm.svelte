@@ -15,6 +15,7 @@
 		slug: string
 		excerpt?: string
 		tags: Tag[]
+		heartCount?: number
 		createdAt: string | Date
 		updatedAt: string | Date
 		publishedAt: string | Date | null
@@ -25,6 +26,7 @@
 		slug = $bindable(),
 		excerpt = $bindable(''),
 		tags = $bindable([]),
+		heartCount,
 		createdAt,
 		updatedAt,
 		publishedAt
@@ -77,6 +79,12 @@
 				<span class="metadata-label">Published</span>
 				<span class="metadata-value">{formatDate(publishedAt)}</span>
 			</div>
+			{#if heartCount != null}
+				<div class="metadata-item">
+					<span class="metadata-label">Hearts</span>
+					<span class="metadata-value">{heartCount}</span>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

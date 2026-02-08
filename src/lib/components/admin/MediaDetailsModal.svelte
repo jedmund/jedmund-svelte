@@ -41,6 +41,9 @@
 	>([])
 	let loadingUsage = $state(false)
 
+	// Heart count state
+	let heartCount = $state<number | undefined>()
+
 	// Album management state
 	let albums = $state<Array<{ id: number; title: string; slug: string }>>([])
 	let showAlbumSelector = $state(false)
@@ -50,13 +53,30 @@
 		if (media) {
 			description = media.description || ''
 			isPhotography = media.isPhotography || false
+			heartCount = undefined
 			loadUsage()
 			// Only load albums for images
 			if (media.mimeType?.startsWith('image/')) {
 				loadAlbums()
 			}
+			// Fetch heart count for photography media
+			if (media.isPhotography) {
+				fetchHeartCount(media.id)
+			}
 		}
 	})
+
+	async function fetchHeartCount(mediaId: number) {
+		try {
+			const res = await fetch(`/api/heart/photos/${mediaId}`)
+			if (res.ok) {
+				const data = await res.json()
+				heartCount = Object.values(data).reduce((sum: number, n) => sum + (n as number), 0)
+			}
+		} catch {
+			// Silently fail - heart count is non-critical
+		}
+	}
 
 	// Load usage information
 	async function loadUsage() {
@@ -253,7 +273,7 @@
 				</div>
 				<div class="pane-body">
 					<!-- Media Metadata Panel -->
-					<MediaMetadataPanel {media} showExifToggle={true} />
+					<MediaMetadataPanel {media} {heartCount} showExifToggle={true} />
 
 					<div class="pane-body-content">
 						<!-- Photography Toggle -->
