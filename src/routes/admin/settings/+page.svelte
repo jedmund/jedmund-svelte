@@ -175,7 +175,7 @@
 			</div>
 			<div class="header-right">
 				<Button variant="primary" onclick={handleSave} loading={saving}>
-					Save
+					Save settings
 				</Button>
 			</div>
 		</header>
