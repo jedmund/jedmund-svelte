@@ -5,7 +5,7 @@ export const GET = async () => {
 	if (!did) {
 		return new Response('Not configured', { status: 404 })
 	}
-	return new Response(`did=${did}`, {
+	return new Response(did, {
 		headers: { 'Content-Type': 'text/plain' }
 	})
 }

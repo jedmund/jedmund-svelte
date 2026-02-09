@@ -4,37 +4,39 @@ import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-uti
 import { syndicateContent } from '$lib/server/syndication/syndicate'
 import { logger } from '$lib/server/logger'
 
-// POST /api/syndication/trigger - Manually trigger syndication
 export const POST: RequestHandler = async (event) => {
 	if (!checkAdminAuth(event)) {
 		return errorResponse('Unauthorized', 401)
 	}
 
 	try {
-		const { contentType, contentId } = await event.request.json()
+		const body = await event.request.json()
 
-		if (!contentType || !contentId) {
+		if (!body.contentType || !body.contentId) {
 			return errorResponse('contentType and contentId are required', 400)
 		}
 
-		// Delete existing failed records so syndication can retry
+		const contentType = body.contentType
+		const contentId = parseInt(body.contentId)
+		if (isNaN(contentId)) {
+			return errorResponse('contentId must be a number', 400)
+		}
+
 		await prisma.syndication.deleteMany({
 			where: {
 				contentType,
-				contentId: parseInt(contentId),
+				contentId,
 				status: 'failed'
 			}
 		})
 
-		// Trigger syndication
-		await syndicateContent(contentType, parseInt(contentId))
+		await syndicateContent(contentType, contentId)
 
-		// Return updated status
 		const syndications = await prisma.syndication.findMany({
-			where: { contentType, contentId: parseInt(contentId) }
+			where: { contentType, contentId }
 		})
 
-		logger.info('Manual syndication triggered', { contentType, contentId })
+		logger.info('Manual syndication triggered', { contentType, contentId: contentId.toString() })
 
 		return jsonResponse({ syndications })
 	} catch (error) {
