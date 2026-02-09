@@ -1,31 +1,33 @@
 import jwt from 'jsonwebtoken'
 import { readFileSync } from 'fs'
-import { env } from '$env/dynamic/private'
+import { getConfig } from './config'
 
 let cachedToken: string | null = null
 let tokenExpiry: Date | null = null
 
-export function generateAppleMusicToken(): string {
+export async function generateAppleMusicToken(): Promise<string> {
 	// Check if we have a valid cached token
 	if (cachedToken && tokenExpiry && tokenExpiry > new Date()) {
 		console.log('Using cached Apple Music token')
 		return cachedToken
 	}
 
-	console.log('Generating new Apple Music token...')
-	console.log('Team ID:', env.APPLE_MUSIC_TEAM_ID)
-	console.log('Key ID:', env.APPLE_MUSIC_KEY_ID)
-	console.log('Key path configured:', !!env.APPLE_MUSIC_PRIVATE_KEY_PATH)
+	const teamId = await getConfig('apple_music.team_id')
+	const keyId = await getConfig('apple_music.key_id')
+	const privateKeyContent = await getConfig('apple_music.private_key')
 
-	// Read the private key - support both file path and direct content
+	console.log('Generating new Apple Music token...')
+	console.log('Team ID:', teamId)
+	console.log('Key ID:', keyId)
+
+	// Read the private key - support both DB/env content and file path fallback
 	let privateKey: string
-	if (env.APPLE_MUSIC_PRIVATE_KEY) {
-		// Direct key content from environment variable
-		privateKey = env.APPLE_MUSIC_PRIVATE_KEY
-	} else if (env.APPLE_MUSIC_PRIVATE_KEY_PATH) {
-		// File path (for local development)
+	if (privateKeyContent) {
+		privateKey = privateKeyContent
+	} else if (process.env.APPLE_MUSIC_PRIVATE_KEY_PATH) {
+		// File path fallback (for local development)
 		try {
-			privateKey = readFileSync(env.APPLE_MUSIC_PRIVATE_KEY_PATH, 'utf8')
+			privateKey = readFileSync(process.env.APPLE_MUSIC_PRIVATE_KEY_PATH, 'utf8')
 			console.log('Successfully read private key from file')
 		} catch (error) {
 			console.error('Failed to read private key file:', error)
@@ -42,10 +44,10 @@ export function generateAppleMusicToken(): string {
 	const token = jwt.sign({}, privateKey, {
 		algorithm: 'ES256',
 		expiresIn,
-		issuer: env.APPLE_MUSIC_TEAM_ID!,
+		issuer: teamId!,
 		header: {
 			alg: 'ES256',
-			kid: env.APPLE_MUSIC_KEY_ID!
+			kid: keyId!
 		}
 	})
 
@@ -56,9 +58,9 @@ export function generateAppleMusicToken(): string {
 	return token
 }
 
-export function getAppleMusicHeaders(): Record<string, string> {
+export async function getAppleMusicHeaders(): Promise<Record<string, string>> {
 	return {
-		Authorization: `Bearer ${generateAppleMusicToken()}`,
+		Authorization: `Bearer ${await generateAppleMusicToken()}`,
 		'Music-User-Token': '', // Will be needed for user-specific features
 		Accept: 'application/json',
 		'Content-Type': 'application/json'

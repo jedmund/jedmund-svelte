@@ -9,6 +9,7 @@ import {
 } from '$lib/server/api-utils'
 import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { logger } from '$lib/server/logger'
+import { syndicateContent } from '$lib/server/syndication/syndicate'
 import { ensureUniqueSlug } from '$lib/server/database'
 import {
 	trackMediaUsage,
@@ -236,6 +237,11 @@ export const PUT: RequestHandler = async (event) => {
 
 		logger.info('Project updated', { id: project.id, slug: project.slug })
 
+		if (project.status === 'published' && existing.status !== 'published') {
+			syndicateContent('project', project.id)
+				.catch(err => logger.error('Auto-syndication failed', err as Error))
+		}
+
 		return jsonResponse(project)
 	} catch (error) {
 		logger.error('Failed to update project', error as Error)
@@ -329,6 +335,11 @@ export const PATCH: RequestHandler = async (event) => {
 		})
 
 		logger.info('Project partially updated', { id: project.id, fields: Object.keys(updateData).join(', ') })
+
+		if (body.status === 'published' && existing.status !== 'published') {
+			syndicateContent('project', project.id)
+				.catch(err => logger.error('Auto-syndication failed', err as Error))
+		}
 
 		return jsonResponse(project)
 	} catch (error) {

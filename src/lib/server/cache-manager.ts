@@ -14,7 +14,9 @@ export class CacheManager {
 		['apple-album', { prefix: 'apple:album:', defaultTTL: 86400, description: 'Apple Music album data' }],
 		['apple-notfound', { prefix: 'notfound:apple-music:', defaultTTL: 3600, description: 'Apple Music not found records' }],
 		['apple-failure', { prefix: 'failure:apple-music:', defaultTTL: 86400, description: 'Apple Music API failures' }],
-		['apple-ratelimit', { prefix: 'ratelimit:apple-music:', defaultTTL: 3600, description: 'Apple Music rate limit state' }]
+		['apple-ratelimit', { prefix: 'ratelimit:apple-music:', defaultTTL: 3600, description: 'Apple Music rate limit state' }],
+		['bluesky-session', { prefix: 'bluesky:session:', defaultTTL: 3600, description: 'Bluesky authenticated session' }],
+		['syndication-replies', { prefix: 'syndication:replies:', defaultTTL: 300, description: 'Social replies' }]
 	])
 
 	/**

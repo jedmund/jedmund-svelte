@@ -153,7 +153,7 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	// Check if Cloudinary is configured
-	if (!isCloudinaryConfigured()) {
+	if (!(await isCloudinaryConfigured())) {
 		return errorResponse('Media upload service not configured', 503)
 	}
 

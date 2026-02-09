@@ -215,7 +215,7 @@
 								handleSave()
 							}}
 						>
-							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} />
+							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} contentId={project?.id} />
 						</form>
 					</div>
 				</div>

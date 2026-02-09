@@ -6,8 +6,8 @@ import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
 import { findAlbum, transformAlbumData } from '$lib/server/apple-music-client'
 import redis from '../redis-client'
 import { logger } from '$lib/server/logger'
+import { getConfig } from '$lib/server/config'
 
-const LASTFM_API_KEY = process.env.LASTFM_API_KEY
 const USERNAME = 'jedmund'
 const ALBUM_LIMIT = 10
 
@@ -46,7 +46,8 @@ interface AppleMusicData {
 let recentTracks: TrackPlayInfo[] = []
 
 export const GET: RequestHandler = async ({ url }) => {
-	const client = new LastClient(LASTFM_API_KEY || '')
+	const apiKey = await getConfig('lastfm.api_key')
+	const client = new LastClient(apiKey || '')
 	const testMode = url.searchParams.get('test') === 'nowplaying'
 
 	try {

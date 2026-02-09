@@ -2,6 +2,7 @@
 	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import TagInput from './TagInput.svelte'
+	import SyndicationStatus from './SyndicationStatus.svelte'
 
 	interface Tag {
 		id: number
@@ -19,6 +20,8 @@
 		createdAt: string | Date
 		updatedAt: string | Date
 		publishedAt: string | Date | null
+		contentId?: number
+		contentStatus?: string
 	}
 
 	let {
@@ -29,7 +32,9 @@
 		heartCount,
 		createdAt,
 		updatedAt,
-		publishedAt
+		publishedAt,
+		contentId,
+		contentStatus
 	}: PostMetadataFormProps = $props()
 
 	function formatDate(date: string | Date | null) {
@@ -63,6 +68,10 @@
 	{/if}
 
 	<TagInput label="Tags" size="jumbo" bind:tags placeholder="Add tags..." />
+
+	{#if contentId && contentStatus}
+		<SyndicationStatus contentType="post" {contentId} {contentStatus} />
+	{/if}
 
 	<div class="metadata-section">
 		<h3 class="metadata-title">Post Information</h3>

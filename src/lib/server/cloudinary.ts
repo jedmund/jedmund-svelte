@@ -4,22 +4,38 @@ import { logger } from './logger'
 import { uploadFileLocally } from './local-storage'
 import { dev } from '$app/environment'
 import { selectBestDominantColor } from './color-utils'
+import { getConfig } from './config'
 
-// Configure Cloudinary
-cloudinary.config({
-	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-	api_key: process.env.CLOUDINARY_API_KEY,
-	api_secret: process.env.CLOUDINARY_API_SECRET,
-	secure: true
-})
+// Lazy Cloudinary configuration
+let configured = false
+
+async function ensureConfigured(): Promise<void> {
+	if (configured) return
+
+	const cloudName = await getConfig('cloudinary.cloud_name')
+	const apiKey = await getConfig('cloudinary.api_key')
+	const apiSecret = await getConfig('cloudinary.api_secret')
+
+	if (cloudName && apiKey && apiSecret) {
+		cloudinary.config({
+			cloud_name: cloudName,
+			api_key: apiKey,
+			api_secret: apiSecret,
+			secure: true
+		})
+		configured = true
+	}
+}
+
+// Reset configured state (called when settings change)
+export function resetCloudinaryConfig(): void {
+	configured = false
+}
 
 // Check if Cloudinary is configured
-export function isCloudinaryConfigured(): boolean {
-	return !!(
-		process.env.CLOUDINARY_CLOUD_NAME &&
-		process.env.CLOUDINARY_API_KEY &&
-		process.env.CLOUDINARY_API_SECRET
-	)
+export async function isCloudinaryConfigured(): Promise<boolean> {
+	await ensureConfigured()
+	return configured
 }
 
 // Upload options for different asset types
@@ -89,7 +105,7 @@ export async function uploadFile(
 		const FORCE_CLOUDINARY_IN_DEV = false // Set to true to use Cloudinary in dev
 
 		// Use local storage in development or when Cloudinary is not configured
-		if ((dev && !FORCE_CLOUDINARY_IN_DEV) || !isCloudinaryConfigured()) {
+		if ((dev && !FORCE_CLOUDINARY_IN_DEV) || !(await isCloudinaryConfigured())) {
 			logger.info('Using local storage for file upload')
 			const localResult = await uploadFileLocally(file, type)
 
@@ -256,7 +272,7 @@ export async function uploadFiles(
 // Delete a file from Cloudinary
 export async function deleteFile(publicId: string): Promise<boolean> {
 	try {
-		if (!isCloudinaryConfigured()) {
+		if (!(await isCloudinaryConfigured())) {
 			throw new Error('Cloudinary is not configured')
 		}
 

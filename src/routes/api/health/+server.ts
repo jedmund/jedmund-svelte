@@ -15,7 +15,7 @@ export const GET: RequestHandler = async () => {
 			services: {
 				database: 'connected',
 				redis: 'not configured', // We'll add this later
-				cloudinary: isCloudinaryConfigured() ? 'configured' : 'not configured'
+				cloudinary: (await isCloudinaryConfigured()) ? 'configured' : 'not configured'
 			}
 		}
 
