@@ -1,7 +1,6 @@
 import { prisma } from '$lib/server/database'
 import { logger } from './logger'
 
-// Setting key → env var mapping
 const ENV_VAR_MAP: Record<string, string> = {
 	'site.url': 'SITE_URL',
 	'lastfm.api_key': 'LASTFM_API_KEY',
@@ -18,7 +17,6 @@ const ENV_VAR_MAP: Record<string, string> = {
 	'mastodon.access_token': 'MASTODON_ACCESS_TOKEN'
 }
 
-// Which keys are secrets (masked in UI)
 const SECRET_KEYS = new Set([
 	'lastfm.api_key',
 	'cloudinary.api_key',
@@ -30,7 +28,6 @@ const SECRET_KEYS = new Set([
 	'mastodon.access_token'
 ])
 
-// All known setting keys with their sections
 export const SETTING_DEFINITIONS: Array<{
 	key: string
 	section: string
@@ -55,17 +52,14 @@ export const SETTING_DEFINITIONS: Array<{
 const MASKED_VALUE = '••••••••'
 const CACHE_TTL_MS = 30_000
 
-// In-memory cache
 const cache = new Map<string, { value: string | null; expiresAt: number }>()
 
 export async function getConfig(key: string): Promise<string | null> {
-	// Check in-memory cache
 	const cached = cache.get(key)
 	if (cached && cached.expiresAt > Date.now()) {
 		return cached.value
 	}
 
-	// Try database
 	try {
 		const setting = await prisma.setting.findUnique({ where: { key } })
 		if (setting) {
@@ -76,7 +70,6 @@ export async function getConfig(key: string): Promise<string | null> {
 		logger.error('Failed to read setting from DB, falling back to env', error as Error, { key })
 	}
 
-	// Fall back to env var
 	const envKey = ENV_VAR_MAP[key]
 	if (envKey) {
 		const envValue = process.env[envKey] ?? null
@@ -96,39 +89,15 @@ export async function setConfig(key: string, value: string): Promise<void> {
 		update: { value }
 	})
 
-	// Invalidate this key's cache
 	cache.delete(key)
 }
 
-export async function getAllSettings(): Promise<Record<string, string>> {
-	const result: Record<string, string> = {}
-
-	// Load all DB settings
-	const dbSettings = await prisma.setting.findMany()
-	const dbMap = new Map(dbSettings.map((s) => [s.key, s]))
-
-	for (const def of SETTING_DEFINITIONS) {
-		const dbSetting = dbMap.get(def.key)
-		if (dbSetting) {
-			result[def.key] = def.isSecret ? MASKED_VALUE : dbSetting.value
-		} else {
-			// Check env var fallback
-			const envKey = ENV_VAR_MAP[def.key]
-			if (envKey && process.env[envKey]) {
-				result[def.key] = def.isSecret ? MASKED_VALUE : process.env[envKey]!
-			} else {
-				result[def.key] = ''
-			}
-		}
-	}
-
-	return result
-}
-
-export async function getSettingMeta(): Promise<
-	Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }>
-> {
-	const result: Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }> = {}
+export async function getAllSettings(): Promise<{
+	values: Record<string, string>
+	meta: Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }>
+}> {
+	const values: Record<string, string> = {}
+	const meta: Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }> = {}
 
 	const dbSettings = await prisma.setting.findMany()
 	const dbMap = new Map(dbSettings.map((s) => [s.key, s]))
@@ -136,18 +105,21 @@ export async function getSettingMeta(): Promise<
 	for (const def of SETTING_DEFINITIONS) {
 		const dbSetting = dbMap.get(def.key)
 		if (dbSetting) {
-			result[def.key] = { hasValue: true, source: 'db' }
+			values[def.key] = def.isSecret ? MASKED_VALUE : dbSetting.value
+			meta[def.key] = { hasValue: true, source: 'db' }
 		} else {
 			const envKey = ENV_VAR_MAP[def.key]
 			if (envKey && process.env[envKey]) {
-				result[def.key] = { hasValue: true, source: 'env' }
+				values[def.key] = def.isSecret ? MASKED_VALUE : process.env[envKey]!
+				meta[def.key] = { hasValue: true, source: 'env' }
 			} else {
-				result[def.key] = { hasValue: false, source: 'none' }
+				values[def.key] = ''
+				meta[def.key] = { hasValue: false, source: 'none' }
 			}
 		}
 	}
 
-	return result
+	return { values, meta }
 }
 
 export function invalidateConfigCache(): void {
