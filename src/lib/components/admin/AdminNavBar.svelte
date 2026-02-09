@@ -6,6 +6,7 @@
 	import AlbumIcon from '$icons/album.svg?component'
 	import MediaIcon from '$icons/media.svg?component'
 	import TagIcon from '$icons/tag.svg?component'
+	import SettingsIcon from '$icons/settings.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
 
@@ -22,7 +23,8 @@
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
 		{ text: 'Media', href: '/admin/media', icon: MediaIcon },
-		{ text: 'Tags', href: '/admin/tags', icon: TagIcon }
+		{ text: 'Tags', href: '/admin/tags', icon: TagIcon },
+		{ text: 'Settings', href: '/admin/settings', icon: SettingsIcon }
 	]
 
 	// Calculate active index based on current path
@@ -37,7 +39,9 @@
 						? 3
 						: currentPath.startsWith('/admin/tags')
 							? 4
-							: -1
+							: currentPath.startsWith('/admin/settings')
+								? 5
+								: -1
 	)
 </script>
 

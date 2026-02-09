@@ -38,6 +38,11 @@ export const SETTING_DEFINITIONS: Array<{
 }> = [
 	{ key: 'site.name', section: 'general', isSecret: false },
 	{ key: 'site.url', section: 'general', isSecret: false },
+	{ key: 'seo.default_title', section: 'seo', isSecret: false },
+	{ key: 'seo.default_description', section: 'seo', isSecret: false },
+	{ key: 'seo.default_og_image', section: 'seo', isSecret: false },
+	{ key: 'seo.twitter_handle', section: 'seo', isSecret: false },
+	{ key: 'seo.locale', section: 'seo', isSecret: false },
 	{ key: 'lastfm.api_key', section: 'integrations', isSecret: true },
 	{ key: 'cloudinary.cloud_name', section: 'integrations', isSecret: false },
 	{ key: 'cloudinary.api_key', section: 'integrations', isSecret: true },
