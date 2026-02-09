@@ -362,9 +362,9 @@
 
 		h1 {
 			margin: 0;
-			font-size: $font-size;
-			font-weight: 500;
-			color: $gray-20;
+			font-size: $font-size-large;
+			font-weight: 700;
+			color: $gray-10;
 		}
 	}
 
