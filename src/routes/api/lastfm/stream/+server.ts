@@ -19,9 +19,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			let intervalId: NodeJS.Timeout | null = null
 			let isClosed = false
 			let currentInterval = UPDATE_INTERVAL
-			const isPlaying = false
 
-			// Send initial connection message
 			try {
 				controller.enqueue(encoder.encode('event: connected\ndata: {}\n\n'))
 			} catch (e) {
@@ -40,17 +38,14 @@ export const GET: RequestHandler = async ({ request }) => {
 				try {
 					const update = await streamManager.checkForUpdates()
 
-					// Send album updates if any
 					if (update.albums && !isClosed) {
 						try {
 							const data = JSON.stringify(update.albums)
 							controller.enqueue(encoder.encode(`event: albums\ndata: ${data}\n\n`))
 
-							// Check if music is playing and calculate smart interval
 							const nowPlayingAlbum = update.albums.find((a) => a.isNowPlaying)
 							const musicIsPlaying = !!nowPlayingAlbum
 							
-							// Calculate remaining time if we have track duration
 							let remainingMs = 0
 							if (nowPlayingAlbum?.nowPlayingTrack && nowPlayingAlbum.appleMusicData?.tracks) {
 								const track = nowPlayingAlbum.appleMusicData.tracks.find(
@@ -71,33 +66,24 @@ export const GET: RequestHandler = async ({ request }) => {
 								remainingMs: remainingMs
 							})
 
-							// Smart interval adjustment based on remaining track time
-							let targetInterval = UPDATE_INTERVAL // Default 30s
+							let targetInterval = UPDATE_INTERVAL
 							
 							if (musicIsPlaying && remainingMs > 0) {
-								// If track is ending soon (within 20 seconds), check more frequently
 								if (remainingMs < 20000) {
-									targetInterval = 5000 // 5 seconds
-								}
-								// If track has 20-60 seconds left, moderate frequency
-								else if (remainingMs < 60000) {
-									targetInterval = 10000 // 10 seconds
-								}
-								// If track has more than 60 seconds, check every 15 seconds
-								else {
-									targetInterval = 15000 // 15 seconds
+									targetInterval = 5000
+								} else if (remainingMs < 60000) {
+									targetInterval = 10000
+								} else {
+									targetInterval = 15000
 								}
 							} else if (musicIsPlaying) {
-								// If playing but no duration info, use fast interval
 								targetInterval = FAST_UPDATE_INTERVAL
 							}
 							
-							// Apply new interval if it changed significantly (more than 1 second difference)
 							if (Math.abs(targetInterval - currentInterval) > 1000) {
 								currentInterval = targetInterval
-								logger.music('debug', `Adjusting interval to ${currentInterval}ms (playing: ${isPlaying}, remaining: ${Math.round(remainingMs/1000)}s)`)
+								logger.music('debug', `Adjusting interval to ${currentInterval}ms (playing: ${musicIsPlaying}, remaining: ${Math.round(remainingMs/1000)}s)`)
 								
-								// Reset interval with new timing
 								if (intervalId) {
 									clearInterval(intervalId)
 									intervalId = setInterval(checkForUpdates, currentInterval)
@@ -108,7 +94,6 @@ export const GET: RequestHandler = async ({ request }) => {
 						}
 					}
 
-					// Always send heartbeat with timestamp to keep client synced
 					if (!isClosed) {
 						try {
 							const heartbeatData = JSON.stringify({
@@ -118,7 +103,6 @@ export const GET: RequestHandler = async ({ request }) => {
 							})
 							controller.enqueue(encoder.encode(`event: heartbeat\ndata: ${heartbeatData}\n\n`))
 						} catch (_e) {
-							// Expected when client disconnects
 							isClosed = true
 						}
 					}
@@ -127,13 +111,9 @@ export const GET: RequestHandler = async ({ request }) => {
 				}
 			}
 
-			// Initial check
 			await checkForUpdates()
-
-			// Set up interval
 			intervalId = setInterval(checkForUpdates, currentInterval)
 
-			// Handle client disconnect
 			request.signal.addEventListener('abort', () => {
 				isClosed = true
 				if (intervalId) {
@@ -142,13 +122,12 @@ export const GET: RequestHandler = async ({ request }) => {
 				try {
 					controller.close()
 				} catch (_e) {
-					// Already closed
+					// controller already closed
 				}
 			})
 		},
 
 		cancel() {
-			// Cleanup when stream is cancelled
 			logger.music('debug', 'SSE stream cancelled')
 		}
 	})
@@ -158,7 +137,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			'Content-Type': 'text/event-stream',
 			'Cache-Control': 'no-cache',
 			Connection: 'keep-alive',
-			'X-Accel-Buffering': 'no' // Disable Nginx buffering
+			'X-Accel-Buffering': 'no'
 		}
 	})
 }

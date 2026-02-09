@@ -73,7 +73,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			headers: { 'Content-Type': 'application/json' }
 		})
 	} catch (error) {
-		console.error('Error fetching album data:', error)
+		logger.error('Error fetching album data', error as Error)
 		return new Response(JSON.stringify({ error: 'Failed to fetch album data' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
@@ -87,7 +87,6 @@ async function getRecentAlbums(
 	limit: number,
 	testMode: boolean = false
 ): Promise<Album[]> {
-	// Check cache for recent tracks
 	const cacheKey = `lastfm:recent:${username}`
 	const cached = await redis.get(cacheKey)
 
@@ -95,7 +94,6 @@ async function getRecentAlbums(
 	if (cached) {
 		logger.music('debug', 'Using cached Last.fm recent tracks')
 		recentTracksResponse = JSON.parse(cached)
-		// Convert date strings back to Date objects
 		if (recentTracksResponse.tracks) {
 			recentTracksResponse.tracks = recentTracksResponse.tracks.map((track: Record<string, unknown>) => ({
 				...track,
@@ -103,12 +101,11 @@ async function getRecentAlbums(
 			}))
 		}
 	} else {
-		console.log('Fetching fresh Last.fm recent tracks')
+		logger.music('debug', 'Fetching fresh Last.fm recent tracks')
 		recentTracksResponse = await client.user.getRecentTracks(username, {
 			limit: 50,
 			extended: true
 		})
-		// Cache for 30 seconds - reasonable for "recent" data
 		await redis.set(cacheKey, JSON.stringify(recentTracksResponse), 'EX', 30)
 	}
 
@@ -116,11 +113,9 @@ async function getRecentAlbums(
 	let nowPlayingTrack: string | undefined
 	let isFirstAlbum = true
 
-	// Clear old tracks and collect new track play information
 	recentTracks = []
 
 	for (const track of recentTracksResponse.tracks) {
-		// Store track play information for now playing calculation
 		if (track.date) {
 			recentTracks.push({
 				albumName: track.album.name,
@@ -131,15 +126,13 @@ async function getRecentAlbums(
 
 		if (uniqueAlbums.size >= limit) break
 
-		// Check if this is the currently playing track
 		if (track.nowPlaying && !nowPlayingTrack) {
 			nowPlayingTrack = track.name
 		}
 
 		const albumKey = `${track.album.mbid || track.album.name}`
 		if (!uniqueAlbums.has(albumKey)) {
-			// For testing: mark first album as now playing
-			const isNowPlaying = testMode && isFirstAlbum ? true : track.nowPlaying || false
+			const isNowPlaying = (testMode && isFirstAlbum) || track.nowPlaying || false
 
 			uniqueAlbums.set(albumKey, {
 				name: track.album.name,
@@ -147,18 +140,16 @@ async function getRecentAlbums(
 					name: track.artist.name,
 					mbid: track.artist.mbid || ''
 				},
-				playCount: 1, // This is a placeholder, as we don't have actual play count for recent albums
+				playCount: 1,
 				images: transformImages(track.images),
 				mbid: track.album.mbid || '',
 				url: track.url,
 				rank: uniqueAlbums.size + 1,
-				// Mark if this album contains the now playing track
 				isNowPlaying: isNowPlaying,
 				nowPlayingTrack: isNowPlaying ? track.name : undefined
 			})
 			isFirstAlbum = false
 		} else if (track.nowPlaying) {
-			// If album already exists but this track is now playing, update it
 			const existingAlbum = uniqueAlbums.get(albumKey)!
 			uniqueAlbums.set(albumKey, {
 				...existingAlbum,
@@ -172,7 +163,6 @@ async function getRecentAlbums(
 }
 
 async function enrichAlbumWithInfo(client: LastClient, album: Album): Promise<Album> {
-	// Check cache for album info
 	const cacheKey = `lastfm:albuminfo:${album.artist.name}:${album.name}`
 	const cached = await redis.get(cacheKey)
 
@@ -186,10 +176,8 @@ async function enrichAlbumWithInfo(client: LastClient, album: Album): Promise<Al
 		}
 	}
 
-	console.log(`Fetching fresh album info for "${album.name}"`)
+	logger.music('debug', `Fetching fresh album info for "${album.name}"`)
 	const albumInfo = await client.album.getInfo(album.name, album.artist.name)
-
-	// Cache for 1 hour - album info rarely changes
 	await redis.set(cacheKey, JSON.stringify(albumInfo), 'EX', 3600)
 
 	return {
@@ -209,12 +197,10 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 		searchQuery: `${album.artist.name} ${album.name}`,
 		artist: album.artist.name,
 		album: album.name,
-		found: false,
 		error: null as string | null
 	}
 
 	try {
-		// Check cache first
 		const cacheKey = `apple:album:${album.artist.name}:${album.name}`
 		const cached = await redis.get(cacheKey)
 
@@ -225,7 +211,6 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 				trackCount: cachedData.tracks?.length || 0
 			})
 
-			// Check if this album is currently playing based on track durations
 			const updatedAlbum = checkNowPlaying(album, cachedData)
 
 			return {
@@ -238,17 +223,13 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 			}
 		}
 
-		// Search Apple Music
 		const appleMusicAlbum = await findAlbum(album.artist.name, album.name)
 
 		if (appleMusicAlbum) {
 			const transformedData = await transformAlbumData(appleMusicAlbum)
-			searchMetadata.found = true
 
-			// Cache the result for 24 hours
 			await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', 86400)
 
-			// Check if this album is currently playing based on track durations
 			const updatedAlbum = checkNowPlaying(album, transformedData)
 
 			return {
@@ -260,10 +241,7 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 				appleMusicData: transformedData
 			}
 		} else {
-			// Store search metadata for failed searches
 			searchMetadata.error = 'No matching album found'
-			
-			// Cache the failed search metadata for 1 hour
 			const failedSearchData = {
 				searchMetadata,
 				notFound: true
@@ -272,12 +250,7 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 		}
 	} catch (error) {
 		searchMetadata.error = error instanceof Error ? error.message : 'Unknown error'
-		console.error(
-			`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}":`,
-			error
-		)
-		
-		// Cache the error metadata for 30 minutes
+		logger.error(`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}"`, error as Error)
 		const errorData = {
 			searchMetadata,
 			error: true
@@ -328,38 +301,27 @@ function transformImages(images: LastfmImage[]): AlbumImages {
 }
 
 function checkNowPlaying(album: Album, appleMusicData: AppleMusicData | null): Album {
-	// Don't override if already marked as now playing by Last.fm
 	if (album.isNowPlaying) {
 		return album
 	}
 
-	// Check if any recent track from this album could still be playing
 	const now = new Date()
-	const SCROBBLE_LAG = 3 * 60 * 1000 // 3 minutes in milliseconds
+	const SCROBBLE_LAG = 3 * 60 * 1000
 
 	for (const trackInfo of recentTracks) {
 		if (trackInfo.albumName !== album.name) continue
 
-		// Find the track duration from Apple Music data
 		const trackData = appleMusicData?.tracks?.find(
 			(t) => t.name.toLowerCase() === trackInfo.trackName.toLowerCase()
 		)
 
 		if (trackData?.durationMs) {
-			// Calculate when the track should end (scrobble time + duration + lag)
 			const trackEndTime = new Date(
 				trackInfo.scrobbleTime.getTime() + trackData.durationMs + SCROBBLE_LAG
 			)
 
-			// If current time is before track end time, it's likely still playing
 			if (now < trackEndTime) {
-				console.log(`Detected now playing: "${trackInfo.trackName}" from "${album.name}"`, {
-					scrobbleTime: trackInfo.scrobbleTime,
-					durationMs: trackData.durationMs,
-					estimatedEndTime: trackEndTime,
-					currentTime: now
-				})
-
+				logger.music('debug', `Detected now playing: "${trackInfo.trackName}" from "${album.name}"`)
 				return {
 					...album,
 					isNowPlaying: true,

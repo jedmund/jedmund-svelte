@@ -64,7 +64,6 @@ export interface Album {
 			searchQuery: string
 			artist: string
 			album: string
-			found: boolean
 			error: string | null
 		}
 	}
