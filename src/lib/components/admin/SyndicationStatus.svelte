@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-
 	interface SyndicationRecord {
 		id: number
 		platform: string
@@ -26,7 +24,7 @@
 	const mastodon = $derived(syndications.find(s => s.platform === 'mastodon'))
 	const isPublished = $derived(contentStatus === 'published')
 
-	onMount(() => {
+	$effect(() => {
 		if (isPublished && contentId) {
 			fetchStatus()
 		}

@@ -488,8 +488,8 @@
 						createdAt={post.createdAt}
 						updatedAt={post.updatedAt}
 						publishedAt={post.publishedAt}
-					contentId={post.id}
-					contentStatus={post.status}
+						contentId={post.id}
+						contentStatus={post.status}
 					/>
 				</div>
 			</div>

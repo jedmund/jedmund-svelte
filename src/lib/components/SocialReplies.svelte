@@ -68,9 +68,7 @@
 	}
 
 	function stripHtml(html: string): string {
-		const div = document.createElement('div')
-		div.innerHTML = html
-		return div.textContent || ''
+		return html.replace(/<[^>]*>/g, '')
 	}
 </script>
 
@@ -220,10 +218,12 @@
 		}
 	}
 
+	$mastodon-purple: rgb(99, 100, 255);
+
 	.platform-badge {
-		font-size: 10px;
-		padding: 1px 6px;
-		border-radius: 3px;
+		font-size: $font-size-extra-small;
+		padding: $unit-fourth $unit;
+		border-radius: $corner-radius-xs;
 		font-weight: 500;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
@@ -234,8 +234,8 @@
 		}
 
 		&.mastodon {
-			background: rgba(99, 100, 255, 0.1);
-			color: rgb(99, 100, 255);
+			background: rgba($mastodon-purple, 0.1);
+			color: $mastodon-purple;
 		}
 	}
 
@@ -272,11 +272,11 @@
 		}
 
 		&.mastodon {
-			color: rgb(99, 100, 255);
-			background: rgba(99, 100, 255, 0.08);
+			color: $mastodon-purple;
+			background: rgba($mastodon-purple, 0.08);
 
 			&:hover {
-				background: rgba(99, 100, 255, 0.15);
+				background: rgba($mastodon-purple, 0.15);
 			}
 		}
 	}
