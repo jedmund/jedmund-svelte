@@ -6,7 +6,6 @@ import { logger } from '$lib/server/logger'
 
 export const GET: RequestHandler = async () => {
 	try {
-		// Test database connection
 		await prisma.$queryRaw`SELECT 1`
 
 		const health = {
@@ -14,12 +13,12 @@ export const GET: RequestHandler = async () => {
 			timestamp: new Date().toISOString(),
 			services: {
 				database: 'connected',
-				redis: 'not configured', // We'll add this later
-				cloudinary: isCloudinaryConfigured() ? 'configured' : 'not configured'
+				redis: 'not configured',
+				cloudinary: (await isCloudinaryConfigured()) ? 'configured' : 'not configured'
 			}
 		}
 
-		logger.info('Health check passed', { status: health.status })
+		logger.debug('Health check passed', { status: health.status })
 		return jsonResponse(health)
 	} catch (error) {
 		logger.error('Health check failed', error as Error)

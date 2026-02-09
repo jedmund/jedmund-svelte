@@ -52,7 +52,7 @@ async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): 
 	}
 
 	const url = `${APPLE_MUSIC_API_BASE}${endpoint}`
-	const headers = getAppleMusicHeaders()
+	const headers = await getAppleMusicHeaders()
 
 	logger.music('debug', `Making Apple Music API request: ${url}`, {
 		hasAuth: !!headers.Authorization

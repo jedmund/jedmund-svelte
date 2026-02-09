@@ -2,6 +2,7 @@
 	import Page from '$components/Page.svelte'
 	import BackButton from '$components/BackButton.svelte'
 	import DynamicPostContent from '$components/DynamicPostContent.svelte'
+	import SocialReplies from '$components/SocialReplies.svelte'
 	import { getContentExcerpt } from '$lib/utils/content'
 	import { generateMetaTags, generateArticleJsonLd } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
@@ -104,6 +105,9 @@
 	{:else}
 		<Page>
 			<DynamicPostContent {post} />
+			{#if post.id}
+				<SocialReplies contentType="post" contentId={post.id} />
+			{/if}
 		</Page>
 	{/if}
 </div>

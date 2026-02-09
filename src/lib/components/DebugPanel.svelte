@@ -347,8 +347,8 @@
 														<div class="search-metadata">
 															<p><strong>Search Query:</strong> <code>{album.appleMusicData.searchMetadata.searchQuery}</code></p>
 															<p><strong>Search Time:</strong> {new Date(album.appleMusicData.searchMetadata.searchTime).toLocaleString()}</p>
-															<p><strong>Status:</strong> 
-																{#if album.appleMusicData.searchMetadata.found}
+															<p><strong>Status:</strong>
+																{#if !album.appleMusicData.searchMetadata.error}
 																	<CheckIcon class="icon success inline" /> Found
 																{:else}
 																	<XIcon class="icon error inline" /> Not Found

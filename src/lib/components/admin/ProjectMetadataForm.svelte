@@ -3,14 +3,16 @@
 	import Textarea from './Textarea.svelte'
 	import SegmentedControlField from './SegmentedControlField.svelte'
 	import DropdownSelectField from './DropdownSelectField.svelte'
+	import SyndicationStatus from './SyndicationStatus.svelte'
 	import type { ProjectFormData } from '$lib/types/project'
 
 	interface Props {
 		formData: ProjectFormData
 		validationErrors: Record<string, string>
+		contentId?: number
 	}
 
-	let { formData = $bindable(), validationErrors }: Props = $props()
+	let { formData = $bindable(), validationErrors, contentId }: Props = $props()
 
 	const statusOptions = [
 		{
@@ -114,6 +116,10 @@
 			placeholder="Enter a password for this project"
 			helpText="Users will need this password to access the project details"
 		/>
+	{/if}
+
+	{#if contentId}
+		<SyndicationStatus contentType="project" {contentId} contentStatus={formData.status} />
 	{/if}
 </div>
 

@@ -14,104 +14,73 @@ export class CacheManager {
 		['apple-album', { prefix: 'apple:album:', defaultTTL: 86400, description: 'Apple Music album data' }],
 		['apple-notfound', { prefix: 'notfound:apple-music:', defaultTTL: 3600, description: 'Apple Music not found records' }],
 		['apple-failure', { prefix: 'failure:apple-music:', defaultTTL: 86400, description: 'Apple Music API failures' }],
-		['apple-ratelimit', { prefix: 'ratelimit:apple-music:', defaultTTL: 3600, description: 'Apple Music rate limit state' }]
+		['apple-ratelimit', { prefix: 'ratelimit:apple-music:', defaultTTL: 3600, description: 'Apple Music rate limit state' }],
+		['bluesky-session', { prefix: 'bluesky:session:', defaultTTL: 3600, description: 'Bluesky authenticated session' }],
+		['syndication-replies', { prefix: 'syndication:replies:', defaultTTL: 300, description: 'Social replies' }]
 	])
 
-	/**
-	 * Get a value from cache
-	 */
-	static async get(type: string, key: string): Promise<string | null> {
+	private static resolveType(type: string): CacheConfig | null {
 		const config = this.cacheTypes.get(type)
 		if (!config) {
 			logger.error(`Unknown cache type: ${type}`)
 			return null
 		}
-
-		const fullKey = `${config.prefix}${key}`
-		return await redis.get(fullKey)
+		return config
 	}
 
-	/**
-	 * Set a value in cache
-	 */
-	static async set(type: string, key: string, value: string, ttl?: number): Promise<void> {
-		const config = this.cacheTypes.get(type)
-		if (!config) {
-			logger.error(`Unknown cache type: ${type}`)
-			return
-		}
+	static async get(type: string, key: string): Promise<string | null> {
+		const config = this.resolveType(type)
+		if (!config) return null
 
-		const fullKey = `${config.prefix}${key}`
+		return await redis.get(`${config.prefix}${key}`)
+	}
+
+	static async set(type: string, key: string, value: string, ttl?: number): Promise<void> {
+		const config = this.resolveType(type)
+		if (!config) return
+
 		const expiry = ttl || config.defaultTTL
-		
-		await redis.set(fullKey, value, 'EX', expiry)
+		await redis.set(`${config.prefix}${key}`, value, 'EX', expiry)
 		logger.music('debug', `Cached ${type} for key: ${key} (TTL: ${expiry}s)`)
 	}
 
-	/**
-	 * Delete a specific cache entry
-	 */
 	static async delete(type: string, key: string): Promise<boolean> {
-		const config = this.cacheTypes.get(type)
-		if (!config) {
-			logger.error(`Unknown cache type: ${type}`)
-			return false
-		}
+		const config = this.resolveType(type)
+		if (!config) return false
 
-		const fullKey = `${config.prefix}${key}`
-		const deleted = await redis.del(fullKey)
+		const deleted = await redis.del(`${config.prefix}${key}`)
 		return deleted > 0
 	}
 
-	/**
-	 * Clear all entries for a specific cache type
-	 */
 	static async clearType(type: string): Promise<number> {
-		const config = this.cacheTypes.get(type)
-		if (!config) {
-			logger.error(`Unknown cache type: ${type}`)
-			return 0
-		}
+		const config = this.resolveType(type)
+		if (!config) return 0
 
-		const pattern = `${config.prefix}*`
-		const keys = await redis.keys(pattern)
-		
+		const keys = await redis.keys(`${config.prefix}*`)
 		if (keys.length === 0) return 0
-		
+
 		const deleted = await redis.del(...keys)
 		logger.music('info', `Cleared ${deleted} entries from ${type} cache`)
 		return deleted
 	}
 
-	/**
-	 * Clear all entries matching a pattern within a cache type
-	 */
 	static async clearPattern(type: string, pattern: string): Promise<number> {
-		const config = this.cacheTypes.get(type)
-		if (!config) {
-			logger.error(`Unknown cache type: ${type}`)
-			return 0
-		}
+		const config = this.resolveType(type)
+		if (!config) return 0
 
-		const searchPattern = `${config.prefix}*${pattern}*`
-		const keys = await redis.keys(searchPattern)
-		
+		const keys = await redis.keys(`${config.prefix}*${pattern}*`)
 		if (keys.length === 0) return 0
-		
+
 		const deleted = await redis.del(...keys)
 		logger.music('info', `Cleared ${deleted} entries matching "${pattern}" from ${type} cache`)
 		return deleted
 	}
 
-	/**
-	 * Clear all caches for a specific album
-	 */
 	static async clearAlbum(artist: string, album: string): Promise<number> {
 		const albumKey = `${artist}:${album}`
 		let totalDeleted = 0
 
-		// Clear all cache types that might contain this album
-		for (const [type] of this.cacheTypes) {
+			for (const [type] of this.cacheTypes) {
 			if (type.includes('album') || type.includes('notfound')) {
 				const deleted = await this.clearPattern(type, albumKey)
 				totalDeleted += deleted
@@ -122,16 +91,10 @@ export class CacheManager {
 		return totalDeleted
 	}
 
-	/**
-	 * Get all cache types and their info
-	 */
 	static getCacheTypes(): Array<{ type: string; config: CacheConfig }> {
 		return Array.from(this.cacheTypes.entries()).map(([type, config]) => ({ type, config }))
 	}
 
-	/**
-	 * Get cache statistics
-	 */
 	static async getStats(): Promise<Array<{ type: string; count: number; description: string }>> {
 		const stats = []
 		
@@ -148,7 +111,6 @@ export class CacheManager {
 	}
 }
 
-// Export convenience functions for common operations
 export const cache = {
 	lastfm: {
 		getRecent: (username: string) => CacheManager.get('lastfm-recent', username),
