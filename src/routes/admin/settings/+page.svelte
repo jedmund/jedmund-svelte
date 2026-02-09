@@ -3,7 +3,6 @@
 	import { api } from '$lib/admin/api'
 	import { toast } from '$lib/stores/toast'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminSegmentedControl from '$lib/components/admin/AdminSegmentedControl.svelte'
 	import Input from '$lib/components/admin/Input.svelte'
 	import Textarea from '$lib/components/admin/Textarea.svelte'
@@ -163,20 +162,23 @@
 
 <AdminPage>
 	{#snippet header()}
-		<AdminHeader title="Settings">
-			{#snippet actions()}
+		<header class="settings-header">
+			<div class="header-left">
+				<h1>Settings</h1>
+			</div>
+			<div class="header-center">
+				<AdminSegmentedControl
+					options={tabOptions}
+					value={activeTab}
+					onChange={(value) => (activeTab = value)}
+				/>
+			</div>
+			<div class="header-right">
 				<Button variant="primary" onclick={handleSave} loading={saving}>
-					Save
+					Save settings
 				</Button>
-			{/snippet}
-		</AdminHeader>
-		<div class="tab-bar">
-			<AdminSegmentedControl
-				options={tabOptions}
-				value={activeTab}
-				onChange={(value) => (activeTab = value)}
-			/>
-		</div>
+			</div>
+		</header>
 	{/snippet}
 
 	<div class="settings-container">
@@ -351,10 +353,36 @@
 </AdminPage>
 
 <style lang="scss">
-	.tab-bar {
+	.settings-header {
+		display: grid;
+		grid-template-columns: 250px 1fr 250px;
+		align-items: center;
+		width: 100%;
+		gap: $unit-2x;
+
+		h1 {
+			margin: 0;
+			font-size: $font-size-large;
+			font-weight: 700;
+			color: $gray-10;
+		}
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+	}
+
+	.header-center {
 		display: flex;
 		justify-content: center;
-		padding-top: $unit;
+		align-items: center;
+	}
+
+	.header-right {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
 	}
 
 	.settings-container {
