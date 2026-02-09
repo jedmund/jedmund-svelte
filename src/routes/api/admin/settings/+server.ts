@@ -1,18 +1,17 @@
 import type { RequestHandler } from './$types'
 import { checkAdminAuth, jsonResponse, errorResponse } from '$lib/server/api-utils'
-import { getAllSettings, getSettingMeta, setConfig, invalidateConfigCache } from '$lib/server/config'
+import { getAllSettings, setConfig, invalidateConfigCache, SETTING_DEFINITIONS } from '$lib/server/config'
 
 const MASKED_VALUE = '••••••••'
+const VALID_KEYS = new Set(SETTING_DEFINITIONS.map((d) => d.key))
 
 export const GET: RequestHandler = async (event) => {
 	if (!checkAdminAuth(event)) {
 		return errorResponse('Unauthorized', 401)
 	}
 
-	const settings = await getAllSettings()
-	const meta = await getSettingMeta()
-
-	return jsonResponse({ settings, meta })
+	const { values, meta } = await getAllSettings()
+	return jsonResponse({ settings: values, meta })
 }
 
 export const PUT: RequestHandler = async (event) => {
@@ -28,9 +27,8 @@ export const PUT: RequestHandler = async (event) => {
 	}
 
 	for (const [key, value] of Object.entries(body)) {
-		// Skip masked values — user didn't change them
+		if (!VALID_KEYS.has(key)) continue
 		if (value === MASKED_VALUE) continue
-		// Skip empty strings — don't store blank settings
 		if (value === '') continue
 
 		await setConfig(key, value)
@@ -38,8 +36,6 @@ export const PUT: RequestHandler = async (event) => {
 
 	invalidateConfigCache()
 
-	const settings = await getAllSettings()
-	const meta = await getSettingMeta()
-
-	return jsonResponse({ settings, meta })
+	const { values, meta } = await getAllSettings()
+	return jsonResponse({ settings: values, meta })
 }

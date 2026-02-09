@@ -105,35 +105,12 @@ export async function setConfig(key: string, value: string): Promise<void> {
 	cache.delete(key)
 }
 
-export async function getAllSettings(): Promise<Record<string, string>> {
-	const result: Record<string, string> = {}
-
-	// Load all DB settings
-	const dbSettings = await prisma.setting.findMany()
-	const dbMap = new Map(dbSettings.map((s) => [s.key, s]))
-
-	for (const def of SETTING_DEFINITIONS) {
-		const dbSetting = dbMap.get(def.key)
-		if (dbSetting) {
-			result[def.key] = def.isSecret ? MASKED_VALUE : dbSetting.value
-		} else {
-			// Check env var fallback
-			const envKey = ENV_VAR_MAP[def.key]
-			if (envKey && process.env[envKey]) {
-				result[def.key] = def.isSecret ? MASKED_VALUE : process.env[envKey]!
-			} else {
-				result[def.key] = ''
-			}
-		}
-	}
-
-	return result
-}
-
-export async function getSettingMeta(): Promise<
-	Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }>
-> {
-	const result: Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }> = {}
+export async function getAllSettings(): Promise<{
+	values: Record<string, string>
+	meta: Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }>
+}> {
+	const values: Record<string, string> = {}
+	const meta: Record<string, { hasValue: boolean; source: 'db' | 'env' | 'none' }> = {}
 
 	const dbSettings = await prisma.setting.findMany()
 	const dbMap = new Map(dbSettings.map((s) => [s.key, s]))
@@ -141,18 +118,21 @@ export async function getSettingMeta(): Promise<
 	for (const def of SETTING_DEFINITIONS) {
 		const dbSetting = dbMap.get(def.key)
 		if (dbSetting) {
-			result[def.key] = { hasValue: true, source: 'db' }
+			values[def.key] = def.isSecret ? MASKED_VALUE : dbSetting.value
+			meta[def.key] = { hasValue: true, source: 'db' }
 		} else {
 			const envKey = ENV_VAR_MAP[def.key]
 			if (envKey && process.env[envKey]) {
-				result[def.key] = { hasValue: true, source: 'env' }
+				values[def.key] = def.isSecret ? MASKED_VALUE : process.env[envKey]!
+				meta[def.key] = { hasValue: true, source: 'env' }
 			} else {
-				result[def.key] = { hasValue: false, source: 'none' }
+				values[def.key] = ''
+				meta[def.key] = { hasValue: false, source: 'none' }
 			}
 		}
 	}
 
-	return result
+	return { values, meta }
 }
 
 export function invalidateConfigCache(): void {
