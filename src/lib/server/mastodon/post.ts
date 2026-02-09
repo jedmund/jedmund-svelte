@@ -23,7 +23,6 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 	const baseUrl = `https://${instance}`
 	const fullText = input.text + '\n\n' + input.url
 
-	// Upload images if provided
 	const mediaIds: string[] = []
 	if (input.images && input.images.length > 0) {
 		for (const img of input.images.slice(0, 4)) {
@@ -38,7 +37,6 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 		}
 	}
 
-	// Create status
 	const statusBody: Record<string, unknown> = {
 		status: fullText,
 		visibility: 'public'
@@ -78,7 +76,6 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 
 async function uploadMedia(baseUrl: string, accessToken: string, imageUrl: string, alt: string): Promise<string | null> {
 	try {
-		// Fetch the image
 		const imageResponse = await fetch(imageUrl)
 		if (!imageResponse.ok) {
 			logger.error('Failed to fetch image for Mastodon upload', undefined, { imageUrl, status: imageResponse.status })
@@ -88,7 +85,6 @@ async function uploadMedia(baseUrl: string, accessToken: string, imageUrl: strin
 		const contentType = imageResponse.headers.get('content-type') || 'image/jpeg'
 		const imageBlob = await imageResponse.blob()
 
-		// Upload to Mastodon
 		const formData = new FormData()
 		formData.append('file', imageBlob, `image.${contentType.split('/')[1] || 'jpg'}`)
 		if (alt) {

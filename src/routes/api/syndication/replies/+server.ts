@@ -19,7 +19,6 @@ interface SocialReply {
 	url: string
 }
 
-// GET /api/syndication/replies?contentType=post&contentId=123
 export const GET: RequestHandler = async (event) => {
 	const contentType = event.url.searchParams.get('contentType')
 	const contentId = parseInt(event.url.searchParams.get('contentId') || '')
@@ -30,13 +29,11 @@ export const GET: RequestHandler = async (event) => {
 
 	const cacheKey = `${contentType}:${contentId}`
 
-	// Check cache first
 	const cached = await CacheManager.get('syndication-replies', cacheKey)
 	if (cached) {
 		return jsonResponse(JSON.parse(cached))
 	}
 
-	// Look up syndication records
 	const syndications = await prisma.syndication.findMany({
 		where: { contentType, contentId, status: 'success' }
 	})
@@ -47,7 +44,6 @@ export const GET: RequestHandler = async (event) => {
 
 	const replies: SocialReply[] = []
 
-	// Fetch replies from each platform
 	for (const syn of syndications) {
 		try {
 			if (syn.platform === 'bluesky' && syn.externalId) {
@@ -62,7 +58,6 @@ export const GET: RequestHandler = async (event) => {
 		}
 	}
 
-	// Sort by date
 	replies.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
 
 	const syndicationLinks = syndications.map(s => ({
@@ -72,7 +67,6 @@ export const GET: RequestHandler = async (event) => {
 
 	const result = { replies, syndications: syndicationLinks }
 
-	// Cache for 5 minutes
 	await CacheManager.set('syndication-replies', cacheKey, JSON.stringify(result))
 
 	return jsonResponse(result)

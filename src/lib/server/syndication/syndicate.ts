@@ -38,8 +38,7 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 				images.push({ url: post.featuredImage, alt: post.title || '' })
 			}
 			if (post.attachments && Array.isArray(post.attachments)) {
-				// Attachments are media IDs — resolve to URLs
-				const mediaItems = await prisma.media.findMany({
+						const mediaItems = await prisma.media.findMany({
 					where: { id: { in: post.attachments as number[] } },
 					select: { url: true, description: true }
 				})
@@ -110,24 +109,38 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 	}
 }
 
-async function formatForBluesky(data: ContentData): Promise<{ text: string; images?: { url: string; alt: string }[]; useExternalEmbed: boolean; title?: string; description?: string }> {
-	const url = await getCanonicalUrl(data.contentType, data.slug)
+interface FormattedPost {
+	text: string
+	images?: { url: string; alt: string }[]
+	useExternalEmbed: boolean
+	title?: string
+	description?: string
+}
+
+const EXCERPT_LIMITS = {
+	bluesky: { essay: 200, post: 280 },
+	mastodon: { essay: 400, post: 480 }
+} as const
+
+function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData): FormattedPost {
+	const limits = EXCERPT_LIMITS[platform]
+	const supportsEmbed = platform === 'bluesky'
 
 	switch (data.contentType) {
 		case 'post': {
 			const isEssay = !!data.title
 			if (isEssay) {
-				const excerpt = getContentExcerpt(data.content, 200)
+				const excerpt = getContentExcerpt(data.content, limits.essay)
 				return {
 					text: data.title + '\n\n' + excerpt,
 					images: data.images,
-					useExternalEmbed: !data.images?.length,
-					title: data.title || undefined,
-					description: excerpt || undefined
+					useExternalEmbed: supportsEmbed && !data.images?.length,
+					title: supportsEmbed ? (data.title || undefined) : undefined,
+					description: supportsEmbed ? (excerpt || undefined) : undefined
 				}
 			}
 			return {
-				text: getContentExcerpt(data.content, 280),
+				text: getContentExcerpt(data.content, limits.post),
 				images: data.images,
 				useExternalEmbed: false
 			}
@@ -136,9 +149,9 @@ async function formatForBluesky(data: ContentData): Promise<{ text: string; imag
 			return {
 				text: 'New: ' + data.title + '\n\n' + (data.description || ''),
 				images: data.images,
-				useExternalEmbed: !data.images?.length,
-				title: data.title || undefined,
-				description: data.description || undefined
+				useExternalEmbed: supportsEmbed && !data.images?.length,
+				title: supportsEmbed ? (data.title || undefined) : undefined,
+				description: supportsEmbed ? (data.description || undefined) : undefined
 			}
 		case 'album':
 			return {
@@ -148,37 +161,6 @@ async function formatForBluesky(data: ContentData): Promise<{ text: string; imag
 			}
 		default:
 			return { text: data.title || '', useExternalEmbed: false }
-	}
-}
-
-function formatForMastodon(data: ContentData): { text: string; images?: { url: string; alt: string }[] } {
-	switch (data.contentType) {
-		case 'post': {
-			const isEssay = !!data.title
-			if (isEssay) {
-				const excerpt = getContentExcerpt(data.content, 400)
-				return {
-					text: data.title + '\n\n' + excerpt,
-					images: data.images
-				}
-			}
-			return {
-				text: getContentExcerpt(data.content, 480),
-				images: data.images
-			}
-		}
-		case 'project':
-			return {
-				text: 'New: ' + data.title + '\n\n' + (data.description || ''),
-				images: data.images
-			}
-		case 'album':
-			return {
-				text: data.title + (data.description ? '\n\n' + data.description : ''),
-				images: data.images
-			}
-		default:
-			return { text: data.title || '' }
 	}
 }
 
@@ -194,8 +176,9 @@ async function syndicateTo(
 		let externalId: string | undefined
 		let externalUrl: string | undefined
 
+		const formatted = formatForPlatform(platform, data)
+
 		if (platform === 'bluesky') {
-			const formatted = await formatForBluesky(data)
 			const result = await postToBluesky({
 				text: formatted.text,
 				url,
@@ -207,7 +190,6 @@ async function syndicateTo(
 			externalId = result.uri
 			externalUrl = result.url
 		} else {
-			const formatted = formatForMastodon(data)
 			const result = await postToMastodon({
 				text: formatted.text,
 				url,
@@ -217,7 +199,6 @@ async function syndicateTo(
 			externalUrl = result.url
 		}
 
-		// Record success
 		await prisma.syndication.upsert({
 			where: {
 				contentType_contentId_platform: { contentType, contentId, platform }
@@ -241,7 +222,6 @@ async function syndicateTo(
 		const errorMessage = error instanceof Error ? error.message : String(error)
 		logger.error(`Syndication to ${platform} failed`, error as Error, { contentType, contentId: contentId.toString() })
 
-		// Record failure
 		await prisma.syndication.upsert({
 			where: {
 				contentType_contentId_platform: { contentType, contentId, platform }
@@ -268,7 +248,6 @@ export async function syndicateContent(contentType: string, contentId: number): 
 		return
 	}
 
-	// Check for existing successful syndications to avoid duplicates
 	const existing = await prisma.syndication.findMany({
 		where: { contentType, contentId, status: 'success' }
 	})

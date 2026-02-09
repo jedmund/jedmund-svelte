@@ -2,7 +2,6 @@ import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 
-// GET /api/syndication/status?contentType=post&contentId=123
 export const GET: RequestHandler = async (event) => {
 	if (!checkAdminAuth(event)) {
 		return errorResponse('Unauthorized', 401)

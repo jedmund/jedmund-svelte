@@ -10,20 +10,18 @@ async function getAgent(): Promise<AtpAgent> {
 
 	agent = new AtpAgent({ service: 'https://bsky.social' })
 
-	// Try to restore session from cache
 	const cachedSession = await CacheManager.get('bluesky-session', 'default')
 	if (cachedSession) {
 		try {
 			const session = JSON.parse(cachedSession)
 			await agent.resumeSession(session)
-			logger.info('Bluesky session restored from cache')
+			logger.debug('Bluesky session restored from cache')
 			return agent
 		} catch {
-			logger.info('Cached Bluesky session expired, re-authenticating')
+			logger.debug('Cached Bluesky session expired, re-authenticating')
 		}
 	}
 
-	// Authenticate fresh
 	await authenticate()
 	return agent
 }
@@ -42,13 +40,11 @@ async function authenticate(): Promise<void> {
 	}
 
 	try {
-		// Prefer DID for login — custom domain handles can fail handle resolution
 		const response = await agent.login({
 			identifier: did || handle!,
 			password: appPassword
 		})
 
-		// Cache the session
 		if (response.data) {
 			await CacheManager.set(
 				'bluesky-session',
@@ -68,7 +64,6 @@ async function authenticate(): Promise<void> {
 export async function getBlueskyAgent(): Promise<AtpAgent> {
 	const a = await getAgent()
 
-	// Verify session is still valid by checking if we have a session
 	if (!a.session) {
 		agent = null
 		return getAgent()
