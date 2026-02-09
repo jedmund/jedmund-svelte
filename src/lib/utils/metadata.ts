@@ -31,7 +31,17 @@ interface GeneratedMetaTags {
 	jsonLd?: JsonLdObject
 }
 
-const DEFAULTS = {
+export interface SeoDefaults {
+	siteName: string
+	siteUrl: string
+	defaultTitle: string
+	defaultDescription: string
+	defaultImage: string
+	twitterSite: string
+	locale: string
+}
+
+export const HARDCODED_DEFAULTS: SeoDefaults = {
 	siteName: '@jedmund',
 	siteUrl: 'https://jedmund.com',
 	defaultTitle: '@jedmund is a software designer',
@@ -39,6 +49,12 @@ const DEFAULTS = {
 	defaultImage: 'https://jedmund.com/images/og-image.jpg',
 	twitterSite: '@jedmund',
 	locale: 'en_US'
+}
+
+let DEFAULTS: SeoDefaults = { ...HARDCODED_DEFAULTS }
+
+export function setSeoDefaults(overrides: Partial<SeoDefaults>): void {
+	DEFAULTS = { ...HARDCODED_DEFAULTS, ...overrides }
 }
 
 /**
