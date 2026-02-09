@@ -335,6 +335,7 @@
 	@import '$styles/mixins';
 
 	.composer {
+		--muted-foreground: #{$gray-60};
 		width: 100%;
 		min-width: 0;
 		display: flex;
@@ -386,8 +387,15 @@
 
 	.composer--inline {
 		.edra-editor {
-			padding: $unit-2x;
+			padding: $unit-3x;
 			min-height: 80px;
+			box-sizing: border-box;
+
+			:global(.tiptap.ProseMirror) {
+				margin-inline: 0;
+				max-width: none;
+				font-size: $font-size-med;
+			}
 		}
 	}
 

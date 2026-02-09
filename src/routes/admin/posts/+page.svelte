@@ -221,7 +221,7 @@ const statusFilterOptions = [
 
 	.composer-section {
 		margin-bottom: $unit-4x;
-		padding: 0 $unit;
+		padding: $unit $unit 0;
 	}
 
 	.posts-list {

@@ -487,7 +487,7 @@
 						characterCount = count
 					}}
 					placeholder="What's on your mind?"
-					minHeight={120}
+					minHeight={80}
 					autofocus={true}
 					variant="inline"
 				/>
@@ -729,9 +729,17 @@
 		position: relative;
 		background: white;
 		border-radius: $unit-2x;
-		border: 1px solid $gray-80;
+		border: 1px solid $gray-85;
+		box-shadow: 0 0 $unit-2x rgba(0, 0, 0, 0.06);
 		overflow: hidden;
 		width: 100%;
+		transition: border-color $transition-normal ease, box-shadow $transition-normal ease;
+
+		&:hover,
+		&:focus-within {
+			border-color: $gray-70;
+			box-shadow: 0 0 $unit-2x rgba(0, 0, 0, 0.12);
+		}
 
 		.composer-body {
 			display: flex;
@@ -758,8 +766,8 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: $unit-2x $unit-3x;
-		border-top: 1px solid $gray-80;
-		background-color: $gray-90;
+		border-top: none;
+		background-color: transparent;
 	}
 
 	.attached-photos {
