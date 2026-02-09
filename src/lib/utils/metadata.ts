@@ -41,7 +41,7 @@ export interface SeoDefaults {
 	locale: string
 }
 
-const HARDCODED_DEFAULTS: SeoDefaults = {
+export const HARDCODED_DEFAULTS: SeoDefaults = {
 	siteName: '@jedmund',
 	siteUrl: 'https://jedmund.com',
 	defaultTitle: '@jedmund is a software designer',
