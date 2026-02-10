@@ -39,6 +39,21 @@ export const AudioExtended = (
 							'data-media-id': attributes.mediaId
 						};
 					}
+				},
+				waveformData: {
+					default: null,
+					parseHTML: (element) => {
+						const data = element.getAttribute('data-waveform');
+						return data ? JSON.parse(data) : null;
+					},
+					renderHTML: (attributes) => {
+						if (!attributes.waveformData) {
+							return {};
+						}
+						return {
+							'data-waveform': JSON.stringify(attributes.waveformData)
+						};
+					}
 				}
 			};
 		},
