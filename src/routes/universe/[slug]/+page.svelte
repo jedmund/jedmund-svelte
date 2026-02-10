@@ -103,12 +103,14 @@
 			</div>
 		</Page>
 	{:else}
-		<Page>
-			<DynamicPostContent {post} />
+		<div class="post-container">
+			<Page>
+				<DynamicPostContent {post} />
+			</Page>
 			{#if post.id}
 				<SocialReplies contentType="post" contentId={post.id} />
 			{/if}
-		</Page>
+		</div>
 	{/if}
 </div>
 
@@ -116,6 +118,18 @@
 	.universe-page-container {
 		padding: 0 $unit-2x;
 		box-sizing: border-box;
+	}
+
+	.post-container {
+		display: flex;
+		flex-direction: column;
+		gap: $unit-2x;
+		max-width: 700px;
+		margin: 0 auto;
+
+		:global(.page) {
+			margin: 0;
+		}
 	}
 
 	.error-container {
