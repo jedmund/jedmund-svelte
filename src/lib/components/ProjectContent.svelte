@@ -1,20 +1,35 @@
 <script lang="ts">
+	import { onMount, onDestroy } from 'svelte'
 	import type { Project } from '$lib/types/project'
 	import BackButton from './BackButton.svelte'
 	import { renderEdraContent } from '$lib/utils/content'
+	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
 
 	interface Props {
 		project: Project
 	}
 
 	let { project }: Props = $props()
+
+	let caseStudyEl: HTMLDivElement | undefined = $state()
+	let cleanupAudio: (() => void) | undefined
+
+	onMount(() => {
+		if (caseStudyEl) {
+			cleanupAudio = hydrateAudioPlayers(caseStudyEl)
+		}
+	})
+
+	onDestroy(() => {
+		cleanupAudio?.()
+	})
 </script>
 
 <article class="project-content">
 	<!-- Case Study Content -->
 	{#if project.caseStudyContent && project.caseStudyContent.content && project.caseStudyContent.content.length > 0}
 		<div class="case-study-section">
-			<div class="case-study-content">
+			<div class="case-study-content" bind:this={caseStudyEl}>
 				{@html renderEdraContent(project.caseStudyContent)}
 			</div>
 		</div>
@@ -90,6 +105,15 @@
 				width: 100%;
 				height: auto;
 				border-radius: $unit;
+			}
+		}
+
+		:global(.audio-figure) {
+			:global(figcaption) {
+				font-size: $font-size-extra-small;
+				color: $gray-40;
+				margin-top: $unit;
+				padding: 0 $unit-2x;
 			}
 		}
 

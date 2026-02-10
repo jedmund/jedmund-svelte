@@ -292,6 +292,20 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				return embedHtml
 			}
 
+			case 'audio': {
+				const src = (node.attrs?.src || '') as string
+				const title = (node.attrs?.title || '') as string
+				const waveformData = node.attrs?.waveformData as number[] | null | undefined
+				const waveformAttr = waveformData
+					? ` data-waveform="${escapeHtml(JSON.stringify(waveformData))}"`
+					: ''
+				let html = '<figure class="audio-figure">'
+				html += `<div data-audio-player data-src="${escapeHtml(src)}" data-title="${escapeHtml(title)}"${waveformAttr}></div>`
+				if (title) html += `<figcaption>${escapeHtml(title)}</figcaption>`
+				html += '</figure>'
+				return html
+			}
+
 			default: {
 				// For any unknown block types, try to render their content
 				if (node.content) {

@@ -2,6 +2,8 @@
 	import { onDestroy, onMount, type Snippet } from 'svelte';
 	import { NodeViewWrapper } from 'svelte-tiptap';
 	import type { NodeViewProps } from '@tiptap/core';
+	import tippy, { type Instance } from 'tippy.js';
+	import 'tippy.js/dist/tippy.css';
 	import strings from '../../strings.js';
 
 	import AlignCenter from '@lucide/svelte/icons/align-center';
@@ -33,6 +35,9 @@
 	const maxWidthPercent = 100;
 
 	let nodeRef = $state<HTMLElement>();
+	let groupRef = $state<HTMLElement>();
+	let toolbarRef = $state<HTMLElement>();
+	let tippyInstance: Instance | undefined;
 
 	let resizing = $state(false);
 	let resizingInitialWidthPercent = $state(0);
@@ -43,6 +48,51 @@
 	$effect(() => {
 		if (caption?.trim() === '') caption = null;
 		updateAttributes({ title: caption });
+	});
+
+	$effect(() => {
+		if (!groupRef || !toolbarRef || !editor?.isEditable) {
+			tippyInstance?.destroy();
+			tippyInstance = undefined;
+			return;
+		}
+
+		tippyInstance = tippy(groupRef, {
+			content: toolbarRef,
+			interactive: true,
+			trigger: 'mouseenter',
+			placement: 'top-end',
+			appendTo: () => document.body,
+			arrow: false,
+			theme: 'media-toolbar',
+			delay: [100, 300],
+			offset: [0, 8],
+			interactiveBorder: 20,
+			zIndex: 200,
+			popperOptions: {
+				modifiers: [
+					{
+						name: 'preventOverflow',
+						options: { boundary: 'viewport', padding: 8 }
+					},
+					{
+						name: 'flip',
+						options: {
+							fallbackPlacements: ['bottom-end', 'top-start', 'bottom-start']
+						}
+					}
+				]
+			}
+		});
+
+		return () => {
+			tippyInstance?.destroy();
+			tippyInstance = undefined;
+		};
+	});
+
+	$effect(() => {
+		if (selected && tippyInstance) tippyInstance.show();
 	});
 
 	function handleResizingPosition(e: MouseEvent, position: 'left' | 'right') {
@@ -140,7 +190,7 @@
 	style={`width: ${node.attrs.width}`}
 	class={`edra-media-container ${selected ? 'selected' : ''} align-${node.attrs.align}`}
 >
-	<div class={`edra-media-group ${resizing ? 'resizing' : ''}`}>
+	<div bind:this={groupRef} class={`edra-media-group ${resizing ? 'resizing' : ''}`}>
 		{@render children()}
 
 		{#if caption !== null}
@@ -178,27 +228,27 @@
 				<div class="edra-media-resize-indicator"></div>
 			</div>
 
-			<div class="edra-media-toolbar edra-media-toolbar-audio">
+			<div bind:this={toolbarRef} class="edra-media-toolbar">
 				<button
 					class={`edra-toolbar-button ${node.attrs.align === 'left' ? 'active' : ''}`}
 					onclick={() => updateAttributes({ align: 'left' })}
 					title={strings.extension.media.alignLeft}
 				>
-					<AlignLeft />
+					<AlignLeft size={16} strokeWidth={2} />
 				</button>
 				<button
 					class={`edra-toolbar-button ${node.attrs.align === 'center' ? 'active' : ''}`}
 					onclick={() => updateAttributes({ align: 'center' })}
 					title={strings.extension.media.alignCenter}
 				>
-					<AlignCenter />
+					<AlignCenter size={16} strokeWidth={2} />
 				</button>
 				<button
 					class={`edra-toolbar-button ${node.attrs.align === 'right' ? 'active' : ''}`}
 					onclick={() => updateAttributes({ align: 'right' })}
 					title={strings.extension.media.alignRight}
 				>
-					<AlignRight />
+					<AlignRight size={16} strokeWidth={2} />
 				</button>
 				<button
 					class="edra-toolbar-button"
@@ -207,7 +257,7 @@
 					}}
 					title={strings.extension.media.caption}
 				>
-					<Captions />
+					<Captions size={16} strokeWidth={2} />
 				</button>
 				<button
 					class="edra-toolbar-button"
@@ -216,7 +266,7 @@
 					}}
 					title={strings.extension.media.duplicate}
 				>
-					<CopyIcon />
+					<CopyIcon size={16} strokeWidth={2} />
 				</button>
 				<button
 					class="edra-toolbar-button"
@@ -227,7 +277,7 @@
 					}}
 					title={strings.extension.media.fullscreen}
 				>
-					<Fullscreen />
+					<Fullscreen size={16} strokeWidth={2} />
 				</button>
 				<button
 					class="edra-toolbar-button edra-destructive"
@@ -236,7 +286,7 @@
 					}}
 					title={strings.extension.media.delete}
 				>
-					<Trash />
+					<Trash size={16} strokeWidth={2} />
 				</button>
 			</div>
 		{/if}

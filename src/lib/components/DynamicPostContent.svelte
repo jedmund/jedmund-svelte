@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { onMount, onDestroy } from 'svelte'
 	import Slideshow from './Slideshow.svelte'
 	import BackButton from './BackButton.svelte'
 	import HeartButton from './HeartButton.svelte'
 	import { formatDate } from '$lib/utils/date'
 	import { renderEdraContent } from '$lib/utils/content'
+	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
 
 	import type { Post } from '@prisma/client'
 
@@ -31,7 +33,20 @@
 
 	let { post }: { post: PostWithRelations } = $props()
 
+	let postBodyEl: HTMLDivElement | undefined = $state()
+	let cleanupAudio: (() => void) | undefined
+
 	const renderedContent = $derived(post.content ? renderEdraContent(post.content) : '')
+
+	onMount(() => {
+		if (postBodyEl) {
+			cleanupAudio = hydrateAudioPlayers(postBodyEl)
+		}
+	})
+
+	onDestroy(() => {
+		cleanupAudio?.()
+	})
 	const publishedAtStr = $derived(post.publishedAt ? post.publishedAt.toString() : '')
 	const attachments = $derived(
 		Array.isArray(post.attachments) ? (post.attachments as unknown as Attachment[]) : []
@@ -91,7 +106,7 @@
 	{/if}
 
 	{#if renderedContent}
-		<div class="post-body">
+		<div class="post-body" bind:this={postBodyEl}>
 			{@html renderedContent}
 		</div>
 	{/if}
@@ -338,6 +353,17 @@
 				width: 100%;
 				height: auto;
 				border-radius: $unit;
+			}
+		}
+
+		:global(.audio-figure) {
+			margin: $unit-3x 0;
+
+			:global(figcaption) {
+				font-size: $font-size-extra-small;
+				color: $gray-40;
+				margin-top: $unit;
+				padding: 0 $unit-2x;
 			}
 		}
 

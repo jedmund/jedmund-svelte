@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core';
 	import MediaExtended from './MediaExtended.svelte';
+	import AudioPlayer from '$components/AudioPlayer.svelte';
 
 	const { ...rest }: NodeViewProps = $props();
 
@@ -9,13 +10,13 @@
 
 <MediaExtended bind:mediaRef {...rest}>
 	{@const node = rest.node}
-	<audio
-		bind:this={mediaRef}
-		src={node.attrs.src}
-		controls
-		title={node.attrs.title}
-		style="margin: 0; width: 100%;"
-		preload="none"
-	>
-	</audio>
+	<div bind:this={mediaRef} style="margin: 0; width: 100%;">
+		<AudioPlayer
+			src={node.attrs.src}
+			waveformData={node.attrs.waveformData}
+			onWaveformComputed={(data) => {
+				rest.updateAttributes({ waveformData: data });
+			}}
+		/>
+	</div>
 </MediaExtended>

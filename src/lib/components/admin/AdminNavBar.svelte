@@ -23,9 +23,10 @@
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
 		{ text: 'Media', href: '/admin/media', icon: MediaIcon },
-		{ text: 'Tags', href: '/admin/tags', icon: TagIcon },
-		{ text: 'Settings', href: '/admin/settings', icon: SettingsIcon }
+		{ text: 'Tags', href: '/admin/tags', icon: TagIcon }
 	]
+
+	const settingsItem: NavItem = { text: 'Settings', href: '/admin/settings', icon: SettingsIcon }
 
 	// Calculate active index based on current path
 	const activeIndex = $derived(
@@ -59,6 +60,13 @@
 				<span class="nav-text">{item.text}</span>
 			</a>
 		{/each}
+	</div>
+
+	<div class="nav-bottom">
+		<a href={settingsItem.href} class="nav-link" class:active={activeIndex === 5}>
+			<settingsItem.icon class="nav-icon" />
+			<span class="nav-text">{settingsItem.text}</span>
+		</a>
 	</div>
 </nav>
 
@@ -120,6 +128,12 @@
 		align-items: center;
 		gap: $unit-half;
 		width: 100%;
+	}
+
+	.nav-bottom {
+		margin-top: auto;
+		width: 100%;
+		padding-bottom: $unit;
 	}
 
 	.nav-link {
