@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { onMount, onDestroy } from 'svelte'
 	import UniverseCard from './UniverseCard.svelte'
 	import TagPill from './TagPill.svelte'
 	import { getContentExcerpt, renderEdraContent } from '$lib/utils/content'
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
+	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
 	let { post }: { post: UniverseItem } = $props()
@@ -19,6 +21,19 @@
 			return excerpt.endsWith('...')
 		}
 		return false
+	})
+
+	let excerptEl: HTMLDivElement | undefined = $state()
+	let cleanupAudio: (() => void) | undefined
+
+	onMount(() => {
+		if (excerptEl) {
+			cleanupAudio = hydrateAudioPlayers(excerptEl)
+		}
+	})
+
+	onDestroy(() => {
+		cleanupAudio?.()
 	})
 
 	// Helper to get domain from URL
@@ -80,7 +95,7 @@
 	{/if}
 
 	{#if post.content}
-		<div class="post-excerpt">
+		<div class="post-excerpt" bind:this={excerptEl}>
 			{#if post.postType === 'essay'}
 				<p>{getContentExcerpt(post.content, 300)}</p>
 			{:else}
@@ -175,6 +190,17 @@
 		// Hide embeds in the rendered content since we show them separately
 		:global(.url-embed-rendered) {
 			display: none;
+		}
+
+		:global(.audio-figure) {
+			margin: $unit-2x 0;
+
+			:global(figcaption) {
+				font-size: $font-size-extra-small;
+				color: $gray-40;
+				margin-top: $unit;
+				padding: 0 $unit-2x;
+			}
 		}
 	}
 
