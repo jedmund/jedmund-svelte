@@ -7,6 +7,7 @@ import { getConfig } from '$lib/server/config'
 import { logger } from '$lib/server/logger'
 
 interface SocialReply {
+	id: string
 	platform: 'bluesky' | 'mastodon'
 	author: {
 		name: string
@@ -17,6 +18,7 @@ interface SocialReply {
 	content: string
 	createdAt: string
 	url: string
+	replies?: SocialReply[]
 }
 
 export const GET: RequestHandler = async (event) => {
@@ -72,35 +74,56 @@ export const GET: RequestHandler = async (event) => {
 	return jsonResponse(result)
 }
 
+interface BlueskyThreadPost {
+	$type: string
+	post: {
+		author: { handle: string; displayName?: string; avatar?: string; did: string }
+		record: { text: string; createdAt: string }
+		uri: string
+	}
+	replies?: BlueskyThreadPost[]
+}
+
+function mapBlueskyPost(reply: BlueskyThreadPost): SocialReply {
+	const post = reply.post
+	const rkey = post.uri.split('/').pop()
+	return {
+		id: post.uri,
+		platform: 'bluesky' as const,
+		author: {
+			name: post.author.displayName || post.author.handle,
+			handle: `@${post.author.handle}`,
+			avatarUrl: post.author.avatar || '',
+			profileUrl: `https://bsky.app/profile/${post.author.handle}`
+		},
+		content: post.record.text,
+		createdAt: post.record.createdAt,
+		url: `https://bsky.app/profile/${post.author.did}/post/${rkey}`
+	}
+}
+
 async function fetchBlueskyReplies(uri: string): Promise<SocialReply[]> {
 	try {
 		const agent = await getBlueskyAgent()
-		const response = await agent.getPostThread({ uri, depth: 1 })
+		const response = await agent.getPostThread({ uri, depth: 2 })
 
 		if (!response.data.thread || response.data.thread.$type !== 'app.bsky.feed.defs#threadViewPost') {
 			return []
 		}
 
-		const thread = response.data.thread as { replies?: Array<{ $type: string; post: { author: { handle: string; displayName?: string; avatar?: string; did: string }; record: { text: string; createdAt: string }; uri: string } }> }
+		const thread = response.data.thread as BlueskyThreadPost
 		if (!thread.replies) return []
 
 		return thread.replies
 			.filter(r => r.$type === 'app.bsky.feed.defs#threadViewPost')
 			.map(reply => {
-				const post = reply.post
-				const rkey = post.uri.split('/').pop()
-				return {
-					platform: 'bluesky' as const,
-					author: {
-						name: post.author.displayName || post.author.handle,
-						handle: `@${post.author.handle}`,
-						avatarUrl: post.author.avatar || '',
-						profileUrl: `https://bsky.app/profile/${post.author.handle}`
-					},
-					content: post.record.text,
-					createdAt: post.record.createdAt,
-					url: `https://bsky.app/profile/${post.author.did}/post/${rkey}`
+				const mapped = mapBlueskyPost(reply)
+				if (reply.replies?.length) {
+					mapped.replies = reply.replies
+						.filter(r => r.$type === 'app.bsky.feed.defs#threadViewPost')
+						.map(child => mapBlueskyPost(child))
 				}
+				return mapped
 			})
 	} catch (error) {
 		logger.error('Failed to fetch Bluesky replies', error as Error, { uri })
@@ -108,10 +131,35 @@ async function fetchBlueskyReplies(uri: string): Promise<SocialReply[]> {
 	}
 }
 
+interface MastodonStatus {
+	id: string
+	in_reply_to_id: string | null
+	account: { display_name: string; acct: string; avatar: string; url: string }
+	content: string
+	created_at: string
+	url: string
+}
+
+function mapMastodonPost(status: MastodonStatus): SocialReply {
+	return {
+		id: status.id,
+		platform: 'mastodon' as const,
+		author: {
+			name: status.account.display_name || status.account.acct,
+			handle: `@${status.account.acct}`,
+			avatarUrl: status.account.avatar,
+			profileUrl: status.account.url
+		},
+		content: status.content,
+		createdAt: status.created_at,
+		url: status.url
+	}
+}
+
 async function fetchMastodonReplies(statusId: string): Promise<SocialReply[]> {
 	try {
 		const mastodonInstance = await getConfig('mastodon.instance')
-	const baseUrl = `https://${mastodonInstance || 'fireplace.cafe'}`
+		const baseUrl = `https://${mastodonInstance || 'fireplace.cafe'}`
 		const response = await fetch(`${baseUrl}/api/v1/statuses/${statusId}/context`)
 
 		if (!response.ok) {
@@ -119,28 +167,18 @@ async function fetchMastodonReplies(statusId: string): Promise<SocialReply[]> {
 			return []
 		}
 
-		const data = await response.json() as {
-			descendants: Array<{
-				id: string
-				account: { display_name: string; acct: string; avatar: string; url: string }
-				content: string
-				created_at: string
-				url: string
-			}>
-		}
+		const data = await response.json() as { descendants: MastodonStatus[] }
 
-		return data.descendants.map(reply => ({
-			platform: 'mastodon' as const,
-			author: {
-				name: reply.account.display_name || reply.account.acct,
-				handle: `@${reply.account.acct}`,
-				avatarUrl: reply.account.avatar,
-				profileUrl: reply.account.url
-			},
-			content: reply.content,
-			createdAt: reply.created_at,
-			url: reply.url
-		}))
+		const directReplies = data.descendants.filter(d => d.in_reply_to_id === statusId)
+
+		return directReplies.map(status => {
+			const mapped = mapMastodonPost(status)
+			const children = data.descendants.filter(d => d.in_reply_to_id === status.id)
+			if (children.length) {
+				mapped.replies = children.map(child => mapMastodonPost(child))
+			}
+			return mapped
+		})
 	} catch (error) {
 		logger.error('Failed to fetch Mastodon replies', error as Error, { statusId })
 		return []
