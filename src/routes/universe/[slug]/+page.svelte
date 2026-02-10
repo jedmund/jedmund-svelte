@@ -108,7 +108,7 @@
 				<DynamicPostContent {post} />
 			</Page>
 			{#if post.id}
-				<SocialReplies contentType="post" contentId={post.id} debug />
+				<SocialReplies contentType="post" contentId={post.id} />
 			{/if}
 		</div>
 	{/if}
