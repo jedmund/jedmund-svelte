@@ -19,6 +19,7 @@ import { SmilieReplacer } from './extensions/SmilieReplacer.js';
 import { FontSize } from './extensions/FontSize.js';
 import { Table, TableCell, TableHeader, TableRow } from './extensions/table/index.js';
 import { Markdown } from 'tiptap-markdown';
+import { LinkColorStrip } from './extensions/LinkColorStrip.js';
 import strings from './strings.js';
 
 export default (
@@ -97,6 +98,7 @@ export default (
 			TableRow,
 			TableCell,
 			Markdown,
+			LinkColorStrip,
 
 			...(extensions ?? [])
 		],

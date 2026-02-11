@@ -208,6 +208,20 @@
 	padding: 0;
 }
 
+.tippy-box[data-theme~='bubble-menu'] {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.tippy-box[data-theme~='bubble-menu'] > .tippy-content {
+	padding: 0;
+}
+
+.tippy-box[data-theme~='bubble-menu'] > .tippy-arrow {
+	display: none;
+}
+
 .edra-toolbar-button {
 	width: 32px;
 	height: 32px;

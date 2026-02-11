@@ -3,7 +3,7 @@
 	import { onMount, setContext } from 'svelte'
 	import { initiateEditor, getEditorExtensions } from '$lib/components/edra/editor-extensions.js'
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle'
-	import LinkMenu from '$lib/components/edra/headless/menus/Link.svelte'
+	import ComposerLinkBubble from './ComposerLinkBubble.svelte'
 	import TableRowMenu from '$lib/components/edra/headless/menus/TableRow.svelte'
 	import TableColMenu from '$lib/components/edra/headless/menus/TableCol.svelte'
 	import DragHandle from '$lib/components/edra/components/DragHandle.svelte'
@@ -263,7 +263,7 @@
 	{/if}
 
 	{#if editor}
-		<LinkMenu {editor} />
+		<ComposerLinkBubble {editor} />
 		{#if features.tables}
 			<TableRowMenu {editor} />
 			<TableColMenu {editor} />
@@ -351,6 +351,11 @@
 		min-height: 100px;
 		outline: none;
 		overflow-y: auto;
+
+		:global(.tiptap a) {
+			color: $red-60;
+			text-decoration: underline;
+		}
 
 		&.with-toolbar {
 			border-top: none;

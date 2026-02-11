@@ -27,6 +27,7 @@
 		updateDelay,
 		resizeDelay,
 		pluginKey = 'bubbleMenu',
+		tippyOptions = { theme: 'bubble-menu' },
 		options,
 		...restProps
 	}: Props = $props();
@@ -49,6 +50,7 @@
 			editor,
 			element,
 			shouldShow,
+			tippyOptions,
 			updateDelay,
 			resizeDelay,
 			options
