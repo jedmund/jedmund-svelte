@@ -24,17 +24,20 @@ const strings = {
 		bulletList: 'Bullet List',
 		orderedList: 'Ordered List',
 		taskList: 'Task List',
-		imagePlaceholder: 'Image Placeholder',
-		videoPlaceholder: 'Video Placeholder',
-		audioPlaceholder: 'Audio Placeholder',
-		iframePlaceholder: 'Iframe Placeholder',
+		imagePlaceholder: 'Image',
+		videoPlaceholder: 'Video',
+		audioPlaceholder: 'Audio',
+		iframePlaceholder: 'iFrame',
 		table: 'Table',
 		inlineExpression: 'Inline Expression',
 		blockExpression: 'Block Expression',
 		horizontalRule: 'Horizontal Rule',
 
 		formatGroup: 'Format',
-		insertGroup: 'Insert'
+		insertGroup: 'Insert',
+		textGroup: 'Text',
+		mediaGroup: 'Media',
+		embedGroup: 'Embeds & Other'
 	},
 	dragHandle: {
 		title: 'Drag Handle',

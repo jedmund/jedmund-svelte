@@ -8,6 +8,7 @@ export interface EdraToolBarCommands {
 	icon: typeof Icon;
 	tooltip?: string;
 	shortCut?: string;
+	syntax?: string;
 	onClick?: (editor: Editor) => void;
 	turnInto?: (editor: Editor, node: Node, pos: number) => void;
 	isActive?: (editor: Editor) => boolean;
