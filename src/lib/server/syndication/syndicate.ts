@@ -9,6 +9,8 @@ interface ContentData {
 	title?: string | null
 	description?: string | null
 	content?: unknown
+	excerpt?: string | null
+	syndicationText?: string | null
 	featuredImage?: string | null
 	images?: { url: string; alt: string }[]
 	slug: string
@@ -52,6 +54,8 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 			return {
 				title: post.title,
 				content: post.content,
+				excerpt: post.excerpt,
+				syndicationText: post.syndicationText,
 				featuredImage: post.featuredImage,
 				images,
 				slug: post.slug,
@@ -117,50 +121,73 @@ interface FormattedPost {
 	description?: string
 }
 
-const EXCERPT_LIMITS = {
-	bluesky: { essay: 200, post: 280 },
-	mastodon: { essay: 400, post: 480 }
-} as const
+const SYNDICATION_TEXT_LIMIT = 240
+
+function truncateText(text: string, limit: number): string {
+	if (text.length <= limit) return text
+	return text.substring(0, limit - 3).trim() + '...'
+}
 
 function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData): FormattedPost {
-	const limits = EXCERPT_LIMITS[platform]
 	const supportsEmbed = platform === 'bluesky'
 
+	// Priority 1: Custom syndication message
+	if (data.syndicationText) {
+		return {
+			text: data.syndicationText,
+			images: data.images,
+			useExternalEmbed: supportsEmbed && !data.images?.length,
+			title: supportsEmbed ? (data.title || undefined) : undefined,
+			description: undefined
+		}
+	}
+
+	// Priority 2+: Content-type specific fallbacks
 	switch (data.contentType) {
 		case 'post': {
 			const isEssay = !!data.title
 			if (isEssay) {
-				const excerpt = getContentExcerpt(data.content, limits.essay)
+				// Essays: excerpt or just title (no content excerpt)
+				const text = data.excerpt
+					? truncateText(data.title + '\n\n' + data.excerpt, SYNDICATION_TEXT_LIMIT)
+					: truncateText(data.title!, SYNDICATION_TEXT_LIMIT)
 				return {
-					text: data.title + '\n\n' + excerpt,
+					text,
 					images: data.images,
 					useExternalEmbed: supportsEmbed && !data.images?.length,
 					title: supportsEmbed ? (data.title || undefined) : undefined,
-					description: supportsEmbed ? (excerpt || undefined) : undefined
+					description: supportsEmbed ? (data.excerpt || undefined) : undefined
 				}
 			}
+			// Regular posts: excerpt or truncated content
+			const postText = data.excerpt
+				|| getContentExcerpt(data.content, SYNDICATION_TEXT_LIMIT)
 			return {
-				text: getContentExcerpt(data.content, limits.post),
+				text: truncateText(postText, SYNDICATION_TEXT_LIMIT),
 				images: data.images,
 				useExternalEmbed: false
 			}
 		}
-		case 'project':
+		case 'project': {
+			const projectText = 'New: ' + data.title + (data.description ? '\n\n' + data.description : '')
 			return {
-				text: 'New: ' + data.title + '\n\n' + (data.description || ''),
+				text: truncateText(projectText, SYNDICATION_TEXT_LIMIT),
 				images: data.images,
 				useExternalEmbed: supportsEmbed && !data.images?.length,
 				title: supportsEmbed ? (data.title || undefined) : undefined,
 				description: supportsEmbed ? (data.description || undefined) : undefined
 			}
-		case 'album':
+		}
+		case 'album': {
+			const albumText = data.title + (data.description ? '\n\n' + data.description : '')
 			return {
-				text: data.title + (data.description ? '\n\n' + data.description : ''),
+				text: truncateText(albumText, SYNDICATION_TEXT_LIMIT),
 				images: data.images,
 				useExternalEmbed: false
 			}
+		}
 		default:
-			return { text: data.title || '', useExternalEmbed: false }
+			return { text: truncateText(data.title || '', SYNDICATION_TEXT_LIMIT), useExternalEmbed: false }
 	}
 }
 

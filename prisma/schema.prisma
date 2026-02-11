@@ -43,8 +43,10 @@ model Post {
   slug          String    @unique @db.VarChar(255)
   postType      String    @db.VarChar(50)
   title         String?   @db.VarChar(255)
-  content       Json?
-  featuredImage String?   @db.VarChar(500)
+  content         Json?
+  excerpt         String?
+  syndicationText String?   @db.VarChar(240)
+  featuredImage   String?   @db.VarChar(500)
   status        String    @default("draft") @db.VarChar(50)
   publishedAt   DateTime?
   createdAt     DateTime  @default(now())

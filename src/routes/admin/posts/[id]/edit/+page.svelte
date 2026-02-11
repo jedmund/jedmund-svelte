@@ -35,6 +35,7 @@
 		updatedAt: string
 		attachments: unknown
 		excerpt?: string | null
+		syndicationText?: string | null
 	}
 
 	// Type for the old blocks format from database
@@ -62,6 +63,7 @@
 	let status = $state<'draft' | 'published'>('draft')
 	let slug = $state('')
 	let excerpt = $state('')
+	let syndicationText = $state('')
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let tags = $state<Tag[]>([])
 	let activeTab = $state('content')
@@ -78,6 +80,7 @@
 		status: 'draft' | 'published'
 		slug: string
 		excerpt: string
+		syndicationText: string
 		content: string
 		tags: Tag[]
 	}>({
@@ -86,6 +89,7 @@
 		status: 'draft',
 		slug: '',
 		excerpt: '',
+		syndicationText: '',
 		content: '',
 		tags: []
 	})
@@ -98,6 +102,7 @@
 			status !== initialValues.status ||
 			slug !== initialValues.slug ||
 			excerpt !== initialValues.excerpt ||
+			syndicationText !== initialValues.syndicationText ||
 			JSON.stringify(content) !== initialValues.content ||
 			tags.map((t) => t.id).sort().join(',') !==
 				initialValues.tags.map((t) => t.id).sort().join(','))
@@ -292,6 +297,7 @@
 				status = (data.status as 'draft' | 'published') || 'draft'
 				slug = data.slug || ''
 				excerpt = data.excerpt || ''
+				syndicationText = data.syndicationText || ''
 
 				// Convert blocks format to Tiptap format if needed
 				const postContent = data.content
@@ -312,6 +318,7 @@
 					status,
 					slug,
 					excerpt,
+					syndicationText,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -348,6 +355,7 @@
 			status: newStatus || status,
 			content: config?.showContent ? saveContent : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
+			syndicationText: syndicationText || null,
 			tagIds: tags.map((tag) => tag.id)
 		}
 
@@ -367,6 +375,7 @@
 					status,
 					slug,
 					excerpt,
+					syndicationText,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -483,6 +492,7 @@
 						{postType}
 						bind:slug
 						bind:excerpt
+						bind:syndicationText
 						bind:tags
 						{heartCount}
 						createdAt={post.createdAt}
