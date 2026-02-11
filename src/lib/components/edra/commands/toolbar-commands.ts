@@ -66,6 +66,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'h1',
 			tooltip: strings.command.h1,
 			shortCut: `${isMac ? '⌘⌥' : 'Ctrl+Alt+'}1`,
+			syntax: '#',
 			onClick: (editor) => {
 				editor.chain().focus().toggleHeading({ level: 1 }).run();
 			},
@@ -84,6 +85,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'h2',
 			tooltip: strings.command.h2,
 			shortCut: `${isMac ? '⌘⌥' : 'Ctrl+Alt+'}2`,
+			syntax: '##',
 			onClick: (editor) => {
 				editor.chain().focus().toggleHeading({ level: 2 }).run();
 			},
@@ -102,6 +104,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'h3',
 			tooltip: strings.command.h3,
 			shortCut: `${isMac ? '⌘⌥' : 'Ctrl+Alt+'}3`,
+			syntax: '###',
 			onClick: (editor) => {
 				editor.chain().focus().toggleHeading({ level: 3 }).run();
 			},
@@ -120,6 +123,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'h4',
 			tooltip: strings.command.h4,
 			shortCut: `${isMac ? '⌘⌥' : 'Ctrl+Alt+'}4`,
+			syntax: '####',
 			onClick: (editor) => {
 				editor.chain().focus().toggleHeading({ level: 4 }).run();
 			},
@@ -248,6 +252,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'blockQuote',
 			tooltip: strings.command.blockQuote,
 			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}B`,
+			syntax: '>',
 			onClick: (editor) => {
 				editor.chain().focus().toggleBlockquote().run();
 			},
@@ -266,6 +271,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'code',
 			tooltip: strings.command.code,
 			shortCut: `${isMac ? '⌘' : 'Ctrl+'}E`,
+			syntax: '```',
 			onClick: (editor) => {
 				editor.chain().focus().toggleCode().run();
 			},
@@ -382,6 +388,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'bulletList',
 			tooltip: strings.command.bulletList,
 			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}8`,
+			syntax: '-',
 			onClick: (editor) => {
 				editor.chain().focus().toggleBulletList().run();
 			},
@@ -395,6 +402,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'orderedList',
 			tooltip: strings.command.orderedList,
 			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}7`,
+			syntax: '1.',
 			onClick: (editor) => {
 				editor.chain().focus().toggleOrderedList().run();
 			},
@@ -413,6 +421,7 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			name: 'taskList',
 			tooltip: strings.command.taskList,
 			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}9`,
+			syntax: '[]',
 			onClick: (editor) => {
 				editor.chain().focus().toggleTaskList().run();
 			},

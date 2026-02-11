@@ -14,14 +14,15 @@ export interface Group {
 
 export const GROUPS: Group[] = [
 	{
-		name: 'format',
-		title: strings.command.formatGroup,
+		name: 'text',
+		title: strings.command.textGroup,
 		actions: [
 			...commands.headings,
 			{
 				icon: Quote,
 				name: 'blockquote',
 				tooltip: strings.command.blockQuote,
+				syntax: '>',
 				onClick: (editor: Editor) => {
 					editor.chain().focus().setBlockquote().run();
 				}
@@ -30,6 +31,7 @@ export const GROUPS: Group[] = [
 				icon: SquareCode,
 				name: 'codeBlock',
 				tooltip: strings.command.codeBlock,
+				syntax: '```',
 				onClick: (editor: Editor) => {
 					editor.chain().focus().setCodeBlock().run();
 				}
@@ -38,15 +40,21 @@ export const GROUPS: Group[] = [
 		]
 	},
 	{
-		name: 'insert',
-		title: strings.command.insertGroup,
+		name: 'media',
+		title: strings.command.mediaGroup,
+		actions: commands.media.filter((cmd) => cmd.name !== 'iframe-placeholder')
+	},
+	{
+		name: 'embed',
+		title: strings.command.embedGroup,
 		actions: [
-			...commands.media,
+			...commands.media.filter((cmd) => cmd.name === 'iframe-placeholder'),
 			...commands.table,
 			{
 				icon: Minus,
 				name: 'horizontalRule',
 				tooltip: strings.command.horizontalRule,
+				syntax: '---',
 				onClick: (editor: Editor) => {
 					editor.chain().focus().setHorizontalRule().run();
 				}

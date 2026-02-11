@@ -32,7 +32,7 @@ export default (menuList: Component<any, any, ''>): Extension =>
 			popup.element = document.createElement('div');
 			popup.element.style.position = 'fixed';
 			popup.element.style.zIndex = '9999';
-			popup.element.style.maxWidth = '16rem';
+			popup.element.style.maxWidth = '320px';
 			popup.element.style.visibility = 'hidden';
 			popup.element.style.pointerEvents = 'none';
 			popup.element.className = 'slash-command-popup';
@@ -139,7 +139,7 @@ export default (menuList: Component<any, any, ''>): Extension =>
 										computePosition(referenceElement, popup.element, {
 											placement: 'bottom-start' as Placement,
 											middleware: [
-												offset({ mainAxis: 8, crossAxis: 16 }),
+												offset({ mainAxis: 8, crossAxis: 0 }),
 												flip({ fallbackPlacements: ['top-start', 'bottom-start'] })
 											]
 										}).then(({ x, y }) => {
@@ -178,7 +178,7 @@ export default (menuList: Component<any, any, ''>): Extension =>
 										computePosition(referenceElement, popup.element, {
 											placement: 'bottom-start' as Placement,
 											middleware: [
-												offset({ mainAxis: 8, crossAxis: 16 }),
+												offset({ mainAxis: 8, crossAxis: 0 }),
 												flip({ fallbackPlacements: ['top-start', 'bottom-start'] })
 											]
 										}).then(({ x, y }) => {

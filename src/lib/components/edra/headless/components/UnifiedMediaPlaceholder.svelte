@@ -200,6 +200,7 @@
 		display: flex;
 		gap: $unit-half;
 		padding: $unit-2x;
+		margin: $unit 0;
 		border: 2px dashed $gray-85;
 		border-radius: $corner-radius-md;
 		background: $gray-97;
