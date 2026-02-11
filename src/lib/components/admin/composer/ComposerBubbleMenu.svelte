@@ -61,27 +61,29 @@
 		// Don't show if we're in a table (has its own menus)
 		if (editor.isActive('table')) return false
 
-		// Don't show if link menu is already showing
-		if (editor.isActive('link') && !isLinkMode) return false
-
 		// Check if selection contains only whitespace
 		const text = state.doc.textBetween(from, to)
 		if (!text.trim()) return false
+
+		// Don't show when selection contains a link — the link bubble menu handles that.
+		// We walk document marks rather than using editor.isActive('link'), which
+		// requires the link to cover the entire selection and misses partial overlaps.
+		let hasLink = false
+		state.doc.nodesBetween(from, to, (node) => {
+			if (hasLink) return false
+			if (node.marks?.some((m: any) => m.type.name === 'link')) {
+				hasLink = true
+			}
+		})
+		if (hasLink) return false
 
 		return true
 	}
 
 	function handleLinkClick() {
-		if (editor.isActive('link')) {
-			// If already a link, remove it
-			editor.chain().focus().unsetLink().run()
-		} else {
-			// Enter link mode
-			isLinkMode = true
-			linkInput = ''
-			// Focus input after render
-			setTimeout(() => linkInputElement?.focus(), 0)
-		}
+		isLinkMode = true
+		linkInput = ''
+		setTimeout(() => linkInputElement?.focus(), 0)
 	}
 
 	function applyLink() {
@@ -115,6 +117,7 @@
 	// Close all menus when bubble menu hides
 	$effect(() => {
 		return () => {
+			isLinkMode = false
 			showTextStyleMenu = false
 			showColorPicker = false
 			showHighlightPicker = false
@@ -129,6 +132,7 @@
 	pluginKey="composer-bubble-menu"
 	updateDelay={100}
 	tippyOptions={{
+		theme: 'bubble-menu',
 		popperOptions: {
 			placement: 'top',
 			modifiers: [
@@ -155,6 +159,9 @@
 	<div class="bubble-menu-content">
 		{#if isLinkMode}
 			<div class="link-input-container">
+				<div class="link-input-icon">
+					<Link size={16} />
+				</div>
 				<input
 					bind:this={linkInputElement}
 					bind:value={linkInput}
@@ -211,7 +218,6 @@
 
 				<button
 					class="bubble-menu-button"
-					class:active={editor.isActive('link')}
 					onclick={handleLinkClick}
 					title="Link (Cmd/Ctrl+K)"
 				>
@@ -335,17 +341,15 @@
 
 		&:hover {
 			background: rgba($gray-85, 0.6);
-			transform: translateY(-1px);
 		}
 
 		&:active {
 			background: rgba($gray-85, 0.7);
-			transform: translateY(0);
 		}
 
 		&.active {
-			background: rgba($blue-50, 0.1);
-			color: $blue-40;
+			background: rgba($red-60, 0.1);
+			color: $red-60;
 		}
 
 		&:disabled {
@@ -381,7 +385,17 @@
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		min-width: 250px;
+		min-width: 280px;
+	}
+
+	.link-input-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 32px;
+		height: 32px;
+		color: $gray-50;
 	}
 
 	.link-input {
@@ -397,7 +411,7 @@
 
 		&:focus {
 			background: rgba($gray-90, 0.5);
-			border-color: rgba($blue-50, 0.5);
+			border-color: rgba($red-60, 0.5);
 		}
 
 		&::placeholder {
@@ -415,20 +429,18 @@
 
 		&:hover {
 			background-color: rgba($gray-85, 0.6);
-			transform: translateY(-1px);
 		}
 
 		&:active {
 			background-color: rgba($gray-85, 0.7);
-			transform: translateY(0);
 		}
 
 		&.active {
-			background-color: rgba($blue-50, 0.1);
-			color: $blue-40;
+			background-color: rgba($red-60, 0.1);
+			color: $red-60;
 
 			&:hover {
-				background-color: rgba($blue-50, 0.15);
+				background-color: rgba($red-60, 0.15);
 			}
 		}
 	}

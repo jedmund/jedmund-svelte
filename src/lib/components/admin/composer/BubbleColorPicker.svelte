@@ -259,7 +259,7 @@
 
 	.apply-custom-btn {
 		padding: 8px 16px;
-		background: $blue-50;
+		background: $red-60;
 		border: none;
 		border-radius: $corner-radius-sm;
 		font-size: 13px;
@@ -269,12 +269,11 @@
 		transition: all 0.15s ease;
 
 		&:hover {
-			background: $blue-40;
-			transform: translateY(-1px);
+			background: $red-40;
 		}
 
 		&:active {
-			transform: translateY(0);
+			background: $red-40;
 		}
 	}
 
@@ -328,7 +327,7 @@
 
 	:global(.bubble-color-picker .input input:focus) {
 		background: rgba($gray-90, 0.5);
-		border-color: rgba($blue-50, 0.5);
+		border-color: rgba($red-60, 0.5);
 		outline: none;
 	}
 </style>

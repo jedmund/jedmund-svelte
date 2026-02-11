@@ -1,7 +1,8 @@
 import type { Editor } from '@tiptap/core'
 import type { ComposerVariant, ComposerFeatures } from './types'
-import type { EdraCommand } from '$lib/components/edra/commands/types'
+import type { EdraCommand, EdraToolBarCommands } from '$lib/components/edra/commands/types'
 import { commands } from '$lib/components/edra/commands/commands.js'
+import toolbarCommands from '$lib/components/edra/commands/toolbar-commands.js'
 
 export interface FilteredCommands {
 	[key: string]: {
@@ -116,13 +117,16 @@ export function getColorCommands(): EdraCommand[] {
 	return commands.colors?.commands || []
 }
 
-// Get commands for bubble menu
-export function getBubbleMenuCommands(): EdraCommand[] {
-	const textFormattingCommands = commands['text-formatting']?.commands || []
+// Get commands for bubble menu (uses toolbar commands for proper icon/tooltip support)
+export function getBubbleMenuCommands(): EdraToolBarCommands[] {
+	const textFormattingCommands = toolbarCommands['text-formatting'] || []
 	// Return only the essential formatting commands for bubble menu
-	return textFormattingCommands.filter((cmd) =>
-		['bold', 'italic', 'underline', 'strike', 'link'].includes(cmd.name)
-	)
+	// Strip `clickable` — the bubble menu mounts hidden (via Tippy) so
+	// editor.can() checks evaluate as false at mount time and never update.
+	// The bubble menu's shouldShow already gates visibility on valid selections.
+	return textFormattingCommands
+		.filter((cmd) => ['bold', 'italic', 'strikethrough', 'link'].includes(cmd.name))
+		.map(({ clickable, ...rest }) => rest)
 }
 
 // Commands to exclude from toolbar

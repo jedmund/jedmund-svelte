@@ -148,8 +148,8 @@
 		}
 
 		&.active {
-			background: rgba($blue-50, 0.1);
-			color: $blue-40;
+			background: rgba($red-60, 0.1);
+			color: $red-60;
 			font-weight: 500;
 		}
 	}
