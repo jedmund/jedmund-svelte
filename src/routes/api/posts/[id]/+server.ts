@@ -101,6 +101,8 @@ export const PUT: RequestHandler = async (event) => {
 				postType: data.type,
 				status: data.status,
 				content: data.content,
+				excerpt: data.excerpt ?? undefined,
+				syndicationText: data.syndicationText ?? undefined,
 				featuredImage: featuredImageId,
 				attachments:
 					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
@@ -205,6 +207,8 @@ export const PATCH: RequestHandler = async (event) => {
 			updateData.attachments = data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
 		if (data.tags !== undefined) updateData.tags = data.tags
 		if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt
+		if (data.excerpt !== undefined) updateData.excerpt = data.excerpt
+		if (data.syndicationText !== undefined) updateData.syndicationText = data.syndicationText
 
 		const post = await prisma.post.update({ where: { id }, data: updateData })
 
