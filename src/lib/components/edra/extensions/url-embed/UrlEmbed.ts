@@ -145,7 +145,7 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 						.deleteRange({ from, to })
 						.insertContent([
 							{
-								type: 'urlEmbedPlaceholder',
+								type: 'urlEmbed',
 								attrs: { url }
 							},
 							{

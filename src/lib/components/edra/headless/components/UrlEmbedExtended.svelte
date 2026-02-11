@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
 	import { NodeViewWrapper } from 'svelte-tiptap'
+	import { onMount } from 'svelte'
 	import MoreHorizontal from '@lucide/svelte/icons/more-horizontal'
 	import EmbedContextMenu from './EmbedContextMenu.svelte'
 
@@ -12,6 +13,13 @@
 
 	// Check if this is a YouTube URL
 	const isYouTube = $derived(/(?:youtube\.com|youtu\.be)/.test(node.attrs.url || ''))
+
+	// Auto-fetch metadata when node has URL but no title (freshly converted from link)
+	onMount(() => {
+		if (node.attrs.url && !node.attrs.title && !isYouTube) {
+			refreshMetadata()
+		}
+	})
 
 	// Extract video ID from YouTube URL
 	const getYouTubeVideoId = (url: string): string | null => {
