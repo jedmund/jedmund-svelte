@@ -172,9 +172,10 @@
 		const extensions = getEditorExtensions({
 			showSlashCommands,
 			onShowUrlConvertDropdown: features.urlEmbed
-				? linkManagerRef?.handleShowUrlConvertDropdown
+				? (pos: number, url: string) => linkManagerRef?.handleShowUrlConvertDropdown(pos, url)
 				: undefined,
-			onShowLinkContextMenu: linkManagerRef?.handleShowLinkContextMenu,
+			onShowLinkContextMenu: (pos: number, url: string) =>
+				linkManagerRef?.handleShowLinkContextMenu(pos, url),
 			imagePlaceholderComponent: ImagePlaceholder as any
 		})
 
