@@ -20,6 +20,7 @@
 		postType?: string
 		slug: string
 		excerpt?: string
+		syndicationText?: string
 		tags: Tag[]
 		heartCount?: number
 		triggerElement: HTMLElement
@@ -33,6 +34,7 @@
 		postType,
 		slug = $bindable(),
 		excerpt = $bindable(''),
+		syndicationText = $bindable(''),
 		tags = $bindable(),
 		heartCount,
 		triggerElement,
@@ -45,6 +47,9 @@
 		if (key === 'slug' && typeof value === 'string') {
 			slug = value
 			onFieldUpdate?.(key, value)
+		}
+		if (key === 'syndicationText' && typeof value === 'string') {
+			syndicationText = value
 		}
 	}
 
@@ -64,6 +69,14 @@
 				placeholder: 'Add tags...'
 			},
 			{
+				type: 'textarea',
+				key: 'syndicationText',
+				label: 'Syndication message',
+				rows: 3,
+				placeholder: 'Custom message for Bluesky/Mastodon...',
+				helpText: 'Overrides auto-generated text (max 240 chars)'
+			},
+			{
 				type: 'metadata',
 				key: 'metadata'
 			}
@@ -78,6 +91,7 @@
 	let popoverData = $state({
 		slug,
 		tags,
+		syndicationText,
 		createdAt: post.createdAt,
 		updatedAt: post.updatedAt,
 		publishedAt: post.publishedAt,
@@ -89,6 +103,7 @@
 		popoverData = {
 			slug,
 			tags,
+			syndicationText,
 			createdAt: post.createdAt,
 			updatedAt: post.updatedAt,
 			publishedAt: post.publishedAt,

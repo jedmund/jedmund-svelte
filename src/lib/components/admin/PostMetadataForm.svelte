@@ -15,6 +15,7 @@
 		postType: 'post' | 'essay'
 		slug: string
 		excerpt?: string
+		syndicationText?: string
 		tags: Tag[]
 		heartCount?: number
 		createdAt: string | Date
@@ -28,6 +29,7 @@
 		postType,
 		slug = $bindable(),
 		excerpt = $bindable(''),
+		syndicationText = $bindable(''),
 		tags = $bindable([]),
 		heartCount,
 		createdAt,
@@ -72,6 +74,17 @@
 	{#if contentId && contentStatus}
 		<SyndicationStatus contentType="post" {contentId} {contentStatus} />
 	{/if}
+
+	<Textarea
+		label="Syndication message"
+		size="jumbo"
+		bind:value={syndicationText}
+		rows={3}
+		maxLength={240}
+		showCharCount={true}
+		placeholder="Custom message for Bluesky/Mastodon..."
+		helpText="Overrides auto-generated text. If blank, excerpt or content is used."
+	/>
 
 	<div class="metadata-section">
 		<h3 class="metadata-title">Post Information</h3>

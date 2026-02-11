@@ -25,6 +25,7 @@ import { api } from '$lib/admin/api'
 	let slug = $state('')
 	let slugManuallySet = $state(false)
 	let excerpt = $state('')
+	let syndicationText = $state('')
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let tags = $state<Tag[]>([])
 	let showMetadata = $state(false)
@@ -38,6 +39,7 @@ import { api } from '$lib/admin/api'
 		title.trim() !== '' ||
 		slug.trim() !== '' ||
 		excerpt.trim() !== '' ||
+		syndicationText.trim() !== '' ||
 		tags.length > 0 ||
 		(content.content && content.content.length > 0)
 	)
@@ -128,6 +130,7 @@ import { api } from '$lib/admin/api'
 			status: publishStatus || status,
 			content: config?.showContent ? content : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
+			syndicationText: syndicationText || null,
 			tagIds: tags.map((tag) => tag.id)
 		}
 
@@ -210,6 +213,7 @@ import { api } from '$lib/admin/api'
 						triggerElement={metadataButtonRef}
 						bind:slug
 						bind:excerpt
+						bind:syndicationText
 						bind:tags
 						onDelete={() => {}}
 						onClose={() => (showMetadata = false)}
