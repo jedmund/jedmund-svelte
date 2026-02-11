@@ -16,15 +16,17 @@
 		onClose: () => void
 		deleteNode?: () => void
 		albumId?: number
+		initialUrl?: string
 	}
 
-	let { editor, position, contentType, onClose, deleteNode, albumId }: Props = $props()
+	let { editor, position, contentType, onClose, deleteNode, albumId, initialUrl }: Props = $props()
 
 	type ContentType = 'image' | 'video' | 'audio' | 'gallery' | 'location'
 	type ActionType = 'upload' | 'embed' | 'gallery' | 'search'
 
 	// Set default action based on content type
 	function getDefaultAction(): ActionType {
+		if (initialUrl) return 'embed'
 		if (contentType === 'location') return 'search'
 		if (contentType === 'gallery') return 'gallery'
 		if (contentType === 'image') return 'gallery'
@@ -32,7 +34,7 @@
 	}
 
 	let selectedAction = $state<ActionType>(getDefaultAction())
-	let embedUrl = $state('')
+	let embedUrl = $state(initialUrl ?? '')
 	let isUploading = $state(false)
 	let fileInput: HTMLInputElement
 	let isOpen = $state(true)

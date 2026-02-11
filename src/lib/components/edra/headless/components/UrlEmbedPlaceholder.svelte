@@ -6,7 +6,7 @@
 	import ContentInsertionPane from './ContentInsertionPane.svelte'
 	import { paneManager } from '$lib/stores/pane-manager'
 
-	const { editor, deleteNode, getPos }: NodeViewProps = $props()
+	const { editor, node, deleteNode, getPos }: NodeViewProps = $props()
 
 	// Get album context if available
 	const editorContext = getContext<{ albumId?: number; [key: string]: unknown }>('editorContext') || {}
@@ -65,14 +65,21 @@
 	</button>
 
 	{#if showPane}
-		<ContentInsertionPane
-			{editor}
-			position={panePosition}
-			contentType="image"
-			onClose={() => paneManager.close()}
-			{deleteNode}
-			{albumId}
-		/>
+		<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+		<div
+			onmousedown={(e) => e.stopPropagation()}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<ContentInsertionPane
+				{editor}
+				position={panePosition}
+				contentType="image"
+				initialUrl={node.attrs.url as string | undefined}
+				onClose={() => paneManager.close()}
+				{deleteNode}
+				{albumId}
+			/>
+		</div>
 	{/if}
 </NodeViewWrapper>
 
