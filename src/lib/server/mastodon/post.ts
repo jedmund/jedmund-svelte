@@ -10,6 +10,7 @@ interface PostInput {
 	text: string
 	url: string
 	images?: { url: string; alt: string }[]
+	videos?: { url: string }[]
 }
 
 export async function postToMastodon(input: PostInput): Promise<MastodonPostResult> {
@@ -24,8 +25,26 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 	const fullText = input.text + '\n\n' + input.url
 
 	const mediaIds: string[] = []
+
+	// Upload videos first
+	if (input.videos && input.videos.length > 0) {
+		for (const video of input.videos) {
+			if (mediaIds.length >= 4) break
+			try {
+				const mediaId = await uploadMedia(baseUrl, accessToken, video.url, '')
+				if (mediaId) {
+					mediaIds.push(mediaId)
+				}
+			} catch (error) {
+				logger.error('Failed to upload video to Mastodon', error as Error, { videoUrl: video.url })
+			}
+		}
+	}
+
+	// Upload images (up to 4 total media)
 	if (input.images && input.images.length > 0) {
-		for (const img of input.images.slice(0, 4)) {
+		for (const img of input.images) {
+			if (mediaIds.length >= 4) break
 			try {
 				const mediaId = await uploadMedia(baseUrl, accessToken, img.url, img.alt)
 				if (mediaId) {
@@ -74,19 +93,33 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 	}
 }
 
-async function uploadMedia(baseUrl: string, accessToken: string, imageUrl: string, alt: string): Promise<string | null> {
+async function uploadMedia(baseUrl: string, accessToken: string, mediaUrl: string, alt: string): Promise<string | null> {
 	try {
-		const imageResponse = await fetch(imageUrl)
-		if (!imageResponse.ok) {
-			logger.error('Failed to fetch image for Mastodon upload', undefined, { imageUrl, status: imageResponse.status })
+		const mediaResponse = await fetch(mediaUrl)
+		if (!mediaResponse.ok) {
+			logger.error('Failed to fetch media for Mastodon upload', undefined, { mediaUrl, status: mediaResponse.status })
 			return null
 		}
 
-		const contentType = imageResponse.headers.get('content-type') || 'image/jpeg'
-		const imageBlob = await imageResponse.blob()
+		const contentType = mediaResponse.headers.get('content-type') || 'application/octet-stream'
+		const mediaBlob = await mediaResponse.blob()
+
+		// Determine file extension from content type
+		const extMap: Record<string, string> = {
+			'image/jpeg': 'jpg',
+			'image/png': 'png',
+			'image/gif': 'gif',
+			'image/webp': 'webp',
+			'video/mp4': 'mp4',
+			'video/webm': 'webm',
+			'video/quicktime': 'mov'
+		}
+		const ext = extMap[contentType] || contentType.split('/')[1] || 'bin'
+		const isVideo = contentType.startsWith('video/')
+		const filename = isVideo ? `video.${ext}` : `image.${ext}`
 
 		const formData = new FormData()
-		formData.append('file', imageBlob, `image.${contentType.split('/')[1] || 'jpg'}`)
+		formData.append('file', mediaBlob, filename)
 		if (alt) {
 			formData.append('description', alt)
 		}
@@ -111,7 +144,7 @@ async function uploadMedia(baseUrl: string, accessToken: string, imageUrl: strin
 		const data = await uploadResponse.json() as { id: string }
 		return data.id
 	} catch (error) {
-		logger.error('Failed to upload media to Mastodon', error as Error, { imageUrl })
+		logger.error('Failed to upload media to Mastodon', error as Error, { mediaUrl })
 		return null
 	}
 }

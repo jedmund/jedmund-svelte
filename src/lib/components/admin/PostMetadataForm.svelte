@@ -19,6 +19,8 @@
 		excerpt?: string
 		syndicationText?: string
 		featuredImage?: string
+		syndicateBluesky?: boolean
+		syndicateMastodon?: boolean
 		tags: Tag[]
 		heartCount?: number
 		createdAt: string | Date
@@ -34,6 +36,8 @@
 		excerpt = $bindable(''),
 		syndicationText = $bindable(''),
 		featuredImage = $bindable(''),
+		syndicateBluesky = $bindable(true),
+		syndicateMastodon = $bindable(true),
 		tags = $bindable([]),
 		heartCount,
 		createdAt,
@@ -135,6 +139,18 @@
 		aspectRatio="2:1"
 	/>
 
+	<div class="syndication-toggles">
+		<h3 class="syndication-toggles-title">Cross-posting</h3>
+		<label class="toggle-label">
+			<input type="checkbox" bind:checked={syndicateBluesky} />
+			<span>Bluesky</span>
+		</label>
+		<label class="toggle-label">
+			<input type="checkbox" bind:checked={syndicateMastodon} />
+			<span>Mastodon</span>
+		</label>
+	</div>
+
 	{#if contentId && contentStatus}
 		<SyndicationStatus contentType="post" {contentId} {contentStatus} />
 	{/if}
@@ -217,5 +233,33 @@
 		font-size: $font-size-small;
 		color: $gray-30;
 		font-weight: 500;
+	}
+
+	.syndication-toggles {
+		display: flex;
+		flex-direction: column;
+		gap: $unit-2x;
+	}
+
+	.syndication-toggles-title {
+		margin: 0;
+		font-size: $font-size;
+		font-weight: 600;
+		color: $gray-20;
+	}
+
+	.toggle-label {
+		display: flex;
+		align-items: center;
+		gap: $unit-2x;
+		cursor: pointer;
+		font-size: $font-size-small;
+		color: $gray-30;
+
+		input[type='checkbox'] {
+			width: 16px;
+			height: 16px;
+			cursor: pointer;
+		}
 	}
 </style>
