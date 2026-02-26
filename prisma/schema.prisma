@@ -51,8 +51,10 @@ model Post {
   publishedAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  attachments   Json?
-  tags          PostTag[]
+  attachments       Json?
+  syndicateBluesky  Boolean   @default(true)
+  syndicateMastodon Boolean   @default(true)
+  tags              PostTag[]
 
   @@index([slug])
   @@index([status])
