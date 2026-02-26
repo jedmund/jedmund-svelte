@@ -15,6 +15,8 @@ interface ContentData {
 	images?: { url: string; alt: string }[]
 	slug: string
 	contentType: string
+	syndicateBluesky?: boolean
+	syndicateMastodon?: boolean
 }
 
 const URL_PREFIXES: Record<string, string> = {
@@ -59,7 +61,9 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 				featuredImage: post.featuredImage,
 				images,
 				slug: post.slug,
-				contentType: 'post'
+				contentType: 'post',
+				syndicateBluesky: post.syndicateBluesky,
+				syndicateMastodon: post.syndicateMastodon
 			}
 		}
 		case 'project': {
@@ -280,7 +284,16 @@ export async function syndicateContent(contentType: string, contentId: number): 
 	})
 	const alreadySyndicated = new Set(existing.map(s => s.platform))
 
-	const platforms: ('bluesky' | 'mastodon')[] = ['bluesky', 'mastodon']
+	let platforms: ('bluesky' | 'mastodon')[] = ['bluesky', 'mastodon']
+
+	// Respect per-post syndication toggles
+	if (content.syndicateBluesky === false) {
+		platforms = platforms.filter(p => p !== 'bluesky')
+	}
+	if (content.syndicateMastodon === false) {
+		platforms = platforms.filter(p => p !== 'mastodon')
+	}
+
 	const toSyndicate = platforms.filter(p => !alreadySyndicated.has(p))
 
 	if (toSyndicate.length === 0) {

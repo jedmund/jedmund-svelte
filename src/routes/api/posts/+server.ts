@@ -129,6 +129,8 @@ export const POST: RequestHandler = async (event) => {
 				excerpt: data.excerpt || null,
 				syndicationText: data.syndicationText || null,
 				featuredImage: featuredImageId,
+				syndicateBluesky: data.syndicateBluesky ?? true,
+				syndicateMastodon: data.syndicateMastodon ?? true,
 				attachments:
 					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
 				publishedAt: data.publishedAt,
