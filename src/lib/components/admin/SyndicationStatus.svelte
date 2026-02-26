@@ -19,6 +19,10 @@
 	let syndications = $state<SyndicationRecord[]>([])
 	let loading = $state(false)
 	let triggering = $state(false)
+	let editingPlatform = $state<string | null>(null)
+	let editUrl = $state('')
+	let addingPlatform = $state<string | null>(null)
+	let addUrl = $state('')
 
 	const bluesky = $derived(syndications.find(s => s.platform === 'bluesky'))
 	const mastodon = $derived(syndications.find(s => s.platform === 'mastodon'))
@@ -64,6 +68,75 @@
 		}
 	}
 
+	function startEdit(record: SyndicationRecord) {
+		editingPlatform = record.platform
+		editUrl = record.externalUrl || ''
+	}
+
+	function cancelEdit() {
+		editingPlatform = null
+		editUrl = ''
+	}
+
+	async function saveEdit(record: SyndicationRecord) {
+		try {
+			const res = await fetch(`/api/syndication/${record.id}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ externalUrl: editUrl })
+			})
+			if (res.ok) {
+				const updated = await res.json()
+				syndications = syndications.map(s => s.id === updated.id ? updated : s)
+			}
+		} catch {
+			// Silently fail
+		} finally {
+			editingPlatform = null
+			editUrl = ''
+		}
+	}
+
+	function startAdd(platform: string) {
+		addingPlatform = platform
+		addUrl = ''
+	}
+
+	function cancelAdd() {
+		addingPlatform = null
+		addUrl = ''
+	}
+
+	async function saveAdd(platform: string) {
+		if (!addUrl.trim()) return
+		try {
+			const res = await fetch('/api/syndication/status', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ contentType, contentId, platform, externalUrl: addUrl })
+			})
+			if (res.ok) {
+				const record = await res.json()
+				syndications = [...syndications, record]
+			}
+		} catch {
+			// Silently fail
+		} finally {
+			addingPlatform = null
+			addUrl = ''
+		}
+	}
+
+	function handleEditKeydown(e: KeyboardEvent, record: SyndicationRecord) {
+		if (e.key === 'Enter') saveEdit(record)
+		if (e.key === 'Escape') cancelEdit()
+	}
+
+	function handleAddKeydown(e: KeyboardEvent, platform: string) {
+		if (e.key === 'Enter') saveAdd(platform)
+		if (e.key === 'Escape') cancelAdd()
+	}
+
 	function platformLabel(platform: string): string {
 		return platform === 'bluesky' ? 'Bluesky' : 'Mastodon'
 	}
@@ -80,16 +153,40 @@
 				{#each [{ record: bluesky, platform: 'bluesky' }, { record: mastodon, platform: 'mastodon' }] as { record, platform }}
 					<div class="syndication-item">
 						<div class="syndication-platform">
-							<span class="status-dot" class:success={record?.status === 'success'} class:failed={record?.status === 'failed'}></span>
+							<span class="status-dot" class:success={record?.status === 'success' || record?.status === 'manual'} class:failed={record?.status === 'failed'}></span>
 							<span class="platform-label">{platformLabel(platform)}</span>
 						</div>
 						<div class="syndication-action">
-							{#if record?.status === 'success' && record.externalUrl}
-								<a href={record.externalUrl} target="_blank" rel="noopener noreferrer" class="view-link">View</a>
+							{#if editingPlatform === platform && record}
+								<div class="edit-inline">
+									<input
+										type="text"
+										bind:value={editUrl}
+										class="edit-input"
+										onkeydown={(e) => handleEditKeydown(e, record)}
+										onblur={() => saveEdit(record)}
+									/>
+								</div>
+							{:else if addingPlatform === platform}
+								<div class="edit-inline">
+									<input
+										type="text"
+										bind:value={addUrl}
+										class="edit-input"
+										placeholder="https://..."
+										onkeydown={(e) => handleAddKeydown(e, platform)}
+										onblur={() => saveAdd(platform)}
+									/>
+								</div>
+							{:else if (record?.status === 'success' || record?.status === 'manual') && record.externalUrl}
+								<div class="action-links">
+									<a href={record.externalUrl} target="_blank" rel="noopener noreferrer" class="view-link">View</a>
+									<button type="button" class="edit-link" onclick={() => startEdit(record)}>Edit</button>
+								</div>
 							{:else if record?.status === 'failed'}
 								<span class="error-text" title={record.errorMessage || ''}>Failed</span>
 							{:else}
-								<span class="not-syndicated">Not sent</span>
+								<button type="button" class="add-link" onclick={() => startAdd(platform)}>Add link</button>
 							{/if}
 						</div>
 					</div>
@@ -169,6 +266,15 @@
 		font-weight: 500;
 	}
 
+	.syndication-action {
+		flex-shrink: 0;
+	}
+
+	.action-links {
+		display: flex;
+		gap: $unit;
+	}
+
 	.view-link {
 		font-size: $font-size-small;
 		color: $blue-50;
@@ -176,6 +282,40 @@
 
 		&:hover {
 			text-decoration: underline;
+		}
+	}
+
+	.edit-link,
+	.add-link {
+		font-size: $font-size-small;
+		color: $gray-50;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+
+		&:hover {
+			color: $gray-30;
+		}
+	}
+
+	.edit-inline {
+		display: flex;
+		align-items: center;
+		gap: $unit;
+	}
+
+	.edit-input {
+		font-size: $font-size-small;
+		padding: 2px $unit;
+		border: 1px solid $gray-80;
+		border-radius: 4px;
+		width: 200px;
+		color: $gray-20;
+
+		&:focus {
+			outline: none;
+			border-color: $blue-50;
 		}
 	}
 
