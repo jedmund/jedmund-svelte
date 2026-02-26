@@ -292,6 +292,16 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				return embedHtml
 			}
 
+			case 'video': {
+				const src = (node.attrs?.src || '') as string
+				const title = (node.attrs?.title || '') as string
+				let html = '<figure class="video-figure">'
+				html += `<video src="${escapeHtml(src)}" controls preload="metadata" playsinline></video>`
+				if (title) html += `<figcaption>${escapeHtml(title)}</figcaption>`
+				html += '</figure>'
+				return html
+			}
+
 			case 'audio': {
 				const src = (node.attrs?.src || '') as string
 				const title = (node.attrs?.title || '') as string

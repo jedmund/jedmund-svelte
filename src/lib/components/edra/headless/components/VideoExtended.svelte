@@ -14,7 +14,7 @@
 		src={node.attrs.src}
 		controls
 		title={node.attrs.title}
-		preload="none"
+		preload="metadata"
 		playsinline
 		style="margin: 0; width: 100%;"
 	>

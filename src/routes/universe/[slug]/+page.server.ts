@@ -1,9 +1,14 @@
 import type { PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	try {
-		// Fetch the specific post by slug from the database
-		const response = await fetch(`/api/posts/by-slug/${params.slug}`)
+		// Forward preview token if present
+		const preview = url.searchParams.get('preview')
+		const apiUrl = preview
+			? `/api/posts/by-slug/${params.slug}?preview=${encodeURIComponent(preview)}`
+			: `/api/posts/by-slug/${params.slug}`
+
+		const response = await fetch(apiUrl)
 
 		if (!response.ok) {
 			if (response.status === 404) {
