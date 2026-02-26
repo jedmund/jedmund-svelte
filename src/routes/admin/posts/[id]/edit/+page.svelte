@@ -36,6 +36,8 @@
 		attachments: unknown
 		excerpt?: string | null
 		syndicationText?: string | null
+		syndicateBluesky?: boolean
+		syndicateMastodon?: boolean
 	}
 
 	// Type for the old blocks format from database
@@ -64,6 +66,9 @@
 	let slug = $state('')
 	let excerpt = $state('')
 	let syndicationText = $state('')
+	let featuredImage = $state('')
+	let syndicateBluesky = $state(true)
+	let syndicateMastodon = $state(true)
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let tags = $state<Tag[]>([])
 	let activeTab = $state('content')
@@ -81,6 +86,9 @@
 		slug: string
 		excerpt: string
 		syndicationText: string
+		featuredImage: string
+		syndicateBluesky: boolean
+		syndicateMastodon: boolean
 		content: string
 		tags: Tag[]
 	}>({
@@ -90,6 +98,9 @@
 		slug: '',
 		excerpt: '',
 		syndicationText: '',
+		featuredImage: '',
+		syndicateBluesky: true,
+		syndicateMastodon: true,
 		content: '',
 		tags: []
 	})
@@ -103,6 +114,9 @@
 			slug !== initialValues.slug ||
 			excerpt !== initialValues.excerpt ||
 			syndicationText !== initialValues.syndicationText ||
+			featuredImage !== initialValues.featuredImage ||
+			syndicateBluesky !== initialValues.syndicateBluesky ||
+			syndicateMastodon !== initialValues.syndicateMastodon ||
 			JSON.stringify(content) !== initialValues.content ||
 			tags.map((t) => t.id).sort().join(',') !==
 				initialValues.tags.map((t) => t.id).sort().join(','))
@@ -298,6 +312,9 @@
 				slug = data.slug || ''
 				excerpt = data.excerpt || ''
 				syndicationText = data.syndicationText || ''
+				featuredImage = data.featuredImage || ''
+				syndicateBluesky = data.syndicateBluesky ?? true
+				syndicateMastodon = data.syndicateMastodon ?? true
 
 				// Convert blocks format to Tiptap format if needed
 				const postContent = data.content
@@ -319,6 +336,9 @@
 					slug,
 					excerpt,
 					syndicationText,
+					featuredImage,
+					syndicateBluesky,
+					syndicateMastodon,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -356,6 +376,9 @@
 			content: config?.showContent ? saveContent : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
 			syndicationText: syndicationText || null,
+			featuredImage: featuredImage || null,
+			syndicateBluesky,
+			syndicateMastodon,
 			tagIds: tags.map((tag) => tag.id)
 		}
 
@@ -368,7 +391,7 @@
 				post = saved
 				if (newStatus) status = newStatus as 'draft' | 'published'
         
-				// Update initial values to reflect saved stat
+				// Update initial values to reflect saved state
 				initialValues = {
 					title,
 					postType,
@@ -376,6 +399,9 @@
 					slug,
 					excerpt,
 					syndicationText,
+					featuredImage,
+					syndicateBluesky,
+					syndicateMastodon,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -510,6 +536,9 @@
 						bind:slug
 						bind:excerpt
 						bind:syndicationText
+						bind:featuredImage
+						bind:syndicateBluesky
+						bind:syndicateMastodon
 						bind:tags
 						{heartCount}
 						createdAt={post.createdAt}
