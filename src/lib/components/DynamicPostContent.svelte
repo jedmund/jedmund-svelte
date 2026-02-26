@@ -228,72 +228,82 @@
 	}
 
 	.post-body {
+		display: flex;
+		flex-direction: column;
+		gap: $unit-3x;
 		color: $text-color;
 		line-height: 1.5;
 
+		> :global(:first-child) {
+			margin-top: 0;
+		}
+
+		:global(figcaption:empty) {
+			display: none;
+		}
+
 		:global(h1) {
-			margin: $unit-5x 0 $unit-3x;
+			margin: 0;
+			margin-top: $unit-2x;
 			font-size: 2rem;
 			font-weight: 600;
 			color: $text-color;
 		}
 
 		:global(h2) {
-			margin: $unit-4x 0 $unit-2x;
+			margin: 0;
+			margin-top: $unit;
 			font-size: 1.5rem;
 			font-weight: 600;
 			color: $text-color;
 		}
 
 		:global(h3) {
-			margin: $unit-3x 0 $unit-2x;
+			margin: 0;
 			font-size: 1.25rem;
 			font-weight: 600;
 			color: $text-color;
 		}
 
 		:global(h4) {
-			margin: $unit-3x 0 $unit-2x;
+			margin: 0;
 			font-size: 1rem;
 			font-weight: 600;
 			color: $text-color;
 		}
 
 		:global(p) {
-			margin: 0 0 $unit-3x;
-		}
-
-		:global(p:last-child) {
-			margin-bottom: 0;
+			margin: 0;
 		}
 
 		:global(ul),
 		:global(ol) {
-			margin: 0 0 $unit-3x;
+			display: flex;
+			flex-direction: column;
+			gap: $unit;
+			margin: 0;
 			padding-left: $unit-3x;
 		}
 
 		:global(ul li),
 		:global(ol li) {
-			margin-bottom: $unit;
-
 			:global(p) {
 				margin: 0;
 			}
 		}
 
 		:global(blockquote) {
-			margin: $unit-4x 0;
+			display: flex;
+			flex-direction: column;
+			gap: $unit-2x;
+			margin: 0;
+			margin-top: $unit;
 			padding: $unit-3x;
 			background: $gray-97;
 			border-left: 4px solid $gray-80;
 			border-radius: $unit;
 			color: $text-color;
 			font-style: italic;
-
-			:global(p:last-child) {
-				margin-bottom: 0;
-			}
 		}
 
 		:global(code) {
@@ -311,7 +321,7 @@
 			padding: $unit-3x;
 			border-radius: $unit;
 			overflow-x: auto;
-			margin: 0 0 $unit-3x;
+			margin: 0;
 			border: 1px solid $gray-85;
 
 			:global(code) {
@@ -334,7 +344,8 @@
 		:global(hr) {
 			border: none;
 			border-top: 1px solid $gray-85;
-			margin: $unit-4x 0;
+			margin: 0;
+			margin-top: $unit;
 		}
 
 		:global(em) {
@@ -347,7 +358,8 @@
 		}
 
 		:global(figure) {
-			margin: $unit-4x 0;
+			margin: 0;
+			margin-top: $unit;
 
 			:global(img) {
 				width: 100%;
@@ -357,7 +369,7 @@
 		}
 
 		:global(.audio-figure) {
-			margin: $unit-3x 0;
+			margin: 0;
 
 			:global(figcaption) {
 				font-size: $font-size-extra-small;
@@ -369,12 +381,8 @@
 
 		// URL Embed styles
 		:global(.url-embed-rendered) {
-			margin: $unit-2x 0;
+			margin: 0;
 			width: 100%;
-
-			&:first-child {
-				margin-top: 0;
-			}
 		}
 
 		:global(.url-embed-link) {
@@ -466,7 +474,7 @@
 
 		// YouTube embed styles
 		:global(.url-embed-youtube) {
-			margin: $unit-3x 0;
+			margin: 0;
 			border-radius: $card-corner-radius;
 			overflow: hidden;
 			background: $gray-95;
