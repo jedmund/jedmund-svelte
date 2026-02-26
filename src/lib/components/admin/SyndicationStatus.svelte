@@ -325,11 +325,6 @@
 		cursor: help;
 	}
 
-	.not-syndicated {
-		font-size: $font-size-small;
-		color: $gray-50;
-	}
-
 	.syndicate-button {
 		margin-top: $unit-3x;
 		width: 100%;
