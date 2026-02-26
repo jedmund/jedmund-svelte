@@ -54,19 +54,21 @@
 </script>
 
 <article class="post-content {post.postType}">
-	<header class="post-header">
-		<div class="post-meta">
+	<div class="post-meta">
+		{#if publishedAtStr}
 			<a href="/universe/{post.slug}" class="post-date-link">
 				<time class="post-date" datetime={publishedAtStr}>
-					{publishedAtStr ? formatDate(publishedAtStr) : ''}
+					{formatDate(publishedAtStr)}
 				</time>
 			</a>
-		</div>
-
-		{#if post.title}
-			<h1 class="post-title">{post.title}</h1>
+		{:else}
+			<span class="post-draft-label">Draft&nbsp;&middot;&nbsp;Only visible to you</span>
 		{/if}
-	</header>
+	</div>
+
+	{#if post.title}
+		<h1 class="post-title">{post.title}</h1>
+	{/if}
 
 	{#if post.album && post.album.photos && post.album.photos.length > 0}
 		<!-- Album slideshow -->
@@ -147,12 +149,6 @@
 		}
 	}
 
-	.post-header {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-2x;
-	}
-
 	.post-meta {
 		display: flex;
 		align-items: center;
@@ -175,6 +171,12 @@
 		color: $text-color-subdued;
 		font-weight: 400;
 		transition: color 0.2s ease;
+	}
+
+	.post-draft-label {
+		font-size: 0.9rem;
+		color: $text-color-subdued;
+		font-weight: 400;
 	}
 
 	.post-title {

@@ -19,6 +19,7 @@
 		}>
 		viewUrl?: string
 		onDelete?: () => void
+		onCopyPreviewLink?: () => void
 	}
 
 	let {
@@ -29,7 +30,8 @@
 		primaryAction,
 		dropdownActions = [],
 		viewUrl,
-		onDelete
+		onDelete,
+		onCopyPreviewLink
 	}: Props = $props()
 
 	let isDropdownOpen = $state(false)
@@ -48,7 +50,8 @@
 	)
 
 	const showViewInDropdown = $derived(viewUrl && currentStatus === 'published')
-	const hasDropdownContent = $derived(availableActions.length > 0 || showViewInDropdown || onDelete)
+	const showPreviewLink = $derived(onCopyPreviewLink && currentStatus === 'draft')
+	const hasDropdownContent = $derived(availableActions.length > 0 || showViewInDropdown || showPreviewLink || onDelete)
 
 	function handleDelete() {
 		onDelete?.()
@@ -77,8 +80,16 @@
 					{action.label}
 				</DropdownItem>
 			{/each}
-			{#if showViewInDropdown}
+			{#if showPreviewLink}
 				{#if availableActions.length > 0}
+					<div class="dropdown-divider"></div>
+				{/if}
+				<button type="button" class="dropdown-item view-link" onclick={() => { onCopyPreviewLink?.(); isDropdownOpen = false }}>
+					Copy preview link
+				</button>
+			{/if}
+			{#if showViewInDropdown}
+				{#if availableActions.length > 0 || showPreviewLink}
 					<div class="dropdown-divider"></div>
 				{/if}
 				<a href={viewUrl} target="_blank" rel="noopener noreferrer" class="dropdown-item view-link">

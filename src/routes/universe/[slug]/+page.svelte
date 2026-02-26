@@ -28,7 +28,7 @@
 					description,
 					url: pageUrl,
 					type: 'article',
-					image: post.attachments?.[0]?.url,
+					image: post.featuredImage || post.attachments?.[0]?.url,
 					publishedTime: post.publishedAt,
 					author: 'Justin Edmund',
 					section: post.postType === 'essay' ? 'Essays' : 'Posts',
@@ -50,7 +50,7 @@
 					title: pageTitle,
 					description,
 					url: pageUrl,
-					image: post.attachments?.[0]?.url,
+					image: post.featuredImage || post.attachments?.[0]?.url,
 					datePublished: post.publishedAt,
 					dateModified: post.updatedAt || post.publishedAt,
 					author: 'Justin Edmund'
