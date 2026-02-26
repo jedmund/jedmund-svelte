@@ -13,10 +13,45 @@ interface ContentData {
 	syndicationText?: string | null
 	featuredImage?: string | null
 	images?: { url: string; alt: string }[]
+	videos?: { url: string }[]
 	slug: string
 	contentType: string
 	syndicateBluesky?: boolean
 	syndicateMastodon?: boolean
+}
+
+interface TiptapNode {
+	type: string
+	attrs?: Record<string, unknown>
+	content?: TiptapNode[]
+}
+
+function extractMediaFromContent(content: unknown): { images: { url: string; alt: string }[]; videos: { url: string }[] } {
+	const images: { url: string; alt: string }[] = []
+	const videos: { url: string }[] = []
+
+	if (!content || typeof content !== 'object') return { images, videos }
+
+	function walk(node: TiptapNode) {
+		if (node.type === 'image' && node.attrs?.src) {
+			images.push({
+				url: node.attrs.src as string,
+				alt: (node.attrs.alt as string) || ''
+			})
+		}
+		if (node.type === 'video' && node.attrs?.src) {
+			videos.push({ url: node.attrs.src as string })
+		}
+		if (node.content && Array.isArray(node.content)) {
+			for (const child of node.content) {
+				if (images.length + videos.length >= 4) break
+				walk(child)
+			}
+		}
+	}
+
+	walk(content as TiptapNode)
+	return { images: images.slice(0, 4), videos: videos.slice(0, 4) }
 }
 
 const URL_PREFIXES: Record<string, string> = {
@@ -37,19 +72,18 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 			const post = await prisma.post.findUnique({ where: { id: contentId } })
 			if (!post || post.status !== 'published') return null
 
+			// Extract media from TipTap content body
+			const contentMedia = extractMediaFromContent(post.content)
+
+			// Build images list: featuredImage first, then content images
 			const images: { url: string; alt: string }[] = []
 			if (post.featuredImage) {
 				images.push({ url: post.featuredImage, alt: post.title || '' })
 			}
-			if (post.attachments && Array.isArray(post.attachments)) {
-						const mediaItems = await prisma.media.findMany({
-					where: { id: { in: post.attachments as number[] } },
-					select: { url: true, description: true }
-				})
-				for (const m of mediaItems) {
-					if (!images.some(i => i.url === m.url)) {
-						images.push({ url: m.url, alt: m.description || '' })
-					}
+			for (const img of contentMedia.images) {
+				if (images.length >= 4) break
+				if (!images.some(i => i.url === img.url)) {
+					images.push(img)
 				}
 			}
 
@@ -60,6 +94,7 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 				syndicationText: post.syndicationText,
 				featuredImage: post.featuredImage,
 				images,
+				videos: contentMedia.videos,
 				slug: post.slug,
 				contentType: 'post',
 				syndicateBluesky: post.syndicateBluesky,
@@ -120,6 +155,7 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 interface FormattedPost {
 	text: string
 	images?: { url: string; alt: string }[]
+	videos?: { url: string }[]
 	useExternalEmbed: boolean
 	title?: string
 	description?: string
@@ -140,7 +176,8 @@ function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData):
 		return {
 			text: data.syndicationText,
 			images: data.images,
-			useExternalEmbed: supportsEmbed && !data.images?.length,
+			videos: data.videos,
+			useExternalEmbed: supportsEmbed && !data.images?.length && !data.videos?.length,
 			title: supportsEmbed ? (data.title || undefined) : undefined,
 			description: undefined
 		}
@@ -158,7 +195,8 @@ function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData):
 				return {
 					text,
 					images: data.images,
-					useExternalEmbed: supportsEmbed && !data.images?.length,
+					videos: data.videos,
+					useExternalEmbed: supportsEmbed && !data.images?.length && !data.videos?.length,
 					title: supportsEmbed ? (data.title || undefined) : undefined,
 					description: supportsEmbed ? (data.excerpt || undefined) : undefined
 				}
@@ -169,6 +207,7 @@ function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData):
 			return {
 				text: truncateText(postText, SYNDICATION_TEXT_LIMIT),
 				images: data.images,
+				videos: data.videos,
 				useExternalEmbed: false
 			}
 		}
@@ -214,6 +253,7 @@ async function syndicateTo(
 				text: formatted.text,
 				url,
 				images: formatted.images,
+				videos: formatted.videos,
 				useExternalEmbed: formatted.useExternalEmbed,
 				title: formatted.title,
 				description: formatted.description
@@ -224,7 +264,8 @@ async function syndicateTo(
 			const result = await postToMastodon({
 				text: formatted.text,
 				url,
-				images: formatted.images
+				images: formatted.images,
+				videos: formatted.videos
 			})
 			externalId = result.id
 			externalUrl = result.url
