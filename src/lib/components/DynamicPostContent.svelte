@@ -349,7 +349,8 @@
 		:global(figure) {
 			margin: $unit-4x 0;
 
-			:global(img) {
+			:global(img),
+			:global(video) {
 				width: 100%;
 				height: auto;
 				border-radius: $unit;
