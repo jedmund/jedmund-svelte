@@ -64,6 +64,7 @@
 	let slug = $state('')
 	let excerpt = $state('')
 	let syndicationText = $state('')
+	let featuredImage = $state('')
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let tags = $state<Tag[]>([])
 	let activeTab = $state('content')
@@ -81,6 +82,7 @@
 		slug: string
 		excerpt: string
 		syndicationText: string
+		featuredImage: string
 		content: string
 		tags: Tag[]
 	}>({
@@ -90,6 +92,7 @@
 		slug: '',
 		excerpt: '',
 		syndicationText: '',
+		featuredImage: '',
 		content: '',
 		tags: []
 	})
@@ -103,6 +106,7 @@
 			slug !== initialValues.slug ||
 			excerpt !== initialValues.excerpt ||
 			syndicationText !== initialValues.syndicationText ||
+			featuredImage !== initialValues.featuredImage ||
 			JSON.stringify(content) !== initialValues.content ||
 			tags.map((t) => t.id).sort().join(',') !==
 				initialValues.tags.map((t) => t.id).sort().join(','))
@@ -298,6 +302,7 @@
 				slug = data.slug || ''
 				excerpt = data.excerpt || ''
 				syndicationText = data.syndicationText || ''
+				featuredImage = data.featuredImage || ''
 
 				// Convert blocks format to Tiptap format if needed
 				const postContent = data.content
@@ -319,6 +324,7 @@
 					slug,
 					excerpt,
 					syndicationText,
+					featuredImage,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -356,6 +362,7 @@
 			content: config?.showContent ? saveContent : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
 			syndicationText: syndicationText || null,
+			featuredImage: featuredImage || null,
 			tagIds: tags.map((tag) => tag.id)
 		}
 
@@ -368,7 +375,7 @@
 				post = saved
 				if (newStatus) status = newStatus as 'draft' | 'published'
         
-				// Update initial values to reflect saved stat
+				// Update initial values to reflect saved state
 				initialValues = {
 					title,
 					postType,
@@ -376,6 +383,7 @@
 					slug,
 					excerpt,
 					syndicationText,
+					featuredImage,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -510,6 +518,7 @@
 						bind:slug
 						bind:excerpt
 						bind:syndicationText
+						bind:featuredImage
 						bind:tags
 						{heartCount}
 						createdAt={post.createdAt}

@@ -2,7 +2,9 @@
 	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import TagInput from './TagInput.svelte'
+	import ImagePicker from './ImagePicker.svelte'
 	import SyndicationStatus from './SyndicationStatus.svelte'
+	import type { Media } from '@prisma/client'
 
 	interface Tag {
 		id: number
@@ -16,6 +18,7 @@
 		slug: string
 		excerpt?: string
 		syndicationText?: string
+		featuredImage?: string
 		tags: Tag[]
 		heartCount?: number
 		createdAt: string | Date
@@ -30,6 +33,7 @@
 		slug = $bindable(),
 		excerpt = $bindable(''),
 		syndicationText = $bindable(''),
+		featuredImage = $bindable(''),
 		tags = $bindable([]),
 		heartCount,
 		createdAt,
@@ -38,6 +42,59 @@
 		contentId,
 		contentStatus
 	}: PostMetadataFormProps = $props()
+
+	// Featured image media state for ImagePicker
+	let featuredImageMedia = $state<Media | null>(null)
+
+	function createMediaFromUrl(url: string): Media {
+		return {
+			id: -1,
+			filename: url.split('/').pop() || 'image',
+			originalName: url.split('/').pop() || 'image',
+			mimeType: 'image/jpeg',
+			size: 0,
+			url,
+			thumbnailUrl: url,
+			width: null,
+			height: null,
+			description: null,
+			usedIn: [],
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			isPhotography: false,
+			exifData: null,
+			photoCaption: null,
+			photoTitle: null,
+			photoDescription: null,
+			photoSlug: null,
+			photoPublishedAt: null,
+			dominantColor: null,
+			colors: null,
+			aspectRatio: null,
+			duration: null,
+			videoCodec: null,
+			audioCodec: null,
+			bitrate: null
+		} as Media
+	}
+
+	// Initialize featuredImageMedia from URL
+	$effect(() => {
+		if (featuredImage && !featuredImageMedia) {
+			featuredImageMedia = createMediaFromUrl(featuredImage)
+		}
+		if (!featuredImage && featuredImageMedia) {
+			featuredImageMedia = null
+		}
+	})
+
+	// Sync media selection back to URL string
+	$effect(() => {
+		const url = featuredImageMedia?.url || ''
+		if (url !== featuredImage) {
+			featuredImage = url
+		}
+	})
 
 	function formatDate(date: string | Date | null) {
 		if (!date) return 'Never'
@@ -70,6 +127,13 @@
 	{/if}
 
 	<TagInput label="Tags" size="jumbo" bind:tags placeholder="Add tags..." />
+
+	<ImagePicker
+		label="Featured Image"
+		bind:value={featuredImageMedia}
+		placeholder="Select an image for social sharing (og:image)"
+		aspectRatio="2:1"
+	/>
 
 	{#if contentId && contentStatus}
 		<SyndicationStatus contentType="post" {contentId} {contentStatus} />
