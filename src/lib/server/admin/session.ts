@@ -140,6 +140,75 @@ export function getSessionUser(cookies: Cookies): SessionUser | null {
 
 export const ADMIN_SESSION_COOKIE = SESSION_COOKIE_NAME
 
+// --- Preview tokens ---
+// Time-limited HMAC-signed tokens for sharing draft content previews.
+
+const PREVIEW_TTL_SECONDS = 60 * 60 * 24 // 24 hours
+
+interface PreviewPayload {
+	contentType: string
+	slug: string
+	exp: number
+}
+
+export function generatePreviewToken(contentType: string, slug: string): string {
+	const payload: PreviewPayload = {
+		contentType,
+		slug,
+		exp: Date.now() + PREVIEW_TTL_SECONDS * 1000
+	}
+	const payloadStr = JSON.stringify(payload)
+	const signature = signPayload(payloadStr).toString('base64url')
+	return `${Buffer.from(payloadStr, 'utf8').toString('base64url')}.${signature}`
+}
+
+export function validatePreviewToken(token: string): { contentType: string; slug: string } | null {
+	const [encodedPayload, encodedSignature] = token.split('.')
+	if (!encodedPayload || !encodedSignature) return null
+
+	let payloadStr: string
+	try {
+		payloadStr = Buffer.from(encodedPayload, 'base64url').toString('utf8')
+	} catch {
+		return null
+	}
+
+	let payload: PreviewPayload
+	try {
+		payload = JSON.parse(payloadStr)
+		if (
+			!payload ||
+			typeof payload.contentType !== 'string' ||
+			typeof payload.slug !== 'string' ||
+			typeof payload.exp !== 'number'
+		) {
+			return null
+		}
+	} catch {
+		return null
+	}
+
+	const expectedSignature = signPayload(payloadStr)
+	let providedSignature: Buffer
+	try {
+		providedSignature = Buffer.from(encodedSignature, 'base64url')
+	} catch {
+		return null
+	}
+
+	if (expectedSignature.length !== providedSignature.length) return null
+
+	try {
+		if (!timingSafeEqual(expectedSignature, providedSignature)) return null
+	} catch {
+		return null
+	}
+
+	if (Date.now() > payload.exp) return null
+
+	return { contentType: payload.contentType, slug: payload.slug }
+}
+
 // --- Project unlock cookies ---
 // Allows visitors to unlock password-protected projects via server-verified password.
 // Uses the same HMAC signing as admin sessions.
