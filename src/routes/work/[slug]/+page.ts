@@ -1,25 +1,23 @@
 import type { PageLoad } from './$types'
-import type { Project } from '$lib/types/project'
 
-export const load: PageLoad = async ({ params, fetch }) => {
+export const load: PageLoad = async ({ params, fetch, url }) => {
 	try {
-		// Find project by slug - we'll fetch all published, list-only, and password-protected projects
-		const response = await fetch(`/api/projects?includeListOnly=true&includePasswordProtected=true`)
+		// Forward preview token if present
+		const preview = url.searchParams.get('preview')
+		const apiUrl = preview
+			? `/api/projects/by-slug/${params.slug}?preview=${encodeURIComponent(preview)}`
+			: `/api/projects/by-slug/${params.slug}`
+
+		const response = await fetch(apiUrl)
+
 		if (!response.ok) {
-			throw new Error('Failed to fetch projects')
+			if (response.status === 404) {
+				throw new Error('Project not found')
+			}
+			throw new Error('Failed to fetch project')
 		}
 
-		const data = await response.json()
-		const project = data.projects.find((p: Project) => p.slug === params.slug)
-
-		if (!project) {
-			throw new Error('Project not found')
-		}
-
-		// Handle different project statuses
-		if (project.status === 'draft') {
-			throw new Error('Project not found')
-		}
+		const project = await response.json()
 
 		return {
 			project
