@@ -45,10 +45,11 @@
 	let resizingPosition = $state<'left' | 'right'>('left');
 
 	let caption: string | null = $state(node.attrs.title);
-	$effect(() => {
+
+	function commitCaption() {
 		if (caption?.trim() === '') caption = null;
 		updateAttributes({ title: caption });
-	});
+	}
 
 	$effect(() => {
 		if (!groupRef || !toolbarRef || !editor?.isEditable) {
@@ -194,7 +195,7 @@
 		{@render children()}
 
 		{#if caption !== null}
-			<input bind:value={caption} type="text" class="edra-media-caption" />
+			<input bind:value={caption} type="text" class="edra-media-caption" onblur={commitCaption} />
 		{/if}
 
 		{#if editor?.isEditable}
@@ -253,7 +254,7 @@
 				<button
 					class="edra-toolbar-button"
 					onclick={() => {
-						if (caption === null || caption.trim() === '') caption = 'Audio Caption';
+						if (caption === null || caption.trim() === '') caption = 'Caption';
 					}}
 					title={strings.extension.media.caption}
 				>
