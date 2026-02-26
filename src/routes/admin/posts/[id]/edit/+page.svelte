@@ -401,6 +401,22 @@
 		}
 	}
 
+	async function handleCopyPreviewLink() {
+		if (!slug) return
+		try {
+			const res = await api.post<{ url: string }>('/api/preview/generate', {
+				contentType: postType === 'essay' ? 'post' : 'post',
+				slug
+			})
+			if (res?.url) {
+				const fullUrl = `${window.location.origin}${res.url}`
+				await navigator.clipboard.writeText(fullUrl)
+			}
+		} catch (error) {
+			console.error('Failed to generate preview link:', error)
+		}
+	}
+
 	function handleContinueEditing() {
 		showUnsavedChangesModal = false
 		pendingNavigationUrl = null
@@ -452,6 +468,7 @@
 						: [{ label: 'Save as Draft', status: 'draft' }]}
 					viewUrl={slug ? `/universe/${slug}` : undefined}
 					onDelete={openDeleteConfirmation}
+					onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
 				/>
 			</div>
 		{/if}
