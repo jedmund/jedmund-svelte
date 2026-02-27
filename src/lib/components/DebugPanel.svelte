@@ -527,8 +527,9 @@
 	}
 
 	.debug-header {
+		position: relative;
 		display: flex;
-		justify-content: space-between;
+		justify-content: center;
 		align-items: center;
 		padding: $unit * 1.5;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -539,11 +540,11 @@
 			margin: 0;
 			font-size: $font-size-small;
 			font-weight: $font-weight-bold;
-			text-align: center;
-			flex: 1;
 		}
 
 		.minimize-btn {
+			position: absolute;
+			right: $unit * 1.5;
 			background: none;
 			border: none;
 			color: white;
