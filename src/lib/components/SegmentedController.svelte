@@ -19,27 +19,18 @@
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
-		{ icon: GardenIcon, text: 'Garden', href: '/garden', variant: 'garden' },
-		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' }
+		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
+		{ icon: GardenIcon, text: 'Garden', href: '/garden', variant: 'garden' }
 	]
 
 	// Track hover state for each item
 	let hoveredIndex = $state<number | null>(null)
 
 	// Calculate active index based on current path
-	const activeIndex = $derived(
-		currentPath === '/'
-			? 0
-			: currentPath.startsWith('/universe')
-				? 1
-				: currentPath.startsWith('/photos')
-					? 2
-					: currentPath.startsWith('/garden')
-						? 3
-						: currentPath.startsWith('/labs')
-							? 4
-							: -1
-	)
+	const activeIndex = $derived.by(() => {
+		if (currentPath === '/') return 0
+		return navItems.findIndex((item) => item.href !== '/' && currentPath.startsWith(item.href)) ?? -1
+	})
 
 	// Calculate pill position and width
 	let containerElement: HTMLElement
@@ -218,14 +209,15 @@
 		animation: masonryRect4 0.6s ease;
 	}
 
-	// Fourth item is Garden
+	// Fourth item is Labs
 	.nav-item:nth-of-type(4) :global(svg.animate) {
-		animation: iconPulse 0.6s ease;
+		animation: tubeRotate 0.6s ease;
+		transform-origin: center bottom;
 	}
 
-	// Fifth item is Labs
+	// Fifth item is Garden
 	.nav-item:nth-of-type(5) :global(svg.animate) {
-		animation: tubeRotate 0.6s ease;
+		animation: leafSway 0.6s ease;
 		transform-origin: center bottom;
 	}
 </style>

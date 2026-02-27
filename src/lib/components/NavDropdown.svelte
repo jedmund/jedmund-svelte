@@ -24,8 +24,8 @@
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
-		{ icon: GardenIcon, text: 'Garden', href: '/garden', variant: 'garden' },
 		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
+		{ icon: GardenIcon, text: 'Garden', href: '/garden', variant: 'garden' },
 		{ icon: AboutIcon, text: 'About', href: '/about', variant: 'about' }
 	]
 
@@ -33,11 +33,11 @@
 	const activeItem = $derived(
 		currentPath === '/'
 			? navItems[0]
-			: currentPath === '/about'
-				? navItems[5]
-				: navItems.find((item) =>
-						currentPath.startsWith(item.href === '/' ? '/work' : item.href)
-					) || navItems[0]
+			: navItems.find((item) =>
+					item.href === '/'
+						? false
+						: currentPath.startsWith(item.href)
+				) || navItems[0]
 	)
 
 	// Get text color based on variant

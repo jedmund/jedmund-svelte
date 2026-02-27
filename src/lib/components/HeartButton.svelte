@@ -1,4 +1,6 @@
 <script lang="ts">
+	import HeartIcon from '$icons/heart.svg?component'
+
 	interface Props {
 		path: string
 	}
@@ -71,20 +73,7 @@
 	onclick={handleClick}
 	disabled={busy || pressed}
 >
-	<svg
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill={pressed ? 'currentColor' : 'none'}
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"
-	>
-		<path
-			d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-		/>
-	</svg>
+	<HeartIcon class="heart-icon" />
 </button>
 
 <style lang="scss">
@@ -97,7 +86,7 @@
 		border: none;
 		border-radius: $corner-radius-md;
 		cursor: pointer;
-		color: $gray-40;
+		color: $gray-70;
 		transition: all 0.2s ease;
 
 		&:hover:not(:disabled) {
@@ -122,7 +111,9 @@
 			animation: pulse 1s ease-in-out infinite;
 		}
 
-		svg {
+		:global(.heart-icon) {
+			width: 20px;
+			height: 20px;
 			display: block;
 		}
 	}

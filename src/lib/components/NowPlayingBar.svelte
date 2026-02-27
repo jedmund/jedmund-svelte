@@ -43,7 +43,7 @@
 		overflow: hidden;
 		box-sizing: border-box;
 		min-height: 58.4px;
-		width: 404px;
+		width: 510px;
 	}
 
 	.now-playing-label {
