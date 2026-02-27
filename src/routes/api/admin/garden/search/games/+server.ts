@@ -53,7 +53,7 @@ export const GET: RequestHandler = async (event) => {
 	try {
 		const accessToken = await getAccessToken()
 
-		const body = `fields name, cover.image_id, involved_companies.developer, involved_companies.company.name; search "${query.replace(/"/g, '\\"')}"; limit ${limit};`
+		const body = `fields name, summary, cover.image_id, involved_companies.developer, involved_companies.company.name, first_release_date; search "${query.replace(/"/g, '\\"')}"; limit ${limit};`
 
 		const res = await fetch('https://api.igdb.com/v4/games', {
 			method: 'POST',
@@ -76,14 +76,21 @@ export const GET: RequestHandler = async (event) => {
 			(game: {
 				id: number
 				name: string
+				summary?: string
 				cover?: { image_id: string }
 				involved_companies?: { developer: boolean; company: { name: string } }[]
+				first_release_date?: number
 			}) => ({
 				id: game.id,
 				name: game.name,
 				image: game.cover?.image_id ? getCoverUrl(game.cover.image_id) : null,
 				developer:
-					game.involved_companies?.find((c) => c.developer)?.company?.name || null
+					game.involved_companies?.find((c) => c.developer)?.company?.name || null,
+				year: game.first_release_date
+					? new Date(game.first_release_date * 1000).getFullYear().toString()
+					: null,
+				sourceId: String(game.id),
+				summary: game.summary || null
 			})
 		)
 

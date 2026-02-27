@@ -14,7 +14,7 @@ export const GET: RequestHandler = async (event) => {
 
 	try {
 		const items = await prisma.gardenItem.findMany({
-			where: { category },
+			where: { category, status: 'published' },
 			orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }]
 		})
 

@@ -16,12 +16,16 @@ interface GardenItemUpdateBody {
 	creator?: string
 	imageUrl?: string
 	url?: string
+	sourceId?: string
+	metadata?: Record<string, any> | null
+	summary?: string | null
 	date?: string | null
 	note?: unknown
 	rating?: number | null
 	isCurrent?: boolean
 	isFavorite?: boolean
 	displayOrder?: number
+	status?: string
 	updatedAt?: string
 }
 
@@ -98,6 +102,17 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
+		// Handle status transitions
+		const newStatus = body.status === 'published' || body.status === 'draft'
+			? body.status
+			: existing.status
+		let publishedAt = existing.publishedAt
+		if (newStatus === 'published' && existing.status !== 'published') {
+			publishedAt = new Date()
+		} else if (newStatus === 'draft') {
+			publishedAt = null
+		}
+
 		const item = await prisma.gardenItem.update({
 			where: { id },
 			data: {
@@ -107,6 +122,14 @@ export const PUT: RequestHandler = async (event) => {
 				creator: body.creator !== undefined ? body.creator || null : existing.creator,
 				imageUrl: body.imageUrl !== undefined ? body.imageUrl || null : existing.imageUrl,
 				url: body.url !== undefined ? body.url || null : existing.url,
+				sourceId:
+					body.sourceId !== undefined ? body.sourceId || null : existing.sourceId,
+				metadata:
+					body.metadata !== undefined
+						? (body.metadata as any)
+						: existing.metadata,
+				summary:
+					body.summary !== undefined ? body.summary || null : existing.summary,
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				note: body.note !== undefined ? (body.note as any) : existing.note,
 				rating:
@@ -117,7 +140,9 @@ export const PUT: RequestHandler = async (event) => {
 						: existing.rating,
 				isCurrent: body.isCurrent ?? existing.isCurrent,
 				isFavorite: body.isFavorite ?? existing.isFavorite,
-				displayOrder: body.displayOrder ?? existing.displayOrder
+				displayOrder: body.displayOrder ?? existing.displayOrder,
+				status: newStatus,
+				publishedAt
 			}
 		})
 

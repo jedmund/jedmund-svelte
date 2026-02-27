@@ -88,6 +88,20 @@
 	}
 }
 
+// Garden icon - leaf sway
+@keyframes leafSway {
+	0%,
+	100% {
+		transform: rotate(0deg) scale(1);
+	}
+	25% {
+		transform: rotate(-6deg) scale(1.05);
+	}
+	75% {
+		transform: rotate(6deg) scale(1.05);
+	}
+}
+
 // Placeholder animations (not currently used)
 @keyframes photoMasonry {
 	0%,

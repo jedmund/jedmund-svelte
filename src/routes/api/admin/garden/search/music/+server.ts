@@ -33,7 +33,10 @@ export const GET: RequestHandler = async (event) => {
 			id: album.id,
 			name: album.attributes.name,
 			artist: album.attributes.artistName,
-			image: album.attributes.artwork ? getArtworkUrl(album.attributes.artwork, 600) : null
+			image: album.attributes.artwork ? getArtworkUrl(album.attributes.artwork, 600) : null,
+			year: album.attributes.releaseDate?.slice(0, 4) || null,
+			sourceId: album.id,
+			summary: null
 		}))
 
 		await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(results))

@@ -12,7 +12,11 @@ const SEARCH_QUERY = `
 			media(search: $search, type: MANGA, sort: POPULARITY_DESC) {
 				id
 				title { romaji english native }
+				description(asHtml: false)
 				coverImage { large }
+				chapters
+				volumes
+				startDate { year }
 				staff(sort: RELEVANCE, perPage: 5) {
 					edges {
 						role
@@ -77,13 +81,21 @@ export const GET: RequestHandler = async (event) => {
 			(m: {
 				id: number
 				title: { romaji: string; english: string | null; native: string | null }
+				description: string | null
 				coverImage: { large: string | null }
+				chapters: number | null
+				volumes: number | null
+				startDate: { year: number | null } | null
 				staff: { edges: { role: string; node: { name: { full: string } } }[] }
 			}) => ({
 				id: m.id,
 				name: m.title.english || m.title.romaji,
 				author: findAuthor(m.staff?.edges || []),
-				image: m.coverImage?.large || null
+				image: m.coverImage?.large || null,
+				year: m.startDate?.year?.toString() || null,
+				sourceId: String(m.id),
+				metadata: { chapters: m.chapters ?? null, volumes: m.volumes ?? null },
+				summary: m.description || null
 			})
 		)
 

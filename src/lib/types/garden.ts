@@ -6,6 +6,10 @@ export interface TypeaheadResult {
 	subtitle: string | null
 	image: string | null
 	creator: string | null
+	year: string | null
+	sourceId: string
+	metadata: Record<string, any> | null
+	summary: string | null
 }
 
 export interface TypeaheadSelection {

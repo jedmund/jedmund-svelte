@@ -313,27 +313,36 @@
 
 		&:hover {
 			background-color: $gray-95;
+
+			.item-thumbnail {
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			}
 		}
 	}
 
 	.item-thumbnail {
 		flex-shrink: 0;
 		width: 60px;
-		height: 60px;
 		border-radius: $unit;
 		overflow: hidden;
 		background-color: $gray-95;
+		transition: box-shadow 0.2s ease;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 
 		img {
 			width: 100%;
-			height: 100%;
-			object-fit: cover;
+			height: auto;
+			display: block;
 		}
 
 		.placeholder-icon {
+			width: 60px;
+			height: 60px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 			font-size: 1.25rem;
 			font-weight: 600;
 			color: $gray-50;

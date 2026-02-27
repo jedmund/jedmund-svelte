@@ -15,13 +15,16 @@ export const POST: RequestHandler = async (event) => {
 			return errorResponse('contentType and slug are required', 400)
 		}
 
-		if (!['post', 'project'].includes(contentType)) {
-			return errorResponse('contentType must be "post" or "project"', 400)
+		if (!['post', 'project', 'garden'].includes(contentType)) {
+			return errorResponse('contentType must be "post", "project", or "garden"', 400)
 		}
 
 		const token = generatePreviewToken(contentType, slug)
 
-		const basePath = contentType === 'post' ? '/universe' : '/work'
+		let basePath: string
+		if (contentType === 'post') basePath = '/universe'
+		else if (contentType === 'garden') basePath = '/garden'
+		else basePath = '/work'
 		const url = `${basePath}/${slug}?preview=${token}`
 
 		return jsonResponse({ token, url })
