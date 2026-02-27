@@ -241,7 +241,7 @@
 		color: white;
 		border: none;
 		border-radius: 6px;
-		font-size: 13px;
+		font-size: $font-size-small;
 		cursor: pointer;
 		transition: background-color 0.15s ease;
 

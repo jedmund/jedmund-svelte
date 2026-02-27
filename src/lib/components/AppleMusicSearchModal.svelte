@@ -348,7 +348,7 @@
 		color: #ff6b6b;
 		padding: $unit;
 		border-radius: 4px;
-		font-size: 13px;
+		font-size: $font-size-small;
 		margin-bottom: $unit * 2;
 	}
 	
@@ -382,7 +382,7 @@
 			border: none;
 			color: rgba(255, 255, 255, 0.6);
 			cursor: pointer;
-			font-size: 13px;
+			font-size: $font-size-small;
 			font-weight: 500;
 			transition: all 0.2s;
 			border-bottom: 2px solid transparent;

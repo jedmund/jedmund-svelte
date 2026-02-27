@@ -598,7 +598,7 @@
 		h4 {
 			margin: 0 0 $unit 0;
 			color: #87ceeb;
-			font-size: 13px;
+			font-size: $font-size-small;
 			font-weight: 600;
 		}
 		
@@ -763,7 +763,7 @@
 			h5 {
 				margin: 0 0 $unit 0;
 				color: #87ceeb;
-				font-size: 13px;
+				font-size: $font-size-small;
 				font-weight: 600;
 			}
 			

@@ -125,7 +125,7 @@
 			&.select-small {
 				padding: calc($unit - 1px) calc($unit * 1.5);
 				padding-right: 32px;
-				font-size: 13px;
+				font-size: $font-size-small;
 				min-height: 28px;
 				min-width: 120px;
 			}
@@ -150,7 +150,7 @@
 		&.select-minimal {
 			&.select-small {
 				padding: $unit calc($unit * 1.5);
-				font-size: 13px;
+				font-size: $font-size-small;
 				min-height: 28px;
 				min-width: 120px;
 				border-radius: $corner-radius;

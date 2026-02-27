@@ -222,7 +222,7 @@
 		background: rgba($gray-95, 0.5);
 		border: 1px solid rgba($gray-85, 0.3);
 		border-radius: $corner-radius;
-		font-size: 13px;
+		font-size: $font-size-small;
 		font-weight: 500;
 		color: $gray-10;
 		cursor: pointer;
