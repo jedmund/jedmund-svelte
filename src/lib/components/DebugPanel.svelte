@@ -7,8 +7,8 @@
 	// Import SVG icons
 	import CheckIcon from '$icons/check.svg?component'
 	import XIcon from '$icons/x.svg?component'
-	import TrashIcon from '$icons/trash.svg?component'
 	import LoaderIcon from '$icons/loader.svg?component'
+	import ChevronDownIcon from '$icons/chevron-down.svg?component'
 	import AppleMusicSearchModal from './AppleMusicSearchModal.svelte'
 
 	// Only show in development
@@ -219,8 +219,8 @@
 			onkeydown={(e) => e.key === 'Enter' && (isMinimized = !isMinimized)}
 		>
 			<h3>Debug Panel</h3>
-			<button class="minimize-btn" aria-label={isMinimized ? 'Expand' : 'Minimize'}>
-				{isMinimized ? '▲' : '▼'}
+			<button class="minimize-btn" class:minimized={isMinimized} aria-label={isMinimized ? 'Expand' : 'Minimize'}>
+				<ChevronDownIcon class="icon chevron" />
 			</button>
 		</div>
 		
@@ -254,38 +254,44 @@
 					{#if activeTab === 'nowplaying'}
 						<div class="section">
 							<h4>Connection</h4>
-							<p class="status" class:connected>
-								Status: {#if connected}<CheckIcon class="icon status-icon success" /> Connected{:else}<XIcon class="icon status-icon error" /> Disconnected{/if}
-							</p>
-							<p class:flash={updateFlash}>
-								Last Update: {lastUpdate ? lastUpdate.toLocaleTimeString() : 'Never'}
-							</p>
-							<p>Next Update: {formatTime(nextUpdateIn)}</p>
-							<p>Interval: {updateInterval}s {trackRemainingTime > 0 ? `(smart mode)` : nowPlaying ? '(fast mode)' : '(normal)'}</p>
-							{#if trackRemainingTime > 0}
-								<p>Track Remaining: {formatTime(trackRemainingTime)}</p>
-							{/if}
+							<div class="connection-grid">
+								<span class="grid-label">Status</span>
+								<span class="grid-value">
+									<span class="status-dot" class:connected></span>
+									{connected ? 'Connected' : 'Disconnected'}
+								</span>
+
+								<span class="grid-label">Last</span>
+								<span class="grid-value" class:flash={updateFlash}>
+									{lastUpdate ? lastUpdate.toLocaleTimeString() : 'Never'}
+								</span>
+
+								<span class="grid-label">Next</span>
+								<span class="grid-value">{formatTime(nextUpdateIn)}</span>
+
+								<span class="grid-label">Interval</span>
+								<span class="grid-value">{updateInterval}s {trackRemainingTime > 0 ? '(smart mode)' : nowPlaying ? '(fast mode)' : '(normal)'}</span>
+
+								{#if trackRemainingTime > 0}
+									<span class="grid-label">Remaining</span>
+									<span class="grid-value">{formatTime(trackRemainingTime)}</span>
+								{/if}
+							</div>
 						</div>
-						
-						<div class="section">
-							<h4>Now Playing</h4>
-							{#if nowPlaying}
+
+						{#if nowPlaying}
+							<div class="section">
 								<div class="now-playing-info">
-									<p class="artist">{nowPlaying.album.artist.name}</p>
-									<p class="album">{nowPlaying.album.name}</p>
-									{#if nowPlaying.track}
-										<p class="track">{nowPlaying.track}</p>
-									{/if}
-									{#if nowPlaying.album.appleMusicData}
-										<p class="preview">
-											<span>Preview:</span> {#if nowPlaying.album.appleMusicData.previewUrl}<CheckIcon class="icon success" /> Available{:else}<XIcon class="icon error" /> Not found{/if}
-										</p>
-									{/if}
+									<p class="track">{nowPlaying.track || 'Unknown track'}</p>
+									<p class="artist-album">
+										{nowPlaying.album.artist.name} — {nowPlaying.album.name}
+										{#if nowPlaying.album.appleMusicData}
+											· {#if nowPlaying.album.appleMusicData.previewUrl}<CheckIcon class="icon success inline" />{:else}<XIcon class="icon error inline" />{/if} Preview
+										{/if}
+									</p>
 								</div>
-							{:else}
-								<p class="no-music">No music playing</p>
-							{/if}
-						</div>
+							</div>
+						{/if}
 					{/if}
 					
 					{#if activeTab === 'albums'}
@@ -296,36 +302,34 @@
 									{@const albumId = `${album.artist.name}:${album.name}`}
 									<div class="album-item" class:playing={album.isNowPlaying} class:expanded={expandedAlbumId === albumId}>
 										<div
-										class="album-header"
-										role="button"
-										tabindex="0"
-										onclick={() => (expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
-										onkeydown={(e) =>
-											e.key === 'Enter' &&
-											(expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
-									>
+											class="album-header"
+											role="button"
+											tabindex="0"
+											onclick={() => (expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
+											onkeydown={(e) =>
+												e.key === 'Enter' &&
+												(expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
+										>
 											<div class="album-content">
-												<div class="album-info">
+												<div class="album-title-row">
 													<span class="name">{album.name}</span>
-													<span class="artist">by {album.artist.name}</span>
+													{#if album.isNowPlaying}
+														<span class="playing-badge">NOW</span>
+													{/if}
 												</div>
-												{#if album.isNowPlaying}
-													<span class="playing-badge">NOW</span>
-												{/if}
 												<div class="album-meta">
+													<span>{album.artist.name}</span>
 													{#if album.appleMusicData}
-														<span class="meta-item">
-															{album.appleMusicData.tracks?.length || 0} tracks
+														<span class="separator">·</span>
+														<span>{album.appleMusicData.tracks?.length || 0} tracks</span>
+														<span class="separator">·</span>
+														<span>
+															{#if album.appleMusicData.previewUrl}<CheckIcon class="icon success inline" />{:else}<XIcon class="icon error inline" />{/if} Preview
 														</span>
-														<span class="meta-item">
-															{#if album.appleMusicData.previewUrl}<CheckIcon class="icon success inline" /> Preview{:else}<XIcon class="icon error inline" /> No preview{/if}
-														</span>
-													{:else}
-														<span class="meta-item">No Apple Music data</span>
 													{/if}
 												</div>
 											</div>
-											<button 
+											<button
 												class="clear-cache-btn"
 												onclick={(e) => { e.stopPropagation(); clearAlbumCache(album) }}
 												disabled={clearingAlbums.has(albumId)}
@@ -334,11 +338,11 @@
 												{#if clearingAlbums.has(albumId)}
 													<LoaderIcon class="icon spinning" />
 												{:else}
-													<TrashIcon class="icon" />
+													<XIcon class="icon" />
 												{/if}
 											</button>
 										</div>
-										
+
 										{#if expandedAlbumId === albumId}
 											<div class="album-details">
 												{#if album.appleMusicData}
@@ -359,28 +363,28 @@
 															{/if}
 														</div>
 													{/if}
-													
+
 													{#if album.appleMusicData.appleMusicId}
 														<h5>Apple Music Details</h5>
 														<p><strong>Apple Music ID:</strong> {album.appleMusicData.appleMusicId}</p>
 													{/if}
-												
+
 												{#if album.appleMusicData.releaseDate}
 													<p><strong>Release Date:</strong> {album.appleMusicData.releaseDate}</p>
 												{/if}
-												
+
 												{#if album.appleMusicData.recordLabel}
 													<p><strong>Label:</strong> {album.appleMusicData.recordLabel}</p>
 												{/if}
-												
+
 												{#if album.appleMusicData.genres?.length}
 													<p><strong>Genres:</strong> {album.appleMusicData.genres.join(', ')}</p>
 												{/if}
-												
+
 												{#if album.appleMusicData.previewUrl}
 													<p><strong>Preview URL:</strong> <code>{album.appleMusicData.previewUrl}</code></p>
 												{/if}
-												
+
 												{#if album.appleMusicData.tracks?.length}
 													<div class="tracks-section">
 														<h6>Tracks ({album.appleMusicData.tracks.length})</h6>
@@ -400,7 +404,7 @@
 														</div>
 													</div>
 												{/if}
-												
+
 												<div class="raw-data">
 													<h6>Raw Data</h6>
 													<pre>{JSON.stringify(album.appleMusicData, null, 2)}</pre>
@@ -438,15 +442,24 @@
 							</div>
 							
 							<div class="cache-actions">
-								<button 
+								<button
+									onclick={() => searchModal?.open()}
+									class="search-btn"
+								>
+									Test Apple Music Search
+								</button>
+
+								<div class="cache-divider"></div>
+
+								<button
 									onclick={clearAllMusicCache}
 									disabled={isClearing}
 									class="clear-all-btn"
 								>
 									{isClearing ? 'Clearing...' : 'Clear All Music Cache'}
 								</button>
-								
-								<button 
+
+								<button
 									onclick={async () => {
 										isClearing = true
 										try {
@@ -455,7 +468,7 @@
 												headers: { 'Content-Type': 'application/json' },
 												body: JSON.stringify({ pattern: 'notfound:apple-music:*' })
 											})
-											
+
 											if (response.ok) {
 												const result = await response.json()
 												toast.success(`Cleared "not found" cache: ${result.deleted} keys deleted`)
@@ -473,13 +486,6 @@
 									class="clear-not-found-btn"
 								>
 									{isClearing ? 'Clearing...' : 'Clear Not Found Cache'}
-								</button>
-								
-								<button 
-									onclick={() => searchModal?.open()}
-									class="search-btn"
-								>
-									Test Apple Music Search
 								</button>
 							</div>
 							
@@ -509,57 +515,71 @@
 		max-height: 600px;
 		z-index: 9999;
 		font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-		font-size: 12px;
+		font-size: $font-size-extra-small;
 		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8);
 		backdrop-filter: blur(10px);
-		transition: all 0.2s ease;
-		
+		transition: all $transition-normal ease;
+
 		&.minimized {
 			width: auto;
 			max-height: auto;
 		}
 	}
-	
+
 	.debug-header {
+		position: relative;
 		display: flex;
-		justify-content: space-between;
+		justify-content: center;
 		align-items: center;
 		padding: $unit * 1.5;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 		cursor: pointer;
 		user-select: none;
-		
+
 		h3 {
 			margin: 0;
-			font-size: 14px;
-			font-weight: 600;
+			font-size: $font-size-small;
+			font-weight: $font-weight-bold;
 		}
-		
+
 		.minimize-btn {
+			position: absolute;
+			right: $unit * 1.5;
 			background: none;
 			border: none;
 			color: white;
-			font-size: 12px;
+			font-size: $font-size-extra-small;
 			cursor: pointer;
 			padding: 4px 8px;
-			border-radius: 4px;
-			transition: background 0.2s;
-			
+			border-radius: $corner-radius-xs;
+			transition: background $transition-normal;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			:global(.chevron) {
+				transition: transform $transition-normal;
+			}
+
+			&.minimized :global(.chevron) {
+				transform: rotate(180deg);
+			}
+
 			&:hover {
 				background: rgba(255, 255, 255, 0.1);
 			}
 		}
 	}
-	
+
 	.debug-content {
 		overflow-y: auto;
 		max-height: 520px;
 	}
-	
+
 	.tabs {
 		display: flex;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-		
+
 		.tab {
 			flex: 1;
 			padding: $unit $unit * 2;
@@ -567,15 +587,15 @@
 			border: none;
 			color: rgba(255, 255, 255, 0.6);
 			cursor: pointer;
-			font-size: 12px;
-			font-weight: 500;
-			transition: all 0.2s;
-			
+			font-size: $font-size-extra-small;
+			font-weight: $font-weight-med;
+			transition: all $transition-normal;
+
 			&:hover {
 				color: rgba(255, 255, 255, 0.8);
 				background: rgba(255, 255, 255, 0.05);
 			}
-			
+
 			&.active {
 				color: white;
 				background: rgba(255, 255, 255, 0.1);
@@ -583,488 +603,473 @@
 			}
 		}
 	}
-	
+
 	.tab-content {
-		padding: $unit * 2;
+		padding: $unit * 1.5;
 	}
-	
+
+	// --- Sections ---
+
 	.section {
-		margin-bottom: $unit * 2;
-		
+		margin-bottom: $unit * 1.5;
+
 		&:last-child {
 			margin-bottom: 0;
 		}
-		
+
 		h4 {
 			margin: 0 0 $unit 0;
-			color: #87ceeb;
+			color: $info-color;
 			font-size: $font-size-small;
-			font-weight: 600;
+			font-weight: $font-weight-bold;
 		}
-		
+
 		p {
 			margin: $unit-half 0;
 			line-height: 1.4;
 		}
-		
-		.connected {
-			color: #4caf50;
-		}
-		
+
 		.flash {
 			animation: flash 0.5s ease-out;
 		}
 	}
-	
+
+	// --- Now Playing: Connection Grid ---
+
+	.connection-grid {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 2px $unit * 1.5;
+		align-items: center;
+
+		.grid-label {
+			color: rgba(255, 255, 255, 0.5);
+		}
+
+		.grid-value {
+			color: rgba(255, 255, 255, 0.9);
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+	}
+
+	.status-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: $error-color;
+		flex-shrink: 0;
+
+		&.connected {
+			background: $success-color;
+		}
+	}
+
+	// --- Now Playing: Track Info ---
+
 	.now-playing-info {
 		background: rgba(255, 255, 255, 0.05);
 		padding: $unit;
-		border-radius: 6px;
-		
-		.artist {
-			font-weight: 600;
-			color: #ffd700;
-		}
-		
-		.album {
-			color: #87ceeb;
-		}
-		
+		border-radius: $corner-radius-sm;
+
 		.track {
-			font-size: 11px;
-			color: rgba(255, 255, 255, 0.8);
+			margin: 0;
+			font-weight: $font-weight-bold;
+			color: rgba(255, 255, 255, 0.9);
 		}
-		
-		.preview {
-			font-size: 11px;
-			margin-top: $unit;
+
+		.artist-album {
+			margin: 2px 0 0;
+			color: rgba(255, 255, 255, 0.5);
+			display: flex;
+			align-items: center;
+			gap: 4px;
 		}
 	}
-	
-	.no-music {
-		color: rgba(255, 255, 255, 0.5);
-		font-style: italic;
-	}
-	
+
+	// --- Albums: List ---
+
 	.albums-list {
 		display: flex;
 		flex-direction: column;
-		gap: $unit;
 	}
-	
+
 	.album-item {
-		background: rgba(255, 255, 255, 0.05);
-		border-radius: 6px;
 		position: relative;
-		transition: all 0.2s;
-		
+		transition: all $transition-normal;
+
+		&:not(:last-child) {
+			border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		}
+
 		&.playing {
-			background: rgba(76, 175, 80, 0.2);
-			border: 1px solid rgba(76, 175, 80, 0.5);
+			background: rgba($success-color, 0.1);
 		}
-		
+
 		&.expanded {
-			background: rgba(255, 255, 255, 0.08);
+			background: rgba(255, 255, 255, 0.05);
 		}
-		
+
 		.album-header {
-			padding: $unit;
+			padding: $unit-half $unit-half;
 			display: flex;
 			align-items: center;
 			gap: $unit;
 			cursor: pointer;
-			
+
 			&:hover {
 				background: rgba(255, 255, 255, 0.03);
 			}
 		}
-		
+
 		.album-content {
 			flex: 1;
-			min-width: 0; // Allows text truncation
+			min-width: 0;
 		}
-		
-		.album-info {
+
+		.album-title-row {
 			display: flex;
-			flex-direction: column;
-			gap: 2px;
-			
+			align-items: center;
+			gap: $unit;
+
 			.name {
-				font-weight: 600;
-				color: #87ceeb;
-				overflow: hidden;
-				text-overflow: ellipsis;
-				white-space: nowrap;
-			}
-			
-			.artist {
-				font-size: 11px;
-				color: rgba(255, 255, 255, 0.7);
+				font-weight: $font-weight-bold;
+				color: rgba(255, 255, 255, 0.9);
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap;
 			}
 		}
-		
+
 		.playing-badge {
-			position: absolute;
-			top: $unit;
-			right: 40px; // Make room for the clear button
-			background: #4caf50;
+			background: $success-color;
 			color: white;
-			padding: 2px 6px;
-			border-radius: 4px;
+			padding: 1px 5px;
+			border-radius: $corner-radius-xs;
 			font-size: 10px;
-			font-weight: 600;
+			font-weight: $font-weight-bold;
+			flex-shrink: 0;
 		}
-		
+
 		.album-meta {
 			display: flex;
-			gap: $unit * 2;
-			margin-top: $unit-half;
-			
-			.meta-item {
-				font-size: 10px;
-				color: rgba(255, 255, 255, 0.6);
+			align-items: center;
+			gap: 4px;
+			margin-top: 1px;
+			color: rgba(255, 255, 255, 0.5);
+			font-size: $font-size-extra-small;
+
+			.separator {
+				color: rgba(255, 255, 255, 0.3);
 			}
 		}
-		
+
 		.clear-cache-btn {
 			flex-shrink: 0;
-			width: 28px;
-			height: 28px;
+			width: 24px;
+			height: 24px;
 			padding: 0;
-			background: rgba(255, 255, 255, 0.1);
-			border: 1px solid rgba(255, 255, 255, 0.2);
-			border-radius: 4px;
-			color: white;
-			font-size: 14px;
+			background: none;
+			border: none;
+			border-radius: 50%;
+			color: rgba(255, 255, 255, 0.4);
 			cursor: pointer;
-			transition: all 0.2s;
+			transition: all $transition-normal;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			
+
 			&:hover:not(:disabled) {
-				background: rgba(255, 59, 48, 0.2);
-				border-color: rgba(255, 59, 48, 0.5);
+				background: rgba(255, 255, 255, 0.1);
+				color: $error-color;
 			}
-			
+
 			&:disabled {
 				opacity: 0.5;
 				cursor: not-allowed;
 			}
 		}
-		
+
 		.album-details {
-			padding: $unit * 2;
+			padding: $unit * 1.5;
 			border-top: 1px solid rgba(255, 255, 255, 0.1);
-			
+
 			h5 {
 				margin: 0 0 $unit 0;
-				color: #87ceeb;
+				color: $info-color;
 				font-size: $font-size-small;
-				font-weight: 600;
+				font-weight: $font-weight-bold;
 			}
-			
+
 			h6 {
 				margin: $unit * 1.5 0 $unit 0;
-				color: #ffd700;
-				font-size: 12px;
-				font-weight: 600;
+				color: $warning-color;
+				font-size: $font-size-extra-small;
+				font-weight: $font-weight-bold;
 			}
-			
+
 			p {
 				margin: $unit-half 0;
-				font-size: 11px;
+				font-size: $font-size-extra-small;
 				line-height: 1.5;
-				
+
 				strong {
 					color: rgba(255, 255, 255, 0.8);
 					margin-right: $unit-half;
 				}
 			}
-			
+
 			code {
 				background: rgba(255, 255, 255, 0.1);
 				padding: 2px 4px;
-				border-radius: 3px;
-				font-size: 10px;
+				border-radius: $corner-radius-xs;
+				font-size: $font-size-extra-small;
 				word-break: break-all;
 			}
-			
+
 			.tracks-section {
 				margin-top: $unit * 2;
 			}
-			
+
 			.tracks-list {
-				background: rgba(0, 0, 0, 0.3);
-				border-radius: 4px;
+				background: $overlay-dark;
+				border-radius: $corner-radius-xs;
 				padding: $unit;
 				max-height: 200px;
 				overflow-y: auto;
 			}
-			
+
 			.track-item {
 				display: flex;
 				align-items: center;
 				gap: $unit;
 				padding: $unit-half 0;
-				font-size: 11px;
-				
+				font-size: $font-size-extra-small;
+
 				&:not(:last-child) {
 					border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 				}
-				
+
 				.track-number {
 					color: rgba(255, 255, 255, 0.5);
 					min-width: 20px;
 				}
-				
+
 				.track-name {
 					flex: 1;
 					color: rgba(255, 255, 255, 0.9);
 				}
-				
+
 				.track-duration {
 					color: rgba(255, 255, 255, 0.6);
-					font-size: 10px;
+					font-size: $font-size-extra-small;
 				}
 			}
-			
+
 			.raw-data {
 				margin-top: $unit * 2;
-				
+
 				pre {
 					background: rgba(0, 0, 0, 0.5);
 					border: 1px solid rgba(255, 255, 255, 0.1);
-					border-radius: 4px;
+					border-radius: $corner-radius-xs;
 					padding: $unit;
-					font-size: 10px;
+					font-size: $font-size-extra-small;
 					overflow-x: auto;
 					max-height: 300px;
 					overflow-y: auto;
 					margin: 0;
 				}
 			}
-			
+
 			.search-metadata {
 				background: rgba(255, 255, 255, 0.05);
-				border-radius: 4px;
+				border-radius: $corner-radius-xs;
 				padding: $unit;
 				margin-bottom: $unit * 2;
-				
+
 				.error-text {
-					color: #ff6b6b;
+					color: $error-color;
 				}
 			}
-			
+
 			.no-data {
 				color: rgba(255, 255, 255, 0.6);
 				font-style: italic;
 			}
 		}
 	}
-	
+
+	// --- Cache Tab ---
+
 	.cache-controls {
 		display: flex;
 		gap: $unit;
-		margin-bottom: $unit * 2;
-		
+		margin-bottom: $unit * 1.5;
+
 		input {
 			flex: 1;
 			background: rgba(255, 255, 255, 0.1);
 			border: 1px solid rgba(255, 255, 255, 0.2);
 			color: white;
 			padding: $unit;
-			border-radius: 4px;
-			font-size: 12px;
+			border-radius: $corner-radius-xs;
+			font-size: $font-size-extra-small;
 			font-family: inherit;
-			
+
 			&::placeholder {
 				color: rgba(255, 255, 255, 0.4);
 			}
-			
+
 			&:focus {
 				outline: none;
 				border-color: $primary-color;
 				background: rgba(255, 255, 255, 0.15);
 			}
-			
+
 			&:disabled {
 				opacity: 0.5;
 			}
 		}
-		
+
 		.clear-btn {
 			padding: $unit $unit * 2;
 			background: $primary-color;
 			border: none;
 			color: white;
-			border-radius: 4px;
-			font-size: 12px;
-			font-weight: 500;
+			border-radius: $corner-radius-xs;
+			font-size: $font-size-extra-small;
+			font-weight: $font-weight-med;
 			cursor: pointer;
-			transition: all 0.2s;
-			
+			transition: all $transition-normal;
+
 			&:hover:not(:disabled) {
 				background: darken($primary-color, 10%);
 			}
-			
+
 			&:disabled {
 				opacity: 0.5;
 				cursor: not-allowed;
 			}
 		}
 	}
-	
+
 	.cache-actions {
-		margin-bottom: $unit * 2;
+		margin-bottom: $unit * 1.5;
 		display: flex;
-		flex-wrap: wrap;
+		flex-direction: column;
 		gap: $unit;
-		
-		.clear-all-btn, .clear-not-found-btn {
-			flex: 1;
-			min-width: 140px;
+
+		.clear-all-btn, .clear-not-found-btn, .search-btn {
+			width: 100%;
 			padding: $unit * 1.5;
-			background: rgba(255, 59, 48, 0.2);
-			border: 1px solid rgba(255, 59, 48, 0.5);
-			color: #ff6b6b;
-			border-radius: 4px;
-			font-size: 12px;
-			font-weight: 500;
+			background: rgba(255, 255, 255, 0.08);
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			border-radius: $corner-radius-xs;
+			font-size: $font-size-extra-small;
+			font-weight: $font-weight-med;
 			cursor: pointer;
-			transition: all 0.2s;
-			
-			&:hover:not(:disabled) {
-				background: rgba(255, 59, 48, 0.3);
-				border-color: rgba(255, 59, 48, 0.7);
-			}
-			
+			transition: all $transition-normal;
+
 			&:disabled {
 				opacity: 0.5;
 				cursor: not-allowed;
 			}
 		}
-		
-		.clear-not-found-btn {
-			background: rgba(255, 149, 0, 0.2);
-			border-color: rgba(255, 149, 0, 0.5);
-			color: #ff9500;
-			
-			&:hover:not(:disabled) {
-				background: rgba(255, 149, 0, 0.3);
-				border-color: rgba(255, 149, 0, 0.7);
+
+		.search-btn {
+			color: $info-color;
+
+			&:hover {
+				background: rgba($info-color, 0.15);
+				border-color: rgba($info-color, 0.5);
 			}
 		}
-		
-		.search-btn {
-			flex: 1;
-			min-width: 140px;
-			padding: $unit * 1.5;
-			background: rgba(135, 206, 235, 0.2);
-			border: 1px solid rgba(135, 206, 235, 0.5);
-			color: #87ceeb;
-			border-radius: 4px;
-			font-size: 12px;
-			font-weight: 500;
-			cursor: pointer;
-			transition: all 0.2s;
-			
-			&:hover {
-				background: rgba(135, 206, 235, 0.3);
-				border-color: rgba(135, 206, 235, 0.7);
+
+		.cache-divider {
+			height: 1px;
+			background: rgba(255, 255, 255, 0.1);
+			margin: $unit-half 0;
+		}
+
+		.clear-all-btn {
+			color: $error-color;
+
+			&:hover:not(:disabled) {
+				background: rgba($error-color, 0.15);
+				border-color: rgba($error-color, 0.5);
+			}
+		}
+
+		.clear-not-found-btn {
+			color: $warning-color;
+
+			&:hover:not(:disabled) {
+				background: rgba($warning-color, 0.15);
+				border-color: rgba($warning-color, 0.5);
 			}
 		}
 	}
-	
+
 	.cache-help {
 		background: rgba(255, 255, 255, 0.05);
 		padding: $unit;
-		border-radius: 4px;
-		
+		border-radius: $corner-radius-xs;
+
 		p {
 			margin: $unit-half 0;
-			font-size: 11px;
+			font-size: $font-size-extra-small;
 			color: rgba(255, 255, 255, 0.7);
-			
+
 			code {
 				background: rgba(255, 255, 255, 0.1);
 				padding: 2px 4px;
-				border-radius: 3px;
-				font-size: 10px;
+				border-radius: $corner-radius-xs;
+				font-size: $font-size-extra-small;
 			}
 		}
 	}
-	
+
+	// --- Animations ---
+
 	@keyframes flash {
 		0% {
-			background: rgba(76, 175, 80, 0.5);
-			transform: scale(1.05);
+			background: rgba($success-color, 0.5);
 		}
 		100% {
 			background: transparent;
-			transform: scale(1);
 		}
 	}
-	
+
+	@keyframes spin {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+
+	// --- Global icon styles ---
+
 	.debug-panel :global(.icon) {
 		width: 14px;
 		height: 14px;
 		display: inline-block;
 		vertical-align: text-bottom;
-		
+
 		&:global(.success) {
-			color: #4caf50;
+			color: $success-color;
 		}
-		
+
 		&:global(.error) {
-			color: #ff6b6b;
+			color: $error-color;
 		}
-		
+
 		&:global(.inline) {
 			width: 12px;
 			height: 12px;
 		}
-		
+
 		&:global(.spinning) {
 			animation: spin 1s linear infinite;
-		}
-	}
-	
-	@keyframes spin {
-		from {
-			transform: rotate(0deg);
-		}
-		to {
-			transform: rotate(360deg);
-		}
-	}
-	
-	.debug-header h3 {
-		text-align: center;
-		flex: 1;
-		margin: 0;
-	}
-	
-	.status {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		
-		:global(.status-icon) {
-			margin-left: 4px;
-		}
-	}
-	
-	.preview {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		
-		:global(.icon) {
-			margin-left: 4px;
 		}
 	}
 </style>

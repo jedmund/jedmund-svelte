@@ -2,6 +2,8 @@ import type { Album } from '$lib/types/lastfm'
 import { logger } from '$lib/server/logger'
 
 // Type for Last.fm track from API
+// Note: @musicorum/lastfm parses date.uts into a Date object,
+// so track.date is a Date, not { uts: number }
 interface LastfmTrack {
 	name: string
 	album: {
@@ -11,9 +13,7 @@ interface LastfmTrack {
 		name: string
 	}
 	nowPlaying?: boolean
-	date?: {
-		uts: number | string
-	}
+	date?: Date
 	[key: string]: unknown
 }
 
@@ -84,8 +84,8 @@ export class SimpleNowPlayingDetector {
 		let mostRecentTime = new Date(0)
 
 		for (const track of recentTracks) {
-			if (track.date && typeof track.date === 'object' && 'uts' in track.date) {
-				const trackTime = new Date(Number(track.date.uts) * 1000)
+			if (track.date) {
+				const trackTime = track.date instanceof Date ? track.date : new Date(track.date)
 				if (trackTime > mostRecentTime) {
 					mostRecentTime = trackTime
 					mostRecentTrack = track
