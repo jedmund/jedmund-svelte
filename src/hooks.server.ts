@@ -39,7 +39,7 @@ const securityHeaders: Record<string, string> = {
 		"default-src 'self'",
 		"script-src 'self' 'unsafe-inline'",
 		"style-src 'self' 'unsafe-inline'",
-		"img-src 'self' data: blob: https://res.cloudinary.com https://*.mzstatic.com https://*.last.fm https://lastfm.freetls.fastly.net https://*.steampowered.com https://*.steamstatic.com https://image.api.playstation.com https://*.cbsistatic.com https://img.youtube.com https://images.igdb.com https://*.anilist.co https://image.tmdb.org https://artworks.thetvdb.com",
+		"img-src 'self' data: blob: https://res.cloudinary.com https://*.mzstatic.com https://*.last.fm https://lastfm.freetls.fastly.net https://*.steampowered.com https://*.steamstatic.com https://image.api.playstation.com https://*.cbsistatic.com https://img.youtube.com https://images.igdb.com https://*.anilist.co https://image.tmdb.org https://artworks.thetvdb.com https://covers.openlibrary.org https://*.us.archive.org",
 		"font-src 'self'",
 		"connect-src 'self'",
 		"media-src 'self' blob: https://res.cloudinary.com",

@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
+import { validatePreviewToken } from '$lib/server/admin/session'
 import { logger } from '$lib/server/logger'
 import { isValidCategory } from '$lib/constants/garden'
 
@@ -12,6 +13,16 @@ export const GET: RequestHandler = async (event) => {
 		return errorResponse('Category not found', 404)
 	}
 
+	// Check for preview token
+	const previewToken = event.url.searchParams.get('preview')
+	let isPreview = false
+	if (previewToken) {
+		const preview = validatePreviewToken(previewToken)
+		if (preview && preview.slug === `${category}/${slug}` && preview.contentType === 'garden') {
+			isPreview = true
+		}
+	}
+
 	try {
 		const item = await prisma.gardenItem.findUnique({
 			where: {
@@ -20,6 +31,11 @@ export const GET: RequestHandler = async (event) => {
 		})
 
 		if (!item) {
+			return errorResponse('Item not found', 404)
+		}
+
+		// Only return published items unless valid preview token
+		if (!isPreview && item.status !== 'published') {
 			return errorResponse('Item not found', 404)
 		}
 
