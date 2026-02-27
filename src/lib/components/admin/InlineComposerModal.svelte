@@ -664,7 +664,7 @@
 	}
 
 	.character-count {
-		font-size: 13px;
+		font-size: $font-size-small;
 		color: $gray-50;
 		font-weight: 400;
 		padding: 0 $unit;

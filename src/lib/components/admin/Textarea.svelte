@@ -240,13 +240,13 @@
 	}
 
 	.textarea-error {
-		font-size: 13px;
+		font-size: $font-size-small;
 		color: $red-50;
 		flex: 1;
 	}
 
 	.textarea-help {
-		font-size: 13px;
+		font-size: $font-size-small;
 		color: $gray-40;
 		flex: 1;
 	}

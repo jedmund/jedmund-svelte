@@ -399,7 +399,7 @@
 
 	.input-error,
 	.input-help {
-		font-size: 13px;
+		font-size: $font-size-small;
 		line-height: 1.4;
 	}
 

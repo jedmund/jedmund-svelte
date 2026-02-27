@@ -138,7 +138,7 @@
 		border: none;
 		border-radius: $corner-radius-sm;
 		text-align: left;
-		font-size: 13px;
+		font-size: $font-size-small;
 		color: $gray-10;
 		cursor: pointer;
 		transition: all 0.15s ease;

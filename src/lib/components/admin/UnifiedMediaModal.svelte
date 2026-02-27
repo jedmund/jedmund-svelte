@@ -624,7 +624,7 @@
 
 	// Match search input font size to select dropdowns
 	:global(.search-input .input) {
-		font-size: 13px !important;
+		font-size: $font-size-small !important;
 	}
 
 	// Hide the infinite scroll intersection target

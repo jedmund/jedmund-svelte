@@ -180,7 +180,7 @@
 		border-bottom: 1px solid rgba($gray-85, 0.3);
 
 		span {
-			font-size: 13px;
+			font-size: $font-size-small;
 			font-weight: 500;
 			color: $gray-10;
 		}
@@ -240,7 +240,7 @@
 		background: transparent;
 		border: 1px solid rgba($gray-85, 0.3);
 		border-radius: $corner-radius-sm;
-		font-size: 13px;
+		font-size: $font-size-small;
 		color: $gray-20;
 		cursor: pointer;
 		transition: all 0.15s ease;
@@ -262,7 +262,7 @@
 		background: $red-60;
 		border: none;
 		border-radius: $corner-radius-sm;
-		font-size: 13px;
+		font-size: $font-size-small;
 		font-weight: 500;
 		color: $white;
 		cursor: pointer;
@@ -319,7 +319,7 @@
 		background: rgba($gray-95, 0.5);
 		border: 1px solid rgba($gray-85, 0.3);
 		border-radius: $corner-radius-sm;
-		font-size: 13px;
+		font-size: $font-size-small;
 		color: $gray-10;
 		text-align: center;
 		font-family: monospace;
