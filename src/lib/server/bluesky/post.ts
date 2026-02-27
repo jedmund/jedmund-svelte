@@ -11,7 +11,7 @@ interface BlueskyPostResult {
 
 interface PostInput {
 	text: string
-	url: string
+	url?: string
 	images?: { url: string; alt: string }[]
 	videos?: { url: string }[]
 	useExternalEmbed?: boolean
@@ -22,7 +22,7 @@ interface PostInput {
 export async function postToBluesky(input: PostInput): Promise<BlueskyPostResult> {
 	const agent = await getBlueskyAgent()
 
-	const fullText = input.text + '\n\n' + input.url
+	const fullText = input.url ? input.text + '\n\n' + input.url : input.text
 	const rt = new RichText({ text: fullText })
 	await rt.detectFacets(agent)
 
@@ -55,7 +55,7 @@ export async function postToBluesky(input: PostInput): Promise<BlueskyPostResult
 		}
 	} else if (input.images && input.images.length > 0) {
 		await attachImages(post, agent, input)
-	} else if (input.useExternalEmbed) {
+	} else if (input.useExternalEmbed && input.url) {
 		post.embed = {
 			$type: 'app.bsky.embed.external' as const,
 			external: {

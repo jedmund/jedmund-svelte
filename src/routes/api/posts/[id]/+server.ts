@@ -106,6 +106,7 @@ export const PUT: RequestHandler = async (event) => {
 				featuredImage: featuredImageId,
 				syndicateBluesky: data.syndicateBluesky ?? undefined,
 				syndicateMastodon: data.syndicateMastodon ?? undefined,
+				appendLink: data.appendLink ?? undefined,
 				attachments:
 					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
 				publishedAt: data.publishedAt,
@@ -213,6 +214,7 @@ export const PATCH: RequestHandler = async (event) => {
 		if (data.syndicationText !== undefined) updateData.syndicationText = data.syndicationText
 		if (data.syndicateBluesky !== undefined) updateData.syndicateBluesky = data.syndicateBluesky
 		if (data.syndicateMastodon !== undefined) updateData.syndicateMastodon = data.syndicateMastodon
+		if (data.appendLink !== undefined) updateData.appendLink = data.appendLink
 
 		const post = await prisma.post.update({ where: { id }, data: updateData })
 
