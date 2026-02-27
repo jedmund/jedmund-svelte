@@ -14,19 +14,24 @@ function tmdbHeaders(): Record<string, string> {
 	}
 }
 
-async function getDirector(movieId: number): Promise<string | null> {
+async function getMovieDetails(
+	movieId: number
+): Promise<{ director: string | null; runtime: number | null }> {
 	try {
 		const res = await fetch(`${TMDB_BASE}/movie/${movieId}?append_to_response=credits`, {
 			headers: tmdbHeaders()
 		})
-		if (!res.ok) return null
+		if (!res.ok) return { director: null, runtime: null }
 		const data = await res.json()
 		const director = data.credits?.crew?.find(
 			(p: { job: string; name: string }) => p.job === 'Director'
 		)
-		return director?.name || null
+		return {
+			director: director?.name || null,
+			runtime: data.runtime || null
+		}
 	} catch {
-		return null
+		return { director: null, runtime: null }
 	}
 }
 
@@ -68,15 +73,22 @@ export const GET: RequestHandler = async (event) => {
 				async (movie: {
 					id: number
 					title: string
+					overview?: string
 					poster_path: string | null
 					release_date?: string
-				}) => ({
-					id: movie.id,
-					name: movie.title,
-					image: movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null,
-					director: await getDirector(movie.id),
-					year: movie.release_date?.slice(0, 4) || null
-				})
+				}) => {
+					const details = await getMovieDetails(movie.id)
+					return {
+						id: movie.id,
+						name: movie.title,
+						image: movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null,
+						director: details.director,
+						year: movie.release_date?.slice(0, 4) || null,
+						sourceId: String(movie.id),
+						metadata: { runtime: details.runtime },
+						summary: movie.overview || null
+					}
+				}
 			)
 		)
 
