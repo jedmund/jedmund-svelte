@@ -1,9 +1,10 @@
 import { getConfig } from '$lib/server/config'
 import { HARDCODED_DEFAULTS, setSeoDefaults } from '$lib/utils/metadata'
+import { prisma } from '$lib/server/database'
 
 export const load = async () => {
 	try {
-		const [siteName, siteUrl, defaultTitle, defaultDescription, defaultOgImage, twitterHandle, locale] =
+		const [siteName, siteUrl, defaultTitle, defaultDescription, defaultOgImage, twitterHandle, locale, socialLinks, profile] =
 			await Promise.all([
 				getConfig('site.name'),
 				getConfig('site.url'),
@@ -11,7 +12,12 @@ export const load = async () => {
 				getConfig('seo.default_description'),
 				getConfig('seo.default_og_image'),
 				getConfig('seo.twitter_handle'),
-				getConfig('seo.locale')
+				getConfig('seo.locale'),
+				prisma.socialLink.findMany({
+					where: { isActive: true },
+					orderBy: { displayOrder: 'asc' }
+				}),
+				prisma.profile.findFirst()
 			])
 
 		const seoDefaults = {
@@ -25,8 +31,19 @@ export const load = async () => {
 		}
 
 		setSeoDefaults(seoDefaults)
-		return { seoDefaults }
+		return {
+			seoDefaults,
+			socialLinks: socialLinks.map((link) => ({
+				name: link.label,
+				url: link.url
+			})),
+			shortBio: profile?.shortBio || null
+		}
 	} catch {
-		return { seoDefaults: { ...HARDCODED_DEFAULTS } }
+		return {
+			seoDefaults: { ...HARDCODED_DEFAULTS },
+			socialLinks: [] as { name: string; url: string }[],
+			shortBio: null as string | null
+		}
 	}
 }

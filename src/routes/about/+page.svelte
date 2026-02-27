@@ -4,6 +4,7 @@
 	import RecentAlbums from '$components/RecentAlbums.svelte'
 	import StreamStatus from '$components/StreamStatus.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
+	import { renderEdraContent } from '$lib/utils/content'
 	import { page } from '$app/stores'
 
 	import type { PageData } from './$types'
@@ -11,6 +12,11 @@
 	let { data } = $props<{ data: PageData }>()
 
 	let albums = $derived(data.albums)
+	const hasDynamicBio = $derived(!!data.aboutProfile?.bio)
+	const dynamicBioHtml = $derived(
+		data.aboutProfile?.bio ? renderEdraContent(data.aboutProfile.bio) : ''
+	)
+	const aboutMentions = $derived(data.aboutMentions)
 
 	const pageUrl = $derived($page.url.href)
 
@@ -52,26 +58,30 @@
 		{/snippet}
 
 		<section class="bio">
-			<p>
-				Hello! My name is <em>Justin Edmund</em>. I'm a software designer and developer living in
-				San Francisco.
-			</p>
-			<p>
-				Currently, I'm a product designer at <a href="https://grammarly.com" target="_blank"
-					>Grammarly</a
-				>. I spend my free time building a hobby journaling app called
-				<a href="https://maitsu.co" target="_blank">Maitsu</a> and running a competitive crew in
-				<a href="https://granbluefantasy.jp" target="_blank">Granblue Fantasy</a>. I've spent time
-				at several companies over the last 15 years, but you might know me from
-				<a href="https://www.pinterest.com/" target="_blank">Pinterest</a>, where I was the first
-				design hire.
-			</p>
-			<p>
-				I was born and raised in New York City and spend a lot of time in Tokyo. I graduated from <a
-					href="http://design.cmu.edu/"
-					target="_blank">Carnegie Mellon University</a
-				> in 2011 with a Bachelors of Arts in Communication Design.
-			</p>
+			{#if hasDynamicBio}
+				{@html dynamicBioHtml}
+			{:else}
+				<p>
+					Hello! My name is <em>Justin Edmund</em>. I'm a software designer and developer living in
+					San Francisco.
+				</p>
+				<p>
+					Currently, I'm a product designer at <a href="https://grammarly.com" target="_blank"
+						>Grammarly</a
+					>. I spend my free time building a hobby journaling app called
+					<a href="https://maitsu.co" target="_blank">Maitsu</a> and running a competitive crew in
+					<a href="https://granbluefantasy.jp" target="_blank">Granblue Fantasy</a>. I've spent time
+					at several companies over the last 15 years, but you might know me from
+					<a href="https://www.pinterest.com/" target="_blank">Pinterest</a>, where I was the first
+					design hire.
+				</p>
+				<p>
+					I was born and raised in New York City and spend a lot of time in Tokyo. I graduated from <a
+						href="http://design.cmu.edu/"
+						target="_blank">Carnegie Mellon University</a
+					> in 2011 with a Bachelors of Arts in Communication Design.
+				</p>
+			{/if}
 		</section>
 	</Page>
 	<Page>
@@ -79,7 +89,7 @@
 			<h2>Notable mentions</h2>
 		{/snippet}
 
-		<MentionList />
+		<MentionList mentions={aboutMentions} />
 	</Page>
 	<Page noHorizontalPadding={true}>
 		{#snippet header()}
