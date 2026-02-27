@@ -6,6 +6,7 @@
 	import AlbumIcon from '$icons/album.svg?component'
 	import MediaIcon from '$icons/media.svg?component'
 	import TagIcon from '$icons/tag.svg?component'
+	import AboutIcon from '$icons/about.svg?component'
 	import SettingsIcon from '$icons/settings.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
@@ -23,7 +24,8 @@
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
 		{ text: 'Media', href: '/admin/media', icon: MediaIcon },
-		{ text: 'Tags', href: '/admin/tags', icon: TagIcon }
+		{ text: 'Tags', href: '/admin/tags', icon: TagIcon },
+		{ text: 'About', href: '/admin/about', icon: AboutIcon }
 	]
 
 	const settingsItem: NavItem = { text: 'Settings', href: '/admin/settings', icon: SettingsIcon }
@@ -40,9 +42,11 @@
 						? 3
 						: currentPath.startsWith('/admin/tags')
 							? 4
-							: currentPath.startsWith('/admin/settings')
+							: currentPath.startsWith('/admin/about')
 								? 5
-								: -1
+								: currentPath.startsWith('/admin/settings')
+									? 6
+									: -1
 	)
 </script>
 
@@ -63,7 +67,7 @@
 	</div>
 
 	<div class="nav-bottom">
-		<a href={settingsItem.href} class="nav-link" class:active={activeIndex === 5}>
+		<a href={settingsItem.href} class="nav-link" class:active={activeIndex === 6}>
 			<settingsItem.icon class="nav-icon" />
 			<span class="nav-text">{settingsItem.text}</span>
 		</a>
