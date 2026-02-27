@@ -2,10 +2,11 @@
 	interface Props {
 		checked: boolean
 		disabled?: boolean
+		accentColor?: string
 		onchange?: (checked: boolean) => void
 	}
 
-	let { checked = $bindable(), disabled = false, onchange }: Props = $props()
+	let { checked = $bindable(), disabled = false, accentColor, onchange }: Props = $props()
 
 	function handleChange(e: Event) {
 		const target = e.target as HTMLInputElement
@@ -16,45 +17,45 @@
 	}
 </script>
 
-<label class="branding-toggle">
+<label class="switch" style:--switch-accent={accentColor}>
 	<input
 		type="checkbox"
 		bind:checked
 		{disabled}
 		onchange={handleChange}
-		class="branding-toggle__input"
+		class="switch__input"
 	/>
-	<span class="branding-toggle__slider"></span>
+	<span class="switch__slider"></span>
 </label>
 
 <style lang="scss">
-	.branding-toggle {
+	.switch {
 		display: flex;
 		align-items: center;
 		cursor: pointer;
 		user-select: none;
 	}
 
-	.branding-toggle__input {
+	.switch__input {
 		position: absolute;
 		opacity: 0;
 		pointer-events: none;
 
-		&:checked + .branding-toggle__slider {
-			background-color: $blue-60;
+		&:checked + .switch__slider {
+			background-color: var(--switch-accent, $red-60);
 
 			&::before {
 				transform: translateX(20px);
 			}
 		}
 
-		&:disabled + .branding-toggle__slider {
-			opacity: 0.5;
+		&:disabled + .switch__slider {
+			opacity: 0.6;
 			cursor: not-allowed;
 		}
 	}
 
-	.branding-toggle__slider {
+	.switch__slider {
 		position: relative;
 		width: 44px;
 		height: 24px;
