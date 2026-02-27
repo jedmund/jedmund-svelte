@@ -1,13 +1,13 @@
 import type { CategorySearchConfig, TypeaheadResult } from '$lib/types/garden'
 
 export const GARDEN_CATEGORIES = [
-	{ value: 'book', label: 'Books', singular: 'Book' },
-	{ value: 'movie', label: 'Movies', singular: 'Movie' },
+	{ value: 'books', label: 'Books', singular: 'Book' },
+	{ value: 'movies', label: 'Movies', singular: 'Movie' },
 	{ value: 'music', label: 'Music', singular: 'Music' },
-	{ value: 'game', label: 'Games', singular: 'Game' },
+	{ value: 'games', label: 'Games', singular: 'Game' },
 	{ value: 'manga', label: 'Manga', singular: 'Manga' },
-	{ value: 'tv_show', label: 'TV Shows', singular: 'TV Show' },
-	{ value: 'device', label: 'Devices', singular: 'Device' },
+	{ value: 'tv-shows', label: 'TV Shows', singular: 'TV Show' },
+	{ value: 'devices', label: 'Devices', singular: 'Device' },
 	{ value: 'other', label: 'Other', singular: 'Other' }
 ] as const
 
@@ -28,19 +28,19 @@ export function isValidCategory(value: string): value is GardenCategory {
 
 export function getCreatorLabel(category: string): string {
 	switch (category) {
-		case 'book':
+		case 'books':
 			return 'Author'
-		case 'movie':
+		case 'movies':
 			return 'Director'
 		case 'music':
 			return 'Artist'
-		case 'game':
+		case 'games':
 			return 'Developer'
 		case 'manga':
 			return 'Author'
-		case 'tv_show':
+		case 'tv-shows':
 			return 'Creator'
-		case 'device':
+		case 'devices':
 			return 'Manufacturer'
 		case 'other':
 			return 'Creator'
@@ -49,17 +49,41 @@ export function getCreatorLabel(category: string): string {
 	}
 }
 
+function formatSubtitle(creator: string | null, year: string | null): string | null {
+	return [creator, year].filter(Boolean).join(' \u00B7 ') || null
+}
+
 export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig>> = {
-	game: {
+	books: {
+		endpoint: '/api/admin/garden/search/books',
+		placeholder: 'Search for a book...',
+		emptyText: 'No books found',
+		mapResult: (raw): TypeaheadResult => ({
+			id: raw.id,
+			name: raw.name,
+			subtitle: formatSubtitle(raw.author, raw.year),
+			image: raw.image,
+			creator: raw.author,
+			year: raw.year ?? null,
+			sourceId: raw.sourceId ?? String(raw.id),
+			metadata: null,
+			summary: raw.summary ?? null
+		})
+	},
+	games: {
 		endpoint: '/api/admin/garden/search/games',
 		placeholder: 'Search for a game...',
 		emptyText: 'No games found',
 		mapResult: (raw): TypeaheadResult => ({
 			id: raw.id,
 			name: raw.name,
-			subtitle: raw.developer,
+			subtitle: formatSubtitle(raw.developer, raw.year),
 			image: raw.image,
-			creator: raw.developer
+			creator: raw.developer,
+			year: raw.year ?? null,
+			sourceId: raw.sourceId ?? String(raw.id),
+			metadata: null,
+			summary: raw.summary ?? null
 		})
 	},
 	music: {
@@ -69,9 +93,13 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 		mapResult: (raw): TypeaheadResult => ({
 			id: raw.id,
 			name: raw.name,
-			subtitle: raw.artist,
+			subtitle: formatSubtitle(raw.artist, raw.year),
 			image: raw.image,
-			creator: raw.artist
+			creator: raw.artist,
+			year: raw.year ?? null,
+			sourceId: raw.sourceId ?? String(raw.id),
+			metadata: null,
+			summary: raw.summary ?? null
 		})
 	},
 	manga: {
@@ -81,24 +109,32 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 		mapResult: (raw): TypeaheadResult => ({
 			id: raw.id,
 			name: raw.name,
-			subtitle: raw.author,
+			subtitle: formatSubtitle(raw.author, raw.year),
 			image: raw.image,
-			creator: raw.author
+			creator: raw.author,
+			year: raw.year ?? null,
+			sourceId: raw.sourceId ?? String(raw.id),
+			metadata: raw.metadata ?? null,
+			summary: raw.summary ?? null
 		})
 	},
-	movie: {
+	movies: {
 		endpoint: '/api/admin/garden/search/movies',
 		placeholder: 'Search for a movie...',
 		emptyText: 'No movies found',
 		mapResult: (raw): TypeaheadResult => ({
 			id: raw.id,
 			name: raw.name,
-			subtitle: [raw.director, raw.year].filter(Boolean).join(' \u00B7 ') || null,
+			subtitle: formatSubtitle(raw.director, raw.year),
 			image: raw.image,
-			creator: raw.director
+			creator: raw.director,
+			year: raw.year ?? null,
+			sourceId: raw.sourceId ?? String(raw.id),
+			metadata: raw.metadata ?? null,
+			summary: raw.summary ?? null
 		})
 	},
-	tv_show: {
+	'tv-shows': {
 		endpoint: '/api/admin/garden/search/tv',
 		placeholder: 'Search for a TV show...',
 		emptyText: 'No TV shows found',
@@ -107,8 +143,31 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			name: raw.name,
 			subtitle: [raw.year, raw.originalName].filter(Boolean).join(' \u00B7 ') || null,
 			image: raw.image,
-			creator: null
+			creator: null,
+			year: raw.year ?? null,
+			sourceId: raw.sourceId ?? String(raw.id),
+			metadata: raw.metadata ?? null,
+			summary: raw.summary ?? null
 		})
+	}
+}
+
+export function getExternalUrl(category: string, sourceId: string): string | null {
+	switch (category) {
+		case 'games':
+			return `https://www.igdb.com/games/${sourceId}`
+		case 'music':
+			return `https://music.apple.com/album/${sourceId}`
+		case 'manga':
+			return `https://anilist.co/manga/${sourceId}`
+		case 'movies':
+			return `https://www.themoviedb.org/movie/${sourceId}`
+		case 'tv-shows':
+			return `https://thetvdb.com/series/${sourceId}`
+		case 'books':
+			return `https://openlibrary.org${sourceId}`
+		default:
+			return null
 	}
 }
 

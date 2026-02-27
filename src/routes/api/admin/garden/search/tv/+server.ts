@@ -28,6 +28,33 @@ async function getTvdbToken(): Promise<string> {
 	return token
 }
 
+async function getSeriesDetails(
+	tvdbId: string,
+	token: string
+): Promise<{ seasons: number | null; episodes: number | null }> {
+	try {
+		const res = await fetch(`${TVDB_BASE}/series/${tvdbId}/extended`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+				Accept: 'application/json'
+			}
+		})
+		if (!res.ok) return { seasons: null, episodes: null }
+		const data = await res.json()
+		const series = data.data
+		// Filter out specials (season 0)
+		const regularSeasons = series?.seasons?.filter(
+			(s: { number: number }) => s.number > 0
+		)
+		return {
+			seasons: regularSeasons?.length ?? null,
+			episodes: series?.episodes?.length ?? null
+		}
+	} catch {
+		return { seasons: null, episodes: null }
+	}
+}
+
 export const GET: RequestHandler = async (event) => {
 	if (!checkAdminAuth(event)) {
 		return errorResponse('Unauthorized', 401)
@@ -67,36 +94,42 @@ export const GET: RequestHandler = async (event) => {
 		const data = await res.json()
 		const shows = (data.data || []).slice(0, limit)
 
-		const results = shows.map(
-			(show: {
-				tvdb_id: string
-				name: string
-				image_url?: string
-				year?: string
-				primary_language?: string
-				translations?: Record<string, string>
-			}) => {
-				const engName = show.translations?.eng
-				const jpnName = show.translations?.jpn
-				// Use English name if available and the primary language isn't English
-				const displayName =
-					show.primary_language !== 'eng' && engName ? engName : show.name
-				// Show the original name if it differs from the display name
-				const originalName =
-					displayName !== show.name
-						? show.name
-						: show.primary_language === 'eng' && jpnName && jpnName !== show.name
-							? jpnName
-							: null
+		const results = await Promise.all(
+			shows.map(
+				async (show: {
+					tvdb_id: string
+					name: string
+					overview?: string
+					image_url?: string
+					year?: string
+					primary_language?: string
+					translations?: Record<string, string>
+				}) => {
+					const engName = show.translations?.eng
+					const jpnName = show.translations?.jpn
+					const displayName =
+						show.primary_language !== 'eng' && engName ? engName : show.name
+					const originalName =
+						displayName !== show.name
+							? show.name
+							: show.primary_language === 'eng' && jpnName && jpnName !== show.name
+								? jpnName
+								: null
 
-				return {
-					id: show.tvdb_id,
-					name: displayName,
-					originalName,
-					image: show.image_url || null,
-					year: show.year || null
+					const details = await getSeriesDetails(show.tvdb_id, token)
+
+					return {
+						id: show.tvdb_id,
+						name: displayName,
+						originalName,
+						image: show.image_url || null,
+						year: show.year || null,
+						sourceId: show.tvdb_id,
+						metadata: { seasons: details.seasons, episodes: details.episodes },
+						summary: show.overview || null
+					}
 				}
-			}
+			)
 		)
 
 		await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(results))
