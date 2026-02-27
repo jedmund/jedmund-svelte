@@ -5,6 +5,7 @@
 	import UniverseIcon from '$icons/universe.svg?component'
 	import AlbumIcon from '$icons/album.svg?component'
 	import MediaIcon from '$icons/media.svg?component'
+	import GardenIcon from '$icons/garden.svg?component'
 	import TagIcon from '$icons/tag.svg?component'
 	import SettingsIcon from '$icons/settings.svg?component'
 
@@ -23,6 +24,7 @@
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
 		{ text: 'Media', href: '/admin/media', icon: MediaIcon },
+		{ text: 'Garden', href: '/admin/garden', icon: GardenIcon },
 		{ text: 'Tags', href: '/admin/tags', icon: TagIcon }
 	]
 
@@ -38,11 +40,13 @@
 					? 2
 					: currentPath.startsWith('/admin/media')
 						? 3
-						: currentPath.startsWith('/admin/tags')
+						: currentPath.startsWith('/admin/garden')
 							? 4
-							: currentPath.startsWith('/admin/settings')
+							: currentPath.startsWith('/admin/tags')
 								? 5
-								: -1
+								: currentPath.startsWith('/admin/settings')
+									? 6
+									: -1
 	)
 </script>
 
@@ -63,7 +67,7 @@
 	</div>
 
 	<div class="nav-bottom">
-		<a href={settingsItem.href} class="nav-link" class:active={activeIndex === 5}>
+		<a href={settingsItem.href} class="nav-link" class:active={activeIndex === 6}>
 			<settingsItem.icon class="nav-icon" />
 			<span class="nav-text">{settingsItem.text}</span>
 		</a>

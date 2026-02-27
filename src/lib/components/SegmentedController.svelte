@@ -3,6 +3,7 @@
 	import LabsIcon from '$icons/labs.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
 	import PhotosIcon from '$icons/photos.svg?component'
+	import GardenIcon from '$icons/garden.svg?component'
 	import { page } from '$app/stores'
 
 	const currentPath = $derived($page.url.pathname)
@@ -11,13 +12,14 @@
 		icon: typeof WorkIcon
 		text: string
 		href: string
-		variant: 'work' | 'universe' | 'labs' | 'photos'
+		variant: 'work' | 'universe' | 'labs' | 'photos' | 'garden'
 	}
 
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
+		{ icon: GardenIcon, text: 'Garden', href: '/garden', variant: 'garden' },
 		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' }
 	]
 
@@ -32,9 +34,11 @@
 				? 1
 				: currentPath.startsWith('/photos')
 					? 2
-					: currentPath.startsWith('/labs')
+					: currentPath.startsWith('/garden')
 						? 3
-						: -1
+						: currentPath.startsWith('/labs')
+							? 4
+							: -1
 	)
 
 	// Calculate pill position and width
@@ -77,6 +81,8 @@
 				return '#e8c5ff' // $photos-bg (purple)
 			case 'universe':
 				return '#ffebc5' // $universe-bg
+			case 'garden':
+				return '#d1fae5' // $green-80
 			case 'labs':
 				return '#c5eaff' // $labs-bg
 			default:
@@ -93,6 +99,8 @@
 				return '#7c3aed' // $photos-color (purple)
 			case 'universe':
 				return '#b97d14' // $universe-color
+			case 'garden':
+				return '#059669' // $green-20
 			case 'labs':
 				return '#1482c1' // $labs-color
 			default:
@@ -210,8 +218,13 @@
 		animation: masonryRect4 0.6s ease;
 	}
 
-	// Fourth item is Labs
+	// Fourth item is Garden
 	.nav-item:nth-of-type(4) :global(svg.animate) {
+		animation: iconPulse 0.6s ease;
+	}
+
+	// Fifth item is Labs
+	.nav-item:nth-of-type(5) :global(svg.animate) {
 		animation: tubeRotate 0.6s ease;
 		transform-origin: center bottom;
 	}
