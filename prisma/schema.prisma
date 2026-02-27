@@ -243,3 +243,74 @@ model Setting {
 
   @@index([key])
 }
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  bio       Json?
+  shortBio  String?  @db.Text
+  headline  String?  @db.VarChar(255)
+  location  String?  @db.VarChar(255)
+  avatarUrl String?  @db.VarChar(500)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SocialLink {
+  id           Int      @id @default(autoincrement())
+  platform     String   @db.VarChar(100)
+  label        String   @db.VarChar(255)
+  url          String   @db.VarChar(500)
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
+model WorkHistory {
+  id           Int       @id @default(autoincrement())
+  company      String    @db.VarChar(255)
+  role         String    @db.VarChar(255)
+  url          String?   @db.VarChar(500)
+  startDate    DateTime
+  endDate      DateTime?
+  isCurrent    Boolean   @default(false)
+  description  String?   @db.Text
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([displayOrder])
+}
+
+model Mention {
+  id           Int      @id @default(autoincrement())
+  title        String   @db.VarChar(500)
+  href         String   @db.VarChar(500)
+  source       String?  @db.VarChar(255)
+  sourceType   String   @db.VarChar(100)
+  date         String   @db.VarChar(50)
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
+model GardenItem {
+  id           Int      @id @default(autoincrement())
+  category     String   @db.VarChar(100)
+  title        String   @db.VarChar(255)
+  creator      String?  @db.VarChar(255)
+  imageUrl     String?  @db.VarChar(500)
+  url          String?  @db.VarChar(500)
+  note         String?  @db.Text
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@index([displayOrder])
+}
