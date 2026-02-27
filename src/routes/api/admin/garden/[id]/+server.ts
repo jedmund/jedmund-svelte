@@ -16,7 +16,9 @@ interface GardenItemUpdateBody {
 	creator?: string
 	imageUrl?: string
 	url?: string
+	date?: string | null
 	note?: unknown
+	rating?: number | null
 	isCurrent?: boolean
 	isFavorite?: boolean
 	displayOrder?: number
@@ -105,7 +107,14 @@ export const PUT: RequestHandler = async (event) => {
 				creator: body.creator !== undefined ? body.creator || null : existing.creator,
 				imageUrl: body.imageUrl !== undefined ? body.imageUrl || null : existing.imageUrl,
 				url: body.url !== undefined ? body.url || null : existing.url,
+				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				note: body.note !== undefined ? (body.note as any) : existing.note,
+				rating:
+					body.rating !== undefined
+						? body.rating != null
+							? Math.min(5, Math.max(1, body.rating))
+							: null
+						: existing.rating,
 				isCurrent: body.isCurrent ?? existing.isCurrent,
 				isFavorite: body.isFavorite ?? existing.isFavorite,
 				displayOrder: body.displayOrder ?? existing.displayOrder
