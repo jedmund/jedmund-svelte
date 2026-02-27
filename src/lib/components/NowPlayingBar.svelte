@@ -7,7 +7,8 @@
 	}
 
 	let { album, getAlbumArtwork }: Props = $props()
-	
+
+	const artwork = $derived(getAlbumArtwork(album))
 	const trackText = $derived(`${album.artist.name} — ${album.name}${
 		album.appleMusicData?.releaseDate 
 			? ` (${new Date(album.appleMusicData.releaseDate).getFullYear()})` 
@@ -16,9 +17,9 @@
 </script>
 
 <nav class="now-playing-bar">
-	<div class="now-playing-content">
-		{#if getAlbumArtwork(album)}
-			<img src={getAlbumArtwork(album)} alt="{album.name} album cover" class="album-thumbnail" />
+	<div class="now-playing-content" class:no-artwork={!artwork}>
+		{#if artwork}
+			<img src={artwork} alt="{album.name} album cover" class="album-thumbnail" />
 		{/if}
 		<span class="track-info">
 			<span class="now-playing-label">Now playing</span>
@@ -60,6 +61,10 @@
 		width: 100%;
 		padding: $unit $unit-2x;
 		color: $text-color-subdued;
+
+		&.no-artwork {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	.album-thumbnail {
@@ -74,10 +79,13 @@
 		font-size: $font-size-small;
 		font-weight: $font-weight-med;
 		text-align: center;
-		padding-right: 32px; // Balance out the image on the left
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+
+		.now-playing-content:not(.no-artwork) & {
+			padding-right: 32px; // Balance out the image on the left
+		}
 	}
 
 	.marquee-container {
