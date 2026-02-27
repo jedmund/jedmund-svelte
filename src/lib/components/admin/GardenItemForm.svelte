@@ -7,14 +7,19 @@
 	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
 	import Composer from './composer'
 	import Typeahead from './Typeahead.svelte'
+	import GardenSelectionCard from './GardenSelectionCard.svelte'
 	import Input from './Input.svelte'
+	import StarRating from './StarRating.svelte'
+	import Textarea from './Textarea.svelte'
+	import StatusDropdown from './StatusDropdown.svelte'
+	import DeleteConfirmationModal from './DeleteConfirmationModal.svelte'
 	import Switch from './Switch.svelte'
-	import Button from './Button.svelte'
 	import { toast } from '$lib/stores/toast'
 	import {
 		SEARCH_CONFIGS,
 		createSearchFn,
-		getCreatorLabel
+		getCreatorLabel,
+		getExternalUrl
 	} from '$lib/constants/garden'
 	import type { GardenCategory } from '$lib/constants/garden'
 	import type { TypeaheadSelection } from '$lib/types/garden'
@@ -29,39 +34,79 @@
 	let { item = null, mode }: Props = $props()
 
 	// Form state
-	let category = $state<GardenCategory>((item?.category as GardenCategory) ?? 'book')
+	let category = $state<GardenCategory>((item?.category as GardenCategory) ?? 'books')
 	let title = $state(item?.title ?? '')
 	let slug = $state(item?.slug ?? '')
 	let creator = $state(item?.creator ?? '')
 	let imageUrl = $state(item?.imageUrl ?? '')
 	let url = $state(item?.url ?? '')
+	let sourceId = $state(item?.sourceId ?? '')
+	let metadata = $state<Record<string, any> | null>(
+		(item?.metadata as Record<string, any>) ?? null
+	)
+	let summary = $state(item?.summary ?? '')
 	let date = $state(item?.date ? new Date(item.date).toISOString().slice(0, 10) : '')
 	let rating = $state<number | null>(item?.rating ?? null)
 	let isCurrent = $state(item?.isCurrent ?? false)
 	let isFavorite = $state(item?.isFavorite ?? false)
+	let status = $state<'draft' | 'published'>((item?.status as 'draft' | 'published') ?? 'draft')
 	let note = $state<JSONContent>(
 		(item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
 	)
+
+	// Selection state: 'empty' = show typeahead, 'selected' = show card, 'changing' = typeahead with pre-filled title
+	let selectionState = $state<'empty' | 'selected' | 'changing'>(
+		mode === 'edit' && item?.title ? 'selected' : 'empty'
+	)
+
+	// Year for display in the selection card (not stored separately, derived from metadata or item)
+	let selectedYear = $state<string | null>(null)
+
+	// Component refs
+	let typeaheadRef: ReturnType<typeof import('./Typeahead.svelte').default> | undefined = $state()
 
 	// UI state
 	let isSaving = $state(false)
 	let activeTab = $state('details')
 	let showUnsavedChangesModal = $state(false)
+	let showDeleteConfirmation = $state(false)
 	let pendingNavigation = $state<BeforeNavigate | null>(null)
 	let autoSlug = $state(mode === 'create')
+	let isSavedNavigation = $state(false)
+
+	const primaryAction = $derived(
+		status === 'draft'
+			? { label: 'Save draft', status: 'draft' }
+			: { label: 'Save', status: 'published' }
+	)
+
+	const dropdownActions = $derived(
+		status === 'draft'
+			? [{ label: 'Publish', status: 'published' }]
+			: [{ label: 'Unpublish', status: 'draft' }]
+	)
+
+	const viewUrl = $derived(
+		status === 'published' && slug ? `/garden/${category}/${slug}` : undefined
+	)
+
+	const isSearchable = $derived(!!SEARCH_CONFIGS[category])
 
 	// Track original values for dirty checking
 	let original = $state({
-		category: item?.category ?? 'book',
+		category: item?.category ?? 'books',
 		title: item?.title ?? '',
 		slug: item?.slug ?? '',
 		creator: item?.creator ?? '',
 		imageUrl: item?.imageUrl ?? '',
 		url: item?.url ?? '',
+		sourceId: item?.sourceId ?? '',
+		metadata: JSON.stringify((item?.metadata as Record<string, any>) ?? null),
 		date: item?.date ? new Date(item.date).toISOString().slice(0, 10) : '',
 		rating: item?.rating ?? null,
 		isCurrent: item?.isCurrent ?? false,
 		isFavorite: item?.isFavorite ?? false,
+		status: (item?.status as 'draft' | 'published') ?? 'draft',
 		note: JSON.stringify(
 			(item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
 		)
@@ -74,10 +119,13 @@
 			creator !== original.creator ||
 			imageUrl !== original.imageUrl ||
 			url !== original.url ||
+			sourceId !== original.sourceId ||
+			JSON.stringify(metadata) !== original.metadata ||
 			date !== original.date ||
 			rating !== original.rating ||
 			isCurrent !== original.isCurrent ||
 			isFavorite !== original.isFavorite ||
+			status !== original.status ||
 			JSON.stringify(note) !== original.note
 	)
 
@@ -106,14 +154,55 @@
 		if (selection.result.image) {
 			imageUrl = selection.result.image
 		}
+		sourceId = selection.result.sourceId ?? ''
+		metadata = selection.result.metadata ?? null
+		summary = selection.result.summary ?? ''
+		selectedYear = selection.result.year ?? null
+
+		// Generate URL from sourceId
+		if (sourceId) {
+			const externalUrl = getExternalUrl(category, sourceId)
+			if (externalUrl) {
+				url = externalUrl
+			}
+		}
+
 		if (autoSlug) {
 			slug = generateSlug(selection.result.name)
 		}
+
+		selectionState = 'selected'
+	}
+
+	function handleChangeSelection() {
+		selectionState = 'changing'
+		// Wait for typeahead to render, then focus and search
+		requestAnimationFrame(() => {
+			typeaheadRef?.focusAndSearch()
+		})
+	}
+
+	function handleCategoryChange(newCategory: GardenCategory) {
+		category = newCategory
+
+		// Clear search-derived data but preserve user-typed title
+		creator = ''
+		imageUrl = ''
+		url = ''
+		sourceId = ''
+		metadata = null
+		summary = ''
+		selectedYear = null
+		if (autoSlug) {
+			slug = generateSlug(title)
+		}
+
+		selectionState = 'empty'
 	}
 
 	const tabOptions = [
 		{ value: 'details', label: 'Details' },
-		{ value: 'note', label: 'Note' }
+		{ value: 'thoughts', label: 'Thoughts' }
 	]
 
 	// Auto-generate slug from title
@@ -130,10 +219,6 @@
 		if (autoSlug) {
 			slug = generateSlug(title)
 		}
-	}
-
-	function handleSlugInput() {
-		autoSlug = false
 	}
 
 	// Cmd+S keyboard shortcut
@@ -162,6 +247,7 @@
 
 	// Navigation guard
 	beforeNavigate((navigation) => {
+		if (isSavedNavigation) return
 		if (isDirty && navigation.type !== 'leave') {
 			pendingNavigation = navigation
 			navigation.cancel()
@@ -169,11 +255,13 @@
 		}
 	})
 
-	async function handleSave() {
+	async function handleSave(newStatus?: string) {
 		if (!title.trim()) {
 			toast.error('Title is required')
 			return
 		}
+
+		const saveStatus = (newStatus as 'draft' | 'published') || status
 
 		isSaving = true
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} item...`)
@@ -186,10 +274,14 @@
 				creator: creator.trim() || undefined,
 				imageUrl: imageUrl.trim() || undefined,
 				url: url.trim() || undefined,
+				sourceId: sourceId.trim() || undefined,
+				metadata: metadata ?? undefined,
+				summary: summary.trim() || undefined,
 				date: date || undefined,
 				rating,
 				isCurrent,
 				isFavorite,
+				status: saveStatus,
 				note:
 					note && note.content && note.content.length > 0 ? note : null,
 				updatedAt: mode === 'edit' ? item?.updatedAt : undefined
@@ -213,19 +305,26 @@
 				creator: savedItem.creator ?? '',
 				imageUrl: savedItem.imageUrl ?? '',
 				url: savedItem.url ?? '',
+				sourceId: savedItem.sourceId ?? '',
+				metadata: JSON.stringify((savedItem.metadata as Record<string, any>) ?? null),
 				date: savedItem.date ? new Date(savedItem.date).toISOString().slice(0, 10) : '',
 				rating: savedItem.rating ?? null,
 				isCurrent: savedItem.isCurrent,
 				isFavorite: savedItem.isFavorite,
+				status: savedItem.status as 'draft' | 'published',
 				note: JSON.stringify(savedItem.note ?? { type: 'doc', content: [{ type: 'paragraph' }] })
 			}
 
 			if (mode === 'create') {
+				isSavedNavigation = true
 				goto(`/admin/garden/${savedItem.id}/edit`)
 			} else {
 				item = savedItem
 				// Sync local state with saved data
+				status = savedItem.status as 'draft' | 'published'
 				slug = savedItem.slug
+				sourceId = savedItem.sourceId ?? ''
+				metadata = (savedItem.metadata as Record<string, any>) ?? null
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
@@ -245,6 +344,37 @@
 		}
 	}
 
+	async function handleCopyPreviewLink() {
+		if (!slug) return
+		try {
+			const res = await api.post<{ url: string }>('/api/preview/generate', {
+				contentType: 'garden',
+				slug: `${category}/${slug}`
+			})
+			if (res?.url) {
+				const fullUrl = `${window.location.origin}${res.url}`
+				await navigator.clipboard.writeText(fullUrl)
+				toast.success('Preview link copied!')
+			}
+		} catch {
+			toast.error('Failed to generate preview link')
+		}
+	}
+
+	function openDeleteConfirmation() {
+		showDeleteConfirmation = true
+	}
+
+	async function handleDelete() {
+		try {
+			await api.delete(`/api/admin/garden/${item?.id}`)
+			isSavedNavigation = true
+			goto('/admin/garden')
+		} catch {
+			toast.error('Failed to delete item')
+		}
+	}
+
 	function handleContinueEditing() {
 		showUnsavedChangesModal = false
 		pendingNavigation = null
@@ -256,7 +386,6 @@
 			const nav = pendingNavigation
 			pendingNavigation = null
 			// Reset original to current values so isDirty becomes false
-			// and beforeNavigate won't re-cancel the navigation
 			original = {
 				category,
 				title,
@@ -264,10 +393,13 @@
 				creator,
 				imageUrl,
 				url,
+				sourceId,
+				metadata: JSON.stringify(metadata),
 				date,
 				rating,
 				isCurrent,
 				isFavorite,
+				status,
 				note: JSON.stringify(note)
 			}
 			nav.to && goto(nav.to.url.pathname)
@@ -289,14 +421,17 @@
 				/>
 			</div>
 			<div class="header-actions">
-				<Button
-					variant="primary"
-					buttonSize="medium"
-					onclick={() => handleSave()}
+				<StatusDropdown
+					currentStatus={status}
+					onStatusChange={handleSave}
 					disabled={isSaving}
-				>
-					{isSaving ? 'Saving...' : 'Save'}
-				</Button>
+					isLoading={isSaving}
+					{primaryAction}
+					{dropdownActions}
+					{viewUrl}
+					onDelete={mode === 'edit' ? openDeleteConfirmation : undefined}
+					onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
+				/>
 			</div>
 		</header>
 	{/snippet}
@@ -312,82 +447,73 @@
 							handleSave()
 						}}
 					>
-						<Typeahead
-							bind:value={title}
-							{category}
-							onCategoryChange={(cat) => (category = cat)}
-							search={searchFn}
-							onSelect={handleSearchSelect}
-							oninput={handleTitleInput}
-							placeholder={searchPlaceholder}
-							emptyText={searchEmptyText}
-						/>
+						{#if isSearchable}
+							{#if selectionState === 'selected'}
+								<GardenSelectionCard
+									{title}
+									{creator}
+									year={selectedYear}
+									{imageUrl}
+									onChange={handleChangeSelection}
+								/>
+							{:else}
+								<Typeahead
+									bind:this={typeaheadRef}
+									bind:value={title}
+									{category}
+									onCategoryChange={handleCategoryChange}
+									search={searchFn}
+									onSelect={handleSearchSelect}
+									oninput={handleTitleInput}
+									placeholder={searchPlaceholder}
+									emptyText={searchEmptyText}
+								/>
+							{/if}
+						{:else}
+							<Typeahead
+								bind:value={title}
+								{category}
+								onCategoryChange={handleCategoryChange}
+								search={null}
+								oninput={handleTitleInput}
+								placeholder="Enter title"
+							/>
 
-						<Input
-							label="Slug"
-							bind:value={slug}
-							placeholder="auto-generated-from-title"
-							helpText="Used in the URL. Auto-generated from title unless edited."
-							oninput={handleSlugInput}
-						/>
+							<Input
+								label={creatorLabel}
+								bind:value={creator}
+								placeholder="Enter {creatorLabel.toLowerCase()}"
+							/>
 
-						<Input
-							label={creatorLabel}
-							bind:value={creator}
-							placeholder="Enter {creatorLabel.toLowerCase()}"
-						/>
+							<Input
+								label="Image URL"
+								type="url"
+								bind:value={imageUrl}
+								placeholder="https://example.com/cover.jpg"
+							/>
 
-						<Input
-							label="Image URL"
-							type="url"
-							bind:value={imageUrl}
-							placeholder="https://example.com/cover.jpg"
-						/>
-
-						{#if imageUrl}
-							<div class="image-preview">
-								<img src={imageUrl} alt="Preview" />
-							</div>
+							{#if imageUrl}
+								<div class="image-preview">
+									<img src={imageUrl} alt="Preview" />
+								</div>
+							{/if}
 						{/if}
 
-						<Input
-							label="External URL"
-							type="url"
-							bind:value={url}
-							placeholder="https://example.com"
+						<StarRating bind:value={rating} />
+
+						<Textarea
+							label="Summary"
+							bind:value={summary}
+							placeholder="Brief description from the source"
+							rows={3}
+							autoResize
 						/>
 
 						<Input
-							label="Date"
+							label="Date completed (optional)"
 							type="date"
 							bind:value={date}
 						/>
-
-						<div class="field-group">
-							<span class="field-label">Rating</span>
-							<div class="star-rating">
-								{#each [1, 2, 3, 4, 5] as star}
-									<button
-										type="button"
-										class="star-button"
-										class:filled={rating != null && star <= rating}
-										onclick={() => (rating = rating === star ? null : star)}
-										aria-label="{star} star{star > 1 ? 's' : ''}"
-									>
-										★
-									</button>
-								{/each}
-								{#if rating != null}
-									<button
-										type="button"
-										class="star-clear"
-										onclick={() => (rating = null)}
-									>
-										Clear
-									</button>
-								{/if}
-							</div>
-						</div>
 
 						<div class="switch-field">
 							<div class="switch-info">
@@ -400,7 +526,7 @@
 						<div class="switch-field">
 							<div class="switch-info">
 								<span class="switch-label">All-time favorite</span>
-								<span class="switch-description">Mark as a perennial favorite</span>
+								<span class="switch-description">This one's a banger</span>
 							</div>
 							<Switch bind:checked={isFavorite} />
 						</div>
@@ -408,14 +534,14 @@
 				</div>
 			</div>
 
-			<!-- Note Panel -->
-			<div class="panel panel-note" class:active={activeTab === 'note'}>
+			<!-- Thoughts Panel -->
+			<div class="panel panel-thoughts" class:active={activeTab === 'thoughts'}>
 				<Composer
 					bind:data={note}
 					placeholder="Write about what you like about this..."
-					minHeight={400}
+					minHeight={500}
 					autofocus={false}
-					variant="minimal"
+					variant="full"
 				/>
 			</div>
 		</div>
@@ -426,6 +552,12 @@
 	isOpen={showUnsavedChangesModal}
 	onContinueEditing={handleContinueEditing}
 	onLeave={handleLeaveWithoutSaving}
+/>
+
+<DeleteConfirmationModal
+	bind:isOpen={showDeleteConfirmation}
+	message="Are you sure you want to delete this item? This cannot be undone."
+	onConfirm={handleDelete}
 />
 
 <style lang="scss">
@@ -517,44 +649,6 @@
 		gap: $unit;
 	}
 
-	.star-rating {
-		display: flex;
-		align-items: center;
-		gap: $unit-half;
-	}
-
-	.star-button {
-		background: none;
-		border: none;
-		cursor: pointer;
-		font-size: 1.5rem;
-		line-height: 1;
-		padding: 0;
-		color: $gray-80;
-		transition: color $transition-fast ease;
-
-		&:hover {
-			color: $universe-color;
-		}
-
-		&.filled {
-			color: $universe-color;
-		}
-	}
-
-	.star-clear {
-		background: none;
-		border: none;
-		cursor: pointer;
-		font-size: $font-size-small;
-		color: $gray-50;
-		padding: $unit $unit-2x;
-		margin-left: $unit;
-
-		&:hover {
-			color: $gray-20;
-		}
-	}
 
 	.field-label {
 		font-size: 14px;
@@ -600,16 +694,18 @@
 		color: $gray-40;
 	}
 
-	.panel-note {
+	.panel-thoughts {
 		background: transparent;
-		padding: 0;
+		padding: $unit-3x;
 		min-height: 80vh;
-		margin: 0;
+		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
 		width: 100%;
+		max-width: 1200px;
 
 		@include breakpoint('phone') {
+			padding: $unit-2x;
 			min-height: 600px;
 		}
 	}
