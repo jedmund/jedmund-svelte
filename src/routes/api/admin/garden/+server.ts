@@ -8,6 +8,7 @@ import {
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { isValidCategory } from '$lib/constants/garden'
+import { cacheGardenImage } from '$lib/server/garden-images'
 
 interface GardenItemCreateBody {
 	category: string
@@ -76,13 +77,17 @@ export const POST: RequestHandler = async (event) => {
 
 		const status = body.status === 'published' ? 'published' : 'draft'
 
+		// Cache image through Cloudinary
+		const { imageUrl, sourceImageUrl } = await cacheGardenImage(body.imageUrl, null, null)
+
 		const item = await prisma.gardenItem.create({
 			data: {
 				category: body.category,
 				title: body.title,
 				slug,
 				creator: body.creator || null,
-				imageUrl: body.imageUrl || null,
+				imageUrl,
+				sourceImageUrl,
 				url: body.url || null,
 				sourceId: body.sourceId || null,
 				metadata: body.metadata !== undefined ? (body.metadata as any) : null,
