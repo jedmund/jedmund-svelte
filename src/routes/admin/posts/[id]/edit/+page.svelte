@@ -8,6 +8,7 @@
 	import Composer from '$lib/components/admin/composer'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostMetadataForm from '$lib/components/admin/PostMetadataForm.svelte'
+	import PostSyndicationForm from '$lib/components/admin/PostSyndicationForm.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
@@ -38,6 +39,7 @@
 		syndicationText?: string | null
 		syndicateBluesky?: boolean
 		syndicateMastodon?: boolean
+		appendLink?: boolean
 	}
 
 	// Type for the old blocks format from database
@@ -69,6 +71,7 @@
 	let featuredImage = $state('')
 	let syndicateBluesky = $state(true)
 	let syndicateMastodon = $state(true)
+	let appendLink = $state(true)
 	let content = $state<JSONContent>({ type: 'doc', content: [] })
 	let tags = $state<Tag[]>([])
 	let activeTab = $state('content')
@@ -89,6 +92,7 @@
 		featuredImage: string
 		syndicateBluesky: boolean
 		syndicateMastodon: boolean
+		appendLink: boolean
 		content: string
 		tags: Tag[]
 	}>({
@@ -101,6 +105,7 @@
 		featuredImage: '',
 		syndicateBluesky: true,
 		syndicateMastodon: true,
+		appendLink: true,
 		content: '',
 		tags: []
 	})
@@ -117,6 +122,7 @@
 			featuredImage !== initialValues.featuredImage ||
 			syndicateBluesky !== initialValues.syndicateBluesky ||
 			syndicateMastodon !== initialValues.syndicateMastodon ||
+			appendLink !== initialValues.appendLink ||
 			JSON.stringify(content) !== initialValues.content ||
 			tags.map((t) => t.id).sort().join(',') !==
 				initialValues.tags.map((t) => t.id).sort().join(','))
@@ -131,7 +137,8 @@
 
 	const tabOptions = [
 		{ value: 'content', label: 'Content' },
-		{ value: 'metadata', label: 'Metadata' }
+		{ value: 'metadata', label: 'Metadata' },
+		{ value: 'syndication', label: 'Syndication' }
 	]
 
 	// Cmd+S keyboard shortcut
@@ -315,6 +322,7 @@
 				featuredImage = data.featuredImage || ''
 				syndicateBluesky = data.syndicateBluesky ?? true
 				syndicateMastodon = data.syndicateMastodon ?? true
+				appendLink = data.appendLink ?? true
 
 				// Convert blocks format to Tiptap format if needed
 				const postContent = data.content
@@ -339,6 +347,7 @@
 					featuredImage,
 					syndicateBluesky,
 					syndicateMastodon,
+					appendLink,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -379,6 +388,7 @@
 			featuredImage: featuredImage || null,
 			syndicateBluesky,
 			syndicateMastodon,
+			appendLink,
 			tagIds: tags.map((tag) => tag.id)
 		}
 
@@ -402,6 +412,7 @@
 					featuredImage,
 					syndicateBluesky,
 					syndicateMastodon,
+					appendLink,
 					content: JSON.stringify(content),
 					tags: [...tags]
 				}
@@ -535,15 +546,28 @@
 						{postType}
 						bind:slug
 						bind:excerpt
-						bind:syndicationText
 						bind:featuredImage
-						bind:syndicateBluesky
-						bind:syndicateMastodon
 						bind:tags
 						{heartCount}
 						createdAt={post.createdAt}
 						updatedAt={post.updatedAt}
 						publishedAt={post.publishedAt}
+					/>
+				</div>
+
+				<!-- Syndication Panel -->
+				<div class="panel content-wrapper" class:active={activeTab === 'syndication'}>
+					<PostSyndicationForm
+						{postType}
+						{slug}
+						{title}
+						{excerpt}
+						{content}
+						{featuredImage}
+						bind:syndicationText
+						bind:syndicateBluesky
+						bind:syndicateMastodon
+						bind:appendLink
 						contentId={post.id}
 						contentStatus={post.status}
 					/>

@@ -2,6 +2,7 @@ import { prisma } from '$lib/server/database'
 import { postToBluesky } from '../bluesky/post'
 import { postToMastodon } from '../mastodon/post'
 import { getContentExcerpt } from '$lib/utils/content'
+import { extractUrlEmbedsFromContent } from '$lib/utils/syndication'
 import { logger } from '../logger'
 import { getConfig } from '../config'
 
@@ -18,6 +19,7 @@ interface ContentData {
 	contentType: string
 	syndicateBluesky?: boolean
 	syndicateMastodon?: boolean
+	appendLink?: boolean
 }
 
 interface TiptapNode {
@@ -98,7 +100,8 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 				slug: post.slug,
 				contentType: 'post',
 				syndicateBluesky: post.syndicateBluesky,
-				syndicateMastodon: post.syndicateMastodon
+				syndicateMastodon: post.syndicateMastodon,
+				appendLink: post.appendLink
 			}
 		}
 		case 'project': {
@@ -240,7 +243,17 @@ async function syndicateTo(
 	contentId: number,
 	data: ContentData
 ): Promise<void> {
-	const url = await getCanonicalUrl(data.contentType, data.slug)
+	const canonicalUrl = await getCanonicalUrl(data.contentType, data.slug)
+	let url: string | undefined
+	if (data.appendLink !== false) {
+		url = canonicalUrl
+	} else {
+		// Fall back to first urlEmbed URL from content (it's part of the post body)
+		const urlEmbeds = extractUrlEmbedsFromContent(data.content)
+		if (urlEmbeds.length > 0) {
+			url = urlEmbeds[0].url
+		}
+	}
 
 	try {
 		let externalId: string | undefined

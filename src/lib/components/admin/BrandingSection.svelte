@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BrandingToggle from './BrandingToggle.svelte'
+	import Switch from './Switch.svelte'
 
 	interface Props {
 		title: string
@@ -24,7 +24,7 @@
 	<header class="branding-section__header">
 		<h2 class="branding-section__title">{title}</h2>
 		{#if showToggle}
-			<BrandingToggle bind:checked={toggleChecked} disabled={toggleDisabled} onchange={onToggleChange} />
+			<Switch bind:checked={toggleChecked} disabled={toggleDisabled} accentColor="#4d9fd0" onchange={onToggleChange} />
 		{/if}
 	</header>
 	<div class="branding-section__content">

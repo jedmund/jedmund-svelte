@@ -8,7 +8,7 @@ interface MastodonPostResult {
 
 interface PostInput {
 	text: string
-	url: string
+	url?: string
 	images?: { url: string; alt: string }[]
 	videos?: { url: string }[]
 }
@@ -22,7 +22,7 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 	}
 
 	const baseUrl = `https://${instance}`
-	const fullText = input.text + '\n\n' + input.url
+	const fullText = input.url ? input.text + '\n\n' + input.url : input.text
 
 	const mediaIds: string[] = []
 

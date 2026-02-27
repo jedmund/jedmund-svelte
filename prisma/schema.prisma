@@ -54,6 +54,7 @@ model Post {
   attachments       Json?
   syndicateBluesky  Boolean   @default(true)
   syndicateMastodon Boolean   @default(true)
+  appendLink        Boolean   @default(true)
   tags              PostTag[]
 
   @@index([slug])
