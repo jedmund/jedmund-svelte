@@ -301,16 +301,28 @@ model Mention {
 
 model GardenItem {
   id           Int      @id @default(autoincrement())
-  category     String   @db.VarChar(100)
+  category     String   @db.VarChar(50)
   title        String   @db.VarChar(255)
+  slug         String   @db.VarChar(255)
   creator      String?  @db.VarChar(255)
   imageUrl     String?  @db.VarChar(500)
   url          String?  @db.VarChar(500)
-  note         String?  @db.Text
+  sourceId     String?  @db.VarChar(255)
+  metadata     Json?
+  summary      String?   @db.Text
+  date         DateTime? @db.Date
+  note         Json?
+  rating       Int?
+  isCurrent    Boolean  @default(false)
+  isFavorite   Boolean  @default(false)
+  status       String   @default("draft") @db.VarChar(50)
+  publishedAt  DateTime?
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  @@unique([category, slug])
   @@index([category])
+  @@index([status])
   @@index([displayOrder])
 }
