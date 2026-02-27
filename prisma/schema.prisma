@@ -250,8 +250,9 @@ model GardenItem {
   title        String   @db.VarChar(255)
   slug         String   @db.VarChar(255)
   creator      String?  @db.VarChar(255)
-  imageUrl     String?  @db.VarChar(500)
-  url          String?  @db.VarChar(500)
+  imageUrl       String?  @db.VarChar(500)
+  sourceImageUrl String?  @db.VarChar(500)
+  url            String?  @db.VarChar(500)
   sourceId     String?  @db.VarChar(255)
   metadata     Json?
   summary      String?   @db.Text
