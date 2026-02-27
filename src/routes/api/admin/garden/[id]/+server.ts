@@ -8,6 +8,8 @@ import {
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { isValidCategory } from '$lib/constants/garden'
+import { cacheGardenImage } from '$lib/server/garden-images'
+import { isCloudinaryUrl, extractPublicId, deleteFile } from '$lib/server/cloudinary'
 
 interface GardenItemUpdateBody {
 	category?: string
@@ -113,6 +115,19 @@ export const PUT: RequestHandler = async (event) => {
 			publishedAt = null
 		}
 
+		// Cache image through Cloudinary if imageUrl changed
+		let imageUrl = existing.imageUrl
+		let sourceImageUrl = existing.sourceImageUrl
+		if (body.imageUrl !== undefined) {
+			const cached = await cacheGardenImage(
+				body.imageUrl || null,
+				existing.imageUrl,
+				existing.sourceImageUrl
+			)
+			imageUrl = cached.imageUrl
+			sourceImageUrl = cached.sourceImageUrl
+		}
+
 		const item = await prisma.gardenItem.update({
 			where: { id },
 			data: {
@@ -120,7 +135,8 @@ export const PUT: RequestHandler = async (event) => {
 				title: body.title ?? existing.title,
 				slug,
 				creator: body.creator !== undefined ? body.creator || null : existing.creator,
-				imageUrl: body.imageUrl !== undefined ? body.imageUrl || null : existing.imageUrl,
+				imageUrl,
+				sourceImageUrl,
 				url: body.url !== undefined ? body.url || null : existing.url,
 				sourceId:
 					body.sourceId !== undefined ? body.sourceId || null : existing.sourceId,
@@ -167,6 +183,15 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	try {
+		// Clean up Cloudinary image before deleting
+		const item = await prisma.gardenItem.findUnique({ where: { id } })
+		if (item?.imageUrl && isCloudinaryUrl(item.imageUrl)) {
+			const publicId = extractPublicId(item.imageUrl)
+			if (publicId) {
+				await deleteFile(publicId)
+			}
+		}
+
 		await prisma.gardenItem.delete({ where: { id } })
 		logger.info('Garden item deleted', { id })
 		return new Response(null, { status: 204 })
