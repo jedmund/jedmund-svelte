@@ -252,7 +252,9 @@ model GardenItem {
   creator      String?  @db.VarChar(255)
   imageUrl     String?  @db.VarChar(500)
   url          String?  @db.VarChar(500)
+  date         DateTime? @db.Date
   note         Json?
+  rating       Int?
   isCurrent    Boolean  @default(false)
   isFavorite   Boolean  @default(false)
   displayOrder Int      @default(0)

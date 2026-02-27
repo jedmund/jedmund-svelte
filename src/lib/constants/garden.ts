@@ -1,10 +1,14 @@
+import type { CategorySearchConfig, TypeaheadResult } from '$lib/types/garden'
+
 export const GARDEN_CATEGORIES = [
 	{ value: 'book', label: 'Books', singular: 'Book' },
 	{ value: 'movie', label: 'Movies', singular: 'Movie' },
 	{ value: 'music', label: 'Music', singular: 'Music' },
 	{ value: 'game', label: 'Games', singular: 'Game' },
+	{ value: 'manga', label: 'Manga', singular: 'Manga' },
 	{ value: 'tv_show', label: 'TV Shows', singular: 'TV Show' },
-	{ value: 'device', label: 'Devices', singular: 'Device' }
+	{ value: 'device', label: 'Devices', singular: 'Device' },
+	{ value: 'other', label: 'Other', singular: 'Other' }
 ] as const
 
 export type GardenCategory = (typeof GARDEN_CATEGORIES)[number]['value']
@@ -32,11 +36,90 @@ export function getCreatorLabel(category: string): string {
 			return 'Artist'
 		case 'game':
 			return 'Developer'
+		case 'manga':
+			return 'Author'
 		case 'tv_show':
 			return 'Creator'
 		case 'device':
 			return 'Manufacturer'
+		case 'other':
+			return 'Creator'
 		default:
 			return 'Creator'
+	}
+}
+
+export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig>> = {
+	game: {
+		endpoint: '/api/admin/garden/search/games',
+		placeholder: 'Search for a game...',
+		emptyText: 'No games found',
+		mapResult: (raw): TypeaheadResult => ({
+			id: raw.id,
+			name: raw.name,
+			subtitle: raw.developer,
+			image: raw.image,
+			creator: raw.developer
+		})
+	},
+	music: {
+		endpoint: '/api/admin/garden/search/music',
+		placeholder: 'Search for an album...',
+		emptyText: 'No albums found',
+		mapResult: (raw): TypeaheadResult => ({
+			id: raw.id,
+			name: raw.name,
+			subtitle: raw.artist,
+			image: raw.image,
+			creator: raw.artist
+		})
+	},
+	manga: {
+		endpoint: '/api/admin/garden/search/manga',
+		placeholder: 'Search for a manga...',
+		emptyText: 'No manga found',
+		mapResult: (raw): TypeaheadResult => ({
+			id: raw.id,
+			name: raw.name,
+			subtitle: raw.author,
+			image: raw.image,
+			creator: raw.author
+		})
+	},
+	movie: {
+		endpoint: '/api/admin/garden/search/movies',
+		placeholder: 'Search for a movie...',
+		emptyText: 'No movies found',
+		mapResult: (raw): TypeaheadResult => ({
+			id: raw.id,
+			name: raw.name,
+			subtitle: [raw.director, raw.year].filter(Boolean).join(' \u00B7 ') || null,
+			image: raw.image,
+			creator: raw.director
+		})
+	},
+	tv_show: {
+		endpoint: '/api/admin/garden/search/tv',
+		placeholder: 'Search for a TV show...',
+		emptyText: 'No TV shows found',
+		mapResult: (raw): TypeaheadResult => ({
+			id: raw.id,
+			name: raw.name,
+			subtitle: [raw.year, raw.originalName].filter(Boolean).join(' \u00B7 ') || null,
+			image: raw.image,
+			creator: null
+		})
+	}
+}
+
+export function createSearchFn(
+	config: CategorySearchConfig
+): (query: string, limit?: number) => Promise<TypeaheadResult[]> {
+	return async (query: string, limit = 5) => {
+		const res = await fetch(
+			`${config.endpoint}?q=${encodeURIComponent(query)}&limit=${limit}`
+		)
+		const data = await res.json()
+		return (data.results || []).map(config.mapResult)
 	}
 }

@@ -6,12 +6,18 @@
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
 	import Composer from './composer'
+	import Typeahead from './Typeahead.svelte'
 	import Input from './Input.svelte'
-	import Select from './Select.svelte'
 	import Switch from './Switch.svelte'
 	import Button from './Button.svelte'
 	import { toast } from '$lib/stores/toast'
-	import { GARDEN_CATEGORIES, getCreatorLabel } from '$lib/constants/garden'
+	import {
+		SEARCH_CONFIGS,
+		createSearchFn,
+		getCreatorLabel
+	} from '$lib/constants/garden'
+	import type { GardenCategory } from '$lib/constants/garden'
+	import type { TypeaheadSelection } from '$lib/types/garden'
 	import type { GardenItem } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
 
@@ -23,12 +29,14 @@
 	let { item = null, mode }: Props = $props()
 
 	// Form state
-	let category = $state(item?.category ?? 'book')
+	let category = $state<GardenCategory>((item?.category as GardenCategory) ?? 'book')
 	let title = $state(item?.title ?? '')
 	let slug = $state(item?.slug ?? '')
 	let creator = $state(item?.creator ?? '')
 	let imageUrl = $state(item?.imageUrl ?? '')
 	let url = $state(item?.url ?? '')
+	let date = $state(item?.date ? new Date(item.date).toISOString().slice(0, 10) : '')
+	let rating = $state<number | null>(item?.rating ?? null)
 	let isCurrent = $state(item?.isCurrent ?? false)
 	let isFavorite = $state(item?.isFavorite ?? false)
 	let note = $state<JSONContent>(
@@ -50,6 +58,8 @@
 		creator: item?.creator ?? '',
 		imageUrl: item?.imageUrl ?? '',
 		url: item?.url ?? '',
+		date: item?.date ? new Date(item.date).toISOString().slice(0, 10) : '',
+		rating: item?.rating ?? null,
 		isCurrent: item?.isCurrent ?? false,
 		isFavorite: item?.isFavorite ?? false,
 		note: JSON.stringify(
@@ -64,6 +74,8 @@
 			creator !== original.creator ||
 			imageUrl !== original.imageUrl ||
 			url !== original.url ||
+			date !== original.date ||
+			rating !== original.rating ||
 			isCurrent !== original.isCurrent ||
 			isFavorite !== original.isFavorite ||
 			JSON.stringify(note) !== original.note
@@ -71,10 +83,33 @@
 
 	const creatorLabel = $derived(getCreatorLabel(category))
 
-	const categoryOptions = GARDEN_CATEGORIES.map((c) => ({
-		value: c.value,
-		label: c.singular
-	}))
+	const searchFn = $derived.by(() => {
+		const config = SEARCH_CONFIGS[category]
+		return config ? createSearchFn(config) : null
+	})
+
+	const searchPlaceholder = $derived.by(() => {
+		const config = SEARCH_CONFIGS[category]
+		return config?.placeholder ?? 'Enter title'
+	})
+
+	const searchEmptyText = $derived.by(() => {
+		const config = SEARCH_CONFIGS[category]
+		return config?.emptyText ?? 'No results found'
+	})
+
+	function handleSearchSelect(selection: TypeaheadSelection) {
+		title = selection.result.name
+		if (selection.result.creator) {
+			creator = selection.result.creator
+		}
+		if (selection.result.image) {
+			imageUrl = selection.result.image
+		}
+		if (autoSlug) {
+			slug = generateSlug(selection.result.name)
+		}
+	}
 
 	const tabOptions = [
 		{ value: 'details', label: 'Details' },
@@ -151,6 +186,8 @@
 				creator: creator.trim() || undefined,
 				imageUrl: imageUrl.trim() || undefined,
 				url: url.trim() || undefined,
+				date: date || undefined,
+				rating,
 				isCurrent,
 				isFavorite,
 				note:
@@ -176,6 +213,8 @@
 				creator: savedItem.creator ?? '',
 				imageUrl: savedItem.imageUrl ?? '',
 				url: savedItem.url ?? '',
+				date: savedItem.date ? new Date(savedItem.date).toISOString().slice(0, 10) : '',
+				rating: savedItem.rating ?? null,
 				isCurrent: savedItem.isCurrent,
 				isFavorite: savedItem.isFavorite,
 				note: JSON.stringify(savedItem.note ?? { type: 'doc', content: [{ type: 'paragraph' }] })
@@ -216,6 +255,21 @@
 		if (pendingNavigation) {
 			const nav = pendingNavigation
 			pendingNavigation = null
+			// Reset original to current values so isDirty becomes false
+			// and beforeNavigate won't re-cancel the navigation
+			original = {
+				category,
+				title,
+				slug,
+				creator,
+				imageUrl,
+				url,
+				date,
+				rating,
+				isCurrent,
+				isFavorite,
+				note: JSON.stringify(note)
+			}
 			nav.to && goto(nav.to.url.pathname)
 		}
 	}
@@ -258,22 +312,15 @@
 							handleSave()
 						}}
 					>
-						<div class="field-group">
-							<!-- svelte-ignore a11y_label_has_associated_control -->
-							<label class="field-label">Category</label>
-							<Select
-								value={category}
-								options={categoryOptions}
-								onchange={(e) => (category = (e.target as HTMLSelectElement).value)}
-							/>
-						</div>
-
-						<Input
-							label="Title"
+						<Typeahead
 							bind:value={title}
-							required
-							placeholder="Enter title"
+							{category}
+							onCategoryChange={(cat) => (category = cat)}
+							search={searchFn}
+							onSelect={handleSearchSelect}
 							oninput={handleTitleInput}
+							placeholder={searchPlaceholder}
+							emptyText={searchEmptyText}
 						/>
 
 						<Input
@@ -309,6 +356,38 @@
 							bind:value={url}
 							placeholder="https://example.com"
 						/>
+
+						<Input
+							label="Date"
+							type="date"
+							bind:value={date}
+						/>
+
+						<div class="field-group">
+							<span class="field-label">Rating</span>
+							<div class="star-rating">
+								{#each [1, 2, 3, 4, 5] as star}
+									<button
+										type="button"
+										class="star-button"
+										class:filled={rating != null && star <= rating}
+										onclick={() => (rating = rating === star ? null : star)}
+										aria-label="{star} star{star > 1 ? 's' : ''}"
+									>
+										★
+									</button>
+								{/each}
+								{#if rating != null}
+									<button
+										type="button"
+										class="star-clear"
+										onclick={() => (rating = null)}
+									>
+										Clear
+									</button>
+								{/if}
+							</div>
+						</div>
 
 						<div class="switch-field">
 							<div class="switch-info">
@@ -436,6 +515,45 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit;
+	}
+
+	.star-rating {
+		display: flex;
+		align-items: center;
+		gap: $unit-half;
+	}
+
+	.star-button {
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 1.5rem;
+		line-height: 1;
+		padding: 0;
+		color: $gray-80;
+		transition: color $transition-fast ease;
+
+		&:hover {
+			color: $universe-color;
+		}
+
+		&.filled {
+			color: $universe-color;
+		}
+	}
+
+	.star-clear {
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: $font-size-small;
+		color: $gray-50;
+		padding: $unit $unit-2x;
+		margin-left: $unit;
+
+		&:hover {
+			color: $gray-20;
+		}
 	}
 
 	.field-label {
