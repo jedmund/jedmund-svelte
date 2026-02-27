@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "excerpt" TEXT;
+ALTER TABLE "Post" ADD COLUMN IF NOT EXISTS "syndicationText" VARCHAR(240);
