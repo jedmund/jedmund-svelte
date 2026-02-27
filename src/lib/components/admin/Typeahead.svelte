@@ -35,6 +35,30 @@
 	let inputEl: HTMLInputElement | undefined = $state()
 	let inputId = `typeahead-${Math.random().toString(36).substr(2, 9)}`
 
+	export function focusAndSearch() {
+		requestAnimationFrame(() => {
+			inputEl?.focus()
+			inputEl?.select()
+
+			if (search && value.length >= 2) {
+				showResults = true
+				debouncedSearch(value)
+			}
+		})
+	}
+
+	const placeholderAspectRatio = $derived.by(() => {
+		switch (category) {
+			case 'books':
+			case 'manga':
+				return '180 / 293'
+			case 'games':
+				return '264 / 352'
+			default:
+				return '1'
+		}
+	})
+
 	const debouncedSearch = debounce(async (query: string) => {
 		if (!search || query.length < 2) {
 			results = []
@@ -196,7 +220,10 @@
 								alt=""
 							/>
 						{:else}
-							<div class="result-thumb result-thumb-placeholder"></div>
+							<div
+								class="result-thumb result-thumb-placeholder"
+								style:aspect-ratio={placeholderAspectRatio}
+							></div>
 						{/if}
 						<div class="result-info">
 							<span class="result-name">{result.name}</span>
@@ -275,6 +302,10 @@
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		max-height: 360px;
 		overflow-y: auto;
+		padding: $unit;
+		display: flex;
+		flex-direction: column;
+		gap: $unit-fourth;
 	}
 
 	.result-item {
@@ -288,6 +319,7 @@
 		cursor: pointer;
 		text-align: left;
 		font-size: $font-size;
+		border-radius: $corner-radius-xl;
 
 		&:hover,
 		&.selected {
@@ -297,8 +329,6 @@
 
 	.result-thumb {
 		width: 56px;
-		min-height: 56px;
-		max-height: 80px;
 		border-radius: $unit-half;
 		object-fit: cover;
 		flex-shrink: 0;
@@ -306,7 +336,6 @@
 
 	.result-thumb-placeholder {
 		width: 56px;
-		height: 56px;
 		background-color: $gray-90;
 	}
 

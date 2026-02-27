@@ -21,13 +21,13 @@
 	let isOpen = $state(false)
 
 	const CATEGORY_ICONS: Record<GardenCategory, typeof CategoryBookIcon> = {
-		book: CategoryBookIcon,
-		game: CategoryGameIcon,
+		books: CategoryBookIcon,
+		games: CategoryGameIcon,
 		manga: CategoryMangaIcon,
-		movie: CategoryMovieIcon,
+		movies: CategoryMovieIcon,
 		music: CategoryMusicIcon,
-		tv_show: CategoryTVIcon,
-		device: CategoryDeviceIcon,
+		'tv-shows': CategoryTVIcon,
+		devices: CategoryDeviceIcon,
 		other: CategoryOtherIcon
 	}
 
