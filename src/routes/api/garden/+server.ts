@@ -10,7 +10,7 @@ export const GET: RequestHandler = async (event) => {
 		const current = event.url.searchParams.get('current')
 		const favorites = event.url.searchParams.get('favorites')
 
-		const where: Record<string, unknown> = {}
+		const where: Record<string, unknown> = { status: 'published' }
 
 		if (category) {
 			where.category = category
