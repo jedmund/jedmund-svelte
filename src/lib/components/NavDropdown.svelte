@@ -3,6 +3,7 @@
 	import LabsIcon from '$icons/labs.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
 	import PhotosIcon from '$icons/photos.svg?component'
+	import GardenIcon from '$icons/garden.svg?component'
 	import AboutIcon from '$icons/about.svg?component'
 	import ChevronDownIcon from '$icons/chevron-down.svg?component'
 	import { page } from '$app/stores'
@@ -15,7 +16,7 @@
 		icon: typeof WorkIcon
 		text: string
 		href: string
-		variant: 'work' | 'universe' | 'labs' | 'photos' | 'about'
+		variant: 'work' | 'universe' | 'labs' | 'photos' | 'garden' | 'about'
 		subItems?: { text: string; href: string }[]
 	}
 
@@ -23,6 +24,7 @@
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
+		{ icon: GardenIcon, text: 'Garden', href: '/garden', variant: 'garden' },
 		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
 		{ icon: AboutIcon, text: 'About', href: '/about', variant: 'about' }
 	]
@@ -32,7 +34,7 @@
 		currentPath === '/'
 			? navItems[0]
 			: currentPath === '/about'
-				? navItems[4]
+				? navItems[5]
 				: navItems.find((item) =>
 						currentPath.startsWith(item.href === '/' ? '/work' : item.href)
 					) || navItems[0]
@@ -47,6 +49,8 @@
 				return '#7c3aed'
 			case 'universe':
 				return '#b97d14'
+			case 'garden':
+				return '#059669'
 			case 'labs':
 				return '#1482c1'
 			case 'about':
