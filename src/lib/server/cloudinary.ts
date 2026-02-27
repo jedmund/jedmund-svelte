@@ -342,6 +342,55 @@ export function getSmartImageUrl(publicId: string, containerWidth: number, retin
 	}
 }
 
+// Check if a URL is a Cloudinary URL
+export function isCloudinaryUrl(url: string): boolean {
+	return url.includes('res.cloudinary.com')
+}
+
+// Upload an image from a URL (e.g. external API image)
+export async function uploadFromUrl(
+	sourceUrl: string,
+	customOptions?: Record<string, unknown>
+): Promise<UploadResult> {
+	try {
+		if (!(await isCloudinaryConfigured())) {
+			logger.info('Cloudinary not configured, returning source URL')
+			return {
+				success: true,
+				url: sourceUrl,
+				secureUrl: sourceUrl
+			}
+		}
+
+		const uploadOptions = {
+			folder: 'jedmund/garden',
+			resource_type: 'image' as const,
+			quality: 'auto:good',
+			fetch_format: 'auto',
+			...customOptions
+		}
+
+		const result = await cloudinary.uploader.upload(sourceUrl, uploadOptions)
+
+		return {
+			success: true,
+			publicId: result.public_id,
+			url: result.url,
+			secureUrl: result.secure_url,
+			width: result.width,
+			height: result.height,
+			format: result.format,
+			size: result.bytes
+		}
+	} catch (error) {
+		logger.error('Cloudinary URL upload failed', error as Error)
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : 'URL upload failed'
+		}
+	}
+}
+
 // Extract public ID from Cloudinary URL
 export function extractPublicId(url: string): string | null {
 	try {
