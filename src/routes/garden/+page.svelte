@@ -4,6 +4,7 @@
 	import { page } from '$app/stores'
 	import { GARDEN_CATEGORIES, getCategoryLabel } from '$lib/constants/garden'
 	import type { GardenItem } from '@prisma/client'
+	import StarIcon from '$icons/star.svg?component'
 	import type { PageData } from './$types'
 
 	let { data } = $props<{ data: PageData }>()
@@ -69,7 +70,7 @@
 
 				<div class="items-grid">
 					{#each itemsByCategory[cat.value] as item}
-						<a href="/garden/{item.category}/{item.slug}" class="garden-card">
+						<a href="/garden/{item.category}/{item.slug}" class="garden-card" style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg">
 							{#if item.imageUrl}
 								<div class="card-image">
 									<img src={item.imageUrl} alt={item.title} />
@@ -80,8 +81,12 @@
 								{#if item.creator}
 									<span class="card-creator">{item.creator}</span>
 								{/if}
-								{#if item.isCurrent}
-									<span class="badge current">Currently enjoying</span>
+								{#if item.rating}
+									<div class="star-rating">
+										{#each { length: item.rating } as _}
+											<StarIcon />
+										{/each}
+									</div>
 								{/if}
 							</div>
 						</a>
@@ -117,8 +122,9 @@
 	h2 {
 		color: $accent-color;
 		font-size: 1.2rem;
-		font-weight: 500;
+		font-weight: $font-weight-med;
 		margin: 0;
+		padding-bottom: $unit;
 
 		a {
 			color: inherit;
@@ -133,8 +139,13 @@
 
 	.items-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		gap: $unit-2x;
+		grid-template-columns: repeat(3, 1fr);
+		gap: $unit-4x;
+
+		@include breakpoint('phone') {
+			grid-template-columns: repeat(2, 1fr);
+			gap: $unit-3x;
+		}
 	}
 
 	.garden-card {
@@ -144,25 +155,25 @@
 		text-decoration: none;
 		color: inherit;
 		border-radius: $unit;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: translateY(-2px);
-		}
 	}
 
 	.card-image {
 		width: 100%;
-		aspect-ratio: 1;
 		border-radius: $unit;
 		overflow: hidden;
 		background-color: $gray-90;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
 
 		img {
 			width: 100%;
-			height: 100%;
-			object-fit: cover;
+			height: auto;
+			display: block;
 		}
+	}
+
+	.garden-card:hover .card-image {
+		transform: scale3d(1.03, 1.03, 1.03) rotate(var(--hover-rotate, 0deg));
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	}
 
 	.card-info {
@@ -172,7 +183,7 @@
 
 		h3 {
 			font-size: 0.9375rem;
-			font-weight: 600;
+			font-weight: $font-weight-bold;
 			margin: 0;
 			color: $gray-10;
 		}
@@ -183,23 +194,21 @@
 		color: $gray-40;
 	}
 
-	.badge {
-		font-size: 0.75rem;
-		font-weight: 500;
-		padding: 2px $unit;
-		border-radius: $unit;
-		width: fit-content;
+	.star-rating {
+		display: flex;
+		gap: 2px;
 
-		&.current {
-			background-color: $green-95;
-			color: $green-40;
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+			fill: $red-50;
 		}
 	}
 
 	.view-all {
 		display: block;
 		margin-top: $unit;
-		font-size: 0.875rem;
+		font-size: $font-size-small;
 		color: $accent-color;
 		text-decoration: none;
 

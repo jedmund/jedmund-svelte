@@ -1,7 +1,10 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
+	import BackButton from '$components/BackButton.svelte'
+	import GardenIcon from '$icons/garden.svg?component'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
+	import StarIcon from '$icons/star.svg?component'
 	import type { GardenItem } from '@prisma/client'
 	import type { PageData } from './$types'
 
@@ -49,15 +52,12 @@
 	{:else}
 		<Page>
 			{#snippet header()}
-				<div class="page-header">
-					<a href="/garden" class="back-link">&larr; Garden</a>
-					<h2>{data.categoryLabel}</h2>
-				</div>
+				<h2>{data.categoryLabel}</h2>
 			{/snippet}
 
 			<div class="items-grid">
 				{#each data.items as item (item.id)}
-					<a href="/garden/{item.category}/{item.slug}" class="garden-card">
+					<a href="/garden/{item.category}/{item.slug}" class="garden-card" style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg">
 						{#if item.imageUrl}
 							<div class="card-image">
 								<img src={item.imageUrl} alt={item.title} />
@@ -68,18 +68,30 @@
 							{#if item.creator}
 								<span class="card-creator">{item.creator}</span>
 							{/if}
+							{#if item.rating}
+								<div class="star-rating">
+									{#each { length: item.rating } as _}
+										<StarIcon />
+									{/each}
+								</div>
+							{/if}
 							<div class="badges">
 								{#if item.isCurrent}
 									<span class="badge current">Currently enjoying</span>
 								{/if}
 								{#if item.isFavorite}
-									<span class="badge favorite">Favorite</span>
+									<span class="badge favorite">Banger</span>
 								{/if}
 							</div>
 						</div>
 					</a>
 				{/each}
 			</div>
+
+			<footer class="page-footer">
+				<BackButton href="/garden" label="Back to Garden" />
+				<GardenIcon class="footer-icon" />
+			</footer>
 		</Page>
 	{/if}
 </section>
@@ -102,33 +114,23 @@
 		}
 	}
 
-	.page-header {
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
-	}
-
-	.back-link {
-		font-size: 0.875rem;
-		color: $gray-40;
-		text-decoration: none;
-
-		&:hover {
-			color: $accent-color;
-		}
-	}
-
 	h2 {
 		color: $accent-color;
 		font-size: 1.2rem;
-		font-weight: 500;
+		font-weight: $font-weight-med;
 		margin: 0;
+		padding-bottom: $unit;
 	}
 
 	.items-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		gap: $unit-2x;
+		grid-template-columns: repeat(3, 1fr);
+		gap: $unit-4x;
+
+		@include breakpoint('phone') {
+			grid-template-columns: repeat(2, 1fr);
+			gap: $unit-3x;
+		}
 	}
 
 	.garden-card {
@@ -138,25 +140,25 @@
 		text-decoration: none;
 		color: inherit;
 		border-radius: $unit;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: translateY(-2px);
-		}
 	}
 
 	.card-image {
 		width: 100%;
-		aspect-ratio: 1;
 		border-radius: $unit;
 		overflow: hidden;
 		background-color: $gray-90;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
 
 		img {
 			width: 100%;
-			height: 100%;
-			object-fit: cover;
+			height: auto;
+			display: block;
 		}
+	}
+
+	.garden-card:hover .card-image {
+		transform: scale3d(1.03, 1.03, 1.03) rotate(var(--hover-rotate, 0deg));
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	}
 
 	.card-info {
@@ -166,7 +168,7 @@
 
 		h3 {
 			font-size: 0.9375rem;
-			font-weight: 600;
+			font-weight: $font-weight-bold;
 			margin: 0;
 			color: $gray-10;
 		}
@@ -177,6 +179,17 @@
 		color: $gray-40;
 	}
 
+	.star-rating {
+		display: flex;
+		gap: 2px;
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+			fill: $red-50;
+		}
+	}
+
 	.badges {
 		display: flex;
 		gap: $unit-half;
@@ -184,8 +197,8 @@
 	}
 
 	.badge {
-		font-size: 0.75rem;
-		font-weight: 500;
+		font-size: $font-size-extra-small;
+		font-weight: $font-weight-med;
 		padding: 2px $unit;
 		border-radius: $unit;
 		width: fit-content;
@@ -196,8 +209,20 @@
 		}
 
 		&.favorite {
-			background-color: $yellow-95;
-			color: $yellow-40;
+			background-color: $blue-95;
+			color: $blue-40;
+		}
+	}
+
+	.page-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+
+		:global(.footer-icon) {
+			width: 24px;
+			height: 24px;
+			color: $gray-40;
 		}
 	}
 
