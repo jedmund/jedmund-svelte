@@ -7,7 +7,6 @@
 	// Import SVG icons
 	import CheckIcon from '$icons/check.svg?component'
 	import XIcon from '$icons/x.svg?component'
-	import TrashIcon from '$icons/trash.svg?component'
 	import LoaderIcon from '$icons/loader.svg?component'
 	import AppleMusicSearchModal from './AppleMusicSearchModal.svelte'
 
@@ -334,7 +333,7 @@
 												{#if clearingAlbums.has(albumId)}
 													<LoaderIcon class="icon spinning" />
 												{:else}
-													<TrashIcon class="icon" />
+													<XIcon class="icon" />
 												{/if}
 											</button>
 										</div>
