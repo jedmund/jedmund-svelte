@@ -16,12 +16,16 @@ interface GardenItemCreateBody {
 	creator?: string
 	imageUrl?: string
 	url?: string
+	sourceId?: string
+	metadata?: Record<string, any>
+	summary?: string
 	date?: string
 	note?: unknown
 	rating?: number
 	isCurrent?: boolean
 	isFavorite?: boolean
 	displayOrder?: number
+	status?: string
 }
 
 // GET /api/admin/garden - List all garden items
@@ -70,6 +74,8 @@ export const POST: RequestHandler = async (event) => {
 		const baseSlug = body.slug || createSlug(body.title)
 		const slug = await ensureUniqueCategorySlug(baseSlug, body.category)
 
+		const status = body.status === 'published' ? 'published' : 'draft'
+
 		const item = await prisma.gardenItem.create({
 			data: {
 				category: body.category,
@@ -78,12 +84,17 @@ export const POST: RequestHandler = async (event) => {
 				creator: body.creator || null,
 				imageUrl: body.imageUrl || null,
 				url: body.url || null,
+				sourceId: body.sourceId || null,
+				metadata: body.metadata !== undefined ? (body.metadata as any) : null,
+				summary: body.summary || null,
 				date: body.date ? new Date(body.date) : null,
 				note: body.note !== undefined ? (body.note as any) : null,
 				rating: body.rating != null ? Math.min(5, Math.max(1, body.rating)) : null,
 				isCurrent: body.isCurrent ?? false,
 				isFavorite: body.isFavorite ?? false,
-				displayOrder: body.displayOrder ?? 0
+				displayOrder: body.displayOrder ?? 0,
+				status,
+				publishedAt: status === 'published' ? new Date() : null
 			}
 		})
 
