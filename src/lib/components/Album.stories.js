@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Album from './Album.svelte'
 
 // Mock album data

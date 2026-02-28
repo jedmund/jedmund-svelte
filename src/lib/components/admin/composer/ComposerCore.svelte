@@ -47,7 +47,7 @@
 		}),
 		onChange,
 		onCharacterCount,
-		placeholder = getDefaultPlaceholder(variant),
+		placeholder: _placeholder = getDefaultPlaceholder(variant),
 		minHeight = getDefaultMinHeight(variant),
 		autofocus = false,
 		editable = true,
@@ -182,6 +182,7 @@
 				: undefined,
 			onShowLinkContextMenu: (pos: number, url: string) =>
 				linkManagerRef?.handleShowLinkContextMenu(pos, url),
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			imagePlaceholderComponent: ImagePlaceholder as any
 		})
 

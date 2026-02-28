@@ -71,7 +71,7 @@
 		let hasLink = false
 		state.doc.nodesBetween(from, to, (node) => {
 			if (hasLink) return false
-			if (node.marks?.some((m: any) => m.type.name === 'link')) {
+			if (node.marks?.some((m: { type: { name: string } }) => m.type.name === 'link')) {
 				hasLink = true
 			}
 		})

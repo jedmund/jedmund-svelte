@@ -58,6 +58,7 @@ export class SimpleLastfmStreamManager {
 			)
 
 			// Cache for other uses but always use fresh for now playing
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse as any)
 
 			// Get recent albums (top 4)
@@ -76,6 +77,7 @@ export class SimpleLastfmStreamManager {
 			// Process now playing status
 			const albumsWithNowPlaying = await this.detector.processAlbums(
 				albums,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				recentTracksResponse.tracks as any,
 				(artistName, albumName) =>
 					this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
@@ -125,6 +127,7 @@ export class SimpleLastfmStreamManager {
 
 			const albumKey = track.album.mbid || track.album.name
 			if (!uniqueAlbums.has(albumKey)) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				uniqueAlbums.set(albumKey, trackToAlbum(track as any, uniqueAlbums.size + 1))
 			}
 		}

@@ -28,9 +28,9 @@
 		currentAlbums = [],
 		onUpdate,
 		onClose,
-		selectedAlbumId,
-		onSelect,
-		placeholder
+		selectedAlbumId: _selectedAlbumId,
+		onSelect: _onSelect,
+		placeholder: _placeholder
 	}: Props = $props()
 
 	// State

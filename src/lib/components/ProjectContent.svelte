@@ -36,10 +36,12 @@
 	{/if}
 
 	<!-- Gallery (if available) -->
+	<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 	{#if (project as any).gallery && (project as any).gallery.length > 0}
 		<div class="gallery-section">
 			<h2>Gallery</h2>
 			<div class="gallery-grid">
+				<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 				{#each (project as any).gallery as image}
 					<img src={image} alt="Gallery item" />
 				{/each}

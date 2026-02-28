@@ -5,7 +5,6 @@
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import StarIcon from '$icons/star.svg?component'
-	import type { GardenItem } from '@prisma/client'
 	import type { PageData } from './$types'
 
 	let { data } = $props<{ data: PageData }>()

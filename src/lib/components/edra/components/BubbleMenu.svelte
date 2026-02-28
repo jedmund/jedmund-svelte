@@ -16,6 +16,7 @@
 		resizeDelay?: number
 	}
 
+	// svelte-ignore custom_element_props_identifier
 	let {
 		editor,
 		shouldShow = null,

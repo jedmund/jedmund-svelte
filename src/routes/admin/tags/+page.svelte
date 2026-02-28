@@ -78,13 +78,13 @@
 
 	// Watch for search changes
 	$effect(() => {
-		searchQuery
+		void searchQuery
 		debouncedFetch()
 	})
 
 	// Watch for sort changes
 	$effect(() => {
-		sort
+		void sort
 		fetchTags()
 	})
 

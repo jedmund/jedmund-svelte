@@ -22,7 +22,7 @@
 	let itemToDelete: GardenItem | null = $state(null)
 	let openDropdownId = $state<number | null>(null)
 
-	const filters = createListFilters(items, {
+	const filters = createListFilters(() => items, {
 		filters: {
 			category: { field: 'category' as keyof GardenItem, default: 'all' },
 			status: { field: 'isCurrent' as keyof GardenItem, default: 'all' }

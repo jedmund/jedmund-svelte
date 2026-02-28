@@ -6,7 +6,7 @@
 	import { clickOutside } from '$lib/actions/clickOutside'
 
 	let isOpen = $state(false)
-	let buttonRef: any
+	let buttonRef: HTMLElement | undefined
 	let showComposer = $state(false)
 	let selectedType = $state<'post' | 'essay'>('post')
 

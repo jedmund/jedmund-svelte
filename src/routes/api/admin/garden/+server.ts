@@ -18,7 +18,7 @@ interface GardenItemCreateBody {
 	imageUrl?: string
 	url?: string
 	sourceId?: string
-	metadata?: Record<string, any>
+	metadata?: Record<string, unknown>
 	summary?: string
 	date?: string
 	note?: unknown
@@ -90,10 +90,10 @@ export const POST: RequestHandler = async (event) => {
 				sourceImageUrl,
 				url: body.url || null,
 				sourceId: body.sourceId || null,
-				metadata: body.metadata !== undefined ? (body.metadata as any) : null,
+				metadata: body.metadata !== undefined ? (body.metadata as Record<string, unknown>) : null,
 				summary: body.summary || null,
 				date: body.date ? new Date(body.date) : null,
-				note: body.note !== undefined ? (body.note as any) : null,
+				note: body.note !== undefined ? (body.note as unknown) : null,
 				rating: body.rating != null ? Math.min(5, Math.max(1, body.rating)) : null,
 				isCurrent: body.isCurrent ?? false,
 				isFavorite: body.isFavorite ?? false,

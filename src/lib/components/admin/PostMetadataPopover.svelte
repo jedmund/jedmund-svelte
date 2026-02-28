@@ -31,7 +31,7 @@
 
 	let {
 		post,
-		postType,
+		postType: _postType,
 		slug = $bindable(),
 		excerpt = $bindable(''),
 		syndicationText = $bindable(''),

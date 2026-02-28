@@ -41,7 +41,9 @@
 	let imageUrl = $state(item?.imageUrl ?? '')
 	let url = $state(item?.url ?? '')
 	let sourceId = $state(item?.sourceId ?? '')
-	let metadata = $state<Record<string, any> | null>((item?.metadata as Record<string, any>) ?? null)
+	let metadata = $state<Record<string, unknown> | null>(
+		(item?.metadata as Record<string, unknown>) ?? null
+	)
 	let summary = $state(item?.summary ?? '')
 	let date = $state(item?.date ? new Date(item.date).toISOString().slice(0, 10) : '')
 	let rating = $state<number | null>(item?.rating ?? null)
@@ -99,7 +101,7 @@
 		imageUrl: item?.imageUrl ?? '',
 		url: item?.url ?? '',
 		sourceId: item?.sourceId ?? '',
-		metadata: JSON.stringify((item?.metadata as Record<string, any>) ?? null),
+		metadata: JSON.stringify((item?.metadata as Record<string, unknown>) ?? null),
 		date: item?.date ? new Date(item.date).toISOString().slice(0, 10) : '',
 		rating: item?.rating ?? null,
 		isCurrent: item?.isCurrent ?? false,
@@ -303,7 +305,7 @@
 				imageUrl: savedItem.imageUrl ?? '',
 				url: savedItem.url ?? '',
 				sourceId: savedItem.sourceId ?? '',
-				metadata: JSON.stringify((savedItem.metadata as Record<string, any>) ?? null),
+				metadata: JSON.stringify((savedItem.metadata as Record<string, unknown>) ?? null),
 				date: savedItem.date ? new Date(savedItem.date).toISOString().slice(0, 10) : '',
 				rating: savedItem.rating ?? null,
 				isCurrent: savedItem.isCurrent,
@@ -321,7 +323,7 @@
 				status = savedItem.status as 'draft' | 'published'
 				slug = savedItem.slug
 				sourceId = savedItem.sourceId ?? ''
-				metadata = (savedItem.metadata as Record<string, any>) ?? null
+				metadata = (savedItem.metadata as Record<string, unknown>) ?? null
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
@@ -399,7 +401,7 @@
 				status,
 				note: JSON.stringify(note)
 			}
-			nav.to && goto(nav.to.url.pathname)
+			if (nav.to) goto(nav.to.url.pathname)
 		}
 	}
 </script>

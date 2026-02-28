@@ -20,6 +20,8 @@
 		onTagRemove?: (tag: Tag) => void
 	}
 
+	const inputId = `tag-input-${Math.random().toString(36).slice(2, 9)}`
+
 	let {
 		tags = $bindable([]),
 		label,
@@ -191,7 +193,7 @@
 
 <div class="tag-input-wrapper">
 	{#if label}
-		<label class="input-label">{label}</label>
+		<label class="input-label" for={inputId}>{label}</label>
 	{/if}
 
 	<div class="tag-input-container">
@@ -223,6 +225,7 @@
 			{#if tags.length < maxTags}
 				<input
 					bind:this={inputElement}
+					id={inputId}
 					type="text"
 					value={inputValue}
 					oninput={handleInput}

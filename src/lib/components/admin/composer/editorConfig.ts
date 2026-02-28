@@ -126,7 +126,7 @@ export function getBubbleMenuCommands(): EdraToolBarCommands[] {
 	// The bubble menu's shouldShow already gates visibility on valid selections.
 	return textFormattingCommands
 		.filter((cmd) => ['bold', 'italic', 'strikethrough', 'link'].includes(cmd.name))
-		.map(({ clickable, ...rest }) => rest)
+		.map(({ clickable: _clickable, ...rest }) => rest)
 }
 
 // Commands to exclude from toolbar

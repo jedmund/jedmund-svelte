@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Input from '$lib/components/admin/Input.svelte'
 
 export default {

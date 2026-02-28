@@ -78,6 +78,7 @@ export async function ensureUniqueSlug(
 	let counter = 1
 
 	while (true) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const existingRecord = await (prisma[model] as any).findFirst({
 			where: {
 				slug: uniqueSlug,

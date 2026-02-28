@@ -55,7 +55,7 @@
 	}
 
 	let syndications = $state<SyndicationRecord[]>([])
-	let syndicationLoading = $state(false)
+	let _syndicationLoading = $state(false)
 	let triggering = $state(false)
 	let linkModalOpen = $state(false)
 	let linkModalPlatform = $state<string | null>(null)
@@ -73,7 +73,7 @@
 	})
 
 	async function fetchStatus() {
-		syndicationLoading = true
+		_syndicationLoading = true
 		try {
 			const res = await fetch(`/api/syndication/status?contentType=post&contentId=${contentId}`)
 			if (res.ok) {
@@ -83,7 +83,7 @@
 		} catch {
 			// Silently fail
 		} finally {
-			syndicationLoading = false
+			_syndicationLoading = false
 		}
 	}
 

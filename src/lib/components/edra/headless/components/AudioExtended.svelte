@@ -3,6 +3,7 @@
 	import MediaExtended from './MediaExtended.svelte'
 	import AudioPlayer from '$components/AudioPlayer.svelte'
 
+	// svelte-ignore custom_element_props_identifier
 	const { ...rest }: NodeViewProps = $props()
 
 	let mediaRef = $state<HTMLElement>()

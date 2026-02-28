@@ -15,7 +15,7 @@
 		placeholder?: string
 		rows?: number
 		helpText?: string
-		component?: any // For custom components
+		component?: object // For custom components
 		props?: Record<string, unknown> // Additional props for custom components
 	}
 
@@ -39,7 +39,7 @@
 
 	type Props = {
 		config: MetadataConfig
-		data: Record<string, any>
+		data: Record<string, unknown>
 		triggerElement: HTMLElement
 		onUpdate?: (key: string, value: unknown) => void
 		onClose?: () => void
@@ -222,7 +222,7 @@
 				</div>
 			{:else if field.type === 'tags'}
 				<div class="tags-section">
-					<label class="field-label">{field.label}</label>
+					<span class="field-label">{field.label}</span>
 					<TagInput
 						bind:tags={data[field.key]}
 						placeholder={field.placeholder || 'Add tags...'}
