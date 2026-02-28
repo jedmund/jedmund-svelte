@@ -52,14 +52,12 @@
 		<section class="explainer">
 			<p>
 				You can follow this site using RSS, a standard format that lets you subscribe to websites
-				and read new posts in one place. Copy a feed URL below into your reader of choice, or
-				click Subscribe to open it directly.
+				and read new posts in one place. Copy a feed URL below into your reader of choice, or click
+				Subscribe to open it directly.
 			</p>
 			<p>
 				If you're new to RSS,
-				<a href="https://netnewswire.com/" target="_blank" rel="noopener noreferrer"
-					>NetNewsWire</a
-				>
+				<a href="https://netnewswire.com/" target="_blank" rel="noopener noreferrer">NetNewsWire</a>
 				is a great free reader for Mac and iOS, and
 				<a href="https://feedly.com/" target="_blank" rel="noopener noreferrer">Feedly</a>
 				works well on the web.

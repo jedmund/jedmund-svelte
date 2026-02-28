@@ -30,9 +30,7 @@
 	)
 
 	const renderedNote = $derived(
-		data.item?.note
-			? renderEdraContent(data.item.note).replace(/(<p><br><\/p>\s*)+$/, '')
-			: ''
+		data.item?.note ? renderEdraContent(data.item.note).replace(/(<p><br><\/p>\s*)+$/, '') : ''
 	)
 	const dateStr = $derived(data.item?.date ? data.item.date.toString() : '')
 	const year = $derived.by(() => {
@@ -130,18 +128,11 @@
 						{/if}
 
 						{#if data.item.summary}
-							<p
-								class="item-summary"
-								class:collapsed={!summaryExpanded}
-								bind:this={summaryEl}
-							>
+							<p class="item-summary" class:collapsed={!summaryExpanded} bind:this={summaryEl}>
 								{data.item.summary}
 							</p>
 							{#if summaryOverflows || summaryExpanded}
-								<button
-									class="summary-toggle"
-									onclick={() => (summaryExpanded = !summaryExpanded)}
-								>
+								<button class="summary-toggle" onclick={() => (summaryExpanded = !summaryExpanded)}>
 									{summaryExpanded ? 'Show less' : 'Read more'}
 								</button>
 							{/if}
@@ -457,8 +448,8 @@
 			background: $gray-95;
 			padding: 2px 6px;
 			border-radius: 4px;
-			font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
-				monospace;
+			font-family:
+				'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 			font-size: 0.9em;
 			color: $text-color;
 		}

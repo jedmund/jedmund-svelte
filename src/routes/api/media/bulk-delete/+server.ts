@@ -101,10 +101,14 @@ export const DELETE: RequestHandler = async (event) => {
 					deleted
 				})
 			} catch (error) {
-				logger.error('Error deleting file from storage', error instanceof Error ? error : undefined, {
-					mediaId: media.id,
-					url: media.url
-				})
+				logger.error(
+					'Error deleting file from storage',
+					error instanceof Error ? error : undefined,
+					{
+						mediaId: media.id,
+						url: media.url
+					}
+				)
 				storageDeleteResults.push({
 					id: media.id,
 					filename: media.filename,
@@ -199,7 +203,10 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 				return itemId ? !mediaIds.includes(Number(itemId)) : true
 			})
 			if (filteredGallery.length !== project.gallery.length) {
-				updateData.gallery = filteredGallery.length > 0 ? (filteredGallery as unknown as Prisma.InputJsonValue) : Prisma.DbNull
+				updateData.gallery =
+					filteredGallery.length > 0
+						? (filteredGallery as unknown as Prisma.InputJsonValue)
+						: Prisma.DbNull
 				needsUpdate = true
 			}
 		}
@@ -249,7 +256,10 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 				return itemId ? !mediaIds.includes(Number(itemId)) : true
 			})
 			if (filteredAttachments.length !== post.attachments.length) {
-				updateData.attachments = filteredAttachments.length > 0 ? (filteredAttachments as unknown as Prisma.InputJsonValue) : Prisma.DbNull
+				updateData.attachments =
+					filteredAttachments.length > 0
+						? (filteredAttachments as unknown as Prisma.InputJsonValue)
+						: Prisma.DbNull
 				needsUpdate = true
 			}
 		}
@@ -276,7 +286,11 @@ async function cleanupMediaReferences(mediaIds: number[]) {
 /**
  * Remove media references from rich text content
  */
-function cleanContentFromMedia(content: Prisma.JsonValue, mediaIds: number[], urlsToRemove: string[]): Prisma.JsonValue {
+function cleanContentFromMedia(
+	content: Prisma.JsonValue,
+	mediaIds: number[],
+	urlsToRemove: string[]
+): Prisma.JsonValue {
 	if (!content || typeof content !== 'object') return content
 
 	function cleanNode(node: ContentNode | null): ContentNode | null {
@@ -312,7 +326,9 @@ function cleanContentFromMedia(content: Prisma.JsonValue, mediaIds: number[], ur
 
 		// Recursively clean child nodes
 		if (node.content) {
-			const cleanedContent = node.content.map(cleanNode).filter((child): child is ContentNode => child !== null)
+			const cleanedContent = node.content
+				.map(cleanNode)
+				.filter((child): child is ContentNode => child !== null)
 
 			return {
 				...node,

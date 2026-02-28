@@ -175,9 +175,7 @@ export function createSearchFn(
 	config: CategorySearchConfig
 ): (query: string, limit?: number) => Promise<TypeaheadResult[]> {
 	return async (query: string, limit = 5) => {
-		const res = await fetch(
-			`${config.endpoint}?q=${encodeURIComponent(query)}&limit=${limit}`
-		)
+		const res = await fetch(`${config.endpoint}?q=${encodeURIComponent(query)}&limit=${limit}`)
 		const data = await res.json()
 		return (data.results || []).map(config.mapResult)
 	}

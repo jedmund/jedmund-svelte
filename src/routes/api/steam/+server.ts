@@ -1,12 +1,7 @@
 import 'dotenv/config'
 import { error } from '@sveltejs/kit'
 import redis from '../redis-client'
-import SteamAPI, {
-	UserPlaytime,
-	GameInfoExtended,
-	Game,
-	GameInfo
-} from 'steamapi'
+import SteamAPI, { UserPlaytime, GameInfoExtended, Game, GameInfo } from 'steamapi'
 
 import type { RequestHandler } from './$types'
 import type { SerializableGameInfo } from '$lib/types/steam'

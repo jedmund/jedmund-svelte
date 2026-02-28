@@ -163,14 +163,14 @@
 
 <AdminPage>
 	{#snippet header()}
-	<header>
-		<div class="header-left">
-			<button class="btn-icon" onclick={() => goto('/admin/media')}>
-				<ChevronLeft />
-			</button>
-			<h1>Regenerate Cloudinary Data</h1>
-		</div>
-	</header>
+		<header>
+			<div class="header-left">
+				<button class="btn-icon" onclick={() => goto('/admin/media')}>
+					<ChevronLeft />
+				</button>
+				<h1>Regenerate Cloudinary Data</h1>
+			</div>
+		</header>
 	{/snippet}
 
 	{#if error}

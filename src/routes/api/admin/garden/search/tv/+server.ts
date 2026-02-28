@@ -43,9 +43,7 @@ async function getSeriesDetails(
 		const data = await res.json()
 		const series = data.data
 		// Filter out specials (season 0)
-		const regularSeasons = series?.seasons?.filter(
-			(s: { number: number }) => s.number > 0
-		)
+		const regularSeasons = series?.seasons?.filter((s: { number: number }) => s.number > 0)
 		return {
 			seasons: regularSeasons?.length ?? null,
 			episodes: series?.episodes?.length ?? null
@@ -107,8 +105,7 @@ export const GET: RequestHandler = async (event) => {
 				}) => {
 					const engName = show.translations?.eng
 					const jpnName = show.translations?.jpn
-					const displayName =
-						show.primary_language !== 'eng' && engName ? engName : show.name
+					const displayName = show.primary_language !== 'eng' && engName ? engName : show.name
 					const originalName =
 						displayName !== show.name
 							? show.name

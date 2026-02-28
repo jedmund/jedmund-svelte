@@ -113,19 +113,25 @@
 	// Check if form has unsaved changes
 	let isDirty = $derived(
 		hasLoaded &&
-		(title !== initialValues.title ||
-			postType !== initialValues.postType ||
-			status !== initialValues.status ||
-			slug !== initialValues.slug ||
-			excerpt !== initialValues.excerpt ||
-			syndicationText !== initialValues.syndicationText ||
-			featuredImage !== initialValues.featuredImage ||
-			syndicateBluesky !== initialValues.syndicateBluesky ||
-			syndicateMastodon !== initialValues.syndicateMastodon ||
-			appendLink !== initialValues.appendLink ||
-			JSON.stringify(content) !== initialValues.content ||
-			tags.map((t) => t.id).sort().join(',') !==
-				initialValues.tags.map((t) => t.id).sort().join(','))
+			(title !== initialValues.title ||
+				postType !== initialValues.postType ||
+				status !== initialValues.status ||
+				slug !== initialValues.slug ||
+				excerpt !== initialValues.excerpt ||
+				syndicationText !== initialValues.syndicationText ||
+				featuredImage !== initialValues.featuredImage ||
+				syndicateBluesky !== initialValues.syndicateBluesky ||
+				syndicateMastodon !== initialValues.syndicateMastodon ||
+				appendLink !== initialValues.appendLink ||
+				JSON.stringify(content) !== initialValues.content ||
+				tags
+					.map((t) => t.id)
+					.sort()
+					.join(',') !==
+					initialValues.tags
+						.map((t) => t.id)
+						.sort()
+						.join(','))
 	)
 
 	const postTypeConfig = {
@@ -206,30 +212,44 @@
 				case 'ul':
 					return {
 						type: 'bulletList',
-						content: Array.isArray(block.content) ? block.content.map((item) => ({
-							type: 'listItem',
-							content: [
-								{
-									type: 'paragraph',
-									content: [{ type: 'text', text: (typeof item === 'object' && item.content) || String(item) }]
-								}
-							]
-						})) : []
+						content: Array.isArray(block.content)
+							? block.content.map((item) => ({
+									type: 'listItem',
+									content: [
+										{
+											type: 'paragraph',
+											content: [
+												{
+													type: 'text',
+													text: (typeof item === 'object' && item.content) || String(item)
+												}
+											]
+										}
+									]
+								}))
+							: []
 					}
 
 				case 'orderedList':
 				case 'ol':
 					return {
 						type: 'orderedList',
-						content: Array.isArray(block.content) ? block.content.map((item) => ({
-							type: 'listItem',
-							content: [
-								{
-									type: 'paragraph',
-									content: [{ type: 'text', text: (typeof item === 'object' && item.content) || String(item) }]
-								}
-							]
-						})) : []
+						content: Array.isArray(block.content)
+							? block.content.map((item) => ({
+									type: 'listItem',
+									content: [
+										{
+											type: 'paragraph',
+											content: [
+												{
+													type: 'text',
+													text: (typeof item === 'object' && item.content) || String(item)
+												}
+											]
+										}
+									]
+								}))
+							: []
 					}
 
 				case 'blockquote':
@@ -362,7 +382,7 @@
 				}
 			} else {
 				// Fallback error messaging
-					loadError = 'Post not found'
+				loadError = 'Post not found'
 			}
 		} catch (_error) {
 			loadError = 'Network error occurred while loading post'
@@ -400,7 +420,7 @@
 			if (saved) {
 				post = saved
 				if (newStatus) status = newStatus as 'draft' | 'published'
-        
+
 				// Update initial values to reflect saved state
 				initialValues = {
 					title,
@@ -468,7 +488,6 @@
 			goto(url)
 		}
 	}
-
 </script>
 
 <svelte:head>
@@ -479,37 +498,37 @@
 
 <AdminPage>
 	{#snippet header()}
-	<header>
-		{#if !loading && post}
-			<div class="header-left">
-				<h1 class="object-type">{config.label}</h1>
-			</div>
-			<div class="header-center">
-				<AdminSegmentedControl
-					options={tabOptions}
-					value={activeTab}
-					onChange={(value) => (activeTab = value)}
-				/>
-			</div>
-			<div class="header-actions">
-				<StatusDropdown
-					currentStatus={status}
-					onStatusChange={handleSave}
-					disabled={saving}
-					isLoading={saving}
-					primaryAction={status === 'draft'
-						? { label: 'Save draft', status: 'draft' }
-						: { label: 'Save post', status: 'published' }}
-					dropdownActions={status === 'draft'
-						? [{ label: 'Publish', status: 'published' }]
-						: [{ label: 'Save as Draft', status: 'draft' }]}
-					viewUrl={slug ? `/universe/${slug}` : undefined}
-					onDelete={openDeleteConfirmation}
-					onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
-				/>
-			</div>
-		{/if}
-	</header>
+		<header>
+			{#if !loading && post}
+				<div class="header-left">
+					<h1 class="object-type">{config.label}</h1>
+				</div>
+				<div class="header-center">
+					<AdminSegmentedControl
+						options={tabOptions}
+						value={activeTab}
+						onChange={(value) => (activeTab = value)}
+					/>
+				</div>
+				<div class="header-actions">
+					<StatusDropdown
+						currentStatus={status}
+						onStatusChange={handleSave}
+						disabled={saving}
+						isLoading={saving}
+						primaryAction={status === 'draft'
+							? { label: 'Save draft', status: 'draft' }
+							: { label: 'Save post', status: 'published' }}
+						dropdownActions={status === 'draft'
+							? [{ label: 'Publish', status: 'published' }]
+							: [{ label: 'Save as Draft', status: 'draft' }]}
+						viewUrl={slug ? `/universe/${slug}` : undefined}
+						onDelete={openDeleteConfirmation}
+						onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
+					/>
+				</div>
+			{/if}
+		</header>
 	{/snippet}
 
 	<div class="admin-container">

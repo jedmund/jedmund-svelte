@@ -38,7 +38,10 @@
 			updateAttributes({ images: newImages })
 		} else {
 			// Add to existing images
-			const existingImages = (node.attrs.images || []) as Array<{ id: number; [key: string]: unknown }>
+			const existingImages = (node.attrs.images || []) as Array<{
+				id: number
+				[key: string]: unknown
+			}>
 			const currentIds = existingImages.map((img) => img.id)
 			const uniqueNewImages = newImages.filter((img) => !currentIds.includes(img.id))
 			updateAttributes({ images: [...existingImages, ...uniqueNewImages] })

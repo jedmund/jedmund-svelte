@@ -95,10 +95,12 @@ async function getRecentAlbums(
 		logger.music('debug', 'Using cached Last.fm recent tracks')
 		recentTracksResponse = JSON.parse(cached)
 		if (recentTracksResponse.tracks) {
-			recentTracksResponse.tracks = recentTracksResponse.tracks.map((track: Record<string, unknown>) => ({
-				...track,
-				date: track.date ? new Date(track.date as string | number) : undefined
-			}))
+			recentTracksResponse.tracks = recentTracksResponse.tracks.map(
+				(track: Record<string, unknown>) => ({
+					...track,
+					date: track.date ? new Date(track.date as string | number) : undefined
+				})
+			)
 		}
 	} else {
 		logger.music('debug', 'Fetching fresh Last.fm recent tracks')
@@ -250,12 +252,20 @@ async function searchAppleMusicForAlbum(album: Album): Promise<Album> {
 		}
 	} catch (error) {
 		searchMetadata.error = error instanceof Error ? error.message : 'Unknown error'
-		logger.error(`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}"`, error as Error)
+		logger.error(
+			`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}"`,
+			error as Error
+		)
 		const errorData = {
 			searchMetadata,
 			error: true
 		}
-		await redis.set(`apple:album:${album.artist.name}:${album.name}`, JSON.stringify(errorData), 'EX', 1800)
+		await redis.set(
+			`apple:album:${album.artist.name}:${album.name}`,
+			JSON.stringify(errorData),
+			'EX',
+			1800
+		)
 	}
 
 	// Return album with search metadata if Apple Music search fails

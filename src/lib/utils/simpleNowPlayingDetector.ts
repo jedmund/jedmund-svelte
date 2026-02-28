@@ -28,11 +28,14 @@ export class SimpleNowPlayingDetector {
 		const now = new Date()
 		const elapsed = now.getTime() - scrobbleTime.getTime()
 		const maxPlayTime = durationMs + BUFFER_TIME_MS
-		
+
 		const isPlaying = elapsed >= 0 && elapsed <= maxPlayTime
-		
-		logger.music('debug', `Track playing check: elapsed=${Math.round(elapsed/1000)}s, duration=${Math.round(durationMs/1000)}s, maxPlay=${Math.round(maxPlayTime/1000)}s, isPlaying=${isPlaying}`)
-		
+
+		logger.music(
+			'debug',
+			`Track playing check: elapsed=${Math.round(elapsed / 1000)}s, duration=${Math.round(durationMs / 1000)}s, maxPlay=${Math.round(maxPlayTime / 1000)}s, isPlaying=${isPlaying}`
+		)
+
 		// Track is playing if we're within the duration + buffer
 		return isPlaying
 	}
@@ -49,27 +52,33 @@ export class SimpleNowPlayingDetector {
 			albumName: string
 		) => Promise<Album['appleMusicData'] | null>
 	): Promise<Album[]> {
-		logger.music('debug', `Processing ${albums.length} albums with ${recentTracks.length} recent tracks`)
-		
+		logger.music(
+			'debug',
+			`Processing ${albums.length} albums with ${recentTracks.length} recent tracks`
+		)
+
 		// First check if Last.fm reports anything as officially playing
-		const officialNowPlaying = recentTracks.find(track => track.nowPlaying)
-		
+		const officialNowPlaying = recentTracks.find((track) => track.nowPlaying)
+
 		if (officialNowPlaying) {
 			// Trust Last.fm's official now playing status
-			logger.music('debug', `✅ Last.fm official now playing: "${officialNowPlaying.name}" by ${officialNowPlaying.artist.name}`)
-			
-			return albums.map(album => ({
+			logger.music(
+				'debug',
+				`✅ Last.fm official now playing: "${officialNowPlaying.name}" by ${officialNowPlaying.artist.name}`
+			)
+
+			return albums.map((album) => ({
 				...album,
-				isNowPlaying: 
-					album.name === officialNowPlaying.album.name && 
+				isNowPlaying:
+					album.name === officialNowPlaying.album.name &&
 					album.artist.name === officialNowPlaying.artist.name,
-				nowPlayingTrack: 
-					album.name === officialNowPlaying.album.name && 
+				nowPlayingTrack:
+					album.name === officialNowPlaying.album.name &&
 					album.artist.name === officialNowPlaying.artist.name
 						? officialNowPlaying.name
 						: undefined,
-				lastScrobbleTime: 
-					album.name === officialNowPlaying.album.name && 
+				lastScrobbleTime:
+					album.name === officialNowPlaying.album.name &&
 					album.artist.name === officialNowPlaying.artist.name
 						? new Date() // Now playing tracks are playing right now
 						: album.lastScrobbleTime
@@ -92,18 +101,21 @@ export class SimpleNowPlayingDetector {
 				}
 			}
 		}
-		
+
 		if (!mostRecentTrack) {
 			// No recent tracks, nothing is playing
 			logger.music('debug', '❌ No recent tracks found, nothing is playing')
-			return albums.map(album => ({
+			return albums.map((album) => ({
 				...album,
 				isNowPlaying: false,
 				nowPlayingTrack: undefined
 			}))
 		}
 
-		logger.music('debug', `Most recent track: "${mostRecentTrack.name}" by ${mostRecentTrack.artist.name} from ${mostRecentTrack.album.name}`)
+		logger.music(
+			'debug',
+			`Most recent track: "${mostRecentTrack.name}" by ${mostRecentTrack.artist.name} from ${mostRecentTrack.album.name}`
+		)
 		logger.music('debug', `Scrobbled at: ${mostRecentTime}`)
 
 		// Check if the most recent track is still playing
@@ -134,28 +146,39 @@ export class SimpleNowPlayingDetector {
 					logger.music('debug', `⚠️ No duration found for track "${mostRecentTrack.name}"`)
 					// Fallback: assume track is playing if scrobbled within last 5 minutes
 					const timeSinceScrobble = Date.now() - mostRecentTime.getTime()
-					if (timeSinceScrobble < 5 * 60 * 1000) { // 5 minutes
+					if (timeSinceScrobble < 5 * 60 * 1000) {
+						// 5 minutes
 						isPlaying = true
 						playingTrack = mostRecentTrack.name
-						logger.music('debug', `⏰ Using time-based fallback: track scrobbled ${Math.round(timeSinceScrobble/1000)}s ago, assuming still playing`)
+						logger.music(
+							'debug',
+							`⏰ Using time-based fallback: track scrobbled ${Math.round(timeSinceScrobble / 1000)}s ago, assuming still playing`
+						)
 					}
 				}
 			}
 		} catch (error) {
 			logger.error('Error checking track duration:', error as Error, undefined, 'music')
-			logger.music('debug', `❌ Failed to get Apple Music data for ${mostRecentTrack.artist.name} - ${mostRecentTrack.album.name}`)
-			
+			logger.music(
+				'debug',
+				`❌ Failed to get Apple Music data for ${mostRecentTrack.artist.name} - ${mostRecentTrack.album.name}`
+			)
+
 			// Fallback when Apple Music lookup fails
 			const timeSinceScrobble = Date.now() - mostRecentTime.getTime()
-			if (timeSinceScrobble < 5 * 60 * 1000) { // 5 minutes
+			if (timeSinceScrobble < 5 * 60 * 1000) {
+				// 5 minutes
 				isPlaying = true
 				playingTrack = mostRecentTrack.name
-				logger.music('debug', `⏰ Using time-based fallback after Apple Music error: track scrobbled ${Math.round(timeSinceScrobble/1000)}s ago`)
+				logger.music(
+					'debug',
+					`⏰ Using time-based fallback after Apple Music error: track scrobbled ${Math.round(timeSinceScrobble / 1000)}s ago`
+				)
 			}
 		}
 
 		// Update albums with the result
-		return albums.map(album => {
+		return albums.map((album) => {
 			const key = `${album.artist.name}:${album.name}`
 			const isThisAlbumPlaying = isPlaying && key === albumKey
 			return {

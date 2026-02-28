@@ -14,31 +14,31 @@
 	import type { PageData } from './$types'
 	import type { AdminPost } from '$lib/types/admin'
 
-const { data, form } = $props<{ data: PageData; form?: { message?: string } }>()
+	const { data, form } = $props<{ data: PageData; form?: { message?: string } }>()
 
-let showInlineComposer = $state(true)
-let showDeleteConfirmation = $state(false)
-let postToDelete: AdminPost | null = null
+	let showInlineComposer = $state(true)
+	let showDeleteConfirmation = $state(false)
+	let postToDelete: AdminPost | null = null
 
-const actionError = form?.message ?? ''
-const posts = data.items ?? []
+	const actionError = form?.message ?? ''
+	const posts = data.items ?? []
 
-// Create reactive filters
-const filters = createListFilters(posts, {
-	filters: {
-		type: { field: 'postType', default: 'all' },
-		status: { field: 'status', default: 'all' }
-	},
-	sorts: {
-		newest: commonSorts.dateDesc<AdminPost>('createdAt'),
-		oldest: commonSorts.dateAsc<AdminPost>('createdAt'),
-		'title-asc': commonSorts.stringAsc<AdminPost>('title'),
-		'title-desc': commonSorts.stringDesc<AdminPost>('title'),
-		'status-published': commonSorts.statusPublishedFirst<AdminPost>('status'),
-		'status-draft': commonSorts.statusDraftFirst<AdminPost>('status')
-	},
-	defaultSort: 'newest'
-})
+	// Create reactive filters
+	const filters = createListFilters(posts, {
+		filters: {
+			type: { field: 'postType', default: 'all' },
+			status: { field: 'status', default: 'all' }
+		},
+		sorts: {
+			newest: commonSorts.dateDesc<AdminPost>('createdAt'),
+			oldest: commonSorts.dateAsc<AdminPost>('createdAt'),
+			'title-asc': commonSorts.stringAsc<AdminPost>('title'),
+			'title-desc': commonSorts.stringDesc<AdminPost>('title'),
+			'status-published': commonSorts.statusPublishedFirst<AdminPost>('status'),
+			'status-draft': commonSorts.statusDraftFirst<AdminPost>('status')
+		},
+		defaultSort: 'newest'
+	})
 
 	let toggleForm: HTMLFormElement | null = null
 	let toggleIdField: HTMLInputElement | null = null
@@ -48,17 +48,17 @@ const filters = createListFilters(posts, {
 	let deleteForm: HTMLFormElement | null = null
 	let deleteIdField: HTMLInputElement | null = null
 
-const typeFilterOptions = [
-	{ value: 'all', label: 'All posts' },
-	{ value: 'post', label: 'Posts' },
-	{ value: 'essay', label: 'Essays' }
-]
+	const typeFilterOptions = [
+		{ value: 'all', label: 'All posts' },
+		{ value: 'post', label: 'Posts' },
+		{ value: 'essay', label: 'Essays' }
+	]
 
-const statusFilterOptions = [
+	const statusFilterOptions = [
 		{ value: 'all', label: 'All statuses' },
 		{ value: 'published', label: 'Published' },
 		{ value: 'draft', label: 'Draft' }
-]
+	]
 
 	const sortOptions = [
 		{ value: 'newest', label: 'Newest first' },
@@ -119,13 +119,11 @@ const statusFilterOptions = [
 
 <AdminPage>
 	{#snippet header()}
-	<AdminHeader title="Universe">
-		{#snippet actions()}
-			<Button variant="primary" buttonSize="medium" onclick={handleNewEssay}>
-				New essay
-			</Button>
-		{/snippet}
-	</AdminHeader>
+		<AdminHeader title="Universe">
+			{#snippet actions()}
+				<Button variant="primary" buttonSize="medium" onclick={handleNewEssay}>New essay</Button>
+			{/snippet}
+		</AdminHeader>
 	{/snippet}
 
 	{#if showInlineComposer}

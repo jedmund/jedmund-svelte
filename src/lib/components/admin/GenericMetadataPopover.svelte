@@ -1,6 +1,15 @@
 <script lang="ts" module>
 	export interface MetadataField {
-		type: 'input' | 'textarea' | 'date' | 'toggle' | 'tags' | 'metadata' | 'hearts' | 'custom' | 'section'
+		type:
+			| 'input'
+			| 'textarea'
+			| 'date'
+			| 'toggle'
+			| 'tags'
+			| 'metadata'
+			| 'hearts'
+			| 'custom'
+			| 'section'
 		key: string
 		label?: string
 		placeholder?: string
@@ -245,14 +254,14 @@
 		<div class="popover-footer">
 			<Button variant="danger-text" pill={false} onclick={config.deleteButton.action}>
 				{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-					<path
-						d="M4 4L12 12M4 12L12 4"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>{/snippet}
+						<path
+							d="M4 4L12 12M4 12L12 4"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>{/snippet}
 				{config.deleteButton.label}
 			</Button>
 		</div>

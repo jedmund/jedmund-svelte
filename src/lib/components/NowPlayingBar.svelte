@@ -9,11 +9,13 @@
 	let { album, getAlbumArtwork }: Props = $props()
 
 	const artwork = $derived(getAlbumArtwork(album))
-	const trackText = $derived(`${album.artist.name} — ${album.name}${
-		album.appleMusicData?.releaseDate 
-			? ` (${new Date(album.appleMusicData.releaseDate).getFullYear()})` 
-			: ''
-	} — ${album.nowPlayingTrack || album.name}`)
+	const trackText = $derived(
+		`${album.artist.name} — ${album.name}${
+			album.appleMusicData?.releaseDate
+				? ` (${new Date(album.appleMusicData.releaseDate).getFullYear()})`
+				: ''
+		} — ${album.nowPlayingTrack || album.name}`
+	)
 </script>
 
 <nav class="now-playing-bar">
@@ -94,7 +96,7 @@
 		width: 100%;
 		display: flex;
 		gap: 50px; // Space between repeated text
-		
+
 		// Gradient overlays
 		&::before,
 		&::after {
@@ -106,12 +108,12 @@
 			z-index: 1;
 			pointer-events: none;
 		}
-		
+
 		&::before {
 			left: 0;
 			background: linear-gradient(to right, $gray-100, transparent);
 		}
-		
+
 		&::after {
 			right: 0;
 			background: linear-gradient(to left, $gray-100, transparent);
@@ -133,5 +135,4 @@
 			transform: translateX(calc(-100% - 50px)); // Include gap in animation
 		}
 	}
-
 </style>

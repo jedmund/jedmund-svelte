@@ -216,11 +216,7 @@
 					<ToolBarIcon {command} {editor} />
 				{/each}
 
-				<button
-					class="bubble-menu-button"
-					onclick={handleLinkClick}
-					title="Link (Cmd/Ctrl+K)"
-				>
+				<button class="bubble-menu-button" onclick={handleLinkClick} title="Link (Cmd/Ctrl+K)">
 					<Link size={16} />
 				</button>
 

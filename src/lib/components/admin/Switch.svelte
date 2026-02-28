@@ -18,13 +18,7 @@
 </script>
 
 <label class="switch" style:--switch-accent={accentColor}>
-	<input
-		type="checkbox"
-		bind:checked
-		{disabled}
-		onchange={handleChange}
-		class="switch__input"
-	/>
+	<input type="checkbox" bind:checked {disabled} onchange={handleChange} class="switch__input" />
 	<span class="switch__slider"></span>
 </label>
 

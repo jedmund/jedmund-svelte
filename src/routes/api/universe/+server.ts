@@ -133,7 +133,7 @@ export const GET: RequestHandler = async (event) => {
 			postType: post.postType,
 			attachments: post.attachments,
 			featuredImage: post.featuredImage || undefined,
-			tags: post.tags.map(pt => pt.tag),
+			tags: post.tags.map((pt) => pt.tag),
 			publishedAt: post.publishedAt!.toISOString(),
 			createdAt: post.createdAt.toISOString()
 		}))

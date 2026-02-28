@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-import { goto, beforeNavigate } from '$app/navigation'
-import { api } from '$lib/admin/api'
+	import { goto, beforeNavigate } from '$app/navigation'
+	import { api } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
@@ -37,11 +37,11 @@ import { api } from '$lib/admin/api'
 	// Check if form has any content (unsaved changes for new post)
 	let isDirty = $derived(
 		title.trim() !== '' ||
-		slug.trim() !== '' ||
-		excerpt.trim() !== '' ||
-		syndicationText.trim() !== '' ||
-		tags.length > 0 ||
-		(content.content && content.content.length > 0)
+			slug.trim() !== '' ||
+			excerpt.trim() !== '' ||
+			syndicationText.trim() !== '' ||
+			tags.length > 0 ||
+			(content.content && content.content.length > 0)
 	)
 
 	// Auto-generate slug from title when title changes and slug hasn't been manually set
@@ -173,66 +173,66 @@ import { api } from '$lib/admin/api'
 
 <AdminPage>
 	{#snippet header()}
-	<header>
-		<div class="header-left">
-			<button class="btn-icon" onclick={() => goto('/admin/posts')} aria-label="Back to posts">
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-					<path
-						d="M12.5 15L7.5 10L12.5 5"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-			</button>
-		</div>
-		<div class="header-actions">
-			<div class="metadata-popover-container">
-				<button
-					class="btn btn-text"
-					onclick={(e) => {
-						e.stopPropagation()
-						showMetadata = !showMetadata
-					}}
-					bind:this={metadataButtonRef}
-				>
-					<svg width="16" height="16" viewBox="0 0 56 56" fill="none">
+		<header>
+			<div class="header-left">
+				<button class="btn-icon" onclick={() => goto('/admin/posts')} aria-label="Back to posts">
+					<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
 						<path
-							fill="currentColor"
-							d="M 36.4023 19.3164 C 38.8398 19.3164 40.9257 17.7461 41.6992 15.5898 L 49.8085 15.5898 C 50.7695 15.5898 51.6133 14.7461 51.6133 13.6914 C 51.6133 12.6367 50.7695 11.8164 49.8085 11.8164 L 41.7226 11.8164 C 40.9257 9.6367 38.8398 8.0430 36.4023 8.0430 C 33.9648 8.0430 31.8789 9.6367 31.1054 11.8164 L 6.2851 11.8164 C 5.2304 11.8164 4.3867 12.6367 4.3867 13.6914 C 4.3867 14.7461 5.2304 15.5898 6.2851 15.5898 L 31.1054 15.5898 C 31.8789 17.7461 33.9648 19.3164 36.4023 19.3164 Z M 6.1913 26.1133 C 5.2304 26.1133 4.3867 26.9570 4.3867 28.0117 C 4.3867 29.0664 5.2304 29.8867 6.1913 29.8867 L 14.5586 29.8867 C 15.3320 32.0898 17.4179 33.6601 19.8554 33.6601 C 22.3164 33.6601 24.4023 32.0898 25.1757 29.8867 L 49.7149 29.8867 C 50.7695 29.8867 51.6133 29.0664 51.6133 28.0117 C 51.6133 26.9570 50.7695 26.1133 49.7149 26.1133 L 25.1757 26.1133 C 24.3789 23.9570 22.2929 22.3867 19.8554 22.3867 C 17.4413 22.3867 15.3554 23.9570 14.5586 26.1133 Z M 36.4023 47.9570 C 38.8398 47.9570 40.9257 46.3867 41.6992 44.2070 L 49.8085 44.2070 C 50.7695 44.2070 51.6133 43.3867 51.6133 42.3320 C 51.6133 41.2773 50.7695 40.4336 49.8085 40.4336 L 41.6992 40.4336 C 40.9257 38.2539 38.8398 36.7070 36.4023 36.7070 C 33.9648 36.7070 31.8789 38.2539 31.1054 40.4336 L 6.2851 40.4336 C 5.2304 40.4336 4.3867 41.2773 4.3867 42.3320 C 4.3867 43.3867 5.2304 44.2070 6.2851 44.2070 L 31.1054 44.2070 C 31.8789 46.3867 33.9648 47.9570 36.4023 47.9570 Z"
+							d="M12.5 15L7.5 10L12.5 5"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
 						/>
 					</svg>
-					Metadata
 				</button>
-
-				{#if showMetadata && metadataButtonRef}
-					<PostMetadataPopover
-						post={mockPost}
-						{postType}
-						triggerElement={metadataButtonRef}
-						bind:slug
-						bind:excerpt
-						bind:syndicationText
-						bind:tags
-						onDelete={() => {}}
-						onClose={() => (showMetadata = false)}
-						onFieldUpdate={(key, _value) => {
-							if (key === 'slug') {
-								slugManuallySet = true
-							}
-						}}
-					/>
-				{/if}
 			</div>
-			<PublishDropdown
-				onPublish={() => handleSave('published')}
-				onSaveDraft={() => handleSave('draft')}
-				disabled={saving}
-				isLoading={saving}
-			/>
-		</div>
-	</header>
+			<div class="header-actions">
+				<div class="metadata-popover-container">
+					<button
+						class="btn btn-text"
+						onclick={(e) => {
+							e.stopPropagation()
+							showMetadata = !showMetadata
+						}}
+						bind:this={metadataButtonRef}
+					>
+						<svg width="16" height="16" viewBox="0 0 56 56" fill="none">
+							<path
+								fill="currentColor"
+								d="M 36.4023 19.3164 C 38.8398 19.3164 40.9257 17.7461 41.6992 15.5898 L 49.8085 15.5898 C 50.7695 15.5898 51.6133 14.7461 51.6133 13.6914 C 51.6133 12.6367 50.7695 11.8164 49.8085 11.8164 L 41.7226 11.8164 C 40.9257 9.6367 38.8398 8.0430 36.4023 8.0430 C 33.9648 8.0430 31.8789 9.6367 31.1054 11.8164 L 6.2851 11.8164 C 5.2304 11.8164 4.3867 12.6367 4.3867 13.6914 C 4.3867 14.7461 5.2304 15.5898 6.2851 15.5898 L 31.1054 15.5898 C 31.8789 17.7461 33.9648 19.3164 36.4023 19.3164 Z M 6.1913 26.1133 C 5.2304 26.1133 4.3867 26.9570 4.3867 28.0117 C 4.3867 29.0664 5.2304 29.8867 6.1913 29.8867 L 14.5586 29.8867 C 15.3320 32.0898 17.4179 33.6601 19.8554 33.6601 C 22.3164 33.6601 24.4023 32.0898 25.1757 29.8867 L 49.7149 29.8867 C 50.7695 29.8867 51.6133 29.0664 51.6133 28.0117 C 51.6133 26.9570 50.7695 26.1133 49.7149 26.1133 L 25.1757 26.1133 C 24.3789 23.9570 22.2929 22.3867 19.8554 22.3867 C 17.4413 22.3867 15.3554 23.9570 14.5586 26.1133 Z M 36.4023 47.9570 C 38.8398 47.9570 40.9257 46.3867 41.6992 44.2070 L 49.8085 44.2070 C 50.7695 44.2070 51.6133 43.3867 51.6133 42.3320 C 51.6133 41.2773 50.7695 40.4336 49.8085 40.4336 L 41.6992 40.4336 C 40.9257 38.2539 38.8398 36.7070 36.4023 36.7070 C 33.9648 36.7070 31.8789 38.2539 31.1054 40.4336 L 6.2851 40.4336 C 5.2304 40.4336 4.3867 41.2773 4.3867 42.3320 C 4.3867 43.3867 5.2304 44.2070 6.2851 44.2070 L 31.1054 44.2070 C 31.8789 46.3867 33.9648 47.9570 36.4023 47.9570 Z"
+							/>
+						</svg>
+						Metadata
+					</button>
+
+					{#if showMetadata && metadataButtonRef}
+						<PostMetadataPopover
+							post={mockPost}
+							{postType}
+							triggerElement={metadataButtonRef}
+							bind:slug
+							bind:excerpt
+							bind:syndicationText
+							bind:tags
+							onDelete={() => {}}
+							onClose={() => (showMetadata = false)}
+							onFieldUpdate={(key, _value) => {
+								if (key === 'slug') {
+									slugManuallySet = true
+								}
+							}}
+						/>
+					{/if}
+				</div>
+				<PublishDropdown
+					onPublish={() => handleSave('published')}
+					onSaveDraft={() => handleSave('draft')}
+					disabled={saving}
+					isLoading={saving}
+				/>
+			</div>
+		</header>
 	{/snippet}
 
 	<div class="post-composer">
