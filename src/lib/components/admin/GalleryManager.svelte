@@ -291,6 +291,30 @@
 				<p class="empty-text">No images added yet</p>
 				<Button variant="primary" onclick={openModal}>
 					{#snippet icon()}<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M12 5v14m-7-7h14"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+						</svg>{/snippet}
+					Add Images
+				</Button>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Add More Button (outside grid) -->
+	{#if hasImages && canAddMore}
+		<div class="add-more-container">
+			<Button variant="ghost" onclick={openModal}>
+				{#snippet icon()}<svg
 						width="16"
 						height="16"
 						viewBox="0 0 24 24"
@@ -304,30 +328,6 @@
 							stroke-linecap="round"
 						/>
 					</svg>{/snippet}
-					Add Images
-				</Button>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Add More Button (outside grid) -->
-	{#if hasImages && canAddMore}
-		<div class="add-more-container">
-			<Button variant="ghost" onclick={openModal}>
-				{#snippet icon()}<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="M12 5v14m-7-7h14"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-					/>
-				</svg>{/snippet}
 				Add More Images
 			</Button>
 		</div>

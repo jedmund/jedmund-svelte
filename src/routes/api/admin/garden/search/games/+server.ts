@@ -84,8 +84,7 @@ export const GET: RequestHandler = async (event) => {
 				id: game.id,
 				name: game.name,
 				image: game.cover?.image_id ? getCoverUrl(game.cover.image_id) : null,
-				developer:
-					game.involved_companies?.find((c) => c.developer)?.company?.name || null,
+				developer: game.involved_companies?.find((c) => c.developer)?.company?.name || null,
 				year: game.first_release_date
 					? new Date(game.first_release_date * 1000).getFullYear().toString()
 					: null,

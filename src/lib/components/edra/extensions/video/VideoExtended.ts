@@ -1,7 +1,7 @@
-import type { NodeViewProps } from '@tiptap/core';
-import type { Component } from 'svelte';
-import { SvelteNodeViewRenderer } from 'svelte-tiptap';
-import { Video } from './VideoExtension.js';
+import type { NodeViewProps } from '@tiptap/core'
+import type { Component } from 'svelte'
+import { SvelteNodeViewRenderer } from 'svelte-tiptap'
+import { Video } from './VideoExtension.js'
 
 export const VideoExtended = (
 	content: Component<NodeViewProps>,
@@ -33,17 +33,17 @@ export const VideoExtended = (
 					parseHTML: (element) => element.getAttribute('data-media-id'),
 					renderHTML: (attributes) => {
 						if (!attributes.mediaId) {
-							return {};
+							return {}
 						}
 						return {
 							'data-media-id': attributes.mediaId
-						};
+						}
 					}
 				}
-			};
+			}
 		},
 
 		addNodeView: () => {
-			return SvelteNodeViewRenderer(content);
+			return SvelteNodeViewRenderer(content)
 		}
-	});
+	})

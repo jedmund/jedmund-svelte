@@ -1,28 +1,28 @@
 <script lang="ts">
-	import { type Editor } from '@tiptap/core';
-	import BubbleMenu from '../../components/BubbleMenu.svelte';
-	import type { ShouldShowProps } from '../../types.js';
-	import strings from '../../strings.js';
+	import { type Editor } from '@tiptap/core'
+	import BubbleMenu from '../../components/BubbleMenu.svelte'
+	import type { ShouldShowProps } from '../../types.js'
+	import strings from '../../strings.js'
 
 	interface Props {
-		editor: Editor;
-		mathPos: number;
-		mathLatex: string;
+		editor: Editor
+		mathPos: number
+		mathLatex: string
 	}
 
-	const { editor, mathPos, mathLatex }: Props = $props();
+	const { editor, mathPos, mathLatex }: Props = $props()
 
-	let textareaVal = $state(mathLatex);
+	let textareaVal = $state(mathLatex)
 
 	$effect(() => {
-		textareaVal = mathLatex;
-	});
+		textareaVal = mathLatex
+	})
 
 	function updateLatex() {
 		editor.commands.updateBlockMath({
 			latex: textareaVal,
 			pos: mathPos
-		});
+		})
 	}
 </script>
 
@@ -30,9 +30,9 @@
 	{editor}
 	pluginKey="math-bubble-menu"
 	shouldShow={(props: ShouldShowProps) => {
-		if (!props.editor.isEditable) return false;
-		if (!props.state) return false;
-		return editor.isActive('blockMath');
+		if (!props.editor.isEditable) return false
+		if (!props.state) return false
+		return editor.isActive('blockMath')
 	}}
 	class="edra-bubble-menu-math"
 >

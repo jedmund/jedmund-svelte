@@ -1,26 +1,26 @@
 <script lang="ts">
-	import type { Editor } from '@tiptap/core';
-	import { type TableOfContentData } from '@tiptap/extension-table-of-contents';
-	import { TextSelection } from '@tiptap/pm/state';
+	import type { Editor } from '@tiptap/core'
+	import { type TableOfContentData } from '@tiptap/extension-table-of-contents'
+	import { TextSelection } from '@tiptap/pm/state'
 
 	interface Props {
-		editor: Editor;
-		items?: TableOfContentData;
+		editor: Editor
+		items?: TableOfContentData
 	}
 
-	const { editor, items = [] }: Props = $props();
+	const { editor, items = [] }: Props = $props()
 
 	const onItemClick = (e: Event, id: string) => {
-		e.preventDefault();
-		const element = editor.view.dom.querySelector(`[data-toc-id="${id}"`);
-		if (!element) return;
-		const pos = editor.view.posAtDOM(element, 0);
-		const tr = editor.view.state.tr;
-		tr.setSelection(new TextSelection(tr.doc.resolve(pos)));
-		editor.view.dispatch(tr);
-		editor.view.focus();
-		element.scrollIntoView({ behavior: 'smooth' });
-	};
+		e.preventDefault()
+		const element = editor.view.dom.querySelector(`[data-toc-id="${id}"`)
+		if (!element) return
+		const pos = editor.view.posAtDOM(element, 0)
+		const tr = editor.view.state.tr
+		tr.setSelection(new TextSelection(tr.doc.resolve(pos)))
+		editor.view.dispatch(tr)
+		editor.view.focus()
+		element.scrollIntoView({ behavior: 'smooth' })
+	}
 </script>
 
 {#if items && items.length > 0}

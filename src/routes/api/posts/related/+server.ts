@@ -31,7 +31,10 @@ export const GET: RequestHandler = async ({ url }) => {
 		return json({ posts: [] })
 	}
 
-	const tagIds = tagIdsParam.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+	const tagIds = tagIdsParam
+		.split(',')
+		.map((id) => parseInt(id))
+		.filter((id) => !isNaN(id))
 
 	if (tagIds.length === 0) {
 		return json({ posts: [] })
@@ -87,7 +90,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		// Fetch tags for each related post
 		const postsWithTags = await Promise.all(
-			relatedPosts.map(async post => {
+			relatedPosts.map(async (post) => {
 				const tags = await prisma.tag.findMany({
 					where: {
 						posts: {

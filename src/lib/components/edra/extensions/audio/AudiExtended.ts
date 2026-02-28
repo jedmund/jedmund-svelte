@@ -1,7 +1,7 @@
-import type { NodeViewProps } from '@tiptap/core';
-import type { Component } from 'svelte';
-import { SvelteNodeViewRenderer } from 'svelte-tiptap';
-import { Audio } from './AudioExtension.js';
+import type { NodeViewProps } from '@tiptap/core'
+import type { Component } from 'svelte'
+import { SvelteNodeViewRenderer } from 'svelte-tiptap'
+import { Audio } from './AudioExtension.js'
 
 export const AudioExtended = (
 	content: Component<NodeViewProps>,
@@ -33,32 +33,32 @@ export const AudioExtended = (
 					parseHTML: (element) => element.getAttribute('data-media-id'),
 					renderHTML: (attributes) => {
 						if (!attributes.mediaId) {
-							return {};
+							return {}
 						}
 						return {
 							'data-media-id': attributes.mediaId
-						};
+						}
 					}
 				},
 				waveformData: {
 					default: null,
 					parseHTML: (element) => {
-						const data = element.getAttribute('data-waveform');
-						return data ? JSON.parse(data) : null;
+						const data = element.getAttribute('data-waveform')
+						return data ? JSON.parse(data) : null
 					},
 					renderHTML: (attributes) => {
 						if (!attributes.waveformData) {
-							return {};
+							return {}
 						}
 						return {
 							'data-waveform': JSON.stringify(attributes.waveformData)
-						};
+						}
 					}
 				}
-			};
+			}
 		},
 
 		addNodeView: () => {
-			return SvelteNodeViewRenderer(content);
+			return SvelteNodeViewRenderer(content)
 		}
-	});
+	})

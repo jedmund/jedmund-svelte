@@ -70,7 +70,11 @@
 
 				<div class="items-grid">
 					{#each itemsByCategory[cat.value] as item}
-						<a href="/garden/{item.category}/{item.slug}" class="garden-card" style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg">
+						<a
+							href="/garden/{item.category}/{item.slug}"
+							class="garden-card"
+							style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg"
+						>
 							{#if item.imageUrl}
 								<div class="card-image">
 									<img src={item.imageUrl} alt={item.title} />
@@ -162,7 +166,9 @@
 		border-radius: $unit;
 		overflow: hidden;
 		background-color: $gray-90;
-		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
 
 		img {
 			width: 100%;

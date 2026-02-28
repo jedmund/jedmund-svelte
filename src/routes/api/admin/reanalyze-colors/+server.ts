@@ -89,9 +89,13 @@ export const POST: RequestHandler = async (event) => {
 			} catch (error) {
 				const errorMessage = `Media ID ${media.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
 				results.errors.push(errorMessage)
-				logger.error('Failed to reanalyze colors for media', error instanceof Error ? error : undefined, {
-					mediaId: media.id
-				})
+				logger.error(
+					'Failed to reanalyze colors for media',
+					error instanceof Error ? error : undefined,
+					{
+						mediaId: media.id
+					}
+				)
 			}
 		}
 

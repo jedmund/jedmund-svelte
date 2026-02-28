@@ -54,10 +54,9 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	try {
-		const res = await fetch(
-			`${TMDB_BASE}/search/movie?query=${encodeURIComponent(query)}&page=1`,
-			{ headers: tmdbHeaders() }
-		)
+		const res = await fetch(`${TMDB_BASE}/search/movie?query=${encodeURIComponent(query)}&page=1`, {
+			headers: tmdbHeaders()
+		})
 
 		if (!res.ok) {
 			const text = await res.text()

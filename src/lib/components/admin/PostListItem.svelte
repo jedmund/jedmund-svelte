@@ -71,7 +71,11 @@
 		if (post.content) {
 			let textContent = ''
 
-			if (typeof post.content === 'object' && post.content && (post.content as Record<string, unknown>).content) {
+			if (
+				typeof post.content === 'object' &&
+				post.content &&
+				(post.content as Record<string, unknown>).content
+			) {
 				// BlockNote/TipTap format
 				function extractText(node: Record<string, unknown>): string {
 					if (typeof node.text === 'string') return node.text
@@ -180,9 +184,7 @@
 
 		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" type="button" onclick={handleEdit}>
-					Edit post
-				</button>
+				<button class="dropdown-item" type="button" onclick={handleEdit}> Edit post </button>
 				<button class="dropdown-item" type="button" onclick={handleTogglePublish}>
 					{post.status === 'published' ? 'Unpublish' : 'Publish'} post
 				</button>

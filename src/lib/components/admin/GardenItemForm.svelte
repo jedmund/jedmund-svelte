@@ -41,9 +41,7 @@
 	let imageUrl = $state(item?.imageUrl ?? '')
 	let url = $state(item?.url ?? '')
 	let sourceId = $state(item?.sourceId ?? '')
-	let metadata = $state<Record<string, any> | null>(
-		(item?.metadata as Record<string, any>) ?? null
-	)
+	let metadata = $state<Record<string, any> | null>((item?.metadata as Record<string, any>) ?? null)
 	let summary = $state(item?.summary ?? '')
 	let date = $state(item?.date ? new Date(item.date).toISOString().slice(0, 10) : '')
 	let rating = $state<number | null>(item?.rating ?? null)
@@ -282,8 +280,7 @@
 				isCurrent,
 				isFavorite,
 				status: saveStatus,
-				note:
-					note && note.content && note.content.length > 0 ? note : null,
+				note: note && note.content && note.content.length > 0 ? note : null,
 				updatedAt: mode === 'edit' ? item?.updatedAt : undefined
 			}
 
@@ -509,11 +506,7 @@
 							autoResize
 						/>
 
-						<Input
-							label="Date completed (optional)"
-							type="date"
-							bind:value={date}
-						/>
+						<Input label="Date completed (optional)" type="date" bind:value={date} />
 
 						<div class="switch-field">
 							<div class="switch-info">
@@ -648,7 +641,6 @@
 		flex-direction: column;
 		gap: $unit;
 	}
-
 
 	.field-label {
 		font-size: 14px;

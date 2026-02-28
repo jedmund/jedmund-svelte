@@ -3,16 +3,23 @@ import { HARDCODED_DEFAULTS, setSeoDefaults } from '$lib/utils/metadata'
 
 export const load = async () => {
 	try {
-		const [siteName, siteUrl, defaultTitle, defaultDescription, defaultOgImage, twitterHandle, locale] =
-			await Promise.all([
-				getConfig('site.name'),
-				getConfig('site.url'),
-				getConfig('seo.default_title'),
-				getConfig('seo.default_description'),
-				getConfig('seo.default_og_image'),
-				getConfig('seo.twitter_handle'),
-				getConfig('seo.locale')
-			])
+		const [
+			siteName,
+			siteUrl,
+			defaultTitle,
+			defaultDescription,
+			defaultOgImage,
+			twitterHandle,
+			locale
+		] = await Promise.all([
+			getConfig('site.name'),
+			getConfig('site.url'),
+			getConfig('seo.default_title'),
+			getConfig('seo.default_description'),
+			getConfig('seo.default_og_image'),
+			getConfig('seo.twitter_handle'),
+			getConfig('seo.locale')
+		])
 
 		const seoDefaults = {
 			siteName: siteName || HARDCODED_DEFAULTS.siteName,

@@ -131,15 +131,19 @@ export const PUT: RequestHandler = async (event) => {
 				status: body.status !== undefined ? body.status : existing.status,
 				showInUniverse:
 					body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse,
-				content: (body.content !== undefined ? body.content : existing.content) as Prisma.InputJsonValue ?? undefined
+				content:
+					((body.content !== undefined
+						? body.content
+						: existing.content) as Prisma.InputJsonValue) ?? undefined
 			}
 		})
 
 		logger.info('Album updated', { id, slug: album.slug })
 
 		if (album.status === 'published' && existing.status !== 'published') {
-			syndicateContent('album', album.id)
-				.catch(err => logger.error('Auto-syndication failed', err as Error))
+			syndicateContent('album', album.id).catch((err) =>
+				logger.error('Auto-syndication failed', err as Error)
+			)
 		}
 
 		return jsonResponse(album)

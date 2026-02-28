@@ -105,9 +105,8 @@ export const PUT: RequestHandler = async (event) => {
 		}
 
 		// Handle status transitions
-		const newStatus = body.status === 'published' || body.status === 'draft'
-			? body.status
-			: existing.status
+		const newStatus =
+			body.status === 'published' || body.status === 'draft' ? body.status : existing.status
 		let publishedAt = existing.publishedAt
 		if (newStatus === 'published' && existing.status !== 'published') {
 			publishedAt = new Date()
@@ -138,14 +137,9 @@ export const PUT: RequestHandler = async (event) => {
 				imageUrl,
 				sourceImageUrl,
 				url: body.url !== undefined ? body.url || null : existing.url,
-				sourceId:
-					body.sourceId !== undefined ? body.sourceId || null : existing.sourceId,
-				metadata:
-					body.metadata !== undefined
-						? (body.metadata as any)
-						: existing.metadata,
-				summary:
-					body.summary !== undefined ? body.summary || null : existing.summary,
+				sourceId: body.sourceId !== undefined ? body.sourceId || null : existing.sourceId,
+				metadata: body.metadata !== undefined ? (body.metadata as any) : existing.metadata,
+				summary: body.summary !== undefined ? body.summary || null : existing.summary,
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				note: body.note !== undefined ? (body.note as any) : existing.note,
 				rating:

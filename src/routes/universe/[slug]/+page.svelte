@@ -60,7 +60,9 @@
 
 	const articleJsonLdScript = $derived(
 		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
-		articleJsonLd ? `<script type="application/ld+json">${JSON.stringify(articleJsonLd)}<\/script>` : null
+		articleJsonLd
+			? `<script type="application/ld+json">${JSON.stringify(articleJsonLd)}<\/script>`
+			: null
 	)
 </script>
 

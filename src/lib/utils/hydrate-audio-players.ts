@@ -19,7 +19,7 @@ export function hydrateAudioPlayers(container: HTMLElement): () => void {
 		const src = el.dataset.src || ''
 		const title = el.dataset.title || ''
 		const waveformRaw = el.dataset.waveform
-		const waveformData = waveformRaw ? JSON.parse(waveformRaw) as number[] : null
+		const waveformData = waveformRaw ? (JSON.parse(waveformRaw) as number[]) : null
 
 		if (!src) return
 

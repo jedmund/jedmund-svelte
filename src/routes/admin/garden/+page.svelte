@@ -176,11 +176,7 @@
 	{#snippet header()}
 		<AdminHeader title="Garden">
 			{#snippet actions()}
-				<Button
-					variant="primary"
-					buttonSize="medium"
-					onclick={() => goto('/admin/garden/new')}
-				>
+				<Button variant="primary" buttonSize="medium" onclick={() => goto('/admin/garden/new')}>
 					New item
 				</Button>
 			{/snippet}
@@ -260,7 +256,13 @@
 							onclick={(e) => toggleDropdown(e, item.id)}
 							aria-label="Item actions"
 						>
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<svg
+								width="20"
+								height="20"
+								viewBox="0 0 20 20"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
 								<circle cx="10" cy="4" r="1.5" fill="currentColor" />
 								<circle cx="10" cy="10" r="1.5" fill="currentColor" />
 								<circle cx="10" cy="16" r="1.5" fill="currentColor" />
@@ -269,11 +271,25 @@
 
 						{#if openDropdownId === item.id}
 							<div class="dropdown-menu">
-								<button class="dropdown-item" type="button" onclick={() => { openDropdownId = null; handleEdit(item) }}>
+								<button
+									class="dropdown-item"
+									type="button"
+									onclick={() => {
+										openDropdownId = null
+										handleEdit(item)
+									}}
+								>
 									Edit
 								</button>
 								<div class="dropdown-divider"></div>
-								<button class="dropdown-item danger" type="button" onclick={() => { openDropdownId = null; handleDelete(item) }}>
+								<button
+									class="dropdown-item danger"
+									type="button"
+									onclick={() => {
+										openDropdownId = null
+										handleDelete(item)
+									}}
+								>
 									Delete
 								</button>
 							</div>

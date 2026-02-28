@@ -27,7 +27,10 @@
 	)
 </script>
 
-<UniverseCard item={album as unknown as { slug: string; publishedAt: string; [key: string]: unknown }} type="album">
+<UniverseCard
+	item={album as unknown as { slug: string; publishedAt: string; [key: string]: unknown }}
+	type="album"
+>
 	{#if slideshowItems.length > 0}
 		<div class="album-slideshow">
 			<Slideshow

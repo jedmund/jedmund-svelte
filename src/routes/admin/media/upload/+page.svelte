@@ -37,8 +37,8 @@
 
 	function addFiles(newFiles: File[]) {
 		// Filter for supported file types (images and videos)
-		const supportedFiles = newFiles.filter((file) => 
-			file.type.startsWith('image/') || file.type.startsWith('video/')
+		const supportedFiles = newFiles.filter(
+			(file) => file.type.startsWith('image/') || file.type.startsWith('video/')
 		)
 
 		if (supportedFiles.length !== newFiles.length) {
@@ -125,14 +125,14 @@
 
 <AdminPage>
 	{#snippet header()}
-	<header>
-		<h1>Upload Media</h1>
-		<div class="header-actions">
-			<Button variant="secondary" onclick={() => goto('/admin/media')}>
-				← Back to Media Library
-			</Button>
-		</div>
-	</header>
+		<header>
+			<h1>Upload Media</h1>
+			<div class="header-actions">
+				<Button variant="secondary" onclick={() => goto('/admin/media')}>
+					← Back to Media Library
+				</Button>
+			</div>
+		</header>
 	{/snippet}
 
 	<div class="upload-container">
@@ -161,17 +161,17 @@
 							title="Clear all files"
 						>
 							{#snippet icon()}<svg
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-							>
-								<circle cx="12" cy="12" r="10"></circle>
-								<line x1="8" y1="8" x2="16" y2="16"></line>
-								<line x1="16" y1="8" x2="8" y2="16"></line>
-							</svg>{/snippet}
+									width="16"
+									height="16"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+								>
+									<circle cx="12" cy="12" r="10"></circle>
+									<line x1="8" y1="8" x2="16" y2="16"></line>
+									<line x1="16" y1="8" x2="8" y2="16"></line>
+								</svg>{/snippet}
 						</Button>
 					</div>
 				</div>
@@ -247,8 +247,9 @@
 			class:has-files={files.length > 0}
 			class:compact={files.length > 0}
 			class:uploading={isUploading}
-		role="region"
-		aria-label="File upload drop zone"			ondragover={handleDragOver}
+			role="region"
+			aria-label="File upload drop zone"
+			ondragover={handleDragOver}
 			ondragleave={handleDragLeave}
 			ondrop={handleDrop}
 		>
@@ -307,7 +308,9 @@
 					</div>
 					<h3>Drop media files here</h3>
 					<p>or click to browse and select files</p>
-					<p class="upload-hint">Images: JPG, PNG, GIF, WebP, SVG | Videos: WebM, MP4, OGG, MOV, AVI</p>
+					<p class="upload-hint">
+						Images: JPG, PNG, GIF, WebP, SVG | Videos: WebM, MP4, OGG, MOV, AVI
+					</p>
 				{:else}
 					<div class="compact-content">
 						<svg

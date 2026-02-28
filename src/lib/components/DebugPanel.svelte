@@ -3,7 +3,7 @@
 	import { musicStream } from '$lib/stores/music-stream'
 	import type { Album } from '$lib/types/lastfm'
 	import { toast } from 'svelte-sonner'
-	
+
 	// Import SVG icons
 	import CheckIcon from '$icons/check.svg?component'
 	import XIcon from '$icons/x.svg?component'
@@ -18,27 +18,27 @@
 
 	let isMinimized = $state(true)
 	let activeTab = $state<'nowplaying' | 'albums' | 'cache'>('nowplaying')
-	
+
 	// Music stream state
 	let albums = $state<Album[]>([])
 	let nowPlaying = $state<{ album: Album; track?: string } | null>(null)
 	let connected = $state(false)
 	let lastUpdate = $state<Date | null>(null)
 	let updateFlash = $state(false)
-	
+
 	// Expanded album view
 	let expandedAlbumId = $state<string | null>(null)
-	
+
 	// Update timing
 	let nextUpdateIn = $state<number>(0)
 	let updateInterval = $state<number>(30) // seconds
 	let trackRemainingTime = $state<number>(0) // seconds
-	
+
 	// Cache management
 	let cacheKey = $state('')
 	let isClearing = $state(false)
 	let clearingAlbums = $state(new Set<string>())
-	
+
 	// Search modal reference
 	let searchModal: AppleMusicSearchModal | undefined = $state.raw()
 
@@ -47,27 +47,34 @@
 		const unsubscribe = musicStream.subscribe((state) => {
 			albums = state.albums
 			connected = state.connected
-			
+
 			// Flash indicator when update is received
-			if (state.lastUpdate && (!lastUpdate || state.lastUpdate.getTime() !== lastUpdate.getTime())) {
+			if (
+				state.lastUpdate &&
+				(!lastUpdate || state.lastUpdate.getTime() !== lastUpdate.getTime())
+			) {
 				updateFlash = true
-				setTimeout(() => updateFlash = false, 500)
+				setTimeout(() => (updateFlash = false), 500)
 			}
-			
+
 			lastUpdate = state.lastUpdate
-			
+
 			// Calculate smart interval based on track remaining time
-			const nowPlayingAlbum = state.albums.find(a => a.isNowPlaying)
-			if (nowPlayingAlbum?.nowPlayingTrack && nowPlayingAlbum.appleMusicData?.tracks && nowPlayingAlbum.lastScrobbleTime) {
+			const nowPlayingAlbum = state.albums.find((a) => a.isNowPlaying)
+			if (
+				nowPlayingAlbum?.nowPlayingTrack &&
+				nowPlayingAlbum.appleMusicData?.tracks &&
+				nowPlayingAlbum.lastScrobbleTime
+			) {
 				const track = nowPlayingAlbum.appleMusicData.tracks.find(
-					t => t.name === nowPlayingAlbum.nowPlayingTrack
+					(t) => t.name === nowPlayingAlbum.nowPlayingTrack
 				)
-				
+
 				if (track?.durationMs) {
 					const elapsed = Date.now() - new Date(nowPlayingAlbum.lastScrobbleTime).getTime()
 					const remaining = Math.max(0, track.durationMs - elapsed)
 					trackRemainingTime = Math.round(remaining / 1000)
-					
+
 					// Smart interval based on remaining time
 					if (remaining < 20000) {
 						updateInterval = 5
@@ -96,29 +103,29 @@
 		})
 		return unsubscribe
 	})
-	
+
 	// Calculate next update countdown
 	$effect(() => {
 		if (!lastUpdate) {
 			nextUpdateIn = updateInterval
 			return
 		}
-		
+
 		// Calculate initial remaining time
 		const calculateRemaining = () => {
 			const elapsed = Date.now() - lastUpdate!.getTime()
-			const remaining = (updateInterval * 1000) - elapsed
+			const remaining = updateInterval * 1000 - elapsed
 			return Math.max(0, Math.ceil(remaining / 1000))
 		}
-		
+
 		// Set initial value
 		nextUpdateIn = calculateRemaining()
-		
+
 		// Update every second
 		const timer = setInterval(() => {
 			nextUpdateIn = calculateRemaining()
 		}, 1000)
-		
+
 		return () => clearInterval(timer)
 	})
 
@@ -127,7 +134,7 @@
 			toast.error('Please enter a cache key')
 			return
 		}
-		
+
 		isClearing = true
 		try {
 			const response = await fetch('/api/admin/debug/clear-cache', {
@@ -135,7 +142,7 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ key: cacheKey })
 			})
-			
+
 			if (response.ok) {
 				const result = await response.json()
 				toast.success(`Cleared cache: ${result.deleted} keys deleted`)
@@ -150,7 +157,7 @@
 			isClearing = false
 		}
 	}
-	
+
 	async function clearAllMusicCache() {
 		isClearing = true
 		try {
@@ -159,7 +166,7 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ pattern: 'apple:album:*' })
 			})
-			
+
 			if (response.ok) {
 				const result = await response.json()
 				toast.success(`Cleared all music cache: ${result.deleted} keys deleted`)
@@ -173,19 +180,19 @@
 			isClearing = false
 		}
 	}
-	
+
 	async function clearAlbumCache(album: Album) {
 		const albumKey = `apple:album:${album.artist.name}:${album.name}`
 		const albumId = `${album.artist.name}:${album.name}`
-		
+
 		clearingAlbums.add(albumId)
 		try {
 			const response = await fetch('/api/admin/debug/clear-cache', {
 				method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ key: albumKey })
 			})
-			
+
 			if (response.ok) {
 				await response.json()
 				toast.success(`Cleared cache for "${album.name}"`)
@@ -219,37 +226,41 @@
 			onkeydown={(e) => e.key === 'Enter' && (isMinimized = !isMinimized)}
 		>
 			<h3>Debug Panel</h3>
-			<button class="minimize-btn" class:minimized={isMinimized} aria-label={isMinimized ? 'Expand' : 'Minimize'}>
+			<button
+				class="minimize-btn"
+				class:minimized={isMinimized}
+				aria-label={isMinimized ? 'Expand' : 'Minimize'}
+			>
 				<ChevronDownIcon class="icon chevron" />
 			</button>
 		</div>
-		
+
 		{#if !isMinimized}
 			<div class="debug-content">
 				<div class="tabs">
-					<button 
-						class="tab" 
+					<button
+						class="tab"
 						class:active={activeTab === 'nowplaying'}
-						onclick={() => activeTab = 'nowplaying'}
+						onclick={() => (activeTab = 'nowplaying')}
 					>
 						Now Playing
 					</button>
-					<button 
-						class="tab" 
+					<button
+						class="tab"
 						class:active={activeTab === 'albums'}
-						onclick={() => activeTab = 'albums'}
+						onclick={() => (activeTab = 'albums')}
 					>
 						Albums
 					</button>
-					<button 
-						class="tab" 
+					<button
+						class="tab"
 						class:active={activeTab === 'cache'}
-						onclick={() => activeTab = 'cache'}
+						onclick={() => (activeTab = 'cache')}
 					>
 						Cache
 					</button>
 				</div>
-				
+
 				<div class="tab-content">
 					{#if activeTab === 'nowplaying'}
 						<div class="section">
@@ -270,7 +281,13 @@
 								<span class="grid-value">{formatTime(nextUpdateIn)}</span>
 
 								<span class="grid-label">Interval</span>
-								<span class="grid-value">{updateInterval}s {trackRemainingTime > 0 ? '(smart mode)' : nowPlaying ? '(fast mode)' : '(normal)'}</span>
+								<span class="grid-value"
+									>{updateInterval}s {trackRemainingTime > 0
+										? '(smart mode)'
+										: nowPlaying
+											? '(fast mode)'
+											: '(normal)'}</span
+								>
 
 								{#if trackRemainingTime > 0}
 									<span class="grid-label">Remaining</span>
@@ -286,26 +303,33 @@
 									<p class="artist-album">
 										{nowPlaying.album.artist.name} — {nowPlaying.album.name}
 										{#if nowPlaying.album.appleMusicData}
-											· {#if nowPlaying.album.appleMusicData.previewUrl}<CheckIcon class="icon success inline" />{:else}<XIcon class="icon error inline" />{/if} Preview
+											· {#if nowPlaying.album.appleMusicData.previewUrl}<CheckIcon
+													class="icon success inline"
+												/>{:else}<XIcon class="icon error inline" />{/if} Preview
 										{/if}
 									</p>
 								</div>
 							</div>
 						{/if}
 					{/if}
-					
+
 					{#if activeTab === 'albums'}
 						<div class="section">
 							<h4>Recent Albums ({albums.length})</h4>
 							<div class="albums-list">
 								{#each albums as album}
 									{@const albumId = `${album.artist.name}:${album.name}`}
-									<div class="album-item" class:playing={album.isNowPlaying} class:expanded={expandedAlbumId === albumId}>
+									<div
+										class="album-item"
+										class:playing={album.isNowPlaying}
+										class:expanded={expandedAlbumId === albumId}
+									>
 										<div
 											class="album-header"
 											role="button"
 											tabindex="0"
-											onclick={() => (expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
+											onclick={() =>
+												(expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
 											onkeydown={(e) =>
 												e.key === 'Enter' &&
 												(expandedAlbumId = expandedAlbumId === albumId ? null : albumId)}
@@ -324,14 +348,19 @@
 														<span>{album.appleMusicData.tracks?.length || 0} tracks</span>
 														<span class="separator">·</span>
 														<span>
-															{#if album.appleMusicData.previewUrl}<CheckIcon class="icon success inline" />{:else}<XIcon class="icon error inline" />{/if} Preview
+															{#if album.appleMusicData.previewUrl}<CheckIcon
+																	class="icon success inline"
+																/>{:else}<XIcon class="icon error inline" />{/if} Preview
 														</span>
 													{/if}
 												</div>
 											</div>
 											<button
 												class="clear-cache-btn"
-												onclick={(e) => { e.stopPropagation(); clearAlbumCache(album) }}
+												onclick={(e) => {
+													e.stopPropagation()
+													clearAlbumCache(album)
+												}}
 												disabled={clearingAlbums.has(albumId)}
 												title="Clear Apple Music cache for this album"
 											>
@@ -349,9 +378,18 @@
 													{#if album.appleMusicData.searchMetadata}
 														<h5>Search Information</h5>
 														<div class="search-metadata">
-															<p><strong>Search Query:</strong> <code>{album.appleMusicData.searchMetadata.searchQuery}</code></p>
-															<p><strong>Search Time:</strong> {new Date(album.appleMusicData.searchMetadata.searchTime).toLocaleString()}</p>
-															<p><strong>Status:</strong>
+															<p>
+																<strong>Search Query:</strong>
+																<code>{album.appleMusicData.searchMetadata.searchQuery}</code>
+															</p>
+															<p>
+																<strong>Search Time:</strong>
+																{new Date(
+																	album.appleMusicData.searchMetadata.searchTime
+																).toLocaleString()}
+															</p>
+															<p>
+																<strong>Status:</strong>
 																{#if !album.appleMusicData.searchMetadata.error}
 																	<CheckIcon class="icon success inline" /> Found
 																{:else}
@@ -359,59 +397,76 @@
 																{/if}
 															</p>
 															{#if album.appleMusicData.searchMetadata.error}
-																<p><strong>Error:</strong> <span class="error-text">{album.appleMusicData.searchMetadata.error}</span></p>
+																<p>
+																	<strong>Error:</strong>
+																	<span class="error-text"
+																		>{album.appleMusicData.searchMetadata.error}</span
+																	>
+																</p>
 															{/if}
 														</div>
 													{/if}
 
 													{#if album.appleMusicData.appleMusicId}
 														<h5>Apple Music Details</h5>
-														<p><strong>Apple Music ID:</strong> {album.appleMusicData.appleMusicId}</p>
+														<p>
+															<strong>Apple Music ID:</strong>
+															{album.appleMusicData.appleMusicId}
+														</p>
 													{/if}
 
-												{#if album.appleMusicData.releaseDate}
-													<p><strong>Release Date:</strong> {album.appleMusicData.releaseDate}</p>
-												{/if}
+													{#if album.appleMusicData.releaseDate}
+														<p><strong>Release Date:</strong> {album.appleMusicData.releaseDate}</p>
+													{/if}
 
-												{#if album.appleMusicData.recordLabel}
-													<p><strong>Label:</strong> {album.appleMusicData.recordLabel}</p>
-												{/if}
+													{#if album.appleMusicData.recordLabel}
+														<p><strong>Label:</strong> {album.appleMusicData.recordLabel}</p>
+													{/if}
 
-												{#if album.appleMusicData.genres?.length}
-													<p><strong>Genres:</strong> {album.appleMusicData.genres.join(', ')}</p>
-												{/if}
+													{#if album.appleMusicData.genres?.length}
+														<p><strong>Genres:</strong> {album.appleMusicData.genres.join(', ')}</p>
+													{/if}
 
-												{#if album.appleMusicData.previewUrl}
-													<p><strong>Preview URL:</strong> <code>{album.appleMusicData.previewUrl}</code></p>
-												{/if}
+													{#if album.appleMusicData.previewUrl}
+														<p>
+															<strong>Preview URL:</strong>
+															<code>{album.appleMusicData.previewUrl}</code>
+														</p>
+													{/if}
 
-												{#if album.appleMusicData.tracks?.length}
-													<div class="tracks-section">
-														<h6>Tracks ({album.appleMusicData.tracks.length})</h6>
-														<div class="tracks-list">
-															{#each album.appleMusicData.tracks as track, i}
-																<div class="track-item">
-																	<span class="track-number">{i + 1}.</span>
-																	<span class="track-name">{track.name}</span>
-																	{#if track.durationMs}
-																		<span class="track-duration">{Math.floor(track.durationMs / 60000)}:{String(Math.floor((track.durationMs % 60000) / 1000)).padStart(2, '0')}</span>
-																	{/if}
-																	{#if track.previewUrl}
-																		<CheckIcon class="icon success inline" title="Has preview" />
-																	{/if}
-																</div>
-															{/each}
+													{#if album.appleMusicData.tracks?.length}
+														<div class="tracks-section">
+															<h6>Tracks ({album.appleMusicData.tracks.length})</h6>
+															<div class="tracks-list">
+																{#each album.appleMusicData.tracks as track, i}
+																	<div class="track-item">
+																		<span class="track-number">{i + 1}.</span>
+																		<span class="track-name">{track.name}</span>
+																		{#if track.durationMs}
+																			<span class="track-duration"
+																				>{Math.floor(track.durationMs / 60000)}:{String(
+																					Math.floor((track.durationMs % 60000) / 1000)
+																				).padStart(2, '0')}</span
+																			>
+																		{/if}
+																		{#if track.previewUrl}
+																			<CheckIcon class="icon success inline" title="Has preview" />
+																		{/if}
+																	</div>
+																{/each}
+															</div>
 														</div>
-													</div>
-												{/if}
+													{/if}
 
-												<div class="raw-data">
-													<h6>Raw Data</h6>
-													<pre>{JSON.stringify(album.appleMusicData, null, 2)}</pre>
-												</div>
+													<div class="raw-data">
+														<h6>Raw Data</h6>
+														<pre>{JSON.stringify(album.appleMusicData, null, 2)}</pre>
+													</div>
 												{:else}
 													<h5>No Apple Music Data</h5>
-													<p class="no-data">This album was not searched in Apple Music or the search is pending.</p>
+													<p class="no-data">
+														This album was not searched in Apple Music or the search is pending.
+													</p>
 												{/if}
 											</div>
 										{/if}
@@ -420,42 +475,35 @@
 							</div>
 						</div>
 					{/if}
-					
+
 					{#if activeTab === 'cache'}
 						<div class="section">
 							<h4>Redis Cache Management</h4>
-							
+
 							<div class="cache-controls">
-								<input 
-									type="text" 
+								<input
+									type="text"
 									bind:value={cacheKey}
 									placeholder="Cache key (e.g., apple:album:Artist:Album)"
 									disabled={isClearing}
 								/>
-								<button 
-									onclick={clearCache} 
+								<button
+									onclick={clearCache}
 									disabled={isClearing || !cacheKey.trim()}
 									class="clear-btn"
 								>
 									{isClearing ? 'Clearing...' : 'Clear Key'}
 								</button>
 							</div>
-							
+
 							<div class="cache-actions">
-								<button
-									onclick={() => searchModal?.open()}
-									class="search-btn"
-								>
+								<button onclick={() => searchModal?.open()} class="search-btn">
 									Test Apple Music Search
 								</button>
 
 								<div class="cache-divider"></div>
 
-								<button
-									onclick={clearAllMusicCache}
-									disabled={isClearing}
-									class="clear-all-btn"
-								>
+								<button onclick={clearAllMusicCache} disabled={isClearing} class="clear-all-btn">
 									{isClearing ? 'Clearing...' : 'Clear All Music Cache'}
 								</button>
 
@@ -488,7 +536,7 @@
 									{isClearing ? 'Clearing...' : 'Clear Not Found Cache'}
 								</button>
 							</div>
-							
+
 							<div class="cache-help">
 								<p>Key format: <code>apple:album:ArtistName:AlbumName</code></p>
 								<p>Example: <code>apple:album:藤井風:Hachikō</code></p>
@@ -499,7 +547,7 @@
 			</div>
 		{/if}
 	</div>
-	
+
 	<AppleMusicSearchModal bind:this={searchModal} />
 {/if}
 
@@ -961,7 +1009,9 @@
 		flex-direction: column;
 		gap: $unit;
 
-		.clear-all-btn, .clear-not-found-btn, .search-btn {
+		.clear-all-btn,
+		.clear-not-found-btn,
+		.search-btn {
 			width: 100%;
 			padding: $unit * 1.5;
 			background: rgba(255, 255, 255, 0.08);
@@ -1043,8 +1093,12 @@
 	}
 
 	@keyframes spin {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	// --- Global icon styles ---

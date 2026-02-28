@@ -10,13 +10,7 @@
 		canSave?: boolean
 	}
 
-	let {
-		status,
-		onSave,
-		disabled = false,
-		isLoading = false,
-		canSave = true
-	}: Props = $props()
+	let { status, onSave, disabled = false, isLoading = false, canSave = true }: Props = $props()
 
 	function handlePublish() {
 		onSave('published')

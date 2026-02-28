@@ -87,42 +87,46 @@ export const GET: RequestHandler = async (event) => {
 
 		// Combine albums and standalone photos
 		const items: FeedItem[] = [
-			...albums.map((album): AlbumItem => ({
-				type: 'album',
-				id: album.id.toString(),
-				title: album.title,
-				description:
-					album.description ||
-					`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
-				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
-				link: `${event.url.origin}/photos/${album.slug}`,
-				pubDate: album.createdAt,
-				updatedDate: album.updatedAt,
-				guid: `${event.url.origin}/photos/${album.slug}`,
-				photoCount: album._count.media,
-				coverPhoto: album.media[0]?.media
-					? { url: album.media[0].media.url, thumbnailUrl: album.media[0].media.thumbnailUrl }
-					: null,
-				location: album.location,
-				date: album.date
-			})),
-			...standalonePhotos.map((photo): PhotoItem => ({
-				type: 'photo',
-				id: photo.id.toString(),
-				title: photo.title || photo.filename,
-				description: photo.description || photo.caption || `Photo: ${photo.filename}`,
-				content: photo.description
-					? `<p>${escapeXML(photo.description)}</p>`
-					: photo.caption
-						? `<p>${escapeXML(photo.caption)}</p>`
-						: '',
-				link: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
-				pubDate: photo.publishedAt || photo.createdAt,
-				updatedDate: photo.createdAt,
-				guid: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
-				url: photo.url,
-				thumbnailUrl: photo.thumbnailUrl
-			}))
+			...albums.map(
+				(album): AlbumItem => ({
+					type: 'album',
+					id: album.id.toString(),
+					title: album.title,
+					description:
+						album.description ||
+						`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
+					content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
+					link: `${event.url.origin}/photos/${album.slug}`,
+					pubDate: album.createdAt,
+					updatedDate: album.updatedAt,
+					guid: `${event.url.origin}/photos/${album.slug}`,
+					photoCount: album._count.media,
+					coverPhoto: album.media[0]?.media
+						? { url: album.media[0].media.url, thumbnailUrl: album.media[0].media.thumbnailUrl }
+						: null,
+					location: album.location,
+					date: album.date
+				})
+			),
+			...standalonePhotos.map(
+				(photo): PhotoItem => ({
+					type: 'photo',
+					id: photo.id.toString(),
+					title: photo.title || photo.filename,
+					description: photo.description || photo.caption || `Photo: ${photo.filename}`,
+					content: photo.description
+						? `<p>${escapeXML(photo.description)}</p>`
+						: photo.caption
+							? `<p>${escapeXML(photo.caption)}</p>`
+							: '',
+					link: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
+					pubDate: photo.publishedAt || photo.createdAt,
+					updatedDate: photo.createdAt,
+					guid: `${event.url.origin}/photos/photo/${photo.slug || photo.id}`,
+					url: photo.url,
+					thumbnailUrl: photo.thumbnailUrl
+				})
+			)
 		].sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 
 		const now = new Date()
@@ -160,7 +164,7 @@ ${
 	item.type === 'album' && item.coverPhoto
 		? `
 <enclosure url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg" length="0"/>
-<media:thumbnail url="${(item.coverPhoto.thumbnailUrl || item.coverPhoto.url).startsWith('http') ? (item.coverPhoto.thumbnailUrl || item.coverPhoto.url) : event.url.origin + (item.coverPhoto.thumbnailUrl || item.coverPhoto.url)}"/>
+<media:thumbnail url="${(item.coverPhoto.thumbnailUrl || item.coverPhoto.url).startsWith('http') ? item.coverPhoto.thumbnailUrl || item.coverPhoto.url : event.url.origin + (item.coverPhoto.thumbnailUrl || item.coverPhoto.url)}"/>
 <media:content url="${item.coverPhoto.url.startsWith('http') ? item.coverPhoto.url : event.url.origin + item.coverPhoto.url}" type="image/jpeg"/>`
 		: ''
 }
@@ -168,7 +172,7 @@ ${
 	item.type === 'photo'
 		? `
 <enclosure url="${item.url.startsWith('http') ? item.url : event.url.origin + item.url}" type="image/jpeg" length="0"/>
-<media:thumbnail url="${(item.thumbnailUrl || item.url).startsWith('http') ? (item.thumbnailUrl || item.url) : event.url.origin + (item.thumbnailUrl || item.url)}"/>
+<media:thumbnail url="${(item.thumbnailUrl || item.url).startsWith('http') ? item.thumbnailUrl || item.url : event.url.origin + (item.thumbnailUrl || item.url)}"/>
 <media:content url="${item.url.startsWith('http') ? item.url : event.url.origin + item.url}" type="image/jpeg"/>`
 		: ''
 }

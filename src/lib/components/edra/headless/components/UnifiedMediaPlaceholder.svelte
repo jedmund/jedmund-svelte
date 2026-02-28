@@ -1,20 +1,20 @@
 <script lang="ts">
-	import type { Editor } from '@tiptap/core';
-	import type { Media } from '@prisma/client';
-	import type { Icon } from '@lucide/svelte';
-	import Upload from '@lucide/svelte/icons/upload';
-	import { NodeViewWrapper } from 'svelte-tiptap';
-	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte';
+	import type { Editor } from '@tiptap/core'
+	import type { Media } from '@prisma/client'
+	import type { Icon } from '@lucide/svelte'
+	import Upload from '@lucide/svelte/icons/upload'
+	import { NodeViewWrapper } from 'svelte-tiptap'
+	import UnifiedMediaModal from '../../../admin/UnifiedMediaModal.svelte'
 
 	interface Props {
-		editor: Editor;
-		deleteNode?: () => void;
-		mediaType: 'image' | 'audio' | 'video';
-		icon: typeof Icon;
-		title: string;
-		accept: string;
-		nodeType: string;
-		allowMultiple?: boolean;
+		editor: Editor
+		deleteNode?: () => void
+		mediaType: 'image' | 'audio' | 'video'
+		icon: typeof Icon
+		title: string
+		accept: string
+		nodeType: string
+		allowMultiple?: boolean
 	}
 
 	const {
@@ -26,26 +26,26 @@
 		accept,
 		nodeType,
 		allowMultiple = false
-	}: Props = $props();
+	}: Props = $props()
 
-	let isMediaLibraryOpen = $state(false);
-	let fileInput: HTMLInputElement;
-	let isUploading = $state(false);
+	let isMediaLibraryOpen = $state(false)
+	let fileInput: HTMLInputElement
+	let isUploading = $state(false)
 
 	function handleBrowseLibrary(e: MouseEvent) {
-		if (!editor.isEditable) return;
-		e.preventDefault();
-		isMediaLibraryOpen = true;
+		if (!editor.isEditable) return
+		e.preventDefault()
+		isMediaLibraryOpen = true
 	}
 
 	function handleDirectUpload(e: MouseEvent) {
-		if (!editor.isEditable) return;
-		e.preventDefault();
-		fileInput.click();
+		if (!editor.isEditable) return
+		e.preventDefault()
+		fileInput.click()
 	}
 
 	function handleMediaSelect(media: Media | Media[]) {
-		const selectedMedia = Array.isArray(media) ? media[0] : media;
+		const selectedMedia = Array.isArray(media) ? media[0] : media
 		if (selectedMedia) {
 			editor
 				.chain()
@@ -64,41 +64,41 @@
 						type: 'paragraph'
 					}
 				])
-				.run();
+				.run()
 		}
-		isMediaLibraryOpen = false;
+		isMediaLibraryOpen = false
 	}
 
 	function handleMediaLibraryClose() {
-		isMediaLibraryOpen = false;
+		isMediaLibraryOpen = false
 	}
 
 	async function handleFileUpload(event: Event) {
-		const input = event.target as HTMLInputElement;
-		const files = input.files;
-		if (!files || files.length === 0) return;
+		const input = event.target as HTMLInputElement
+		const files = input.files
+		if (!files || files.length === 0) return
 
-		const file = files[0];
+		const file = files[0]
 		if (!file.type.startsWith(`${mediaType}/`)) {
-			alert(`Please select a ${mediaType} file.`);
-			return;
+			alert(`Please select a ${mediaType} file.`)
+			return
 		}
 
-		isUploading = true;
+		isUploading = true
 
 		try {
-			const formData = new FormData();
-			formData.append('file', file);
-			formData.append('type', mediaType);
+			const formData = new FormData()
+			formData.append('file', file)
+			formData.append('type', mediaType)
 
 			const response = await fetch('/api/media/upload', {
 				method: 'POST',
 				body: formData,
 				credentials: 'same-origin'
-			});
+			})
 
 			if (response.ok) {
-				const media = await response.json();
+				const media = await response.json()
 				editor
 					.chain()
 					.focus()
@@ -116,26 +116,26 @@
 							type: 'paragraph'
 						}
 					])
-					.run();
+					.run()
 			} else {
-				console.error(`Failed to upload ${mediaType}:`, response.status);
-				alert(`Failed to upload ${mediaType}. Please try again.`);
+				console.error(`Failed to upload ${mediaType}:`, response.status)
+				alert(`Failed to upload ${mediaType}. Please try again.`)
 			}
 		} catch (error) {
-			console.error(`Error uploading ${mediaType}:`, error);
-			alert(`Failed to upload ${mediaType}. Please try again.`);
+			console.error(`Error uploading ${mediaType}:`, error)
+			alert(`Failed to upload ${mediaType}. Please try again.`)
 		} finally {
-			isUploading = false;
-			input.value = '';
+			isUploading = false
+			input.value = ''
 		}
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault();
-			handleBrowseLibrary(e as unknown as MouseEvent);
+			e.preventDefault()
+			handleBrowseLibrary(e as unknown as MouseEvent)
 		} else if (e.key === 'Escape') {
-			deleteNode?.();
+			deleteNode?.()
 		}
 	}
 </script>
@@ -178,7 +178,7 @@
 	<input
 		bind:this={fileInput}
 		type="file"
-		accept={accept}
+		{accept}
 		onchange={handleFileUpload}
 		style="display: none;"
 	/>

@@ -80,7 +80,9 @@
 	const hasFeaturedImage = $derived(
 		!!(formData.featuredImage && featuredImageMedia) || !!featuredImageMedia
 	)
-	const hasBackgroundColor = $derived(!!(formData.backgroundColor && formData.backgroundColor?.trim()))
+	const hasBackgroundColor = $derived(
+		!!(formData.backgroundColor && formData.backgroundColor?.trim())
+	)
 	const hasLogo = $derived(!!(formData.logoUrl && logoMedia) || !!logoMedia)
 
 	// Auto-disable toggles when content is removed
@@ -109,10 +111,18 @@
 		const featuredChanged = formData.showFeaturedImageInHeader !== prevShowFeaturedImage
 		const bgColorChanged = formData.showBackgroundColorInHeader !== prevShowBackgroundColor
 
-		if (featuredChanged && formData.showFeaturedImageInHeader && formData.showBackgroundColorInHeader) {
+		if (
+			featuredChanged &&
+			formData.showFeaturedImageInHeader &&
+			formData.showBackgroundColorInHeader
+		) {
 			// Featured image was just turned ON while background color was already ON
 			formData.showBackgroundColorInHeader = false
-		} else if (bgColorChanged && formData.showBackgroundColorInHeader && formData.showFeaturedImageInHeader) {
+		} else if (
+			bgColorChanged &&
+			formData.showBackgroundColorInHeader &&
+			formData.showFeaturedImageInHeader
+		) {
 			// Background color was just turned ON while featured image was already ON
 			formData.showFeaturedImageInHeader = false
 		}

@@ -36,7 +36,9 @@ async function authenticate(): Promise<void> {
 	const did = await getConfig('bluesky.did')
 
 	if (!appPassword || (!handle && !did)) {
-		throw new Error('Bluesky credentials not configured (bluesky.handle or bluesky.did, bluesky.app_password)')
+		throw new Error(
+			'Bluesky credentials not configured (bluesky.handle or bluesky.did, bluesky.app_password)'
+		)
 	}
 
 	try {
@@ -46,11 +48,7 @@ async function authenticate(): Promise<void> {
 		})
 
 		if (response.data) {
-			await CacheManager.set(
-				'bluesky-session',
-				'default',
-				JSON.stringify(response.data)
-			)
+			await CacheManager.set('bluesky-session', 'default', JSON.stringify(response.data))
 		}
 
 		logger.info('Bluesky authenticated', { handle })

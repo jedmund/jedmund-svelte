@@ -23,7 +23,10 @@ interface Mark {
 }
 
 // Render Edra/BlockNote JSON content to HTML
-export const renderEdraContent = (content: unknown, options: { albumSlug?: string } = {}): string => {
+export const renderEdraContent = (
+	content: unknown,
+	options: { albumSlug?: string } = {}
+): string => {
 	if (!content) return ''
 
 	// Handle Tiptap format first (has type: 'doc')
@@ -145,7 +148,9 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				const bulletItems = Array.isArray(node.content) ? node.content : []
 				const items = bulletItems
 					.map((item: ContentNode) => {
-						const itemContent = Array.isArray(item.content) ? item.content.map(renderNode).join('') : ''
+						const itemContent = Array.isArray(item.content)
+							? item.content.map(renderNode).join('')
+							: ''
 						return `<li>${itemContent}</li>`
 					})
 					.join('')
@@ -156,7 +161,9 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				const orderedItems = Array.isArray(node.content) ? node.content : []
 				const items = orderedItems
 					.map((item: ContentNode) => {
-						const itemContent = Array.isArray(item.content) ? item.content.map(renderNode).join('') : ''
+						const itemContent = Array.isArray(item.content)
+							? item.content.map(renderNode).join('')
+							: ''
 						return `<li>${itemContent}</li>`
 					})
 					.join('')

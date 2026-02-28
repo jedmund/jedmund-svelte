@@ -1,47 +1,51 @@
 <script lang="ts">
-	import type { NodeViewProps } from '@tiptap/core';
-	import CodeXml from '@lucide/svelte/icons/code-xml';
-	import { NodeViewWrapper } from 'svelte-tiptap';
-	import strings from '../../strings.js';
+	import type { NodeViewProps } from '@tiptap/core'
+	import CodeXml from '@lucide/svelte/icons/code-xml'
+	import { NodeViewWrapper } from 'svelte-tiptap'
+	import strings from '../../strings.js'
 
-	const { editor, deleteNode }: NodeViewProps = $props();
+	const { editor, deleteNode }: NodeViewProps = $props()
 
 	function toEmbedUrl(url: string): string {
 		try {
-			const parsed = new URL(url);
+			const parsed = new URL(url)
 			// YouTube: youtube.com/watch?v=ID or youtu.be/ID
 			if (parsed.hostname.includes('youtube.com') && parsed.searchParams.has('v')) {
-				return `https://www.youtube.com/embed/${parsed.searchParams.get('v')}`;
+				return `https://www.youtube.com/embed/${parsed.searchParams.get('v')}`
 			}
 			if (parsed.hostname === 'youtu.be') {
-				return `https://www.youtube.com/embed${parsed.pathname}`;
+				return `https://www.youtube.com/embed${parsed.pathname}`
 			}
 			// Vimeo: vimeo.com/ID
-			const vimeoMatch = parsed.hostname.includes('vimeo.com') && parsed.pathname.match(/^\/(\d+)/);
+			const vimeoMatch = parsed.hostname.includes('vimeo.com') && parsed.pathname.match(/^\/(\d+)/)
 			if (vimeoMatch) {
-				return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+				return `https://player.vimeo.com/video/${vimeoMatch[1]}`
 			}
 		} catch {
 			// Not a valid URL, return as-is
 		}
-		return url;
+		return url
 	}
 
 	function handleClick(e: MouseEvent) {
-		if (!editor.isEditable) return;
-		e.preventDefault();
-		const iframUrl = prompt(strings.extension.iframe.enterURLPrompt);
+		if (!editor.isEditable) return
+		e.preventDefault()
+		const iframUrl = prompt(strings.extension.iframe.enterURLPrompt)
 		if (iframUrl) {
-			editor.chain().focus().setIframe({ src: toEmbedUrl(iframUrl) }).run();
+			editor
+				.chain()
+				.focus()
+				.setIframe({ src: toEmbedUrl(iframUrl) })
+				.run()
 		}
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault();
-			handleClick(e as unknown as MouseEvent);
+			e.preventDefault()
+			handleClick(e as unknown as MouseEvent)
 		} else if (e.key === 'Escape') {
-			deleteNode();
+			deleteNode()
 		}
 	}
 </script>

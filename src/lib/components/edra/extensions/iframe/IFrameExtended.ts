@@ -1,7 +1,7 @@
-import type { NodeViewProps } from '@tiptap/core';
-import type { Component } from 'svelte';
-import { SvelteNodeViewRenderer } from 'svelte-tiptap';
-import IFrame from './IFrame.js';
+import type { NodeViewProps } from '@tiptap/core'
+import type { Component } from 'svelte'
+import { SvelteNodeViewRenderer } from 'svelte-tiptap'
+import IFrame from './IFrame.js'
 
 export const IFrameExtended = (content: Component<NodeViewProps>) =>
 	IFrame.extend({
@@ -25,10 +25,10 @@ export const IFrameExtended = (content: Component<NodeViewProps>) =>
 				align: {
 					default: 'left'
 				}
-			};
+			}
 		},
 
 		addNodeView: () => {
-			return SvelteNodeViewRenderer(content);
+			return SvelteNodeViewRenderer(content)
 		}
-	});
+	})
