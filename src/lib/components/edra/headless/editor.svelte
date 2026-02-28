@@ -10,16 +10,16 @@
 	import { ImageExtended } from '../extensions/image/ImageExtended.js';
 	import ImageExtendedComp from './components/ImageExtended.svelte';
 	import { VideoPlaceholder } from '../extensions/video/VideoPlaceholder.js';
-	import VideoPlaceHolderComp from './components/VideoPlaceholder.svelte';
+	import VideoPlaceholderComp from './components/VideoPlaceholder.svelte';
 	import { VideoExtended } from '../extensions/video/VideoExtended.js';
 	import VideoExtendedComp from './components/VideoExtended.svelte';
 	import { AudioPlaceholder } from '../extensions/audio/AudioPlaceholder.js';
 	import { AudioExtended } from '../extensions/audio/AudiExtended.js';
-	import AudioPlaceHolderComp from './components/AudioPlaceHolder.svelte';
+	import AudioPlaceholderComp from './components/AudioPlaceholder.svelte';
 	import AudioExtendedComp from './components/AudioExtended.svelte';
 	import { IFramePlaceholder } from '../extensions/iframe/IFramePlaceholder.js';
 	import { IFrameExtended } from '../extensions/iframe/IFrameExtended.js';
-	import IFramePlaceHolderComp from './components/IFramePlaceHolder.svelte';
+	import IFramePlaceholderComp from './components/IFramePlaceholder.svelte';
 	import IFrameExtendedComp from './components/IFrameExtended.svelte';
 	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 	import { all, createLowlight } from 'lowlight';
@@ -72,11 +72,11 @@
 				}),
 				ImagePlaceholder(ImagePlaceholderComp),
 				ImageExtended(ImageExtendedComp),
-				VideoPlaceholder(VideoPlaceHolderComp),
+				VideoPlaceholder(VideoPlaceholderComp),
 				VideoExtended(VideoExtendedComp, onDropOrPaste),
-				AudioPlaceholder(AudioPlaceHolderComp),
+				AudioPlaceholder(AudioPlaceholderComp),
 				AudioExtended(AudioExtendedComp, onDropOrPaste),
-				IFramePlaceholder(IFramePlaceHolderComp),
+				IFramePlaceholder(IFramePlaceholderComp),
 				IFrameExtended(IFrameExtendedComp),
 				slashcommand(SlashCommandList),
 				FileDrop.configure({
