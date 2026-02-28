@@ -617,7 +617,7 @@
 		transition: all 0.15s ease;
 
 		&:hover:not(:disabled) {
-			background: darken($primary-color, 10%);
+			background: color.adjust($primary-color, $lightness: -10%);
 		}
 
 		&:disabled {
@@ -803,7 +803,7 @@
 		transition: all 0.15s ease;
 
 		&:hover:not(:disabled) {
-			background: darken($primary-color, 10%);
+			background: color.adjust($primary-color, $lightness: -10%);
 		}
 
 		&:disabled {

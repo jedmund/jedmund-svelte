@@ -269,7 +269,7 @@
 			// For circular icon buttons
 			width: $unit-4x + $unit-2px;
 			height: $unit-4x + $unit-2px;
-			border-radius: ($unit-4x + $unit-2px) / 2;
+			border-radius: math.div($unit-4x + $unit-2px, 2);
 		}
 	}
 
