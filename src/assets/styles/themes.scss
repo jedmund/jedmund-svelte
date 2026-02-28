@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 :root {
 	// Base page colors
 	--bg-color: #{$gray-80};
