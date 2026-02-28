@@ -341,11 +341,6 @@
 			background: rgba($gray-85, 0.7);
 		}
 
-		&.active {
-			background: rgba($red-60, 0.1);
-			color: $red-60;
-		}
-
 		&:disabled {
 			opacity: 0.5;
 			cursor: not-allowed;
@@ -428,14 +423,14 @@
 		&:active {
 			background-color: rgba($gray-85, 0.7);
 		}
+	}
 
-		&.active {
-			background-color: rgba($red-60, 0.1);
-			color: $red-60;
+	:global(.bubble-menu-content .edra-command-button.active) {
+		background-color: rgba($red-60, 0.1);
+		color: $red-60;
 
-			&:hover {
-				background-color: rgba($red-60, 0.15);
-			}
+		&:hover {
+			background-color: rgba($red-60, 0.15);
 		}
 	}
 

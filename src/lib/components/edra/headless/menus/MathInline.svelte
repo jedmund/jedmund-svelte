@@ -46,7 +46,7 @@
 </BubbleMenu>
 
 <style>
-	.edra-bubble-menu-math-inline {
+	:global(.edra-bubble-menu-math-inline) {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
