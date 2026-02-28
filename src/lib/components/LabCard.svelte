@@ -298,7 +298,7 @@
 			color: white;
 
 			&:hover {
-				background: darken($labs-color, 10%);
+				background: color.adjust($labs-color, $lightness: -10%);
 				transform: translateY(-1px);
 			}
 		}

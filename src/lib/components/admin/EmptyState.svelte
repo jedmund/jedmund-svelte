@@ -27,7 +27,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.empty-state {
 		text-align: center;

@@ -338,8 +338,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables';
-	@import '$styles/mixins';
 
 	.composer {
 		--muted-foreground: #{$gray-60};

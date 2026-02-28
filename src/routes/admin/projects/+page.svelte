@@ -195,7 +195,6 @@
 </form>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.projects-list {
 		display: flex;

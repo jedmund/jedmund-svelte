@@ -282,8 +282,6 @@
 </BubbleMenu>
 
 <style lang="scss">
-	@import '$styles/variables';
-	@import '$styles/mixins';
 
 	:global(.composer-bubble-menu) {
 		z-index: 30;

@@ -14,7 +14,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.dropdown-menu {
 		position: absolute;

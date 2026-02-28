@@ -194,7 +194,6 @@
 </NodeViewWrapper>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.edra-media-placeholder-container {
 		display: flex;

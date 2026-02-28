@@ -82,7 +82,6 @@
 </NodeViewWrapper>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.edra-url-embed-placeholder-content {
 		width: 100%;

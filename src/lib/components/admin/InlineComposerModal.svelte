@@ -624,7 +624,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.composer {
 		padding: 0;

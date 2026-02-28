@@ -78,7 +78,6 @@
 </NodeViewWrapper>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.edra-geolocation-placeholder-content {
 		width: 100%;

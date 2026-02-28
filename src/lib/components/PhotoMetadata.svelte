@@ -147,8 +147,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-	@import '$styles/mixins.scss';
 
 	.photo-metadata {
 		background: $gray-100;

@@ -257,7 +257,6 @@
 />
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.header-left {
 		display: flex;

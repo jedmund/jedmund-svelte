@@ -215,7 +215,6 @@
 </form>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.composer-section {
 		margin-bottom: $unit-4x;

@@ -70,8 +70,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables';
-	@import '$styles/mixins';
 
 	.media-dropdown-portal {
 		font-family: inherit;

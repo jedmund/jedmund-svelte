@@ -26,7 +26,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.tag-pill {
 		display: inline-flex;

@@ -335,7 +335,6 @@
 />
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.loading {
 		padding: $unit-8x;

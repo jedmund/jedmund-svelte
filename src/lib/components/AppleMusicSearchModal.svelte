@@ -323,7 +323,7 @@
 			white-space: nowrap;
 
 			&:hover:not(:disabled) {
-				background: darken($primary-color, 10%);
+				background: color.adjust($primary-color, $lightness: -10%);
 			}
 
 			&:disabled {

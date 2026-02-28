@@ -127,7 +127,7 @@
 </nav>
 
 <style lang="scss">
-	@import '../../assets/styles/animations';
+	@use '../../assets/styles/animations';
 
 	.segmented-controller {
 		display: flex;

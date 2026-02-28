@@ -126,7 +126,6 @@
 />
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.dropdown-container {
 		position: relative;

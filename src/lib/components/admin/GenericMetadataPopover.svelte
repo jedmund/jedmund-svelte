@@ -269,7 +269,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.metadata-popover {
 		background: white;
@@ -328,53 +327,6 @@
 		gap: $unit;
 	}
 
-	.add-tag-btn {
-		align-self: flex-start;
-		margin-top: $unit-half;
-		padding: $unit $unit-2x;
-		background: $gray-10;
-		color: white;
-		border: none;
-		border-radius: 6px;
-		font-size: $font-size-small;
-		cursor: pointer;
-		transition: background-color 0.15s ease;
-
-		&:hover {
-			background: $gray-20;
-		}
-	}
-
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: $unit;
-		margin-top: $unit;
-	}
-
-	.tag {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 4px $unit-2x;
-		background: $gray-80;
-		border-radius: 20px;
-		font-size: 0.75rem;
-
-		button {
-			background: none;
-			border: none;
-			color: $gray-40;
-			cursor: pointer;
-			padding: 0;
-			font-size: 1rem;
-			line-height: 1;
-
-			&:hover {
-				color: $gray-10;
-			}
-		}
-	}
 
 	.metadata {
 		font-size: 0.75rem;
