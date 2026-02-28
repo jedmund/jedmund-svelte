@@ -28,7 +28,10 @@ interface TiptapNode {
 	content?: TiptapNode[]
 }
 
-function extractMediaFromContent(content: unknown): { images: { url: string; alt: string }[]; videos: { url: string }[] } {
+function extractMediaFromContent(content: unknown): {
+	images: { url: string; alt: string }[]
+	videos: { url: string }[]
+} {
 	const images: { url: string; alt: string }[] = []
 	const videos: { url: string }[] = []
 
@@ -84,7 +87,7 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 			}
 			for (const img of contentMedia.images) {
 				if (images.length >= 4) break
-				if (!images.some(i => i.url === img.url)) {
+				if (!images.some((i) => i.url === img.url)) {
 					images.push(img)
 				}
 			}
@@ -136,7 +139,7 @@ async function loadContent(contentType: string, contentId: number): Promise<Cont
 			})
 			if (!album || album.status !== 'published') return null
 
-			const images = album.media.map(am => ({
+			const images = album.media.map((am) => ({
 				url: am.media.url,
 				alt: am.media.description || album.title
 			}))
@@ -181,7 +184,7 @@ function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData):
 			images: data.images,
 			videos: data.videos,
 			useExternalEmbed: supportsEmbed && !data.images?.length && !data.videos?.length,
-			title: supportsEmbed ? (data.title || undefined) : undefined,
+			title: supportsEmbed ? data.title || undefined : undefined,
 			description: undefined
 		}
 	}
@@ -200,13 +203,12 @@ function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData):
 					images: data.images,
 					videos: data.videos,
 					useExternalEmbed: supportsEmbed && !data.images?.length && !data.videos?.length,
-					title: supportsEmbed ? (data.title || undefined) : undefined,
-					description: supportsEmbed ? (data.excerpt || undefined) : undefined
+					title: supportsEmbed ? data.title || undefined : undefined,
+					description: supportsEmbed ? data.excerpt || undefined : undefined
 				}
 			}
 			// Regular posts: excerpt or truncated content
-			const postText = data.excerpt
-				|| getContentExcerpt(data.content, SYNDICATION_TEXT_LIMIT)
+			const postText = data.excerpt || getContentExcerpt(data.content, SYNDICATION_TEXT_LIMIT)
 			return {
 				text: truncateText(postText, SYNDICATION_TEXT_LIMIT),
 				images: data.images,
@@ -220,8 +222,8 @@ function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData):
 				text: truncateText(projectText, SYNDICATION_TEXT_LIMIT),
 				images: data.images,
 				useExternalEmbed: supportsEmbed && !data.images?.length,
-				title: supportsEmbed ? (data.title || undefined) : undefined,
-				description: supportsEmbed ? (data.description || undefined) : undefined
+				title: supportsEmbed ? data.title || undefined : undefined,
+				description: supportsEmbed ? data.description || undefined : undefined
 			}
 		}
 		case 'album': {
@@ -233,7 +235,10 @@ function formatForPlatform(platform: 'bluesky' | 'mastodon', data: ContentData):
 			}
 		}
 		default:
-			return { text: truncateText(data.title || '', SYNDICATION_TEXT_LIMIT), useExternalEmbed: false }
+			return {
+				text: truncateText(data.title || '', SYNDICATION_TEXT_LIMIT),
+				useExternalEmbed: false
+			}
 	}
 }
 
@@ -305,7 +310,10 @@ async function syndicateTo(
 		})
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)
-		logger.error(`Syndication to ${platform} failed`, error as Error, { contentType, contentId: contentId.toString() })
+		logger.error(`Syndication to ${platform} failed`, error as Error, {
+			contentType,
+			contentId: contentId.toString()
+		})
 
 		await prisma.syndication.upsert({
 			where: {
@@ -329,33 +337,39 @@ async function syndicateTo(
 export async function syndicateContent(contentType: string, contentId: number): Promise<void> {
 	const content = await loadContent(contentType, contentId)
 	if (!content) {
-		logger.info('Skipping syndication: content not found or not published', { contentType, contentId: contentId.toString() })
+		logger.info('Skipping syndication: content not found or not published', {
+			contentType,
+			contentId: contentId.toString()
+		})
 		return
 	}
 
 	const existing = await prisma.syndication.findMany({
 		where: { contentType, contentId, status: 'success' }
 	})
-	const alreadySyndicated = new Set(existing.map(s => s.platform))
+	const alreadySyndicated = new Set(existing.map((s) => s.platform))
 
 	let platforms: ('bluesky' | 'mastodon')[] = ['bluesky', 'mastodon']
 
 	// Respect per-post syndication toggles
 	if (content.syndicateBluesky === false) {
-		platforms = platforms.filter(p => p !== 'bluesky')
+		platforms = platforms.filter((p) => p !== 'bluesky')
 	}
 	if (content.syndicateMastodon === false) {
-		platforms = platforms.filter(p => p !== 'mastodon')
+		platforms = platforms.filter((p) => p !== 'mastodon')
 	}
 
-	const toSyndicate = platforms.filter(p => !alreadySyndicated.has(p))
+	const toSyndicate = platforms.filter((p) => !alreadySyndicated.has(p))
 
 	if (toSyndicate.length === 0) {
-		logger.info('Content already syndicated to all platforms', { contentType, contentId: contentId.toString() })
+		logger.info('Content already syndicated to all platforms', {
+			contentType,
+			contentId: contentId.toString()
+		})
 		return
 	}
 
 	await Promise.allSettled(
-		toSyndicate.map(platform => syndicateTo(platform, contentType, contentId, content))
+		toSyndicate.map((platform) => syndicateTo(platform, contentType, contentId, content))
 	)
 }

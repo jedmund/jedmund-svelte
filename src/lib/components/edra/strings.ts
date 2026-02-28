@@ -241,6 +241,6 @@ const strings = {
 			replaceAll: 'Replace All'
 		}
 	}
-};
+}
 
-export default strings;
+export default strings

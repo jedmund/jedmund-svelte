@@ -31,7 +31,15 @@
 	const settingsItem: NavItem = { text: 'Settings', href: '/admin/settings', icon: SettingsIcon }
 
 	const activeIndex = $derived.by(() => {
-		const prefixes = ['/admin/projects', '/admin/posts', '/admin/garden', '/admin/albums', '/admin/media', '/admin/tags', '/admin/settings']
+		const prefixes = [
+			'/admin/projects',
+			'/admin/posts',
+			'/admin/garden',
+			'/admin/albums',
+			'/admin/media',
+			'/admin/tags',
+			'/admin/settings'
+		]
 		return prefixes.findIndex((p) => currentPath.startsWith(p)) ?? -1
 	})
 </script>

@@ -223,7 +223,10 @@ export const POST: RequestHandler = async (event) => {
 				await trackMediaUsage(usageReferences)
 			}
 		} catch (error) {
-			logger.warn('Failed to track media usage for project', { projectId: project.id, error: error instanceof Error ? error.message : String(error) })
+			logger.warn('Failed to track media usage for project', {
+				projectId: project.id,
+				error: error instanceof Error ? error.message : String(error)
+			})
 		}
 
 		logger.info('Project created', { id: project.id, slug: project.slug })

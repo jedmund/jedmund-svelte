@@ -24,7 +24,12 @@
 	<header class="branding-section__header">
 		<h2 class="branding-section__title">{title}</h2>
 		{#if showToggle}
-			<Switch bind:checked={toggleChecked} disabled={toggleDisabled} accentColor="#4d9fd0" onchange={onToggleChange} />
+			<Switch
+				bind:checked={toggleChecked}
+				disabled={toggleDisabled}
+				accentColor="#4d9fd0"
+				onchange={onToggleChange}
+			/>
 		{/if}
 	</header>
 	<div class="branding-section__content">

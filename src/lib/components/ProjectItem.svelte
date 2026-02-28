@@ -125,7 +125,7 @@
 	onmouseleave={isClickable ? handleMouseLeave : undefined}
 	style="transform: {transform};"
 	role={isClickable ? 'button' : undefined}
-	{...(isClickable ? { tabindex: 0 } : {})}
+	{...isClickable ? { tabindex: 0 } : {}}
 >
 	<div class="project-logo" style="background-color: {backgroundColor}">
 		{#if svgContent}

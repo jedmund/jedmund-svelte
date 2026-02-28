@@ -1,6 +1,11 @@
 import type { RequestHandler } from './$types'
 import { checkAdminAuth, jsonResponse, errorResponse } from '$lib/server/api-utils'
-import { getAllSettings, setConfig, invalidateConfigCache, SETTING_DEFINITIONS } from '$lib/server/config'
+import {
+	getAllSettings,
+	setConfig,
+	invalidateConfigCache,
+	SETTING_DEFINITIONS
+} from '$lib/server/config'
 
 const MASKED_VALUE = '••••••••'
 const VALID_KEYS = new Set(SETTING_DEFINITIONS.map((d) => d.key))

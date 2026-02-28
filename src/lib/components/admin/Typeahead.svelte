@@ -214,11 +214,7 @@
 						aria-selected={selectedIndex === i}
 					>
 						{#if result.image}
-							<img
-								class="result-thumb"
-								src={result.image}
-								alt=""
-							/>
+							<img class="result-thumb" src={result.image} alt="" />
 						{:else}
 							<div
 								class="result-thumb result-thumb-placeholder"

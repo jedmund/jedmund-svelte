@@ -10,7 +10,11 @@
 	let { post }: { post: UniverseItem } = $props()
 
 	// Extract embeds from content
-	const embeds = $derived(post.content ? extractEmbeds(post.content as unknown as import('$lib/types/editor').TiptapNode) : [])
+	const embeds = $derived(
+		post.content
+			? extractEmbeds(post.content as unknown as import('$lib/types/editor').TiptapNode)
+			: []
+	)
 	const firstEmbed = $derived(embeds[0])
 
 	// Check if content is truncated
@@ -47,7 +51,10 @@
 	}
 </script>
 
-<UniverseCard item={post as unknown as { slug: string; publishedAt: string; [key: string]: unknown }} type="post">
+<UniverseCard
+	item={post as unknown as { slug: string; publishedAt: string; [key: string]: unknown }}
+	type="post"
+>
 	{#if post.title}
 		<h2 class="card-title">
 			<a href="/universe/{post.slug}" class="card-title-link" tabindex="-1">{post.title}</a>

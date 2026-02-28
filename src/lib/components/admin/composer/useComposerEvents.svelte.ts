@@ -95,9 +95,7 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 
 		// Set cursor position to drop location
 		const { state, dispatch } = view
-		const transaction = state.tr.setSelection(
-			Selection.near(state.doc.resolve(pos.pos))
-		)
+		const transaction = state.tr.setSelection(Selection.near(state.doc.resolve(pos.pos)))
 		dispatch(transaction)
 
 		// Upload the image

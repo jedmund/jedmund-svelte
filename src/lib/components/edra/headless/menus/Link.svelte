@@ -1,35 +1,35 @@
 <script lang="ts">
-	import type { ShouldShowProps } from '../../types.js';
-	import BubbleMenu from '../../components/BubbleMenu.svelte';
-	import type { Editor } from '@tiptap/core';
-	import strings from '../../strings.js';
-	import Copy from '@lucide/svelte/icons/copy';
-	import Trash from '@lucide/svelte/icons/trash';
-	import Edit from '@lucide/svelte/icons/edit';
-	import Check from '@lucide/svelte/icons/check';
+	import type { ShouldShowProps } from '../../types.js'
+	import BubbleMenu from '../../components/BubbleMenu.svelte'
+	import type { Editor } from '@tiptap/core'
+	import strings from '../../strings.js'
+	import Copy from '@lucide/svelte/icons/copy'
+	import Trash from '@lucide/svelte/icons/trash'
+	import Edit from '@lucide/svelte/icons/edit'
+	import Check from '@lucide/svelte/icons/check'
 
 	interface Props {
-		editor: Editor;
+		editor: Editor
 	}
 
-	const { editor }: Props = $props();
+	const { editor }: Props = $props()
 
-	let link = $derived.by(() => editor.getAttributes('link').href);
-	let isEditing = $state(false);
-	let linkInput = $derived(link);
+	let link = $derived.by(() => editor.getAttributes('link').href)
+	let isEditing = $state(false)
+	let linkInput = $derived(link)
 
 	function handleSubmit(e: Event) {
-		e.preventDefault();
-		if (!linkInput || linkInput.trim() === '') return;
-		isEditing = false;
-		editor.chain().focus().extendMarkRange('link').setLink({ href: linkInput }).run();
+		e.preventDefault()
+		if (!linkInput || linkInput.trim() === '') return
+		isEditing = false
+		editor.chain().focus().extendMarkRange('link').setLink({ href: linkInput }).run()
 	}
 
 	$effect(() => {
 		if (isEditing) {
-			linkInput = link;
+			linkInput = link
 		}
-	});
+	})
 </script>
 
 <BubbleMenu
@@ -37,10 +37,10 @@
 	pluginKey="link-bubble-menu"
 	shouldShow={(props: ShouldShowProps) => {
 		if (props.editor.isActive('link')) {
-			return true;
+			return true
 		} else {
-			isEditing = false;
-			return false;
+			isEditing = false
+			return false
 		}
 	}}
 >
@@ -52,7 +52,7 @@
 			title={strings.menu.link.edit}
 			class="edra-command-button"
 			onclick={() => {
-				isEditing = true;
+				isEditing = true
 				// editor.commands.blur(); // Optional
 			}}
 		>
@@ -62,7 +62,7 @@
 			title={strings.menu.link.copy}
 			class="edra-command-button"
 			onclick={() => {
-				navigator.clipboard.writeText(link);
+				navigator.clipboard.writeText(link)
 			}}
 		>
 			<Copy class="edra-toolbar-icon" />

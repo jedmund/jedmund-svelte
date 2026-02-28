@@ -1,10 +1,10 @@
-import { Node, nodeInputRule } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { toast } from 'svelte-sonner';
-import strings from '../../strings.js';
+import { Node, nodeInputRule } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { toast } from 'svelte-sonner'
+import strings from '../../strings.js'
 
 export interface AudioOptions {
-	HTMLAttributes: Record<string, unknown>;
+	HTMLAttributes: Record<string, unknown>
 }
 
 declare module '@tiptap/core' {
@@ -13,20 +13,20 @@ declare module '@tiptap/core' {
 			/**
 			 * Set a audio node
 			 */
-			setAudio: (src: string) => ReturnType;
+			setAudio: (src: string) => ReturnType
 			/**
 			 * Toggle a audio
 			 */
-			toggleAudio: (src: string) => ReturnType;
+			toggleAudio: (src: string) => ReturnType
 			/**
 			 * Remove a audio
 			 */
-			removeAudio: () => ReturnType;
-		};
+			removeAudio: () => ReturnType
+		}
 	}
 }
 
-const AUDIO_INPUT_REGEX = /!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\)/;
+const AUDIO_INPUT_REGEX = /!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\)/
 
 export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 	Node.create<AudioOptions>({
@@ -38,7 +38,7 @@ export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 		addOptions() {
 			return {
 				HTMLAttributes: {}
-			};
+			}
 		},
 		addAttributes() {
 			return {
@@ -47,7 +47,7 @@ export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 					parseHTML: (el) => (el as HTMLSpanElement).getAttribute('src'),
 					renderHTML: (attrs) => ({ src: attrs.src })
 				}
-			};
+			}
 		},
 		parseHTML() {
 			return [
@@ -55,7 +55,7 @@ export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 					tag: 'audio',
 					getAttrs: (el) => ({ src: (el as HTMLAudioElement).getAttribute('src') })
 				}
-			];
+			]
 		},
 
 		renderHTML({ HTMLAttributes }) {
@@ -63,7 +63,7 @@ export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 				'audio',
 				{ controls: 'true', style: 'width: 100%;', ...HTMLAttributes },
 				['source', HTMLAttributes]
-			];
+			]
 		},
 		addCommands() {
 			return {
@@ -82,7 +82,7 @@ export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 					() =>
 					({ commands }) =>
 						commands.deleteNode(this.name)
-			};
+			}
 		},
 		addInputRules() {
 			return [
@@ -90,12 +90,12 @@ export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 					find: AUDIO_INPUT_REGEX,
 					type: this.type,
 					getAttributes: (match) => {
-						const [, , src] = match;
+						const [, , src] = match
 
-						return { src };
+						return { src }
 					}
 				})
-			];
+			]
 		},
 		addProseMirrorPlugins() {
 			return [
@@ -108,91 +108,91 @@ export const Audio = (onDrop?: (file: File) => Promise<string>) =>
 								const {
 									state: { schema, tr },
 									dispatch
-								} = view;
+								} = view
 								const hasFiles =
 									event.clipboardData &&
 									event.clipboardData.files &&
-									event.clipboardData.files.length;
+									event.clipboardData.files.length
 
-								if (!hasFiles) return false;
+								if (!hasFiles) return false
 
 								const audios = Array.from(event.clipboardData.files).filter((file) =>
 									/audio/i.test(file.type)
-								);
+								)
 
-								if (audios.length === 0) return false;
+								if (audios.length === 0) return false
 
-								event.preventDefault();
+								event.preventDefault()
 
 								if (audios.length > 1) {
 									toast.warning(strings.extension.audio.multiplePasteWarningTitle, {
 										description: strings.extension.audio.multiplePasteWarningDescription
-									});
+									})
 								}
 
-								const audio = audios[0];
-								const id = toast.loading(strings.extension.audio.pasteProcessing);
+								const audio = audios[0]
+								const id = toast.loading(strings.extension.audio.pasteProcessing)
 								onDrop?.(audio)
 									.then((src) => {
-										const node = schema.nodes.audio.create({ src });
-										const transaction = tr.replaceSelectionWith(node);
-										dispatch(transaction);
-										toast.dismiss(id);
+										const node = schema.nodes.audio.create({ src })
+										const transaction = tr.replaceSelectionWith(node)
+										dispatch(transaction)
+										toast.dismiss(id)
 									})
 									.catch((err) => {
-										console.error(err);
-										toast.error(strings.extension.audio.pasteError, { id });
-									});
+										console.error(err)
+										toast.error(strings.extension.audio.pasteError, { id })
+									})
 
-								return true;
+								return true
 							},
 							drop(view, event) {
 								const {
 									state: { schema, tr },
 									dispatch
-								} = view;
+								} = view
 								const hasFiles =
-									event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length;
+									event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length
 
-								if (!hasFiles) return false;
+								if (!hasFiles) return false
 
 								const audios = Array.from(event.dataTransfer.files).filter((file) =>
 									/audio/i.test(file.type)
-								);
+								)
 
-								if (audios.length === 0) return false;
+								if (audios.length === 0) return false
 
-								event.preventDefault();
+								event.preventDefault()
 
-								const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+								const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
 
 								if (audios.length > 1) {
 									toast.warning(strings.extension.audio.multipleDropWarningTitle, {
 										description: strings.extension.audio.multipleDropWarningDescription
-									});
+									})
 								}
 
-								const audio = audios[0];
-								const id = toast.loading(strings.extension.audio.dropProcessing);
+								const audio = audios[0]
+								const id = toast.loading(strings.extension.audio.dropProcessing)
 								onDrop?.(audio)
 									.then((src) => {
 										if (coordinates && typeof coordinates.pos === 'number') {
-											const node = schema.nodes.audio.create({ src });
-											const transaction = tr.insert(coordinates.pos, node);
-											dispatch(transaction);
-											toast.dismiss(id);
+											const node = schema.nodes.audio.create({ src })
+											const transaction = tr.insert(coordinates.pos, node)
+											dispatch(transaction)
+											toast.dismiss(id)
 										}
 									})
 									.catch((err) => {
-										console.error(err);
-										toast.error(strings.extension.audio.dropError, { id });
-									});
+										console.error(err)
+										toast.error(strings.extension.audio.dropError, { id })
+									})
 
-								return true;
+								return true
 							}
 						}
 					}
 				})
-			];
+			]
 		}
-	});
+	})

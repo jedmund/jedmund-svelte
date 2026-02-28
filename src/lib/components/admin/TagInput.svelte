@@ -197,13 +197,20 @@
 	<div class="tag-input-container">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="tag-pills tag-pills-{size}" class:has-tags={tags.length > 0} onclick={handleContainerClick}>
+		<div
+			class="tag-pills tag-pills-{size}"
+			class:has-tags={tags.length > 0}
+			onclick={handleContainerClick}
+		>
 			{#each tags as tag (tag.id)}
 				<span class="tag-pill">
 					{tag.displayName}
 					<button
 						type="button"
-						onclick={(e) => { e.stopPropagation(); removeTag(tag) }}
+						onclick={(e) => {
+							e.stopPropagation()
+							removeTag(tag)
+						}}
 						aria-label="Remove {tag.displayName}"
 						{disabled}
 					>

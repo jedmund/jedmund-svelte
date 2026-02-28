@@ -141,7 +141,13 @@
 	}
 
 	// Update content when editor changes
-	function handleUpdate({ editor: updatedEditor, transaction }: { editor: Editor; transaction: unknown }) {
+	function handleUpdate({
+		editor: updatedEditor,
+		transaction
+	}: {
+		editor: Editor
+		transaction: unknown
+	}) {
 		// Dismiss link menus on typing
 		linkManagerRef?.dismissOnTyping(transaction)
 

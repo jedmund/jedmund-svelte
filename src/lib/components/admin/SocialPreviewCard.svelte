@@ -17,13 +17,7 @@
 		embed?: EmbedData
 	}
 
-	let {
-		text,
-		images = [],
-		videos = [],
-		linkUrl,
-		embed
-	}: Props = $props()
+	let { text, images = [], videos = [], linkUrl, embed }: Props = $props()
 
 	let mediaCount = $derived(images.length + videos.length)
 	let isSingle = $derived(mediaCount === 1)
@@ -43,7 +37,11 @@
 		</div>
 
 		{#if text || linkUrl}
-			<p class="preview-text">{#if text}{text}{/if}{#if text && linkUrl}{'\n\n'}{/if}{#if linkUrl}<span class="preview-link">{linkUrl}</span>{/if}</p>
+			<p class="preview-text">
+				{#if text}{text}{/if}{#if text && linkUrl}{'\n\n'}{/if}{#if linkUrl}<span
+						class="preview-link">{linkUrl}</span
+					>{/if}
+			</p>
 		{/if}
 
 		{#if mediaCount > 0}
@@ -58,7 +56,7 @@
 						<video src={vid.url} preload="metadata" muted></video>
 						<div class="play-overlay">
 							<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-								<path d="M8 5v14l11-7L8 5z" fill="white"/>
+								<path d="M8 5v14l11-7L8 5z" fill="white" />
 							</svg>
 						</div>
 					</div>

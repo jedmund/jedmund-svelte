@@ -109,10 +109,16 @@ async function attachImages(post: AppBskyFeedPost.Record, agent: AtpAgent, input
 	}
 }
 
-async function uploadImage(agent: AtpAgent, imageUrl: string): Promise<AppBskyEmbedImages.Image['image'] | null> {
+async function uploadImage(
+	agent: AtpAgent,
+	imageUrl: string
+): Promise<AppBskyEmbedImages.Image['image'] | null> {
 	const response = await fetch(imageUrl)
 	if (!response.ok) {
-		logger.error('Failed to fetch image for Bluesky upload', undefined, { imageUrl, status: response.status })
+		logger.error('Failed to fetch image for Bluesky upload', undefined, {
+			imageUrl,
+			status: response.status
+		})
 		return null
 	}
 
@@ -127,7 +133,10 @@ async function uploadImage(agent: AtpAgent, imageUrl: string): Promise<AppBskyEm
 		}
 
 		if (imageData.length > 1_000_000) {
-			logger.warn('Image still too large for Bluesky after resize', { imageUrl, size: imageData.length })
+			logger.warn('Image still too large for Bluesky after resize', {
+				imageUrl,
+				size: imageData.length
+			})
 			return null
 		}
 	}
@@ -139,7 +148,10 @@ async function uploadImage(agent: AtpAgent, imageUrl: string): Promise<AppBskyEm
 async function uploadVideo(agent: AtpAgent, videoUrl: string): Promise<BlobRef | null> {
 	const response = await fetch(videoUrl)
 	if (!response.ok) {
-		logger.error('Failed to fetch video for Bluesky upload', undefined, { videoUrl, status: response.status })
+		logger.error('Failed to fetch video for Bluesky upload', undefined, {
+			videoUrl,
+			status: response.status
+		})
 		return null
 	}
 
@@ -177,7 +189,7 @@ async function uploadVideo(agent: AtpAgent, videoUrl: string): Promise<BlobRef |
 	// Poll for completion (timeout ~60s)
 	const maxAttempts = 30
 	for (let i = 0; i < maxAttempts; i++) {
-		await new Promise(resolve => setTimeout(resolve, 2000))
+		await new Promise((resolve) => setTimeout(resolve, 2000))
 
 		const jobStatus = await agent.app.bsky.video.getJobStatus({ jobId })
 		const state = jobStatus.data.jobStatus.state

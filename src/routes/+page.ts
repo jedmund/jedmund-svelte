@@ -13,7 +13,10 @@ export const load: PageLoad = async ({ fetch }) => {
 		}
 
 		// Fetch projects
-		let projectsData: { projects: Project[]; pagination: PaginationInfo | null } = { projects: [], pagination: null }
+		let projectsData: { projects: Project[]; pagination: PaginationInfo | null } = {
+			projects: [],
+			pagination: null
+		}
 		try {
 			projectsData = await fetchProjects(fetch)
 		} catch (projectError) {

@@ -35,10 +35,7 @@ async function getTvdbToken(): Promise<string> {
 	return data.data.token
 }
 
-async function fetchSummary(
-	category: string,
-	sourceId: string
-): Promise<string | null> {
+async function fetchSummary(category: string, sourceId: string): Promise<string | null> {
 	try {
 		switch (category) {
 			case 'books': {

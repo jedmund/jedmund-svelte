@@ -3,10 +3,7 @@
  * Computes per-bar RMS amplitude from an audio file for visualization.
  */
 
-export async function extractWaveformData(
-	audioUrl: string,
-	barCount = 48
-): Promise<number[]> {
+export async function extractWaveformData(audioUrl: string, barCount = 48): Promise<number[]> {
 	const response = await fetch(audioUrl)
 	const arrayBuffer = await response.arrayBuffer()
 

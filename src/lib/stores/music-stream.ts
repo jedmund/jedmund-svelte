@@ -44,20 +44,20 @@ function createMusicStream() {
 				const albums: Album[] = JSON.parse(event.data)
 				const nowPlayingAlbum = albums.find((a) => a.isNowPlaying)
 				const updateTime = new Date()
-				
+
 				console.log('🎵 Music stream update at', updateTime.toLocaleTimeString(), {
 					totalAlbums: albums.length,
 					nowPlaying: nowPlayingAlbum
 						? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
 						: 'none',
-					albums: albums.map(a => ({
+					albums: albums.map((a) => ({
 						name: a.name,
 						artist: a.artist.name,
 						isNowPlaying: a.isNowPlaying,
 						nowPlayingTrack: a.nowPlayingTrack
 					}))
 				})
-				
+
 				update((state) => ({
 					...state,
 					albums,
@@ -75,7 +75,7 @@ function createMusicStream() {
 					interval: data.interval,
 					hasUpdates: data.hasUpdates
 				})
-				
+
 				// Update lastUpdate time even on heartbeat to keep countdown in sync
 				update((state) => ({
 					...state,
@@ -144,11 +144,13 @@ function createMusicStream() {
 		albums: derived({ subscribe }, ($state) => $state.albums) as Readable<Album[]>,
 		// Helper to check if any album is playing
 		nowPlaying: derived({ subscribe }, ($state) => {
-			const playing = $state.albums.find(a => a.isNowPlaying)
-			return playing ? {
-				album: playing,
-				track: playing.nowPlayingTrack
-			} : null
+			const playing = $state.albums.find((a) => a.isNowPlaying)
+			return playing
+				? {
+						album: playing,
+						track: playing.nowPlayingTrack
+					}
+				: null
 		}) as Readable<{ album: Album; track?: string } | null>
 	}
 }

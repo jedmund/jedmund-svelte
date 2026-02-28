@@ -54,7 +54,9 @@
 
 	const projectJsonLdScript = $derived(
 		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
-		projectJsonLd ? `<script type="application/ld+json">${JSON.stringify(projectJsonLd)}<\/script>` : null
+		projectJsonLd
+			? `<script type="application/ld+json">${JSON.stringify(projectJsonLd)}<\/script>`
+			: null
 	)
 
 	let headerContainer = $state<HTMLElement | null>(null)
@@ -134,9 +136,9 @@
 	<div class="error-container">
 		<Page>
 			{#snippet header()}
-			<div class="error-header">
-				<h1>Error</h1>
-			</div>
+				<div class="error-header">
+					<h1>Error</h1>
+				</div>
 			{/snippet}
 			<div class="error-content">
 				<p>{error}</p>
@@ -151,9 +153,9 @@
 {:else if project.status === 'list-only'}
 	<Page>
 		{#snippet header()}
-		<div class="error-header">
-			<h1>Project Not Available</h1>
-		</div>
+			<div class="error-header">
+				<h1>Project Not Available</h1>
+			</div>
 		{/snippet}
 		<div class="error-content">
 			<p>This project is not yet available for viewing. Please check back later.</p>
