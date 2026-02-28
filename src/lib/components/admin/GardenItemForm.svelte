@@ -643,13 +643,6 @@
 		gap: $unit-6x;
 	}
 
-	.field-group {
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
-	}
-
-
 	.field-label {
 		font-size: 14px;
 		font-weight: 500;
