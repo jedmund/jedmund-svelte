@@ -42,7 +42,7 @@ export const load = async () => {
 		setSeoDefaults(seoDefaults)
 		return {
 			seoDefaults,
-			socialLinks: socialLinks.map((link) => ({
+			socialLinks: socialLinks.map((link: { label: string; url: string }) => ({
 				name: link.label,
 				url: link.url
 			})),
