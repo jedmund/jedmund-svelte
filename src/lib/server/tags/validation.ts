@@ -38,7 +38,8 @@ export function validateTagName(name: string): ValidationResult {
 	if (!TAG_VALIDATION.pattern.test(trimmed)) {
 		return {
 			valid: false,
-			error: 'Tag name contains invalid characters. Only letters, numbers, spaces, and hyphens allowed.'
+			error:
+				'Tag name contains invalid characters. Only letters, numbers, spaces, and hyphens allowed.'
 		}
 	}
 
@@ -61,13 +62,11 @@ export function validateTagName(name: string): ValidationResult {
  * Generate a URL-friendly slug from a tag name
  */
 export function generateSlug(name: string): string {
-	return (
-		name
-			.toLowerCase()
-			.trim()
-			.replace(/[^a-z0-9\s-]+/g, '') // Remove invalid chars
-			.replace(/\s+/g, '-') // Spaces to hyphens
-			.replace(/-+/g, '-') // Collapse multiple hyphens
-			.replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-	)
+	return name
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9\s-]+/g, '') // Remove invalid chars
+		.replace(/\s+/g, '-') // Spaces to hyphens
+		.replace(/-+/g, '-') // Collapse multiple hyphens
+		.replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
 }

@@ -78,13 +78,13 @@
 
 	// Watch for search changes
 	$effect(() => {
-		searchQuery
+		void searchQuery
 		debouncedFetch()
 	})
 
 	// Watch for sort changes
 	$effect(() => {
-		sort
+		void sort
 		fetchTags()
 	})
 
@@ -252,20 +252,10 @@
 
 	<AdminFilters>
 		{#snippet left()}
-			<Input
-				type="search"
-				placeholder="Search tags..."
-				bind:value={searchQuery}
-				size="small"
-			/>
+			<Input type="search" placeholder="Search tags..." bind:value={searchQuery} size="small" />
 		{/snippet}
 		{#snippet right()}
-			<Select
-				bind:value={sort}
-				options={sortOptions}
-				size="small"
-				variant="minimal"
-			/>
+			<Select bind:value={sort} options={sortOptions} size="small" variant="minimal" />
 		{/snippet}
 	</AdminFilters>
 
@@ -274,7 +264,9 @@
 	{:else if tags.length === 0}
 		<EmptyState
 			title="No tags found"
-			message={searchQuery ? 'Try adjusting your search query.' : 'Create your first tag to get started.'}
+			message={searchQuery
+				? 'Try adjusting your search query.'
+				: 'Create your first tag to get started.'}
 		>
 			{#snippet action()}
 				{#if searchQuery}
@@ -419,7 +411,6 @@
 />
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.tags-list {
 		display: flex;

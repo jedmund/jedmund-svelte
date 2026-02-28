@@ -115,9 +115,7 @@
 
 		{#if isDropdownOpen}
 			<div class="dropdown-menu">
-				<button class="dropdown-item" type="button" onclick={handleEdit}>
-					Edit tag
-				</button>
+				<button class="dropdown-item" type="button" onclick={handleEdit}> Edit tag </button>
 				<div class="dropdown-divider"></div>
 				<button class="dropdown-item danger" type="button" onclick={handleDelete}>
 					Delete tag

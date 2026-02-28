@@ -18,7 +18,9 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 	const accessToken = await getConfig('mastodon.access_token')
 
 	if (!instance || !accessToken) {
-		throw new Error('Mastodon credentials not configured (mastodon.instance, mastodon.access_token)')
+		throw new Error(
+			'Mastodon credentials not configured (mastodon.instance, mastodon.access_token)'
+		)
 	}
 
 	const baseUrl = `https://${instance}`
@@ -68,7 +70,7 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 	const response = await fetch(`${baseUrl}/api/v1/statuses`, {
 		method: 'POST',
 		headers: {
-			'Authorization': `Bearer ${accessToken}`,
+			Authorization: `Bearer ${accessToken}`,
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(statusBody)
@@ -83,7 +85,7 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 		throw new Error(`Mastodon API error: ${response.status}`)
 	}
 
-	const data = await response.json() as { id: string; url: string }
+	const data = (await response.json()) as { id: string; url: string }
 
 	logger.info('Posted to Mastodon', { id: data.id, url: data.url })
 
@@ -93,11 +95,19 @@ export async function postToMastodon(input: PostInput): Promise<MastodonPostResu
 	}
 }
 
-async function uploadMedia(baseUrl: string, accessToken: string, mediaUrl: string, alt: string): Promise<string | null> {
+async function uploadMedia(
+	baseUrl: string,
+	accessToken: string,
+	mediaUrl: string,
+	alt: string
+): Promise<string | null> {
 	try {
 		const mediaResponse = await fetch(mediaUrl)
 		if (!mediaResponse.ok) {
-			logger.error('Failed to fetch media for Mastodon upload', undefined, { mediaUrl, status: mediaResponse.status })
+			logger.error('Failed to fetch media for Mastodon upload', undefined, {
+				mediaUrl,
+				status: mediaResponse.status
+			})
 			return null
 		}
 
@@ -127,7 +137,7 @@ async function uploadMedia(baseUrl: string, accessToken: string, mediaUrl: strin
 		const uploadResponse = await fetch(`${baseUrl}/api/v2/media`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${accessToken}`
+				Authorization: `Bearer ${accessToken}`
 			},
 			body: formData
 		})
@@ -141,7 +151,7 @@ async function uploadMedia(baseUrl: string, accessToken: string, mediaUrl: strin
 			return null
 		}
 
-		const data = await uploadResponse.json() as { id: string }
+		const data = (await uploadResponse.json()) as { id: string }
 		return data.id
 	} catch (error) {
 		logger.error('Failed to upload media to Mastodon', error as Error, { mediaUrl })

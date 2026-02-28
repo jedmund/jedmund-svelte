@@ -2,19 +2,12 @@ import 'dotenv/config'
 import Module from 'node:module'
 import redis from '../redis-client'
 
-import type {
-	AuthTokensResponse,
-	GetUserPlayedTimeResponse
-} from 'psn-api'
+import type { AuthTokensResponse } from 'psn-api'
 import type { RequestHandler } from './$types'
 import type { SerializableGameInfo } from '$lib/types/steam'
 
 const require = Module.createRequire(import.meta.url)
-const {
-	exchangeNpssoForCode,
-	exchangeCodeForAccessToken,
-	getUserPlayedTime
-} = require('psn-api')
+const { exchangeNpssoForCode, exchangeCodeForAccessToken, getUserPlayedTime } = require('psn-api')
 
 const CACHE_TTL = 60 * 60 // 1 hour
 const PSN_NPSSO_TOKEN = process.env.PSN_NPSSO_TOKEN

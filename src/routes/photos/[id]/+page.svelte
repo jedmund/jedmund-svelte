@@ -86,7 +86,9 @@
 
 	const photoJsonLdScript = $derived(
 		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
-		photoJsonLd ? `<script type="application/ld+json">${JSON.stringify(photoJsonLd)}<\/script>` : null
+		photoJsonLd
+			? `<script type="application/ld+json">${JSON.stringify(photoJsonLd)}<\/script>`
+			: null
 	)
 
 	// Parse EXIF data if available
@@ -134,7 +136,9 @@
 		// Wait for DOM to update and image to load
 		const checkAndSetPositions = () => {
 			const pageContainer = document.querySelector('.photo-page') as HTMLElement
-			const photoImage = pageContainer?.querySelector('.photo-content-wrapper img') as HTMLImageElement | null
+			const photoImage = pageContainer?.querySelector(
+				'.photo-content-wrapper img'
+			) as HTMLImageElement | null
 
 			if (photoImage && photoImage.complete) {
 				const imageRect = photoImage.getBoundingClientRect()
@@ -320,14 +324,17 @@
 		if (isMobile) {
 			const viewport = document.querySelector('meta[name="viewport"]')
 			if (viewport) {
-				viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes')
+				viewport.setAttribute(
+					'content',
+					'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'
+				)
 			}
 		}
 
 		return () => {
 			window.removeEventListener('keydown', handleKeydown)
 			window.removeEventListener('scroll', handleScroll)
-			
+
 			// Reset viewport on unmount
 			if (isMobile) {
 				const viewport = document.querySelector('meta[name="viewport"]')
@@ -444,8 +451,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-	@import '$styles/mixins.scss';
 	.error-container {
 		display: flex;
 		justify-content: center;

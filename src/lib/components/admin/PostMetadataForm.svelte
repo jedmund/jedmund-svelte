@@ -196,5 +196,4 @@
 		color: $gray-30;
 		font-weight: 500;
 	}
-
 </style>

@@ -7,6 +7,10 @@
 	import { Play, Palette, Image, Sparkles } from '@lucide/svelte'
 	import ChevronLeft from '$icons/chevron-left.svg?component'
 
+	// Lucide icons need casting to Snippet for Button's icon prop
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconPlay = Play as any
+
 	let extractingColors = $state(false)
 	let regeneratingThumbnails = $state(false)
 	let reanalyzingColors = $state(false)
@@ -163,14 +167,14 @@
 
 <AdminPage>
 	{#snippet header()}
-	<header>
-		<div class="header-left">
-			<button class="btn-icon" onclick={() => goto('/admin/media')}>
-				<ChevronLeft />
-			</button>
-			<h1>Regenerate Cloudinary Data</h1>
-		</div>
-	</header>
+		<header>
+			<div class="header-left">
+				<button class="btn-icon" onclick={() => goto('/admin/media')}>
+					<ChevronLeft />
+				</button>
+				<h1>Regenerate Cloudinary Data</h1>
+			</div>
+		</header>
 	{/snippet}
 
 	{#if error}
@@ -226,7 +230,7 @@
 				variant="primary"
 				onclick={extractColors}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play as any}
+				icon={iconPlay}
 				iconPosition="left"
 			>
 				{extractingColors ? 'Extracting Colors...' : 'Extract Colors'}
@@ -254,7 +258,7 @@
 				variant="primary"
 				onclick={regenerateThumbnails}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play as any}
+				icon={iconPlay}
 				iconPosition="left"
 			>
 				{regeneratingThumbnails ? 'Regenerating Thumbnails...' : 'Regenerate Thumbnails'}
@@ -281,7 +285,7 @@
 				variant="primary"
 				onclick={reanalyzeColors}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play as any}
+				icon={iconPlay}
 				iconPosition="left"
 			>
 				{reanalyzingColors ? 'Reanalyzing Colors...' : 'Reanalyze Colors'}

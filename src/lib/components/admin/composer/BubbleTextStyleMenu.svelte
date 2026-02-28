@@ -99,8 +99,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables';
-	@import '$styles/mixins';
 
 	.bubble-text-style-menu {
 		position: absolute;

@@ -31,74 +31,74 @@
 		<div class="button-grid">
 			<Button variant="primary" iconPosition="left">
 				{#snippet icon()}<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="M12 5V19M5 12H19"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>{/snippet}
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M12 5V19M5 12H19"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>{/snippet}
 				Add Item
 			</Button>
 
 			<Button variant="secondary" iconPosition="right">
 				Download
 				{#snippet icon()}<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="M21 15V19A2 2 0 0119 21H5A2 2 0 013 19V15"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-					<polyline
-						points="7,10 12,15 17,10"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-					<line
-						x1="12"
-						y1="15"
-						x2="12"
-						y2="3"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-					/>
-				</svg>{/snippet}
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M21 15V19A2 2 0 0119 21H5A2 2 0 013 19V15"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<polyline
+							points="7,10 12,15 17,10"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<line
+							x1="12"
+							y1="15"
+							x2="12"
+							y2="3"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+						/>
+					</svg>{/snippet}
 			</Button>
 
 			<Button variant="ghost" iconOnly={true}>
 				{#snippet icon()}<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="M6 6L18 18M6 18L18 6"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>{/snippet}
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M6 6L18 18M6 18L18 6"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>{/snippet}
 			</Button>
 		</div>
 	</div>

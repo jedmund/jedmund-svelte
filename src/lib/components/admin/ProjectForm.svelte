@@ -131,9 +131,9 @@
 
 			let savedProject: Project
 			if (mode === 'edit') {
-				savedProject = await api.put(`/api/projects/${project?.id}`, payload) as Project
+				savedProject = (await api.put(`/api/projects/${project?.id}`, payload)) as Project
 			} else {
-				savedProject = await api.post('/api/projects', payload) as Project
+				savedProject = (await api.post('/api/projects', payload)) as Project
 			}
 
 			toast.dismiss(loadingToastId)
@@ -147,7 +147,12 @@
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
-			if (err && typeof err === 'object' && 'status' in err && (err as { status: number }).status === 409) {
+			if (
+				err &&
+				typeof err === 'object' &&
+				'status' in err &&
+				(err as { status: number }).status === 409
+			) {
 				toast.error('This project has changed in another tab. Please reload.')
 			} else {
 				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
@@ -169,36 +174,36 @@
 			// Temporarily allow dirty navigation
 			const nav = pendingNavigation
 			pendingNavigation = null
-			nav.to && goto(nav.to.url.pathname)
+			if (nav.to) goto(nav.to.url.pathname)
 		}
 	}
 </script>
 
 <AdminPage>
 	{#snippet header()}
-	<header>
-		<div class="header-left">
-			<h1 class="form-title">{formStore.fields.title || 'Untitled Project'}</h1>
-		</div>
-		<div class="header-center">
-			<AdminSegmentedControl
-				options={tabOptions}
-				value={activeTab}
-				onChange={(value) => (activeTab = value)}
-			/>
-		</div>
-		<div class="header-actions">
-			<StatusDropdown
-				currentStatus={formStore.fields.status}
-				onStatusChange={handleSave}
-				disabled={isSaving}
-				isLoading={isSaving}
-				{primaryAction}
-				{dropdownActions}
-				{viewUrl}
-			/>
-		</div>
-	</header>
+		<header>
+			<div class="header-left">
+				<h1 class="form-title">{formStore.fields.title || 'Untitled Project'}</h1>
+			</div>
+			<div class="header-center">
+				<AdminSegmentedControl
+					options={tabOptions}
+					value={activeTab}
+					onChange={(value) => (activeTab = value)}
+				/>
+			</div>
+			<div class="header-actions">
+				<StatusDropdown
+					currentStatus={formStore.fields.status}
+					onStatusChange={handleSave}
+					disabled={isSaving}
+					isLoading={isSaving}
+					{primaryAction}
+					{dropdownActions}
+					{viewUrl}
+				/>
+			</div>
+		</header>
 	{/snippet}
 
 	<div class="admin-container">
@@ -215,7 +220,11 @@
 								handleSave()
 							}}
 						>
-							<ProjectMetadataForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} contentId={project?.id} />
+							<ProjectMetadataForm
+								bind:formData={formStore.fields}
+								validationErrors={formStore.validationErrors}
+								contentId={project?.id}
+							/>
 						</form>
 					</div>
 				</div>
@@ -229,7 +238,10 @@
 								handleSave()
 							}}
 						>
-							<ProjectBrandingForm bind:formData={formStore.fields} validationErrors={formStore.validationErrors} />
+							<ProjectBrandingForm
+								bind:formData={formStore.fields}
+								validationErrors={formStore.validationErrors}
+							/>
 						</form>
 					</div>
 				</div>

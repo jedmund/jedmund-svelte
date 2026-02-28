@@ -23,7 +23,15 @@
 		placeholder?: string
 	}
 
-	let { mediaId, currentAlbums = [], onUpdate, onClose, selectedAlbumId, onSelect, placeholder }: Props = $props()
+	let {
+		mediaId,
+		currentAlbums = [],
+		onUpdate,
+		onClose,
+		selectedAlbumId: _selectedAlbumId,
+		onSelect: _onSelect,
+		placeholder: _placeholder
+	}: Props = $props()
 
 	// State
 	let albums = $state<Album[]>([])
@@ -220,13 +228,13 @@
 				<Input type="search" bind:value={searchQuery} placeholder="Search albums..." fullWidth />
 				<Button variant="ghost" onclick={() => (showCreateNew = true)} buttonSize="small">
 					{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path
-							d="M8 3v10M3 8h10"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-						/>
-					</svg>{/snippet}
+							<path
+								d="M8 3v10M3 8h10"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+						</svg>{/snippet}
 					New Album
 				</Button>
 			</div>

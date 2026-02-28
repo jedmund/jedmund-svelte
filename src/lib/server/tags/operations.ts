@@ -70,7 +70,7 @@ export async function createTag(input: CreateTagInput) {
  * @throws Error if tag not found or new name already exists
  */
 export async function updateTag(tagId: number, input: UpdateTagInput) {
-	const updates: any = {}
+	const updates: Record<string, unknown> = {}
 
 	// If updating name, validate and regenerate slug
 	if (input.name) {
@@ -173,7 +173,11 @@ export async function listTags(params: {
 		: {}
 
 	const orderBy =
-		sort === 'usage' ? { posts: { _count: order } } : sort === 'recent' ? { createdAt: order } : { [sort]: order }
+		sort === 'usage'
+			? { posts: { _count: order } }
+			: sort === 'recent'
+				? { createdAt: order }
+				: { [sort]: order }
 
 	const [tags, total] = await Promise.all([
 		prisma.tag.findMany({

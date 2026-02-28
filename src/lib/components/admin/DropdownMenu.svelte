@@ -191,7 +191,8 @@
 				</button>
 
 				{#if item.children && openSubmenuId === item.id}
-					<div role="presentation"
+					<div
+						role="presentation"
 						onmouseenter={handleSubmenuMouseEnter}
 						onmouseleave={() => handleSubmenuMouseLeave(item.id)}
 					>
@@ -210,7 +211,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.dropdown-menu {
 		background: white;

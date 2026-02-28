@@ -243,7 +243,6 @@
 				color: $gray-50;
 			}
 		}
-
 	}
 
 	// Responsive adjustments

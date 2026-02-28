@@ -137,8 +137,7 @@
 		const tr = transaction as { docChanged?: boolean; steps?: { toJSON(): { stepType: string } }[] }
 		if (showUrlConvertDropdown && tr.docChanged) {
 			const hasTextChange = tr.steps?.some(
-				(step) =>
-					step.toJSON().stepType === 'replace' || step.toJSON().stepType === 'replaceAround'
+				(step) => step.toJSON().stepType === 'replace' || step.toJSON().stepType === 'replaceAround'
 			)
 			if (hasTextChange) {
 				showUrlConvertDropdown = false

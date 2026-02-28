@@ -66,14 +66,7 @@
 	>
 		<span class="status-dot"></span>
 		<span class="status-label">{currentConfig.label}</span>
-		<svg
-			class="chevron"
-			class:open={isOpen}
-			width="12"
-			height="12"
-			viewBox="0 0 12 12"
-			fill="none"
-		>
+		<svg class="chevron" class:open={isOpen} width="12" height="12" viewBox="0 0 12 12" fill="none">
 			<path
 				d="M3 4.5L6 7.5L9 4.5"
 				stroke="currentColor"
@@ -96,12 +89,7 @@
 
 			{#if viewUrl && currentStatus === 'published'}
 				<div class="dropdown-divider"></div>
-				<a
-					href={viewUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="dropdown-item view-link"
-				>
+				<a href={viewUrl} target="_blank" rel="noopener noreferrer" class="dropdown-item view-link">
 					View on site
 				</a>
 			{/if}

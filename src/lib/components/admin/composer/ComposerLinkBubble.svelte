@@ -31,7 +31,7 @@
 		let found = false
 		state.doc.nodesBetween(from, to, (node) => {
 			if (found) return false
-			if (node.marks?.some((m: any) => m.type.name === 'link')) {
+			if (node.marks?.some((m: { type: { name: string } }) => m.type.name === 'link')) {
 				found = true
 			}
 		})
@@ -158,7 +158,11 @@
 				<button class="link-action-button" onclick={copyLink} title="Copy link">
 					<Copy size={16} />
 				</button>
-				<button class="link-action-button link-action-button--danger" onclick={removeLink} title="Remove link">
+				<button
+					class="link-action-button link-action-button--danger"
+					onclick={removeLink}
+					title="Remove link"
+				>
 					<Trash2 size={16} />
 				</button>
 			</div>
@@ -167,7 +171,6 @@
 </BubbleMenu>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	:global(.composer-link-bubble) {
 		z-index: 30;

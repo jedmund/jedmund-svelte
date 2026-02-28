@@ -45,19 +45,19 @@ export const GET: RequestHandler = async ({ request }) => {
 
 							const nowPlayingAlbum = update.albums.find((a) => a.isNowPlaying)
 							const musicIsPlaying = !!nowPlayingAlbum
-							
+
 							let remainingMs = 0
 							if (nowPlayingAlbum?.nowPlayingTrack && nowPlayingAlbum.appleMusicData?.tracks) {
 								const track = nowPlayingAlbum.appleMusicData.tracks.find(
-									t => t.name === nowPlayingAlbum.nowPlayingTrack
+									(t) => t.name === nowPlayingAlbum.nowPlayingTrack
 								)
-								
+
 								if (track?.durationMs && nowPlayingAlbum.lastScrobbleTime) {
 									const elapsed = Date.now() - new Date(nowPlayingAlbum.lastScrobbleTime).getTime()
 									remainingMs = Math.max(0, track.durationMs - elapsed)
 								}
 							}
-							
+
 							logger.music('debug', '📤 SSE: Sent album update:', {
 								totalAlbums: update.albums.length,
 								nowPlaying: nowPlayingAlbum
@@ -67,7 +67,7 @@ export const GET: RequestHandler = async ({ request }) => {
 							})
 
 							let targetInterval = UPDATE_INTERVAL
-							
+
 							if (musicIsPlaying && remainingMs > 0) {
 								if (remainingMs < 20000) {
 									targetInterval = 5000
@@ -79,11 +79,14 @@ export const GET: RequestHandler = async ({ request }) => {
 							} else if (musicIsPlaying) {
 								targetInterval = FAST_UPDATE_INTERVAL
 							}
-							
+
 							if (Math.abs(targetInterval - currentInterval) > 1000) {
 								currentInterval = targetInterval
-								logger.music('debug', `Adjusting interval to ${currentInterval}ms (playing: ${musicIsPlaying}, remaining: ${Math.round(remainingMs/1000)}s)`)
-								
+								logger.music(
+									'debug',
+									`Adjusting interval to ${currentInterval}ms (playing: ${musicIsPlaying}, remaining: ${Math.round(remainingMs / 1000)}s)`
+								)
+
 								if (intervalId) {
 									clearInterval(intervalId)
 									intervalId = setInterval(checkForUpdates, currentInterval)

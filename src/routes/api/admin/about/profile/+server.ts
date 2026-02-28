@@ -32,6 +32,7 @@ export const PUT: RequestHandler = async (event) => {
 		profile = await prisma.profile.update({
 			where: { id: profile.id },
 			data: {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				bio: body.bio !== undefined ? (body.bio as any) : undefined,
 				shortBio: body.shortBio,
 				headline: body.headline,
@@ -42,6 +43,7 @@ export const PUT: RequestHandler = async (event) => {
 	} else {
 		profile = await prisma.profile.create({
 			data: {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				bio: body.bio as any,
 				shortBio: body.shortBio,
 				headline: body.headline,

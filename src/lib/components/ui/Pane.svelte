@@ -55,7 +55,6 @@
 </BasePane>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.pane-header {
 		display: flex;

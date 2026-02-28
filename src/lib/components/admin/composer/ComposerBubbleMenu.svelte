@@ -71,7 +71,7 @@
 		let hasLink = false
 		state.doc.nodesBetween(from, to, (node) => {
 			if (hasLink) return false
-			if (node.marks?.some((m: any) => m.type.name === 'link')) {
+			if (node.marks?.some((m: { type: { name: string } }) => m.type.name === 'link')) {
 				hasLink = true
 			}
 		})
@@ -216,11 +216,7 @@
 					<ToolBarIcon {command} {editor} />
 				{/each}
 
-				<button
-					class="bubble-menu-button"
-					onclick={handleLinkClick}
-					title="Link (Cmd/Ctrl+K)"
-				>
+				<button class="bubble-menu-button" onclick={handleLinkClick} title="Link (Cmd/Ctrl+K)">
 					<Link size={16} />
 				</button>
 
@@ -286,8 +282,6 @@
 </BubbleMenu>
 
 <style lang="scss">
-	@import '$styles/variables';
-	@import '$styles/mixins';
 
 	:global(.composer-bubble-menu) {
 		z-index: 30;
@@ -345,11 +339,6 @@
 
 		&:active {
 			background: rgba($gray-85, 0.7);
-		}
-
-		&.active {
-			background: rgba($red-60, 0.1);
-			color: $red-60;
 		}
 
 		&:disabled {
@@ -434,14 +423,14 @@
 		&:active {
 			background-color: rgba($gray-85, 0.7);
 		}
+	}
 
-		&.active {
-			background-color: rgba($red-60, 0.1);
-			color: $red-60;
+	:global(.bubble-menu-content .edra-command-button.active) {
+		background-color: rgba($red-60, 0.1);
+		color: $red-60;
 
-			&:hover {
-				background-color: rgba($red-60, 0.15);
-			}
+		&:hover {
+			background-color: rgba($red-60, 0.15);
 		}
 	}
 

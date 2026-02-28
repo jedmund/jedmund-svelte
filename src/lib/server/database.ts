@@ -78,6 +78,7 @@ export async function ensureUniqueSlug(
 	let counter = 1
 
 	while (true) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const existingRecord = await (prisma[model] as any).findFirst({
 			where: {
 				slug: uniqueSlug,
@@ -86,6 +87,33 @@ export async function ensureUniqueSlug(
 		})
 
 		if (!existingRecord) break
+
+		uniqueSlug = `${slug}-${counter}`
+		counter++
+	}
+
+	return uniqueSlug
+}
+
+// Ensure unique slug scoped to a category (for GardenItem)
+export async function ensureUniqueCategorySlug(
+	slug: string,
+	category: string,
+	excludeId?: number
+): Promise<string> {
+	let uniqueSlug = slug
+	let counter = 1
+
+	while (true) {
+		const existing = await prisma.gardenItem.findFirst({
+			where: {
+				slug: uniqueSlug,
+				category,
+				...(excludeId ? { NOT: { id: excludeId } } : {})
+			}
+		})
+
+		if (!existing) break
 
 		uniqueSlug = `${slug}-${counter}`
 		counter++

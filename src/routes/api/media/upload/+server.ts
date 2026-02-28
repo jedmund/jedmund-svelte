@@ -174,7 +174,10 @@ export const POST: RequestHandler = async (event) => {
 		const allowedTypes = [...allowedImageTypes, ...allowedVideoTypes, ...allowedAudioTypes]
 
 		if (!allowedTypes.includes(file.type)) {
-			return errorResponse('Invalid file type. Allowed types: Images (JPEG, PNG, WebP, GIF, SVG), Videos (WebM, MP4, OGG, MOV, AVI), and Audio (MP3, WAV, OGG, FLAC, AAC, M4A, WebM)', 400)
+			return errorResponse(
+				'Invalid file type. Allowed types: Images (JPEG, PNG, WebP, GIF, SVG), Videos (WebM, MP4, OGG, MOV, AVI), and Audio (MP3, WAV, OGG, FLAC, AAC, M4A, WebM)',
+				400
+			)
 		}
 
 		// Validate file size - different limits for images, videos, and audio
@@ -182,7 +185,7 @@ export const POST: RequestHandler = async (event) => {
 		const isAudio = allowedAudioTypes.includes(file.type)
 		const maxSize = isVideo ? 100 * 1024 * 1024 : isAudio ? 50 * 1024 * 1024 : 10 * 1024 * 1024 // 100MB for videos, 50MB for audio, 10MB for images
 		const maxSizeText = isVideo ? '100MB' : isAudio ? '50MB' : '10MB'
-		
+
 		if (file.size > maxSize) {
 			return errorResponse(`File too large. Maximum size is ${maxSizeText}`, 400)
 		}
@@ -252,4 +255,3 @@ export const POST: RequestHandler = async (event) => {
 		return errorResponse('Upload failed', 500)
 	}
 }
-

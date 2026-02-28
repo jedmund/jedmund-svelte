@@ -5,6 +5,7 @@
 	import UniverseIcon from '$icons/universe.svg?component'
 	import AlbumIcon from '$icons/album.svg?component'
 	import MediaIcon from '$icons/media.svg?component'
+	import GardenIcon from '$icons/garden.svg?component'
 	import TagIcon from '$icons/tag.svg?component'
 	import AboutIcon from '$icons/about.svg?component'
 	import SettingsIcon from '$icons/settings.svg?component'
@@ -22,6 +23,7 @@
 	const navItems: NavItem[] = [
 		{ text: 'Projects', href: '/admin/projects', icon: WorkIcon },
 		{ text: 'Universe', href: '/admin/posts', icon: UniverseIcon },
+		{ text: 'Garden', href: '/admin/garden', icon: GardenIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
 		{ text: 'Media', href: '/admin/media', icon: MediaIcon },
 		{ text: 'Tags', href: '/admin/tags', icon: TagIcon },
@@ -30,24 +32,18 @@
 
 	const settingsItem: NavItem = { text: 'Settings', href: '/admin/settings', icon: SettingsIcon }
 
-	// Calculate active index based on current path
-	const activeIndex = $derived(
-		currentPath.startsWith('/admin/projects')
-			? 0
-			: currentPath.startsWith('/admin/posts')
-				? 1
-				: currentPath.startsWith('/admin/albums')
-					? 2
-					: currentPath.startsWith('/admin/media')
-						? 3
-						: currentPath.startsWith('/admin/tags')
-							? 4
-							: currentPath.startsWith('/admin/about')
-								? 5
-								: currentPath.startsWith('/admin/settings')
-									? 6
-									: -1
-	)
+	const activeIndex = $derived.by(() => {
+		const prefixes = [
+			'/admin/projects',
+			'/admin/posts',
+			'/admin/garden',
+			'/admin/albums',
+			'/admin/media',
+			'/admin/tags',
+			'/admin/about'
+		]
+		return prefixes.findIndex((p) => currentPath.startsWith(p)) ?? -1
+	})
 </script>
 
 <nav class="admin-nav-rail">

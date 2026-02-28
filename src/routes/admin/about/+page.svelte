@@ -145,7 +145,7 @@
 		try {
 			const bioContent = editorInstance?.getContent?.()
 
-			const promises = []
+			const promises: Promise<Response>[] = []
 
 			// Save profile
 			promises.push(

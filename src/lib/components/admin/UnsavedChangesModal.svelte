@@ -8,11 +8,7 @@
 		onLeave: () => void
 	}
 
-	let {
-		isOpen = $bindable(),
-		onContinueEditing,
-		onLeave
-	}: Props = $props()
+	let { isOpen = $bindable(), onContinueEditing, onLeave }: Props = $props()
 
 	function handleContinueEditing() {
 		isOpen = false
@@ -37,12 +33,8 @@
 		<h2>Unsaved Changes</h2>
 		<p>You have unsaved changes. Are you sure you want to leave?</p>
 		<div class="modal-actions">
-			<Button variant="secondary" onclick={handleContinueEditing}>
-				Continue Editing
-			</Button>
-			<Button variant="primary" onclick={handleLeave}>
-				Leave Without Saving
-			</Button>
+			<Button variant="secondary" onclick={handleContinueEditing}>Continue Editing</Button>
+			<Button variant="primary" onclick={handleLeave}>Leave Without Saving</Button>
 		</div>
 	</div>
 </BaseModal>

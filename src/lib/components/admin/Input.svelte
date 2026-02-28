@@ -193,7 +193,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	// Wrapper styles
 	.input-wrapper {

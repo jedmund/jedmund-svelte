@@ -24,8 +24,8 @@
 	let addingPlatform = $state<string | null>(null)
 	let addUrl = $state('')
 
-	const bluesky = $derived(syndications.find(s => s.platform === 'bluesky'))
-	const mastodon = $derived(syndications.find(s => s.platform === 'mastodon'))
+	const bluesky = $derived(syndications.find((s) => s.platform === 'bluesky'))
+	const mastodon = $derived(syndications.find((s) => s.platform === 'mastodon'))
 	const isPublished = $derived(contentStatus === 'published')
 
 	$effect(() => {
@@ -37,7 +37,9 @@
 	async function fetchStatus() {
 		loading = true
 		try {
-			const res = await fetch(`/api/syndication/status?contentType=${contentType}&contentId=${contentId}`)
+			const res = await fetch(
+				`/api/syndication/status?contentType=${contentType}&contentId=${contentId}`
+			)
 			if (res.ok) {
 				const data = await res.json()
 				syndications = data.syndications
@@ -87,7 +89,7 @@
 			})
 			if (res.ok) {
 				const updated = await res.json()
-				syndications = syndications.map(s => s.id === updated.id ? updated : s)
+				syndications = syndications.map((s) => (s.id === updated.id ? updated : s))
 			}
 		} catch {
 			// Silently fail
@@ -153,7 +155,11 @@
 				{#each [{ record: bluesky, platform: 'bluesky' }, { record: mastodon, platform: 'mastodon' }] as { record, platform }}
 					<div class="syndication-item">
 						<div class="syndication-platform">
-							<span class="status-dot" class:success={record?.status === 'success' || record?.status === 'manual'} class:failed={record?.status === 'failed'}></span>
+							<span
+								class="status-dot"
+								class:success={record?.status === 'success' || record?.status === 'manual'}
+								class:failed={record?.status === 'failed'}
+							></span>
 							<span class="platform-label">{platformLabel(platform)}</span>
 						</div>
 						<div class="syndication-action">
@@ -180,13 +186,22 @@
 								</div>
 							{:else if (record?.status === 'success' || record?.status === 'manual') && record.externalUrl}
 								<div class="action-links">
-									<a href={record.externalUrl} target="_blank" rel="noopener noreferrer" class="view-link">View</a>
-									<button type="button" class="edit-link" onclick={() => startEdit(record)}>Edit</button>
+									<a
+										href={record.externalUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="view-link">View</a
+									>
+									<button type="button" class="edit-link" onclick={() => startEdit(record)}
+										>Edit</button
+									>
 								</div>
 							{:else if record?.status === 'failed'}
 								<span class="error-text" title={record.errorMessage || ''}>Failed</span>
 							{:else}
-								<button type="button" class="add-link" onclick={() => startAdd(platform)}>Add link</button>
+								<button type="button" class="add-link" onclick={() => startAdd(platform)}
+									>Add link</button
+								>
 							{/if}
 						</div>
 					</div>
@@ -194,11 +209,7 @@
 			</div>
 
 			{#if !bluesky || !mastodon || bluesky?.status === 'failed' || mastodon?.status === 'failed'}
-				<button
-					class="syndicate-button"
-					onclick={triggerSyndication}
-					disabled={triggering}
-				>
+				<button class="syndicate-button" onclick={triggerSyndication} disabled={triggering}>
 					{triggering ? 'Syndicating...' : 'Syndicate Now'}
 				</button>
 			{/if}

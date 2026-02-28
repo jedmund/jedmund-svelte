@@ -20,6 +20,8 @@
 		onTagRemove?: (tag: Tag) => void
 	}
 
+	const inputId = `tag-input-${Math.random().toString(36).slice(2, 9)}`
+
 	let {
 		tags = $bindable([]),
 		label,
@@ -191,19 +193,26 @@
 
 <div class="tag-input-wrapper">
 	{#if label}
-		<label class="input-label">{label}</label>
+		<label class="input-label" for={inputId}>{label}</label>
 	{/if}
 
 	<div class="tag-input-container">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="tag-pills tag-pills-{size}" class:has-tags={tags.length > 0} onclick={handleContainerClick}>
+		<div
+			class="tag-pills tag-pills-{size}"
+			class:has-tags={tags.length > 0}
+			onclick={handleContainerClick}
+		>
 			{#each tags as tag (tag.id)}
 				<span class="tag-pill">
 					{tag.displayName}
 					<button
 						type="button"
-						onclick={(e) => { e.stopPropagation(); removeTag(tag) }}
+						onclick={(e) => {
+							e.stopPropagation()
+							removeTag(tag)
+						}}
 						aria-label="Remove {tag.displayName}"
 						{disabled}
 					>
@@ -216,6 +225,7 @@
 			{#if tags.length < maxTags}
 				<input
 					bind:this={inputElement}
+					id={inputId}
 					type="text"
 					value={inputValue}
 					oninput={handleInput}
@@ -267,7 +277,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.tag-input-wrapper {
 		display: block;

@@ -137,12 +137,7 @@
 		<Input label="Slug" bind:value={slug} placeholder="post-slug" />
 
 		{#if postType === 'essay'}
-			<Textarea
-				label="Excerpt"
-				bind:value={excerpt}
-				rows={3}
-				placeholder="Brief description..."
-			/>
+			<Textarea label="Excerpt" bind:value={excerpt} rows={3} placeholder="Brief description..." />
 		{/if}
 
 		<div class="tags-section">
@@ -192,7 +187,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.metadata-popover {
 		background: white;

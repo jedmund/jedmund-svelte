@@ -9,14 +9,46 @@ export interface CacheConfig {
 
 export class CacheManager {
 	private static cacheTypes: Map<string, CacheConfig> = new Map([
-		['lastfm-recent', { prefix: 'lastfm:recent:', defaultTTL: 30, description: 'Last.fm recent tracks' }],
-		['lastfm-album', { prefix: 'lastfm:albuminfo:', defaultTTL: 3600, description: 'Last.fm album info' }],
-		['apple-album', { prefix: 'apple:album:', defaultTTL: 86400, description: 'Apple Music album data' }],
-		['apple-notfound', { prefix: 'notfound:apple-music:', defaultTTL: 3600, description: 'Apple Music not found records' }],
-		['apple-failure', { prefix: 'failure:apple-music:', defaultTTL: 86400, description: 'Apple Music API failures' }],
-		['apple-ratelimit', { prefix: 'ratelimit:apple-music:', defaultTTL: 3600, description: 'Apple Music rate limit state' }],
-		['bluesky-session', { prefix: 'bluesky:session:', defaultTTL: 3600, description: 'Bluesky authenticated session' }],
-		['syndication-replies', { prefix: 'syndication:replies:', defaultTTL: 300, description: 'Social replies' }]
+		[
+			'lastfm-recent',
+			{ prefix: 'lastfm:recent:', defaultTTL: 30, description: 'Last.fm recent tracks' }
+		],
+		[
+			'lastfm-album',
+			{ prefix: 'lastfm:albuminfo:', defaultTTL: 3600, description: 'Last.fm album info' }
+		],
+		[
+			'apple-album',
+			{ prefix: 'apple:album:', defaultTTL: 86400, description: 'Apple Music album data' }
+		],
+		[
+			'apple-notfound',
+			{
+				prefix: 'notfound:apple-music:',
+				defaultTTL: 3600,
+				description: 'Apple Music not found records'
+			}
+		],
+		[
+			'apple-failure',
+			{ prefix: 'failure:apple-music:', defaultTTL: 86400, description: 'Apple Music API failures' }
+		],
+		[
+			'apple-ratelimit',
+			{
+				prefix: 'ratelimit:apple-music:',
+				defaultTTL: 3600,
+				description: 'Apple Music rate limit state'
+			}
+		],
+		[
+			'bluesky-session',
+			{ prefix: 'bluesky:session:', defaultTTL: 3600, description: 'Bluesky authenticated session' }
+		],
+		[
+			'syndication-replies',
+			{ prefix: 'syndication:replies:', defaultTTL: 300, description: 'Social replies' }
+		]
 	])
 
 	private static resolveType(type: string): CacheConfig | null {
@@ -80,14 +112,17 @@ export class CacheManager {
 		const albumKey = `${artist}:${album}`
 		let totalDeleted = 0
 
-			for (const [type] of this.cacheTypes) {
+		for (const [type] of this.cacheTypes) {
 			if (type.includes('album') || type.includes('notfound')) {
 				const deleted = await this.clearPattern(type, albumKey)
 				totalDeleted += deleted
 			}
 		}
 
-		logger.music('info', `Cleared ${totalDeleted} cache entries for album "${album}" by "${artist}"`)
+		logger.music(
+			'info',
+			`Cleared ${totalDeleted} cache entries for album "${album}" by "${artist}"`
+		)
 		return totalDeleted
 	}
 
@@ -97,7 +132,7 @@ export class CacheManager {
 
 	static async getStats(): Promise<Array<{ type: string; count: number; description: string }>> {
 		const stats = []
-		
+
 		for (const [type, config] of this.cacheTypes) {
 			const keys = await redis.keys(`${config.prefix}*`)
 			stats.push({
@@ -106,7 +141,7 @@ export class CacheManager {
 				description: config.description
 			})
 		}
-		
+
 		return stats
 	}
 }
@@ -114,14 +149,21 @@ export class CacheManager {
 export const cache = {
 	lastfm: {
 		getRecent: (username: string) => CacheManager.get('lastfm-recent', username),
-		setRecent: (username: string, data: string) => CacheManager.set('lastfm-recent', username, data),
-		getAlbum: (artist: string, album: string) => CacheManager.get('lastfm-album', `${artist}:${album}`),
-		setAlbum: (artist: string, album: string, data: string) => CacheManager.set('lastfm-album', `${artist}:${album}`, data)
+		setRecent: (username: string, data: string) =>
+			CacheManager.set('lastfm-recent', username, data),
+		getAlbum: (artist: string, album: string) =>
+			CacheManager.get('lastfm-album', `${artist}:${album}`),
+		setAlbum: (artist: string, album: string, data: string) =>
+			CacheManager.set('lastfm-album', `${artist}:${album}`, data)
 	},
 	apple: {
-		getAlbum: (artist: string, album: string) => CacheManager.get('apple-album', `${artist}:${album}`),
-		setAlbum: (artist: string, album: string, data: string, ttl?: number) => CacheManager.set('apple-album', `${artist}:${album}`, data, ttl),
-		isNotFound: (artist: string, album: string) => CacheManager.get('apple-notfound', `${artist}:${album}`),
-		markNotFound: (artist: string, album: string, ttl?: number) => CacheManager.set('apple-notfound', `${artist}:${album}`, '1', ttl)
+		getAlbum: (artist: string, album: string) =>
+			CacheManager.get('apple-album', `${artist}:${album}`),
+		setAlbum: (artist: string, album: string, data: string, ttl?: number) =>
+			CacheManager.set('apple-album', `${artist}:${album}`, data, ttl),
+		isNotFound: (artist: string, album: string) =>
+			CacheManager.get('apple-notfound', `${artist}:${album}`),
+		markNotFound: (artist: string, album: string, ttl?: number) =>
+			CacheManager.set('apple-notfound', `${artist}:${album}`, '1', ttl)
 	}
 }

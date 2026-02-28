@@ -9,7 +9,8 @@
 	const { editor, deleteNode, getPos }: NodeViewProps = $props()
 
 	// Get album context if available
-	const editorContext = getContext<{ albumId?: number; [key: string]: unknown }>('editorContext') || {}
+	const editorContext =
+		getContext<{ albumId?: number; [key: string]: unknown }>('editorContext') || {}
 	const albumId = $derived(editorContext.albumId)
 
 	// Generate unique pane ID based on node position
@@ -77,7 +78,6 @@
 </NodeViewWrapper>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.edra-gallery-placeholder-content {
 		width: 100%;

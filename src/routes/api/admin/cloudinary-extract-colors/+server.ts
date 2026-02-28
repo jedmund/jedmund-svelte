@@ -120,9 +120,13 @@ export const POST: RequestHandler = async (event) => {
 				results.processed++
 				const errorMsg = error instanceof Error ? error.message : 'Unknown error'
 				results.errors.push(`Media ID ${media.id}: ${errorMsg}`)
-				logger.error(`Failed to extract colors for media ${media.id}:`, error instanceof Error ? error : undefined, {
-					url: media.url
-				})
+				logger.error(
+					`Failed to extract colors for media ${media.id}:`,
+					error instanceof Error ? error : undefined,
+					{
+						url: media.url
+					}
+				)
 			}
 		}
 

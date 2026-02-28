@@ -8,6 +8,14 @@
 	import { CheckCircle, Trash2, AlertCircle, RefreshCw } from '@lucide/svelte'
 	import ChevronLeft from '$icons/chevron-left.svg?component'
 
+	// Lucide icons need casting to Snippet for Button's icon prop
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconRefresh = RefreshCw as any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconTrash = Trash2 as any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconAlert = AlertCircle as any
+
 	interface AuditSummary {
 		totalCloudinaryFiles: number
 		totalDatabaseReferences: number
@@ -48,7 +56,9 @@
 	let showCleanupModal = $state(false)
 	let cleaningUp = $state(false)
 
-	const allSelected = $derived(auditData && selectedFiles.size >= Math.min(20, auditData.orphanedFiles.length))
+	const allSelected = $derived(
+		auditData && selectedFiles.size >= Math.min(20, auditData.orphanedFiles.length)
+	)
 	const hasSelection = $derived(selectedFiles.size > 0)
 	const selectedSize = $derived(
 		auditData?.orphanedFiles
@@ -208,24 +218,24 @@
 <AdminPage>
 	{#snippet header()}
 	<header>
-		<div class="header-left">
-			<button class="btn-icon" onclick={() => goto('/admin/media')}>
-				<ChevronLeft />
-			</button>
-			<h1>Cloudinary Audit</h1>
-		</div>
-		<div class="header-actions">
-			<Button
-				variant="secondary"
-				onclick={runAudit}
-				disabled={loading}
-				icon={RefreshCw as any}
-				iconPosition="left"
-			>
-				{loading ? 'Running Audit...' : 'Run Audit'}
-			</Button>
-		</div>
-	</header>
+			<div class="header-left">
+				<button class="btn-icon" onclick={() => goto('/admin/media')}>
+					<ChevronLeft />
+				</button>
+				<h1>Cloudinary Audit</h1>
+			</div>
+			<div class="header-actions">
+				<Button
+					variant="secondary"
+					onclick={runAudit}
+					disabled={loading}
+					icon={iconRefresh}
+					iconPosition="left"
+				>
+					{loading ? 'Running Audit...' : 'Run Audit'}
+				</Button>
+			</div>
+		</header>
 	{/snippet}
 
 	{#if loading}
@@ -296,7 +306,7 @@
 							showDeleteModal = true
 						}}
 						disabled={!hasSelection || deleting}
-						icon={Trash2 as any}
+						icon={iconTrash}
 						iconPosition="left"
 					>
 						Delete Selected
@@ -399,7 +409,7 @@
 						showCleanupModal = true
 					}}
 					disabled={cleaningUp}
-					icon={AlertCircle as any}
+					icon={iconAlert}
 					iconPosition="left"
 				>
 					Clean Up Broken References

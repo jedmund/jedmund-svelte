@@ -119,7 +119,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	// Wrapper styles
 	.textarea-wrapper {
@@ -208,19 +207,19 @@
 	// Size variations
 	.textarea-small {
 		padding: $unit calc($unit * 1.5);
-		border-radius: $corner-radius-sm;
+		border-radius: $corner-radius-lg;
 		font-size: 0.75rem;
 	}
 
 	.textarea-medium {
 		padding: calc($unit * 1.5) $unit-2x;
-		border-radius: $corner-radius-md;
+		border-radius: $corner-radius-2xl;
 		font-size: 1rem;
 	}
 
 	.textarea-large {
 		padding: $unit-2x $unit-3x;
-		border-radius: $corner-radius-lg;
+		border-radius: $corner-radius-2xl;
 		font-size: 1.25rem;
 	}
 

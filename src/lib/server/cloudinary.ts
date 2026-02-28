@@ -179,19 +179,19 @@ export async function uploadFile(
 
 		// Generate thumbnail URL - different approach for videos vs images
 		const isVideo = file.type.startsWith('video/')
-		const thumbnailUrl = isVideo 
+		const thumbnailUrl = isVideo
 			? cloudinary.url(result.public_id + '.jpg', {
-				resource_type: 'video',
-				transformation: [
-					{ width: 1920, crop: 'scale', quality: 'auto:good' }, // 'scale' maintains aspect ratio
-					{ start_offset: 'auto' } // Let Cloudinary pick the most interesting frame
-				],
-				secure: true
-			})
+					resource_type: 'video',
+					transformation: [
+						{ width: 1920, crop: 'scale', quality: 'auto:good' }, // 'scale' maintains aspect ratio
+						{ start_offset: 'auto' } // Let Cloudinary pick the most interesting frame
+					],
+					secure: true
+				})
 			: cloudinary.url(result.public_id, {
-				...imageSizes.thumbnail,
-				secure: true
-			})
+					...imageSizes.thumbnail,
+					secure: true
+				})
 
 		// Extract dominant color using smart selection
 		let dominantColor: string | undefined
@@ -206,13 +206,13 @@ export async function uploadFile(
 
 		// Calculate aspect ratio
 		const aspectRatio = result.width && result.height ? result.width / result.height : undefined
-		
+
 		// Extract video metadata if present
 		let duration: number | undefined
 		let videoCodec: string | undefined
 		let audioCodec: string | undefined
 		let bitrate: number | undefined
-		
+
 		if (isVideo && result.duration) {
 			duration = result.duration
 			videoCodec = result.video?.codec
@@ -339,6 +339,55 @@ export function getSmartImageUrl(publicId: string, containerWidth: number, retin
 		return getOptimizedUrl(publicId, { width: imageSizes.large.width })
 	} else {
 		return getOptimizedUrl(publicId, { width: imageSizes.xlarge.width })
+	}
+}
+
+// Check if a URL is a Cloudinary URL
+export function isCloudinaryUrl(url: string): boolean {
+	return url.includes('res.cloudinary.com')
+}
+
+// Upload an image from a URL (e.g. external API image)
+export async function uploadFromUrl(
+	sourceUrl: string,
+	customOptions?: Record<string, unknown>
+): Promise<UploadResult> {
+	try {
+		if (!(await isCloudinaryConfigured())) {
+			logger.info('Cloudinary not configured, returning source URL')
+			return {
+				success: true,
+				url: sourceUrl,
+				secureUrl: sourceUrl
+			}
+		}
+
+		const uploadOptions = {
+			folder: 'jedmund/garden',
+			resource_type: 'image' as const,
+			quality: 'auto:good',
+			fetch_format: 'auto',
+			...customOptions
+		}
+
+		const result = await cloudinary.uploader.upload(sourceUrl, uploadOptions)
+
+		return {
+			success: true,
+			publicId: result.public_id,
+			url: result.url,
+			secureUrl: result.secure_url,
+			width: result.width,
+			height: result.height,
+			format: result.format,
+			size: result.bytes
+		}
+	} catch (error) {
+		logger.error('Cloudinary URL upload failed', error as Error)
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : 'URL upload failed'
+		}
 	}
 }
 

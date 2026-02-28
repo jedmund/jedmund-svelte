@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { type Editor } from '@tiptap/core';
-	import BubbleMenu from '../../components/BubbleMenu.svelte';
-	import type { ShouldShowProps } from '../../types.js';
-	import CornerDownLeft from '@lucide/svelte/icons/corner-down-left';
-	import strings from '../../strings.js';
+	import { type Editor } from '@tiptap/core'
+	import BubbleMenu from '../../components/BubbleMenu.svelte'
+	import type { ShouldShowProps } from '../../types.js'
+	import CornerDownLeft from '@lucide/svelte/icons/corner-down-left'
+	import strings from '../../strings.js'
 
 	interface Props {
-		editor: Editor;
-		mathPos: number;
-		mathLatex: string;
+		editor: Editor
+		mathPos: number
+		mathLatex: string
 	}
 
-	const { editor, mathPos, mathLatex }: Props = $props();
+	const { editor, mathPos, mathLatex }: Props = $props()
 
-	let inputVal = $state(mathLatex);
+	let inputVal = $state(mathLatex)
 
 	$effect(() => {
-		inputVal = mathLatex;
-	});
+		inputVal = mathLatex
+	})
 
 	function updateLatex() {
-		editor.chain().setNodeSelection(mathPos).updateInlineMath({ latex: inputVal }).focus().run();
+		editor.chain().setNodeSelection(mathPos).updateInlineMath({ latex: inputVal }).focus().run()
 	}
 </script>
 
@@ -28,9 +28,9 @@
 	{editor}
 	pluginKey="math-inline-bubble-menu"
 	shouldShow={(props: ShouldShowProps) => {
-		if (!props.editor.isEditable) return false;
-		if (!props.state) return false;
-		return editor.isActive('inlineMath');
+		if (!props.editor.isEditable) return false
+		if (!props.state) return false
+		return editor.isActive('inlineMath')
 	}}
 	class="edra-bubble-menu-math-inline"
 >
@@ -46,7 +46,7 @@
 </BubbleMenu>
 
 <style>
-	.edra-bubble-menu-math-inline {
+	:global(.edra-bubble-menu-math-inline) {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;

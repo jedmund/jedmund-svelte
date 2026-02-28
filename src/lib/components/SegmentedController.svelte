@@ -3,6 +3,7 @@
 	import LabsIcon from '$icons/labs.svg?component'
 	import UniverseIcon from '$icons/universe.svg?component'
 	import PhotosIcon from '$icons/photos.svg?component'
+	import GardenIcon from '$icons/garden.svg?component'
 	import { page } from '$app/stores'
 
 	const currentPath = $derived($page.url.pathname)
@@ -11,31 +12,27 @@
 		icon: typeof WorkIcon
 		text: string
 		href: string
-		variant: 'work' | 'universe' | 'labs' | 'photos'
+		variant: 'work' | 'universe' | 'labs' | 'photos' | 'garden'
 	}
 
 	const navItems: NavItem[] = [
 		{ icon: WorkIcon, text: 'Work', href: '/', variant: 'work' },
 		{ icon: UniverseIcon, text: 'Universe', href: '/universe', variant: 'universe' },
 		{ icon: PhotosIcon, text: 'Photos', href: '/photos', variant: 'photos' },
-		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' }
+		{ icon: LabsIcon, text: 'Labs', href: '/labs', variant: 'labs' },
+		{ icon: GardenIcon, text: 'Garden', href: '/garden', variant: 'garden' }
 	]
 
 	// Track hover state for each item
 	let hoveredIndex = $state<number | null>(null)
 
 	// Calculate active index based on current path
-	const activeIndex = $derived(
-		currentPath === '/'
-			? 0
-			: currentPath.startsWith('/universe')
-				? 1
-				: currentPath.startsWith('/photos')
-					? 2
-					: currentPath.startsWith('/labs')
-						? 3
-						: -1
-	)
+	const activeIndex = $derived.by(() => {
+		if (currentPath === '/') return 0
+		return (
+			navItems.findIndex((item) => item.href !== '/' && currentPath.startsWith(item.href)) ?? -1
+		)
+	})
 
 	// Calculate pill position and width
 	let containerElement: HTMLElement
@@ -77,6 +74,8 @@
 				return '#e8c5ff' // $photos-bg (purple)
 			case 'universe':
 				return '#ffebc5' // $universe-bg
+			case 'garden':
+				return '#d1fae5' // $green-80
 			case 'labs':
 				return '#c5eaff' // $labs-bg
 			default:
@@ -93,6 +92,8 @@
 				return '#7c3aed' // $photos-color (purple)
 			case 'universe':
 				return '#b97d14' // $universe-color
+			case 'garden':
+				return '#059669' // $green-20
 			case 'labs':
 				return '#1482c1' // $labs-color
 			default:
@@ -126,7 +127,7 @@
 </nav>
 
 <style lang="scss">
-	@import '../../assets/styles/animations';
+	@use '../../assets/styles/animations';
 
 	.segmented-controller {
 		display: flex;
@@ -213,6 +214,12 @@
 	// Fourth item is Labs
 	.nav-item:nth-of-type(4) :global(svg.animate) {
 		animation: tubeRotate 0.6s ease;
+		transform-origin: center bottom;
+	}
+
+	// Fifth item is Garden
+	.nav-item:nth-of-type(5) :global(svg.animate) {
+		animation: leafSway 0.6s ease;
 		transform-origin: center bottom;
 	}
 </style>

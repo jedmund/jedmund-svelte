@@ -9,7 +9,8 @@
 	const { editor, node, deleteNode, getPos }: NodeViewProps = $props()
 
 	// Get album context if available
-	const editorContext = getContext<{ albumId?: number; [key: string]: unknown }>('editorContext') || {}
+	const editorContext =
+		getContext<{ albumId?: number; [key: string]: unknown }>('editorContext') || {}
 	const albumId = $derived(editorContext.albumId)
 
 	// Generate unique pane ID based on node position
@@ -66,10 +67,7 @@
 
 	{#if showPane}
 		<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
-		<div
-			onmousedown={(e) => e.stopPropagation()}
-			onclick={(e) => e.stopPropagation()}
-		>
+		<div onmousedown={(e) => e.stopPropagation()} onclick={(e) => e.stopPropagation()}>
 			<ContentInsertionPane
 				{editor}
 				position={panePosition}
@@ -84,7 +82,6 @@
 </NodeViewWrapper>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.edra-url-embed-placeholder-content {
 		width: 100%;

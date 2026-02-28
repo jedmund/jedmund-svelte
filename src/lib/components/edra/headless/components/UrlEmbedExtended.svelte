@@ -294,7 +294,8 @@
 {/if}
 
 <style lang="scss">
-	.edra-url-embed-wrapper {
+	/* NodeViewWrapper renders the wrapper div; Svelte can't see it */
+	:global(.edra-url-embed-wrapper) {
 		margin: 1.5rem 0;
 		position: relative;
 	}
@@ -340,17 +341,12 @@
 			color: $gray-20;
 		}
 
-		&.delete:hover {
-			background: #fee;
-			color: $red-60;
-		}
-
 		&:disabled {
 			opacity: 0.5;
 			cursor: not-allowed;
 		}
 
-		svg {
+		:global(svg) {
 			width: $unit-2x;
 			height: $unit-2x;
 		}
@@ -454,19 +450,6 @@
 		overflow: hidden;
 	}
 
-	@keyframes spin {
-		from {
-			transform: rotate(0deg);
-		}
-		to {
-			transform: rotate(360deg);
-		}
-	}
-
-	.animate-spin {
-		animation: spin 1s linear infinite;
-	}
-
 	/* YouTube embed styles */
 	.edra-youtube-embed-card {
 		position: relative;
@@ -506,7 +489,7 @@
 			color: $gray-20;
 		}
 
-		svg {
+		:global(svg) {
 			width: $unit-2x;
 			height: $unit-2x;
 		}
@@ -541,7 +524,7 @@
 		color: $gray-40;
 	}
 
-	.edra-url-embed-wrapper.selected {
+	:global(.edra-url-embed-wrapper.selected) {
 		.edra-youtube-embed-player,
 		.edra-youtube-embed-error {
 			border-color: $primary-color;

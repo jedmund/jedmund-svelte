@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { Editor } from '@tiptap/core';
-	import strings from '../../../strings.js';
+	import { Editor } from '@tiptap/core'
+	import strings from '../../../strings.js'
 
 	interface Props {
-		editor: Editor;
+		editor: Editor
 	}
 
-	const { editor }: Props = $props();
+	const { editor }: Props = $props()
 
 	const FONT_SIZE = [
 		{ label: strings.toolbar.font.tiny, value: '0.7rem' },
@@ -15,9 +15,9 @@
 		{ label: strings.toolbar.font.default, value: '' },
 		{ label: strings.toolbar.font.large, value: '1.25rem' },
 		{ label: strings.toolbar.font.extraLarge, value: '1.5rem' }
-	];
+	]
 
-	let currentSize = $derived.by(() => editor.getAttributes('textStyle').fontSize || '');
+	let currentSize = $derived.by(() => editor.getAttributes('textStyle').fontSize || '')
 </script>
 
 <select
@@ -27,7 +27,7 @@
 			.chain()
 			.focus()
 			.setFontSize((e.target as HTMLSelectElement).value)
-			.run();
+			.run()
 	}}
 	title={strings.toolbar.font.buttonTitle}
 >

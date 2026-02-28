@@ -207,7 +207,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.geolocation-node {
 		margin: $unit-2x 0;

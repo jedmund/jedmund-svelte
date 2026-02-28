@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-import { page } from '$app/stores'
-import ProjectForm from '$lib/components/admin/ProjectForm.svelte'
-import type { Project } from '$lib/types/project'
-import { api } from '$lib/admin/api'
+	import { page } from '$app/stores'
+	import ProjectForm from '$lib/components/admin/ProjectForm.svelte'
+	import type { Project } from '$lib/types/project'
+	import { api } from '$lib/admin/api'
 
 	let project = $state<Project | null>(null)
 	let isLoading = $state(true)

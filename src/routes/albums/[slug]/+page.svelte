@@ -143,7 +143,9 @@
 
 	const galleryJsonLdScript = $derived(
 		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
-		galleryJsonLd ? `<script type="application/ld+json">${JSON.stringify(galleryJsonLd)}<\/script>` : null
+		galleryJsonLd
+			? `<script type="application/ld+json">${JSON.stringify(galleryJsonLd)}<\/script>`
+			: null
 	)
 </script>
 
@@ -403,5 +405,4 @@
 			height: 400px;
 		}
 	}
-
 </style>

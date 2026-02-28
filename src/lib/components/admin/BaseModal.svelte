@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { fade } from 'svelte/transition'
-	import { cubicOut } from 'svelte/easing'
 
 	// Convert CSS transition durations to milliseconds for Svelte transitions
 	const TRANSITION_FAST_MS = 150 // $transition-fast: 0.15s

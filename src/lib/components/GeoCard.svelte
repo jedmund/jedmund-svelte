@@ -183,8 +183,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-	@import '$styles/mixins.scss';
 
 	.geo-card {
 		width: 100%;

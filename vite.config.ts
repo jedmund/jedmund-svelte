@@ -7,6 +7,9 @@ export default defineConfig({
 	server: {
 		watch: {
 			usePolling: true
+		},
+		fs: {
+			allow: ['../../../']
 		}
 	},
 	plugins: [
@@ -59,7 +62,7 @@ export default defineConfig({
 	css: {
 		preprocessorOptions: {
 			scss: {
-				additionalData: `@use '$styles/imports.scss' as *;`,
+				additionalData: `@use 'sass:color';\n@use 'sass:math';\n@use '$styles/imports.scss' as *;`,
 				api: 'modern-compiler'
 			}
 		},

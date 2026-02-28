@@ -36,7 +36,7 @@
 	let isLoading = $state(mode === 'edit')
 	let hasLoaded = $state(mode === 'create')
 	let isSaving = $state(false)
-	let validationErrors = $state<Record<string, string>>({})
+	let _validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -151,7 +151,7 @@
 				location: formData.location || undefined,
 				year: formData.year || undefined
 			})
-			validationErrors = {}
+			_validationErrors = {}
 			return true
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -161,7 +161,7 @@
 						errors[e.path[0].toString()] = e.message
 					}
 				})
-				validationErrors = errors
+				_validationErrors = errors
 			}
 			return false
 		}
@@ -283,27 +283,23 @@
 
 <AdminPage>
 	{#snippet header()}
-	<header>
-		<div class="header-left">
-			<h1 class="form-title">{formData.title || 'Untitled Album'}</h1>
-		</div>
-		<div class="header-center">
-			<AdminSegmentedControl
-				options={tabOptions}
-				value={activeTab}
-				onChange={(value) => (activeTab = value)}
-			/>
-		</div>
-		<div class="header-actions">
-			<Button
-				variant="primary"
-				onclick={handleSave}
-				disabled={isSaving}
-			>
-				{isSaving ? 'Saving...' : 'Save'}
-			</Button>
-		</div>
-	</header>
+		<header>
+			<div class="header-left">
+				<h1 class="form-title">{formData.title || 'Untitled Album'}</h1>
+			</div>
+			<div class="header-center">
+				<AdminSegmentedControl
+					options={tabOptions}
+					value={activeTab}
+					onChange={(value) => (activeTab = value)}
+				/>
+			</div>
+			<div class="header-actions">
+				<Button variant="primary" onclick={handleSave} disabled={isSaving}>
+					{isSaving ? 'Saving...' : 'Save'}
+				</Button>
+			</div>
+		</header>
 	{/snippet}
 
 	<div class="admin-container">
@@ -362,11 +358,7 @@
 					<!-- Display Settings -->
 					<div class="form-section">
 						<label class="toggle-label">
-							<input
-								type="checkbox"
-								bind:checked={formData.showInUniverse}
-								class="toggle-input"
-							/>
+							<input type="checkbox" bind:checked={formData.showInUniverse} class="toggle-input" />
 							<div class="toggle-content">
 								<span class="toggle-title">Show in Universe</span>
 								<span class="toggle-description">Display this album in the Universe feed</span>
@@ -376,7 +368,11 @@
 					</div>
 
 					{#if mode === 'edit' && album?.id}
-						<SyndicationStatus contentType="album" contentId={album.id} contentStatus={formData.status} />
+						<SyndicationStatus
+							contentType="album"
+							contentId={album.id}
+							contentStatus={formData.status}
+						/>
 					{/if}
 
 					<!-- Photos Grid -->

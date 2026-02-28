@@ -59,7 +59,7 @@ export interface ListFiltersResult<T> {
  * })
  */
 export function createListFilters<T>(
-	sourceItems: T[],
+	sourceItems: T[] | (() => T[]),
 	config: ListFiltersConfig<T>
 ): ListFiltersResult<T> {
 	// Initialize filter state from config defaults
@@ -71,12 +71,14 @@ export function createListFilters<T>(
 		{} as Record<string, FilterValue>
 	)
 
+	const getItems = typeof sourceItems === 'function' ? sourceItems : () => sourceItems
+
 	let filterValues = $state<Record<string, FilterValue>>(initialValues)
 	let currentSort = $state<string>(config.defaultSort)
 
 	// Derived filtered and sorted items
 	const filteredItems = $derived.by(() => {
-		let result = [...sourceItems]
+		let result = [...getItems()]
 
 		// Apply all filters
 		for (const [filterKey, filterDef] of Object.entries(config.filters)) {
@@ -127,38 +129,54 @@ export function createListFilters<T>(
  */
 export const commonSorts = {
 	/** Sort by date field, newest first */
-	dateDesc: <T>(field: keyof T) => (a: T, b: T) =>
-		new Date(b[field] as string).getTime() - new Date(a[field] as string).getTime(),
+	dateDesc:
+		<T>(field: keyof T) =>
+		(a: T, b: T) =>
+			new Date(b[field] as string).getTime() - new Date(a[field] as string).getTime(),
 
 	/** Sort by date field, oldest first */
-	dateAsc: <T>(field: keyof T) => (a: T, b: T) =>
-		new Date(a[field] as string).getTime() - new Date(b[field] as string).getTime(),
+	dateAsc:
+		<T>(field: keyof T) =>
+		(a: T, b: T) =>
+			new Date(a[field] as string).getTime() - new Date(b[field] as string).getTime(),
 
 	/** Sort by string field, A-Z */
-	stringAsc: <T>(field: keyof T) => (a: T, b: T) =>
-		String(a[field] || '').localeCompare(String(b[field] || '')),
+	stringAsc:
+		<T>(field: keyof T) =>
+		(a: T, b: T) =>
+			String(a[field] || '').localeCompare(String(b[field] || '')),
 
 	/** Sort by string field, Z-A */
-	stringDesc: <T>(field: keyof T) => (a: T, b: T) =>
-		String(b[field] || '').localeCompare(String(a[field] || '')),
+	stringDesc:
+		<T>(field: keyof T) =>
+		(a: T, b: T) =>
+			String(b[field] || '').localeCompare(String(a[field] || '')),
 
 	/** Sort by number field, ascending */
-	numberAsc: <T>(field: keyof T) => (a: T, b: T) =>
-		Number(a[field]) - Number(b[field]),
+	numberAsc:
+		<T>(field: keyof T) =>
+		(a: T, b: T) =>
+			Number(a[field]) - Number(b[field]),
 
 	/** Sort by number field, descending */
-	numberDesc: <T>(field: keyof T) => (a: T, b: T) =>
-		Number(b[field]) - Number(a[field]),
+	numberDesc:
+		<T>(field: keyof T) =>
+		(a: T, b: T) =>
+			Number(b[field]) - Number(a[field]),
 
 	/** Sort by status field, published first */
-	statusPublishedFirst: <T>(field: keyof T) => (a: T, b: T) => {
-		if (a[field] === b[field]) return 0
-		return a[field] === 'published' ? -1 : 1
-	},
+	statusPublishedFirst:
+		<T>(field: keyof T) =>
+		(a: T, b: T) => {
+			if (a[field] === b[field]) return 0
+			return a[field] === 'published' ? -1 : 1
+		},
 
 	/** Sort by status field, draft first */
-	statusDraftFirst: <T>(field: keyof T) => (a: T, b: T) => {
-		if (a[field] === b[field]) return 0
-		return a[field] === 'draft' ? -1 : 1
-	}
+	statusDraftFirst:
+		<T>(field: keyof T) =>
+		(a: T, b: T) => {
+			if (a[field] === b[field]) return 0
+			return a[field] === 'draft' ? -1 : 1
+		}
 }

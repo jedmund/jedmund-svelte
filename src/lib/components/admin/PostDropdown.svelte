@@ -6,7 +6,7 @@
 	import { clickOutside } from '$lib/actions/clickOutside'
 
 	let isOpen = $state(false)
-	let buttonRef: any
+	let buttonRef: HTMLElement | undefined
 	let showComposer = $state(false)
 	let selectedType = $state<'post' | 'essay'>('post')
 
@@ -43,7 +43,11 @@
 	}
 </script>
 
-<div class="dropdown-container" use:clickOutside={{ enabled: isOpen }} onclickoutside={handleClickOutside}>
+<div
+	class="dropdown-container"
+	use:clickOutside={{ enabled: isOpen }}
+	onclickoutside={handleClickOutside}
+>
 	<Button
 		bind:this={buttonRef}
 		variant="primary"
@@ -122,7 +126,6 @@
 />
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.dropdown-container {
 		position: relative;
