@@ -210,7 +210,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.dropdown-menu {
 		background: white;

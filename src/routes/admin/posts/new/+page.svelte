@@ -257,7 +257,6 @@ import { api } from '$lib/admin/api'
 />
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.header-left {
 		display: flex;

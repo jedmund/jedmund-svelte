@@ -167,7 +167,6 @@
 </BubbleMenu>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	:global(.composer-link-bubble) {
 		z-index: 30;

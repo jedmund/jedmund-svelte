@@ -139,8 +139,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables';
-	@import '$styles/mixins';
 
 	.bubble-color-picker {
 		position: absolute;

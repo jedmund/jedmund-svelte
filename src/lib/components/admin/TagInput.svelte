@@ -267,7 +267,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.tag-input-wrapper {
 		display: block;

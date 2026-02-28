@@ -444,8 +444,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-	@import '$styles/mixins.scss';
 	.error-container {
 		display: flex;
 		justify-content: center;

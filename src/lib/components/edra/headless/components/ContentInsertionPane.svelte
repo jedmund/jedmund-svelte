@@ -487,7 +487,6 @@
 <input bind:this={fileInput} type="file" onchange={handleFileUpload} style="display: none;" />
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.action-selector {
 		display: flex;

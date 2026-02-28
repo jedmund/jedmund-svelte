@@ -47,7 +47,6 @@
 </button>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.dropdown-item {
 		width: 100%;

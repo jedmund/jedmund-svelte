@@ -255,7 +255,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.geolocation-placeholder {
 		margin: $unit-2x 0;

@@ -595,7 +595,6 @@
 />
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	header {
 		display: grid;

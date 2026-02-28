@@ -168,7 +168,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	// Base button styles
 	.btn {

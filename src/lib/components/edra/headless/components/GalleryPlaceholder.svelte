@@ -77,7 +77,6 @@
 </NodeViewWrapper>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.edra-gallery-placeholder-content {
 		width: 100%;

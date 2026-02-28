@@ -419,7 +419,6 @@
 />
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.tags-list {
 		display: flex;

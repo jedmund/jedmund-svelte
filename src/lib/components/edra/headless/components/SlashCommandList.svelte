@@ -121,7 +121,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.slash-menu {
 		max-height: min(80vh, 360px);

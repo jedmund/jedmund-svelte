@@ -62,7 +62,6 @@
 </NodeViewWrapper>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.iframe-placeholder-container {
 		display: flex;
