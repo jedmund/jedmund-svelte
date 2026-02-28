@@ -28,8 +28,6 @@
 </button>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-	@import '$styles/mixins.scss';
 
 	.back-button {
 		display: inline-flex;

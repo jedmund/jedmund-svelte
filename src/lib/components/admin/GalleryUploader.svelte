@@ -335,7 +335,10 @@
 
 		// Filter out any media that already exists (check both id and potential mediaId)
 		const newMedia = mediaArray.filter((media) => {
-			return !existingIds.has(media.id) && !existingIds.has((media as Media & { mediaId?: number }).mediaId)
+			return (
+				!existingIds.has(media.id) &&
+				!existingIds.has((media as Media & { mediaId?: number }).mediaId)
+			)
 		})
 
 		console.log('[GalleryUploader] Filtered new media:', {
@@ -381,7 +384,9 @@
 	// Handle updates from the media details modal
 	function handleImageUpdate(updatedMedia: Media) {
 		// Update the media in our value array
-		const index = value.findIndex((m) => (('mediaId' in m && m.mediaId) || m.id) === updatedMedia.id)
+		const index = value.findIndex(
+			(m) => (('mediaId' in m && m.mediaId) || m.id) === updatedMedia.id
+		)
 		if (index !== -1) {
 			value[index] = {
 				...value[index],

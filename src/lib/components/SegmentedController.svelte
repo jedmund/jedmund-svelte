@@ -29,7 +29,9 @@
 	// Calculate active index based on current path
 	const activeIndex = $derived.by(() => {
 		if (currentPath === '/') return 0
-		return navItems.findIndex((item) => item.href !== '/' && currentPath.startsWith(item.href)) ?? -1
+		return (
+			navItems.findIndex((item) => item.href !== '/' && currentPath.startsWith(item.href)) ?? -1
+		)
 	})
 
 	// Calculate pill position and width
@@ -125,7 +127,7 @@
 </nav>
 
 <style lang="scss">
-	@import '../../assets/styles/animations';
+	@use '../../assets/styles/animations';
 
 	.segmented-controller {
 		display: flex;

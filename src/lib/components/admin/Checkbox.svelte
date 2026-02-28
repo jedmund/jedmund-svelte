@@ -7,7 +7,13 @@
 		'aria-label'?: string
 	}
 
-	let { checked = false, size = 'medium', onchange, disabled = false, 'aria-label': ariaLabel }: Props = $props()
+	let {
+		checked = false,
+		size = 'medium',
+		onchange,
+		disabled = false,
+		'aria-label': ariaLabel
+	}: Props = $props()
 
 	function handleClick() {
 		if (disabled) return

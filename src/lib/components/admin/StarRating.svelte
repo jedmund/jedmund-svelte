@@ -12,10 +12,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="star-rating-container">
-	<div
-		class="star-row"
-		onmouseleave={() => (hoverStar = 0)}
-	>
+	<div class="star-row" onmouseleave={() => (hoverStar = 0)}>
 		{#each [1, 2, 3, 4, 5] as star}
 			<button
 				type="button"
@@ -31,13 +28,7 @@
 		{/each}
 	</div>
 	{#if value != null}
-		<button
-			type="button"
-			class="star-clear"
-			onclick={() => (value = null)}
-		>
-			Clear
-		</button>
+		<button type="button" class="star-clear" onclick={() => (value = null)}> Clear </button>
 	{/if}
 </div>
 

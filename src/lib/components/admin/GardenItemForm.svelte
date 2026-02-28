@@ -282,8 +282,7 @@
 				isCurrent,
 				isFavorite,
 				status: saveStatus,
-				note:
-					note && note.content && note.content.length > 0 ? note : null,
+				note: note && note.content && note.content.length > 0 ? note : null,
 				updatedAt: mode === 'edit' ? item?.updatedAt : undefined
 			}
 
@@ -509,11 +508,7 @@
 							autoResize
 						/>
 
-						<Input
-							label="Date completed (optional)"
-							type="date"
-							bind:value={date}
-						/>
+						<Input label="Date completed (optional)" type="date" bind:value={date} />
 
 						<div class="switch-field">
 							<div class="switch-info">
@@ -642,13 +637,6 @@
 		flex-direction: column;
 		gap: $unit-6x;
 	}
-
-	.field-group {
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
-	}
-
 
 	.field-label {
 		font-size: 14px;

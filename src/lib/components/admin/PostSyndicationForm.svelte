@@ -75,9 +75,7 @@
 	async function fetchStatus() {
 		_syndicationLoading = true
 		try {
-			const res = await fetch(
-				`/api/syndication/status?contentType=post&contentId=${contentId}`
-			)
+			const res = await fetch(`/api/syndication/status?contentType=post&contentId=${contentId}`)
 			if (res.ok) {
 				const data = await res.json()
 				syndications = data.syndications
@@ -163,12 +161,12 @@
 
 	// Disabled when all enabled platforms already have successful links
 	const blueskyDone = $derived(
-		!syndicateBluesky ||
-			(blueskyRecord?.status === 'success' || blueskyRecord?.status === 'manual')
+		!syndicateBluesky || blueskyRecord?.status === 'success' || blueskyRecord?.status === 'manual'
 	)
 	const mastodonDone = $derived(
 		!syndicateMastodon ||
-			(mastodonRecord?.status === 'success' || mastodonRecord?.status === 'manual')
+			mastodonRecord?.status === 'success' ||
+			mastodonRecord?.status === 'manual'
 	)
 	const allSyndicated = $derived(blueskyDone && mastodonDone)
 
@@ -318,7 +316,12 @@
 	let embed = $derived(ownEmbed || externalEmbed)
 </script>
 
-{#snippet platformRow(platform: string, record: SyndicationRecord | undefined, checked: boolean, onchange: (v: boolean) => void)}
+{#snippet platformRow(
+	platform: string,
+	record: SyndicationRecord | undefined,
+	checked: boolean,
+	onchange: (v: boolean) => void
+)}
 	<div class="platform-row">
 		<div class="toggle-row">
 			<span class="toggle-label">
@@ -331,16 +334,27 @@
 				{#if isPublished && record}
 					{#if (record.status === 'success' || record.status === 'manual') && record.externalUrl}
 						<div class="action-links">
-							<a href={record.externalUrl} target="_blank" rel="noopener noreferrer" class="view-link">View</a>
-							<button type="button" class="edit-link" onclick={() => openLinkModal(platform, record)}>Edit</button>
+							<a
+								href={record.externalUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="view-link">View</a
+							>
+							<button
+								type="button"
+								class="edit-link"
+								onclick={() => openLinkModal(platform, record)}>Edit</button
+							>
 						</div>
 					{:else if record.status === 'failed'}
 						<span class="error-text" title={record.errorMessage || ''}>Failed</span>
 					{/if}
 				{:else if isPublished && !record}
-					<button type="button" class="add-link" onclick={() => openLinkModal(platform)}>Add link</button>
+					<button type="button" class="add-link" onclick={() => openLinkModal(platform)}
+						>Add link</button
+					>
 				{/if}
-				<Switch {checked} onchange={onchange} />
+				<Switch {checked} {onchange} />
 			</div>
 		</div>
 	</div>
@@ -394,22 +408,26 @@
 			{/if}
 		</div>
 		{@render platformRow('bluesky', blueskyRecord, syndicateBluesky, (v) => (syndicateBluesky = v))}
-		{@render platformRow('mastodon', mastodonRecord, syndicateMastodon, (v) => (syndicateMastodon = v))}
+		{@render platformRow(
+			'mastodon',
+			mastodonRecord,
+			syndicateMastodon,
+			(v) => (syndicateMastodon = v)
+		)}
 	</div>
 </div>
 
 <Modal bind:isOpen={linkModalOpen} size="medium" onClose={closeLinkModal}>
 	<div class="link-modal">
 		<h3 class="link-modal-title">
-			{linkModalRecord ? 'Edit' : 'Add'} {linkModalPlatform === 'bluesky' ? 'Bluesky' : 'Mastodon'} link
+			{linkModalRecord ? 'Edit' : 'Add'}
+			{linkModalPlatform === 'bluesky' ? 'Bluesky' : 'Mastodon'} link
 		</h3>
-		<Input
-			bind:value={linkModalUrl}
-			placeholder="https://..."
-		/>
+		<Input bind:value={linkModalUrl} placeholder="https://..." />
 		<div class="link-modal-actions">
 			<Button variant="secondary" onclick={closeLinkModal}>Cancel</Button>
-			<Button variant="primary" onclick={saveLinkModal} disabled={!linkModalUrl.trim()}>Save</Button>
+			<Button variant="primary" onclick={saveLinkModal} disabled={!linkModalUrl.trim()}>Save</Button
+			>
 		</div>
 	</div>
 </Modal>
@@ -524,7 +542,6 @@
 		font-weight: 600;
 		color: $gray-20;
 	}
-
 
 	:global(.post-button.btn) {
 		min-height: unset;

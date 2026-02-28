@@ -9,11 +9,7 @@
 		onWaveformComputed?: (data: number[]) => void
 	}
 
-	let {
-		src,
-		waveformData = null,
-		onWaveformComputed
-	}: Props = $props()
+	let { src, waveformData = null, onWaveformComputed }: Props = $props()
 
 	// Audio state
 	let audioEl: HTMLAudioElement | undefined = $state()
@@ -109,7 +105,7 @@
 
 	function seekFromPointer(e: PointerEvent) {
 		if (!audioEl) return
-		const svg = (e.currentTarget as SVGSVGElement)
+		const svg = e.currentTarget as SVGSVGElement
 		const rect = svg.getBoundingClientRect()
 		const x = e.clientX - rect.left
 		const fraction = Math.max(0, Math.min(1, x / rect.width))
@@ -180,19 +176,12 @@
 
 	<div class="outer-pill">
 		<!-- White pill (animated width) -->
-		<div
-			class="white-pill"
-			style="width: {PILL_WIDTH}px"
-		></div>
+		<div class="white-pill" style="width: {PILL_WIDTH}px"></div>
 
 		<!-- Content layer -->
 		<div class="content-layer">
 			<!-- Play/Pause button -->
-			<button
-				class="play-button"
-				onclick={togglePlay}
-				aria-label={playing ? 'Pause' : 'Play'}
-			>
+			<button class="play-button" onclick={togglePlay} aria-label={playing ? 'Pause' : 'Play'}>
 				{#if playing}
 					<!-- Pause icon: two red bars -->
 					<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
@@ -202,7 +191,10 @@
 				{:else}
 					<!-- Play icon: red triangle -->
 					<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-						<path d="M1 1.5V12.5C1 13.1 1.5 13.4 2 13.1L11.5 7.6C12 7.3 12 6.7 11.5 6.4L2 0.9C1.5 0.6 1 0.9 1 1.5Z" fill="var(--audio-accent)" />
+						<path
+							d="M1 1.5V12.5C1 13.1 1.5 13.4 2 13.1L11.5 7.6C12 7.3 12 6.7 11.5 6.4L2 0.9C1.5 0.6 1 0.9 1 1.5Z"
+							fill="var(--audio-accent)"
+						/>
 					</svg>
 				{/if}
 			</button>
@@ -245,37 +237,68 @@
 			</div>
 
 			<!-- Volume button -->
-			<button
-				class="volume-button"
-				onclick={toggleMute}
-				aria-label={muted ? 'Unmute' : 'Mute'}
-			>
+			<button class="volume-button" onclick={toggleMute} aria-label={muted ? 'Unmute' : 'Mute'}>
 				<svg width="20" height="18" viewBox="0 0 20 18" fill="none">
 					<!-- Speaker body -->
-					<path d="M2 6.5H5L9 2.5V15.5L5 11.5H2C1.4 11.5 1 11.1 1 10.5V7.5C1 6.9 1.4 6.5 2 6.5Z" fill="var(--volume-color)" />
+					<path
+						d="M2 6.5H5L9 2.5V15.5L5 11.5H2C1.4 11.5 1 11.1 1 10.5V7.5C1 6.9 1.4 6.5 2 6.5Z"
+						fill="var(--volume-color)"
+					/>
 
 					{#if muted || volume === 0}
 						<!-- X mark for muted -->
-						<line x1="13" y1="6" x2="18" y2="12" stroke="var(--volume-color)" stroke-width="1.5" stroke-linecap="round" />
-						<line x1="18" y1="6" x2="13" y2="12" stroke="var(--volume-color)" stroke-width="1.5" stroke-linecap="round" />
+						<line
+							x1="13"
+							y1="6"
+							x2="18"
+							y2="12"
+							stroke="var(--volume-color)"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
+						<line
+							x1="18"
+							y1="6"
+							x2="13"
+							y2="12"
+							stroke="var(--volume-color)"
+							stroke-width="1.5"
+							stroke-linecap="round"
+						/>
 					{:else}
 						<!-- Volume arcs -->
 						{#if volumeArcs >= 1}
-							<path d="M12 7.5C12.8 8.3 12.8 9.7 12 10.5" stroke="var(--volume-color)" stroke-width="1.5" stroke-linecap="round" fill="none" />
+							<path
+								d="M12 7.5C12.8 8.3 12.8 9.7 12 10.5"
+								stroke="var(--volume-color)"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								fill="none"
+							/>
 						{/if}
 						{#if volumeArcs >= 2}
-							<path d="M14 5.5C15.7 7.2 15.7 10.8 14 12.5" stroke="var(--volume-color)" stroke-width="1.5" stroke-linecap="round" fill="none" />
+							<path
+								d="M14 5.5C15.7 7.2 15.7 10.8 14 12.5"
+								stroke="var(--volume-color)"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								fill="none"
+							/>
 						{/if}
 						{#if volumeArcs >= 3}
-							<path d="M16 3.5C18.5 6 18.5 12 16 14.5" stroke="var(--volume-color)" stroke-width="1.5" stroke-linecap="round" fill="none" />
+							<path
+								d="M16 3.5C18.5 6 18.5 12 16 14.5"
+								stroke="var(--volume-color)"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								fill="none"
+							/>
 						{/if}
 					{/if}
 				</svg>
 			</button>
 		</div>
 	</div>
-
-
 </div>
 
 <style lang="scss">
@@ -405,5 +428,4 @@
 			background: rgba(0, 0, 0, 0.05);
 		}
 	}
-
 </style>

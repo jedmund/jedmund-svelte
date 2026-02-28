@@ -38,7 +38,10 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		if (tagsParam) {
-			const tagSlugs = tagsParam.split(',').map(t => t.trim()).filter(Boolean)
+			const tagSlugs = tagsParam
+				.split(',')
+				.map((t) => t.trim())
+				.filter(Boolean)
 			if (tagSlugs.length > 0) {
 				where.tags = {
 					some: {
@@ -72,9 +75,9 @@ export const GET: RequestHandler = async (event) => {
 			}
 		})
 
-		const formattedPosts = posts.map(post => ({
+		const formattedPosts = posts.map((post) => ({
 			...post,
-			tags: post.tags.map(pt => pt.tag)
+			tags: post.tags.map((pt) => pt.tag)
 		}))
 
 		const pagination = getPaginationMeta(total, page, limit)
@@ -134,13 +137,14 @@ export const POST: RequestHandler = async (event) => {
 				attachments:
 					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
 				publishedAt: data.publishedAt,
-				tags: data.tagIds && Array.isArray(data.tagIds) && data.tagIds.length > 0
-					? {
-							create: data.tagIds.map((tagId: number) => ({
-								tag: { connect: { id: tagId } }
-							}))
-						}
-					: undefined
+				tags:
+					data.tagIds && Array.isArray(data.tagIds) && data.tagIds.length > 0
+						? {
+								create: data.tagIds.map((tagId: number) => ({
+									tag: { connect: { id: tagId } }
+								}))
+							}
+						: undefined
 			}
 		})
 
@@ -199,8 +203,9 @@ export const POST: RequestHandler = async (event) => {
 		logger.info('Post created', { id: post.id, title: post.title })
 
 		if (post.status === 'published') {
-			syndicateContent('post', post.id)
-				.catch(err => logger.error('Auto-syndication failed', err as Error))
+			syndicateContent('post', post.id).catch((err) =>
+				logger.error('Auto-syndication failed', err as Error)
+			)
 		}
 
 		return jsonResponse(post, 201)

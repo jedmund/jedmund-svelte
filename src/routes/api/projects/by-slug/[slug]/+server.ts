@@ -45,7 +45,13 @@ export const GET: RequestHandler = async (event) => {
 			const unlockedIds = getUnlockedProjectIds(event.cookies)
 			const isLocked = !unlockedIds.includes(rest.id)
 			if (isLocked) {
-				return jsonResponse({ ...rest, caseStudyContent: null, gallery: [], hasPassword: true, locked: true })
+				return jsonResponse({
+					...rest,
+					caseStudyContent: null,
+					gallery: [],
+					hasPassword: true,
+					locked: true
+				})
 			}
 			return jsonResponse({ ...rest, hasPassword: true, locked: false })
 		}

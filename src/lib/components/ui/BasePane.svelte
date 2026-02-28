@@ -126,7 +126,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	.base-pane {
 		position: fixed;

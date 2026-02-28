@@ -66,7 +66,7 @@
 </article>
 
 <style lang="scss">
-	@import '../../assets/styles/animations';
+	@use '../../assets/styles/animations';
 
 	.universe-card {
 		width: 100%;

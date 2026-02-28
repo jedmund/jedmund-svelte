@@ -238,7 +238,7 @@
 	const isOverLimit = $derived(characterCount > CHARACTER_LIMIT)
 	const canSave = $derived(
 		(postType === 'post' && (characterCount > 0 || attachedPhotos.length > 0) && !isOverLimit) ||
-		(postType === 'essay' && essayTitle.length > 0 && content)
+			(postType === 'essay' && essayTitle.length > 0 && content)
 	)
 </script>
 
@@ -256,21 +256,21 @@
 						class="expand-button"
 					>
 						{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-							<path
-								d="M10 6L14 2M14 2H10M14 2V6"
-								stroke="currentColor"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<path
-								d="M6 10L2 14M2 14H6M2 14V10"
-								stroke="currentColor"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>{/snippet}
+								<path
+									d="M10 6L14 2M14 2H10M14 2V6"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+								<path
+									d="M6 10L2 14M2 14H6M2 14V10"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>{/snippet}
 					</Button>
 					<Button variant="primary" onclick={handleSave} disabled={!canSave}>Post</Button>
 				</div>
@@ -335,24 +335,24 @@
 							class="tool-button"
 						>
 							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-								<rect
-									x="2"
-									y="2"
-									width="14"
-									height="14"
-									rx="2"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" />
-								<path
-									d="M2 12l4-4 3 3 5-5 2 2"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>{/snippet}
+									<rect
+										x="2"
+										y="2"
+										width="14"
+										height="14"
+										rx="2"
+										stroke="currentColor"
+										stroke-width="1.5"
+									/>
+									<circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" />
+									<path
+										d="M2 12l4-4 3 3 5-5 2 2"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>{/snippet}
 						</Button>
 
 						<Button
@@ -364,14 +364,14 @@
 							class="tool-button"
 						>
 							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-								<path
-									d="M2 5L9 12L16 5"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>{/snippet}
+									<path
+										d="M2 5L9 12L16 5"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>{/snippet}
 						</Button>
 					</div>
 
@@ -402,9 +402,12 @@
 			</div>
 
 			<AdminSegmentedControl
-				options={[{ value: 'metadata', label: 'Metadata' }, { value: 'content', label: 'Content' }]}
+				options={[
+					{ value: 'metadata', label: 'Metadata' },
+					{ value: 'content', label: 'Content' }
+				]}
 				value={essayTab}
-				onChange={(v) => essayTab = v}
+				onChange={(v) => (essayTab = v)}
 			/>
 
 			<div class="essay-content">
@@ -460,21 +463,21 @@
 					class="floating-expand-button"
 				>
 					{#snippet icon()}<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path
-							d="M10 6L14 2M14 2H10M14 2V6"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-						<path
-							d="M6 10L2 14M2 14H6M2 14V10"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>{/snippet}
+							<path
+								d="M10 6L14 2M14 2H10M14 2V6"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<path
+								d="M6 10L2 14M2 14H6M2 14V10"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>{/snippet}
 				</Button>
 			{/if}
 			<div class="composer-body">
@@ -536,24 +539,24 @@
 							class="tool-button"
 						>
 							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-								<rect
-									x="2"
-									y="2"
-									width="14"
-									height="14"
-									rx="2"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" />
-								<path
-									d="M2 12l4-4 3 3 5-5 2 2"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>{/snippet}
+									<rect
+										x="2"
+										y="2"
+										width="14"
+										height="14"
+										rx="2"
+										stroke="currentColor"
+										stroke-width="1.5"
+									/>
+									<circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" />
+									<path
+										d="M2 12l4-4 3 3 5-5 2 2"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>{/snippet}
 						</Button>
 
 						<Button
@@ -565,14 +568,14 @@
 							class="tool-button"
 						>
 							{#snippet icon()}<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-								<path
-									d="M2 5L9 12L16 5"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>{/snippet}
+									<path
+										d="M2 5L9 12L16 5"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>{/snippet}
 						</Button>
 					</div>
 
@@ -622,7 +625,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.composer {
 		padding: 0;
@@ -734,7 +736,9 @@
 		box-shadow: 0 0 $unit-2x rgba(0, 0, 0, 0.06);
 		overflow: hidden;
 		width: 100%;
-		transition: border-color $transition-normal ease, box-shadow $transition-normal ease;
+		transition:
+			border-color $transition-normal ease,
+			box-shadow $transition-normal ease;
 
 		&:hover,
 		&:focus-within {

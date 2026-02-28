@@ -62,7 +62,7 @@ export const GET: RequestHandler = async (event) => {
 
 	replies.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
 
-	const syndicationLinks = syndications.map(s => ({
+	const syndicationLinks = syndications.map((s) => ({
 		platform: s.platform,
 		externalUrl: s.externalUrl
 	}))
@@ -107,7 +107,10 @@ async function fetchBlueskyReplies(uri: string): Promise<SocialReply[]> {
 		const agent = await getBlueskyAgent()
 		const response = await agent.getPostThread({ uri, depth: 2 })
 
-		if (!response.data.thread || response.data.thread.$type !== 'app.bsky.feed.defs#threadViewPost') {
+		if (
+			!response.data.thread ||
+			response.data.thread.$type !== 'app.bsky.feed.defs#threadViewPost'
+		) {
 			return []
 		}
 
@@ -115,13 +118,13 @@ async function fetchBlueskyReplies(uri: string): Promise<SocialReply[]> {
 		if (!thread.replies) return []
 
 		return thread.replies
-			.filter(r => r.$type === 'app.bsky.feed.defs#threadViewPost')
-			.map(reply => {
+			.filter((r) => r.$type === 'app.bsky.feed.defs#threadViewPost')
+			.map((reply) => {
 				const mapped = mapBlueskyPost(reply)
 				if (reply.replies?.length) {
 					mapped.replies = reply.replies
-						.filter(r => r.$type === 'app.bsky.feed.defs#threadViewPost')
-						.map(child => mapBlueskyPost(child))
+						.filter((r) => r.$type === 'app.bsky.feed.defs#threadViewPost')
+						.map((child) => mapBlueskyPost(child))
 				}
 				return mapped
 			})
@@ -163,19 +166,22 @@ async function fetchMastodonReplies(statusId: string): Promise<SocialReply[]> {
 		const response = await fetch(`${baseUrl}/api/v1/statuses/${statusId}/context`)
 
 		if (!response.ok) {
-			logger.error('Failed to fetch Mastodon context', undefined, { statusId, status: response.status })
+			logger.error('Failed to fetch Mastodon context', undefined, {
+				statusId,
+				status: response.status
+			})
 			return []
 		}
 
-		const data = await response.json() as { descendants: MastodonStatus[] }
+		const data = (await response.json()) as { descendants: MastodonStatus[] }
 
-		const directReplies = data.descendants.filter(d => d.in_reply_to_id === statusId)
+		const directReplies = data.descendants.filter((d) => d.in_reply_to_id === statusId)
 
-		return directReplies.map(status => {
+		return directReplies.map((status) => {
 			const mapped = mapMastodonPost(status)
-			const children = data.descendants.filter(d => d.in_reply_to_id === status.id)
+			const children = data.descendants.filter((d) => d.in_reply_to_id === status.id)
 			if (children.length) {
-				mapped.replies = children.map(child => mapMastodonPost(child))
+				mapped.replies = children.map((child) => mapMastodonPost(child))
 			}
 			return mapped
 		})

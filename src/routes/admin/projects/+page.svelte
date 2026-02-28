@@ -113,35 +113,31 @@
 
 <AdminPage>
 	{#snippet header()}
-	<AdminHeader title="Work">
-		{#snippet actions()}
-			<Button
-				variant="primary"
-				buttonSize="medium"
-				onclick={() => goto('/admin/projects/new')}
-			>
-				New project
-			</Button>
-		{/snippet}
-	</AdminHeader>
+		<AdminHeader title="Work">
+			{#snippet actions()}
+				<Button variant="primary" buttonSize="medium" onclick={() => goto('/admin/projects/new')}>
+					New project
+				</Button>
+			{/snippet}
+		</AdminHeader>
 	{/snippet}
 
 	<AdminFilters>
 		{#snippet left()}
-				<Select
-					value={String(filters.values.type)}
-					options={typeFilterOptions}
-					size="small"
-					variant="minimal"
-					onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
-				/>
-				<Select
-					value={String(filters.values.status)}
-					options={statusFilterOptions}
-					size="small"
-					variant="minimal"
-					onchange={(e) => filters.set('status', (e.target as HTMLSelectElement).value)}
-				/>
+			<Select
+				value={String(filters.values.type)}
+				options={typeFilterOptions}
+				size="small"
+				variant="minimal"
+				onchange={(e) => filters.set('type', (e.target as HTMLSelectElement).value)}
+			/>
+			<Select
+				value={String(filters.values.status)}
+				options={statusFilterOptions}
+				size="small"
+				variant="minimal"
+				onchange={(e) => filters.set('status', (e.target as HTMLSelectElement).value)}
+			/>
 		{/snippet}
 		{#snippet right()}
 			<Select
@@ -199,7 +195,6 @@
 </form>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.projects-list {
 		display: flex;

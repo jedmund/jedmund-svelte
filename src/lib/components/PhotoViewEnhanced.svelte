@@ -28,9 +28,9 @@
 			const isSmallScreen = window.innerWidth <= 768
 			isMobile = hasTouch && isSmallScreen
 		}
-		
+
 		checkMobile()
-		
+
 		// Update on resize
 		window.addEventListener('resize', checkMobile)
 		return () => window.removeEventListener('resize', checkMobile)
@@ -90,11 +90,9 @@
 						document.querySelector('[data-smiz-overlay]') ||
 						document.querySelector('.medium-image-zoom-overlay') ||
 						document.querySelector('[data-rmiz-modal-overlay]')
-					const zoomedImage = (
-						document.querySelector('[data-smiz-modal] img') ||
+					const zoomedImage = (document.querySelector('[data-smiz-modal] img') ||
 						document.querySelector('.medium-image-zoom-image') ||
-						document.querySelector('[data-rmiz-modal-img]')
-					) as HTMLElement | null
+						document.querySelector('[data-rmiz-modal-img]')) as HTMLElement | null
 
 					console.log('Checking for zoom elements:', {
 						zoomOverlay: !!zoomOverlay,
@@ -201,8 +199,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-	@import '$styles/mixins.scss';
 
 	.photo-view {
 		display: flex;
@@ -282,7 +278,6 @@
 				background: linear-gradient(to left, rgba(0, 0, 0, 0.3), transparent);
 				border-radius: $unit-2x 0 0 $unit-2x;
 			}
-
 		}
 
 		// Hide indicators when scrolled to edges

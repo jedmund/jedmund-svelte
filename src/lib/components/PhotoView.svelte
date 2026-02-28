@@ -22,8 +22,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
-	@import '$styles/mixins.scss';
 
 	.photo-view {
 		display: flex;

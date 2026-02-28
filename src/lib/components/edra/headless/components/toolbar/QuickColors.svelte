@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { Editor } from '@tiptap/core';
-	import strings from '../../../strings.js';
+	import type { Editor } from '@tiptap/core'
+	import strings from '../../../strings.js'
 
 	interface Props {
-		editor: Editor;
+		editor: Editor
 	}
-	const { editor }: Props = $props();
+	const { editor }: Props = $props()
 
 	const colors = [
 		{ label: strings.toolbar.color.default, value: '' },
@@ -18,17 +18,17 @@
 		{ label: strings.toolbar.color.purple, value: '#800080' },
 		{ label: strings.toolbar.color.red, value: '#FF0000' },
 		{ label: strings.toolbar.color.yellow, value: '#FFFF00' }
-	];
+	]
 
-	const currentColor = $derived.by(() => editor.getAttributes('textStyle').color ?? '');
-	const currentHighlight = $derived.by(() => editor.getAttributes('highlight').color ?? '');
+	const currentColor = $derived.by(() => editor.getAttributes('textStyle').color ?? '')
+	const currentHighlight = $derived.by(() => editor.getAttributes('highlight').color ?? '')
 </script>
 
 <select
 	value={currentColor}
 	onchange={(e) => {
-		const color = (e.target as HTMLSelectElement).value;
-		editor.chain().focus().setColor(color).run();
+		const color = (e.target as HTMLSelectElement).value
+		editor.chain().focus().setColor(color).run()
 	}}
 	style={`color: ${currentColor}`}
 	title={strings.toolbar.color.textColor}
@@ -42,8 +42,8 @@
 <select
 	value={currentHighlight}
 	onchange={(e) => {
-		const color = (e.target as HTMLSelectElement).value;
-		editor.chain().focus().setHighlight({ color }).run();
+		const color = (e.target as HTMLSelectElement).value
+		editor.chain().focus().setHighlight({ color }).run()
 	}}
 	style={`background-color: ${currentHighlight}50`}
 	title={strings.toolbar.color.highlightColor}

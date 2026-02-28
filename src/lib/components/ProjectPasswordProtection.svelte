@@ -55,73 +55,73 @@
 </script>
 
 {#snippet passwordHeader()}
-		<div class="password-header">
-			<div class="lock-icon">
-				<svg
-					width="48"
-					height="48"
-					viewBox="0 0 24 24"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
+	<div class="password-header">
+		<div class="lock-icon">
+			<svg
+				width="48"
+				height="48"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M18 11H6C5.45 11 5 11.45 5 12V19C5 19.55 5.45 20 6 20H18C18.55 20 19 19.55 19 19V12C19 11.45 18.55 11 18 11Z"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+				<path
+					d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+			</svg>
+		</div>
+		<h1>This project is password protected</h1>
+		<p>Please enter the password to view this project.</p>
+	</div>
+{/snippet}
+
+{#snippet passwordContent()}
+	<div class="password-content">
+		<div class="form-wrapper">
+			<div class="input-group">
+				<input
+					type="password"
+					bind:value={password}
+					placeholder="Enter password"
+					class="password-input"
+					class:error
+					onkeypress={handleKeyPress}
+					disabled={isLoading}
+				/>
+				<Button
+					variant="primary"
+					onclick={handleSubmit}
+					disabled={isLoading || !password.trim()}
+					class="submit-button"
 				>
-					<path
-						d="M18 11H6C5.45 11 5 11.45 5 12V19C5 19.55 5.45 20 6 20H18C18.55 20 19 19.55 19 19V12C19 11.45 18.55 11 18 11Z"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-					<path
-						d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
+					{isLoading ? 'Checking...' : 'Access Project'}
+				</Button>
 			</div>
-			<h1>This project is password protected</h1>
-			<p>Please enter the password to view this project.</p>
+
+			{#if error}
+				<div class="error-message">{error}</div>
+			{/if}
 		</div>
-	{/snippet}
 
-	{#snippet passwordContent()}
-		<div class="password-content">
-			<div class="form-wrapper">
-				<div class="input-group">
-					<input
-						type="password"
-						bind:value={password}
-						placeholder="Enter password"
-						class="password-input"
-						class:error
-						onkeypress={handleKeyPress}
-						disabled={isLoading}
-					/>
-					<Button
-						variant="primary"
-						onclick={handleSubmit}
-						disabled={isLoading || !password.trim()}
-						class="submit-button"
-					>
-						{isLoading ? 'Checking...' : 'Access Project'}
-					</Button>
-				</div>
-
-				{#if error}
-					<div class="error-message">{error}</div>
-				{/if}
-			</div>
-
-			<div class="back-link-wrapper">
-				{#if projectType === 'labs'}
-					<BackButton href="/labs" label="Back to Labs" />
-				{:else}
-					<BackButton href="/" label="Back to projects" />
-				{/if}
-			</div>
+		<div class="back-link-wrapper">
+			{#if projectType === 'labs'}
+				<BackButton href="/labs" label="Back to Labs" />
+			{:else}
+				<BackButton href="/" label="Back to projects" />
+			{/if}
 		</div>
-	{/snippet}
+	</div>
+{/snippet}
 
 {@render passwordHeader()}
 {@render passwordContent()}

@@ -153,7 +153,7 @@
 		transition: all 0.2s;
 		color: $gray-40;
 
-		svg {
+		:global(svg) {
 			width: 16px;
 			height: 16px;
 		}

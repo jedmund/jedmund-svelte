@@ -173,7 +173,11 @@ export async function listTags(params: {
 		: {}
 
 	const orderBy =
-		sort === 'usage' ? { posts: { _count: order } } : sort === 'recent' ? { createdAt: order } : { [sort]: order }
+		sort === 'usage'
+			? { posts: { _count: order } }
+			: sort === 'recent'
+				? { createdAt: order }
+				: { [sort]: order }
 
 	const [tags, total] = await Promise.all([
 		prisma.tag.findMany({

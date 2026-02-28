@@ -1,6 +1,6 @@
 {
-  "packages": {
-    "node": "20",
-    "pnpm": "10"
-  }
+	"packages": {
+		"node": "20",
+		"pnpm": "10"
+	}
 }

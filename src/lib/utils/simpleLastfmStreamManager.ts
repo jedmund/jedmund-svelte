@@ -52,14 +52,20 @@ export class SimpleLastfmStreamManager {
 				limit: 50,
 				extended: true
 			})
-			logger.music('debug', `📊 Got ${recentTracksResponse.tracks?.length || 0} tracks from Last.fm`)
+			logger.music(
+				'debug',
+				`📊 Got ${recentTracksResponse.tracks?.length || 0} tracks from Last.fm`
+			)
 
 			// Cache for other uses but always use fresh for now playing
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			await this.albumEnricher.cacheRecentTracks(this.username, recentTracksResponse as any)
 
 			// Get recent albums (top 4)
-			const albums = await this.getRecentAlbums(4, recentTracksResponse as unknown as RecentTracksResponse)
+			const albums = await this.getRecentAlbums(
+				4,
+				recentTracksResponse as unknown as RecentTracksResponse
+			)
 
 			// Debug the response structure
 			logger.music('debug', `📊 Response structure check:`, {
@@ -67,7 +73,7 @@ export class SimpleLastfmStreamManager {
 				trackCount: recentTracksResponse.tracks?.length || 0,
 				firstTrackName: recentTracksResponse.tracks?.[0]?.name
 			})
-			
+
 			// Process now playing status
 			const albumsWithNowPlaying = await this.detector.processAlbums(
 				albums,
@@ -84,7 +90,7 @@ export class SimpleLastfmStreamManager {
 
 			// Check if anything changed
 			const currentState = JSON.stringify(
-				enrichedAlbums.map(a => ({
+				enrichedAlbums.map((a) => ({
 					key: `${a.artist.name}:${a.name}`,
 					isNowPlaying: a.isNowPlaying,
 					track: a.nowPlayingTrack

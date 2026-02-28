@@ -39,7 +39,7 @@
 		transition: background 0.2s ease-in-out;
 
 		&:hover {
-			background: darken($card-color, 2%);
+			background: color.adjust($card-color, $lightness: -2%);
 		}
 
 		a {

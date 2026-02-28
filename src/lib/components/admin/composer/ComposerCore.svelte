@@ -141,7 +141,13 @@
 	}
 
 	// Update content when editor changes
-	function handleUpdate({ editor: updatedEditor, transaction }: { editor: Editor; transaction: unknown }) {
+	function handleUpdate({
+		editor: updatedEditor,
+		transaction
+	}: {
+		editor: Editor
+		transaction: unknown
+	}) {
 		// Dismiss link menus on typing
 		linkManagerRef?.dismissOnTyping(transaction)
 
@@ -333,8 +339,6 @@
 {/if}
 
 <style lang="scss">
-	@import '$styles/variables';
-	@import '$styles/mixins';
 
 	.composer {
 		--muted-foreground: #{$gray-60};

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { NodeViewProps } from '@tiptap/core';
-	import Video from '@lucide/svelte/icons/video';
-	import UnifiedMediaPlaceholder from './UnifiedMediaPlaceholder.svelte';
+	import type { NodeViewProps } from '@tiptap/core'
+	import Video from '@lucide/svelte/icons/video'
+	import UnifiedMediaPlaceholder from './UnifiedMediaPlaceholder.svelte'
 
-	const { editor, deleteNode }: NodeViewProps = $props();
+	const { editor, deleteNode }: NodeViewProps = $props()
 </script>
 
 <UnifiedMediaPlaceholder

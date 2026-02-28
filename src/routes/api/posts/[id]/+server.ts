@@ -158,8 +158,9 @@ export const PUT: RequestHandler = async (event) => {
 		logger.info('Post updated', { id })
 
 		if (post.status === 'published') {
-			syndicateContent('post', post.id)
-				.catch(err => logger.error('Auto-syndication failed', err as Error))
+			syndicateContent('post', post.id).catch((err) =>
+				logger.error('Auto-syndication failed', err as Error)
+			)
 		}
 
 		return jsonResponse(post)
@@ -207,7 +208,8 @@ export const PATCH: RequestHandler = async (event) => {
 		if (data.content !== undefined) updateData.content = data.content
 		if (data.featuredImage !== undefined) updateData.featuredImage = data.featuredImage
 		if (data.attachedPhotos !== undefined)
-			updateData.attachments = data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
+			updateData.attachments =
+				data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
 		if (data.tags !== undefined) updateData.tags = data.tags
 		if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt
 		if (data.excerpt !== undefined) updateData.excerpt = data.excerpt
@@ -218,11 +220,15 @@ export const PATCH: RequestHandler = async (event) => {
 
 		const post = await prisma.post.update({ where: { id }, data: updateData })
 
-		logger.info('Post partially updated', { id: post.id, fields: Object.keys(updateData).join(', ') })
+		logger.info('Post partially updated', {
+			id: post.id,
+			fields: Object.keys(updateData).join(', ')
+		})
 
 		if (data.status === 'published' && existing.status !== 'published') {
-			syndicateContent('post', post.id)
-				.catch(err => logger.error('Auto-syndication failed', err as Error))
+			syndicateContent('post', post.id).catch((err) =>
+				logger.error('Auto-syndication failed', err as Error)
+			)
 		}
 
 		return jsonResponse(post)

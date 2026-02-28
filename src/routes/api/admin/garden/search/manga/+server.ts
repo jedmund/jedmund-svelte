@@ -30,9 +30,7 @@ const SEARCH_QUERY = `
 
 const AUTHOR_ROLES = ['Story & Art', 'Story', 'Original Creator', 'Art']
 
-function findAuthor(
-	edges: { role: string; node: { name: { full: string } } }[]
-): string | null {
+function findAuthor(edges: { role: string; node: { name: { full: string } } }[]): string | null {
 	for (const prefix of AUTHOR_ROLES) {
 		const match = edges.find((e) => e.role === prefix || e.role.startsWith(`${prefix} (`))
 		if (match) return match.node.name.full

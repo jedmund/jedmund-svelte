@@ -125,7 +125,11 @@ export const PUT: RequestHandler = async (event) => {
 			}
 
 			// Validation errors
-			if (error.message.includes('reserved') || error.message.includes('invalid') || error.message.includes('long')) {
+			if (
+				error.message.includes('reserved') ||
+				error.message.includes('invalid') ||
+				error.message.includes('long')
+			) {
 				return json(
 					{
 						error: {

@@ -90,8 +90,8 @@
 						{:else if isVideoFile(item.mimeType)}
 							{#if item.thumbnailUrl}
 								<div class="video-thumbnail-wrapper">
-									<img 
-										src={item.thumbnailUrl} 
+									<img
+										src={item.thumbnailUrl}
 										alt={item.filename}
 										loading={i < 8 ? 'eager' : 'lazy'}
 										class="media-image video-thumbnail"
@@ -228,13 +228,13 @@
 		width: 100%;
 		height: 100%;
 		position: relative;
-		
+
 		.video-thumbnail {
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
 		}
-		
+
 		.video-overlay {
 			position: absolute;
 			top: 50%;
@@ -248,7 +248,7 @@
 			align-items: center;
 			justify-content: center;
 			pointer-events: none;
-			
+
 			:global(.play-icon) {
 				width: 20px;
 				height: 20px;
@@ -257,7 +257,7 @@
 			}
 		}
 	}
-	
+
 	.media-placeholder {
 		width: 100%;
 		height: 100%;
@@ -265,17 +265,17 @@
 		align-items: center;
 		justify-content: center;
 		color: $gray-60;
-		
+
 		&.video-placeholder {
 			flex-direction: column;
 			gap: $unit;
-			
+
 			:global(.video-icon) {
 				width: 32px;
 				height: 32px;
 				color: $gray-60;
 			}
-			
+
 			.video-label {
 				font-size: 12px;
 				color: $gray-50;

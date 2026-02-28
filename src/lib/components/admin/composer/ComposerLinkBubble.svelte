@@ -158,7 +158,11 @@
 				<button class="link-action-button" onclick={copyLink} title="Copy link">
 					<Copy size={16} />
 				</button>
-				<button class="link-action-button link-action-button--danger" onclick={removeLink} title="Remove link">
+				<button
+					class="link-action-button link-action-button--danger"
+					onclick={removeLink}
+					title="Remove link"
+				>
 					<Trash2 size={16} />
 				</button>
 			</div>
@@ -167,7 +171,6 @@
 </BubbleMenu>
 
 <style lang="scss">
-	@import '$styles/variables';
 
 	:global(.composer-link-bubble) {
 		z-index: 30;

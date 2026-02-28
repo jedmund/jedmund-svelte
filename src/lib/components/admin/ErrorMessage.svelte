@@ -16,7 +16,6 @@
 </div>
 
 <style lang="scss">
-	@import '$styles/variables.scss';
 
 	.error-message {
 		background: $error-bg;

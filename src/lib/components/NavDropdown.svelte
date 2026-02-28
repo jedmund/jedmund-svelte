@@ -33,11 +33,8 @@
 	const activeItem = $derived(
 		currentPath === '/'
 			? navItems[0]
-			: navItems.find((item) =>
-					item.href === '/'
-						? false
-						: currentPath.startsWith(item.href)
-				) || navItems[0]
+			: navItems.find((item) => (item.href === '/' ? false : currentPath.startsWith(item.href))) ||
+					navItems[0]
 	)
 
 	// Get text color based on variant

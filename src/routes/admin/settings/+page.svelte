@@ -29,12 +29,10 @@
 	const FIELD_HELP: Record<string, string> = {
 		'site.name': 'Used in RSS feeds, admin panel, and as the default site identity',
 		'site.url': 'Base URL for canonical links, RSS feeds, and syndicated posts',
-		'seo.default_title':
-			'Shown on the homepage and as fallback for pages without specific titles',
+		'seo.default_title': 'Shown on the homepage and as fallback for pages without specific titles',
 		'seo.default_description':
 			"Used in meta description and OpenGraph tags when a page doesn't set its own",
-		'seo.default_og_image':
-			"Default social sharing image when a page doesn't specify one",
+		'seo.default_og_image': "Default social sharing image when a page doesn't specify one",
 		'seo.twitter_handle': 'Used in Twitter Card meta tags',
 		'seo.locale': 'Language locale for OpenGraph tags',
 		'lastfm.api_key': 'Required for fetching recent listening data',
@@ -174,9 +172,7 @@
 				/>
 			</div>
 			<div class="header-right">
-				<Button variant="primary" onclick={handleSave} loading={saving}>
-					Save settings
-				</Button>
+				<Button variant="primary" onclick={handleSave} loading={saving}>Save settings</Button>
 			</div>
 		</header>
 	{/snippet}
