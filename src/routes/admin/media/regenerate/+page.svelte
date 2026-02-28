@@ -222,6 +222,7 @@
 					<li>Updates both Media and Photo records</li>
 				</ul>
 			</div>
+			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="primary"
 				onclick={extractColors}
@@ -250,6 +251,7 @@
 					<li>Processes only images with outdated thumbnails</li>
 				</ul>
 			</div>
+			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="primary"
 				onclick={regenerateThumbnails}
@@ -277,6 +279,7 @@
 					<li>Updates both Media and Photo records</li>
 				</ul>
 			</div>
+			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="primary"
 				onclick={reanalyzeColors}

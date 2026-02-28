@@ -43,6 +43,7 @@
 		}
 	)
 	let characterCount = $state(0)
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let editorInstance: any = $state.raw()
 
 	// Essay metadata

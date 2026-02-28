@@ -215,6 +215,7 @@
 			<h1>Cloudinary Audit</h1>
 		</div>
 		<div class="header-actions">
+			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="secondary"
 				onclick={runAudit}
@@ -289,6 +290,7 @@
 					<Button variant="text" buttonSize="small" onclick={toggleSelectAll}>
 						{allSelected ? 'Deselect All' : 'Select 20'}
 					</Button>
+					<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 					<Button
 						variant="danger"
 						buttonSize="small"
@@ -392,6 +394,7 @@
 					Found {auditData.missingReferences.length} files referenced in the database but missing from
 					Cloudinary.
 				</p>
+				<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 				<Button
 					variant="secondary"
 					buttonSize="small"

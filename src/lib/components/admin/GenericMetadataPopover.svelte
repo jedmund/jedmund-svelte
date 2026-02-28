@@ -6,7 +6,7 @@
 		placeholder?: string
 		rows?: number
 		helpText?: string
-		component?: any // For custom components
+		component?: object // For custom components
 		props?: Record<string, unknown> // Additional props for custom components
 	}
 
@@ -30,7 +30,7 @@
 
 	type Props = {
 		config: MetadataConfig
-		data: Record<string, any>
+		data: Record<string, unknown>
 		triggerElement: HTMLElement
 		onUpdate?: (key: string, value: unknown) => void
 		onClose?: () => void

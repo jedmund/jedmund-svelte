@@ -8,7 +8,7 @@ export interface TypeaheadResult {
 	creator: string | null
 	year: string | null
 	sourceId: string
-	metadata: Record<string, any> | null
+	metadata: Record<string, unknown> | null
 	summary: string | null
 }
 
@@ -21,5 +21,5 @@ export interface CategorySearchConfig {
 	endpoint: string
 	placeholder: string
 	emptyText: string
-	mapResult: (raw: any) => TypeaheadResult
+	mapResult: (raw: unknown) => TypeaheadResult
 }

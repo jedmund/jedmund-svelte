@@ -19,7 +19,7 @@ interface GardenItemUpdateBody {
 	imageUrl?: string
 	url?: string
 	sourceId?: string
-	metadata?: Record<string, any> | null
+	metadata?: Record<string, unknown> | null
 	summary?: string | null
 	date?: string | null
 	note?: unknown
@@ -142,12 +142,12 @@ export const PUT: RequestHandler = async (event) => {
 					body.sourceId !== undefined ? body.sourceId || null : existing.sourceId,
 				metadata:
 					body.metadata !== undefined
-						? (body.metadata as any)
+						? (body.metadata as Record<string, unknown>)
 						: existing.metadata,
 				summary:
 					body.summary !== undefined ? body.summary || null : existing.summary,
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
-				note: body.note !== undefined ? (body.note as any) : existing.note,
+				note: body.note !== undefined ? (body.note as unknown) : existing.note,
 				rating:
 					body.rating !== undefined
 						? body.rating != null
