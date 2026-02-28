@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Media } from '@prisma/client'
 	import Button from './Button.svelte'
-	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'

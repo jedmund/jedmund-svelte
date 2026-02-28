@@ -1,6 +1,5 @@
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { all, createLowlight } from 'lowlight';
-import { SvelteNodeViewRenderer } from 'svelte-tiptap';
 import type { Extensions, Editor, EditorOptions, Content } from '@tiptap/core';
 import type { Component } from 'svelte';
 

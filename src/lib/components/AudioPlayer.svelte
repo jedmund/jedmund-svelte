@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte'
+	import { onMount } from 'svelte'
 	import { extractWaveformData, generateDefaultWaveform } from '$lib/utils/waveform'
 
 	interface Props {

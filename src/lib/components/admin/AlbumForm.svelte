@@ -36,7 +36,7 @@
 	let isLoading = $state(mode === 'edit')
 	let hasLoaded = $state(mode === 'create')
 	let isSaving = $state(false)
-	let validationErrors = $state<Record<string, string>>({})
+	let _validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -151,7 +151,7 @@
 				location: formData.location || undefined,
 				year: formData.year || undefined
 			})
-			validationErrors = {}
+			_validationErrors = {}
 			return true
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -161,7 +161,7 @@
 						errors[e.path[0].toString()] = e.message
 					}
 				})
-				validationErrors = errors
+				_validationErrors = errors
 			}
 			return false
 		}

@@ -2,8 +2,7 @@
 	import Page from '$components/Page.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
-	import { GARDEN_CATEGORIES, getCategoryLabel } from '$lib/constants/garden'
-	import type { GardenItem } from '@prisma/client'
+	import { GARDEN_CATEGORIES } from '$lib/constants/garden'
 	import StarIcon from '$icons/star.svg?component'
 	import type { PageData } from './$types'
 

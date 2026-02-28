@@ -151,7 +151,7 @@ export const PUT: RequestHandler = async (event) => {
 			if (usageReferences.length > 0) {
 				await trackMediaUsage(usageReferences)
 			}
-		} catch (error) {
+		} catch (_error) {
 			logger.warn('Failed to update media usage for post', { postId: id })
 		}
 

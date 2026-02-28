@@ -3,8 +3,7 @@ import Module from 'node:module'
 import redis from '../redis-client'
 
 import type {
-	AuthTokensResponse,
-	GetUserPlayedTimeResponse
+	AuthTokensResponse
 } from 'psn-api'
 import type { RequestHandler } from './$types'
 import type { SerializableGameInfo } from '$lib/types/steam'

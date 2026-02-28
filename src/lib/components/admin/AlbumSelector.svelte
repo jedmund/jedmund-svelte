@@ -23,7 +23,7 @@
 		placeholder?: string
 	}
 
-	let { mediaId, currentAlbums = [], onUpdate, onClose, selectedAlbumId, onSelect, placeholder }: Props = $props()
+	let { mediaId, currentAlbums = [], onUpdate, onClose, selectedAlbumId: _selectedAlbumId, onSelect: _onSelect, placeholder: _placeholder }: Props = $props()
 
 	// State
 	let albums = $state<Album[]>([])

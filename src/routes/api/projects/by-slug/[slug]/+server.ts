@@ -40,7 +40,7 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Strip password and handle locked state for non-preview requests
-		const { password, ...rest } = project
+		const { password: _password, ...rest } = project
 		if (rest.status === 'password-protected') {
 			const unlockedIds = getUnlockedProjectIds(event.cookies)
 			const isLocked = !unlockedIds.includes(rest.id)

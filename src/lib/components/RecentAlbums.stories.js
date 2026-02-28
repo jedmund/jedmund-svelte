@@ -1,4 +1,3 @@
-// @ts-nocheck
 import RecentAlbums from './RecentAlbums.svelte'
 
 // Mock albums data

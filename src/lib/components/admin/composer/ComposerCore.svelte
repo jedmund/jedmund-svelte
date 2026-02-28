@@ -47,7 +47,7 @@
 		}),
 		onChange,
 		onCharacterCount,
-		placeholder = getDefaultPlaceholder(variant),
+		placeholder: _placeholder = getDefaultPlaceholder(variant),
 		minHeight = getDefaultMinHeight(variant),
 		autofocus = false,
 		editable = true,

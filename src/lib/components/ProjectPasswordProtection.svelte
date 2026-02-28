@@ -11,7 +11,7 @@
 		children?: Snippet
 	}
 
-	let { projectId, projectSlug, projectType = 'work', onUnlocked, children }: Props = $props()
+	let { projectId, projectSlug: _projectSlug, projectType = 'work', onUnlocked, children: _children }: Props = $props()
 
 	let password = $state('')
 	let error = $state('')
