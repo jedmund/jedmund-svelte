@@ -59,7 +59,7 @@ export interface ListFiltersResult<T> {
  * })
  */
 export function createListFilters<T>(
-	sourceItems: T[],
+	sourceItems: T[] | (() => T[]),
 	config: ListFiltersConfig<T>
 ): ListFiltersResult<T> {
 	// Initialize filter state from config defaults
@@ -71,12 +71,14 @@ export function createListFilters<T>(
 		{} as Record<string, FilterValue>
 	)
 
+	const getItems = typeof sourceItems === 'function' ? sourceItems : () => sourceItems
+
 	let filterValues = $state<Record<string, FilterValue>>(initialValues)
 	let currentSort = $state<string>(config.defaultSort)
 
 	// Derived filtered and sorted items
 	const filteredItems = $derived.by(() => {
-		let result = [...sourceItems]
+		let result = [...getItems()]
 
 		// Apply all filters
 		for (const [filterKey, filterDef] of Object.entries(config.filters)) {

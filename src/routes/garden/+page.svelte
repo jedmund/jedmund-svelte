@@ -5,6 +5,7 @@
 	import { GARDEN_CATEGORIES } from '$lib/constants/garden'
 	import StarIcon from '$icons/star.svg?component'
 	import type { PageData } from './$types'
+	import type { GardenItem } from '@prisma/client'
 
 	let { data } = $props<{ data: PageData }>()
 

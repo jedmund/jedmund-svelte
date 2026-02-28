@@ -7,6 +7,10 @@
 	import { Play, Palette, Image, Sparkles } from '@lucide/svelte'
 	import ChevronLeft from '$icons/chevron-left.svg?component'
 
+	// Lucide icons need casting to Snippet for Button's icon prop
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconPlay = Play as any
+
 	let extractingColors = $state(false)
 	let regeneratingThumbnails = $state(false)
 	let reanalyzingColors = $state(false)
@@ -222,12 +226,11 @@
 					<li>Updates both Media and Photo records</li>
 				</ul>
 			</div>
-			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="primary"
 				onclick={extractColors}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play as any}
+				icon={iconPlay}
 				iconPosition="left"
 			>
 				{extractingColors ? 'Extracting Colors...' : 'Extract Colors'}
@@ -251,12 +254,11 @@
 					<li>Processes only images with outdated thumbnails</li>
 				</ul>
 			</div>
-			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="primary"
 				onclick={regenerateThumbnails}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play as any}
+				icon={iconPlay}
 				iconPosition="left"
 			>
 				{regeneratingThumbnails ? 'Regenerating Thumbnails...' : 'Regenerate Thumbnails'}
@@ -279,12 +281,11 @@
 					<li>Updates both Media and Photo records</li>
 				</ul>
 			</div>
-			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="primary"
 				onclick={reanalyzeColors}
 				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={Play as any}
+				icon={iconPlay}
 				iconPosition="left"
 			>
 				{reanalyzingColors ? 'Reanalyzing Colors...' : 'Reanalyze Colors'}

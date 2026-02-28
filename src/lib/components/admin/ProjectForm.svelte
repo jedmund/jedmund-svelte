@@ -169,7 +169,7 @@
 			// Temporarily allow dirty navigation
 			const nav = pendingNavigation
 			pendingNavigation = null
-			nav.to && goto(nav.to.url.pathname)
+			if (nav.to) goto(nav.to.url.pathname)
 		}
 	}
 </script>

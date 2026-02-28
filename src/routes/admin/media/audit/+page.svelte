@@ -8,6 +8,14 @@
 	import { CheckCircle, Trash2, AlertCircle, RefreshCw } from '@lucide/svelte'
 	import ChevronLeft from '$icons/chevron-left.svg?component'
 
+	// Lucide icons need casting to Snippet for Button's icon prop
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconRefresh = RefreshCw as any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconTrash = Trash2 as any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const iconAlert = AlertCircle as any
+
 	interface AuditSummary {
 		totalCloudinaryFiles: number
 		totalDatabaseReferences: number
@@ -215,12 +223,11 @@
 			<h1>Cloudinary Audit</h1>
 		</div>
 		<div class="header-actions">
-			<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 			<Button
 				variant="secondary"
 				onclick={runAudit}
 				disabled={loading}
-				icon={RefreshCw as any}
+				icon={iconRefresh}
 				iconPosition="left"
 			>
 				{loading ? 'Running Audit...' : 'Run Audit'}
@@ -290,7 +297,6 @@
 					<Button variant="text" buttonSize="small" onclick={toggleSelectAll}>
 						{allSelected ? 'Deselect All' : 'Select 20'}
 					</Button>
-					<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 					<Button
 						variant="danger"
 						buttonSize="small"
@@ -298,7 +304,7 @@
 							showDeleteModal = true
 						}}
 						disabled={!hasSelection || deleting}
-						icon={Trash2 as any}
+						icon={iconTrash}
 						iconPosition="left"
 					>
 						Delete Selected
@@ -394,7 +400,6 @@
 					Found {auditData.missingReferences.length} files referenced in the database but missing from
 					Cloudinary.
 				</p>
-				<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
 				<Button
 					variant="secondary"
 					buttonSize="small"
@@ -402,7 +407,7 @@
 						showCleanupModal = true
 					}}
 					disabled={cleaningUp}
-					icon={AlertCircle as any}
+					icon={iconAlert}
 					iconPosition="left"
 				>
 					Clean Up Broken References

@@ -69,9 +69,9 @@ export class SimpleLastfmStreamManager {
 			})
 			
 			// Process now playing status
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const albumsWithNowPlaying = await this.detector.processAlbums(
 				albums,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				recentTracksResponse.tracks as any,
 				(artistName, albumName) =>
 					this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)

@@ -402,7 +402,7 @@
 				status,
 				note: JSON.stringify(note)
 			}
-			nav.to && goto(nav.to.url.pathname)
+			if (nav.to) goto(nav.to.url.pathname)
 		}
 	}
 </script>

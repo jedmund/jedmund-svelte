@@ -157,8 +157,8 @@ export class LastfmStreamManager {
 		}
 
 		// Process now playing detection
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const nowPlayingMap = await this.nowPlayingDetector.processNowPlayingTracks(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			recentTracksResponse as any,
 			(artistName, albumName) =>
 				this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)
@@ -273,8 +273,8 @@ export class LastfmStreamManager {
 			recentTracksResponse = await this.fetchFreshRecentTracks()
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const nowPlayingMap = await this.nowPlayingDetector.processNowPlayingTracks(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			recentTracksResponse as any,
 			(artistName, albumName) =>
 				this.albumEnricher.getAppleMusicDataForNowPlaying(artistName, albumName)

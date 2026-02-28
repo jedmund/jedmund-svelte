@@ -213,7 +213,7 @@
 				</div>
 			{:else if field.type === 'tags'}
 				<div class="tags-section">
-					<label class="field-label">{field.label}</label>
+					<span class="field-label">{field.label}</span>
 					<TagInput
 						bind:tags={data[field.key]}
 						placeholder={field.placeholder || 'Add tags...'}
