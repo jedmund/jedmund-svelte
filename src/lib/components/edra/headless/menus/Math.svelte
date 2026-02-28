@@ -45,7 +45,7 @@
 </BubbleMenu>
 
 <style>
-	.edra-bubble-menu-math {
+	:global(.edra-bubble-menu-math) {
 		background: white;
 		border: 1px solid #ccc;
 		padding: 0.5rem;
