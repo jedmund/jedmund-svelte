@@ -41,8 +41,8 @@ const securityHeaders: Record<string, string> = {
 		"style-src 'self' 'unsafe-inline'",
 		"img-src 'self' data: blob: https://res.cloudinary.com https://*.mzstatic.com https://*.last.fm https://lastfm.freetls.fastly.net https://*.steampowered.com https://*.steamstatic.com https://image.api.playstation.com https://*.cbsistatic.com https://img.youtube.com https://images.igdb.com https://*.anilist.co https://image.tmdb.org https://artworks.thetvdb.com https://covers.openlibrary.org https://*.us.archive.org",
 		"font-src 'self'",
-		"connect-src 'self'",
-		"media-src 'self' blob: https://res.cloudinary.com",
+		"connect-src 'self' https://res.cloudinary.com",
+		"media-src 'self' blob: https://res.cloudinary.com https://audio-ssl.itunes.apple.com",
 		"frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
 		"frame-ancestors 'none'"
 	].join('; ')
