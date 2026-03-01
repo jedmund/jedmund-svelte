@@ -20,21 +20,13 @@
 </script>
 
 <div class="sort-filter">
-	<select
-		class="sort-select"
-		value={sort}
-		onchange={(e) => onSortChange(e.currentTarget.value)}
-	>
+	<select class="sort-select" value={sort} onchange={(e) => onSortChange(e.currentTarget.value)}>
 		{#each SORT_OPTIONS as option}
 			<option value={option.value}>{option.label}</option>
 		{/each}
 	</select>
 
-	<button
-		class="bangers-toggle"
-		class:active={bangers}
-		onclick={() => onBangersToggle(!bangers)}
-	>
+	<button class="bangers-toggle" class:active={bangers} onclick={() => onBangersToggle(!bangers)}>
 		Bangers only
 	</button>
 </div>
