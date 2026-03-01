@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
-	import GardenCard from '$components/GardenCard.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import CategoryBookIcon from '$icons/category-book.svg?component'
@@ -74,8 +73,12 @@
 			{/snippet}
 
 			<div class="items-grid">
-				{#each data.currentItems as item (item.id)}
-					<GardenCard {item} />
+				{#each data.currentItems.slice(0, 5) as item (item.id)}
+					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
+						{#if item.imageUrl}
+							<img src={item.imageUrl} alt={item.title} />
+						{/if}
+					</a>
 				{/each}
 			</div>
 		</Page>
@@ -88,8 +91,12 @@
 			{/snippet}
 
 			<div class="items-grid">
-				{#each data.favoriteItems as item (item.id)}
-					<GardenCard {item} />
+				{#each data.favoriteItems.slice(0, 5) as item (item.id)}
+					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
+						{#if item.imageUrl}
+							<img src={item.imageUrl} alt={item.title} />
+						{/if}
+					</a>
 				{/each}
 			</div>
 		</Page>
@@ -102,8 +109,12 @@
 			{/snippet}
 
 			<div class="items-grid">
-				{#each data.recentItems as item (item.id)}
-					<GardenCard {item} />
+				{#each data.recentItems.slice(0, 5) as item (item.id)}
+					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
+						{#if item.imageUrl}
+							<img src={item.imageUrl} alt={item.title} />
+						{/if}
+					</a>
 				{/each}
 			</div>
 		</Page>
@@ -159,12 +170,33 @@
 
 	.items-grid {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: $unit-4x;
+		grid-template-columns: repeat(5, 1fr);
+		gap: $unit-2x;
 
 		@include breakpoint('phone') {
-			grid-template-columns: repeat(2, 1fr);
-			gap: $unit-3x;
+			grid-template-columns: repeat(3, 1fr);
+			gap: $unit;
+		}
+	}
+
+	.cover-link {
+		display: block;
+		border-radius: $unit;
+		overflow: hidden;
+		background-color: $gray-90;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
+
+		img {
+			width: 100%;
+			height: auto;
+			display: block;
+		}
+
+		&:hover {
+			transform: scale3d(1.05, 1.05, 1.05);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		}
 	}
 

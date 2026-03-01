@@ -17,7 +17,7 @@ export const load: PageLoad = async ({ fetch }) => {
 				const bDate = b.publishedAt ? new Date(b.publishedAt).getTime() : 0
 				return bDate - aDate
 			})
-			.slice(0, 6)
+			.slice(0, 5)
 
 		const categoryCounts: Record<string, number> = {}
 		for (const item of items) {
