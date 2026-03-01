@@ -229,6 +229,7 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
+				padding-left: 2px;
 				font-size: 24px;
 				transition: all $transition-medium ease;
 				backdrop-filter: blur(10px);
@@ -254,6 +255,7 @@
 
 				&.playing {
 					background: $accent-color;
+					padding-left: 0;
 				}
 			}
 
