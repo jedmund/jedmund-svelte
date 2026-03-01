@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
+	import RecentAlbums from '$components/RecentAlbums.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import CategoryBookIcon from '$icons/category-book.svg?component'
@@ -37,6 +38,8 @@
 		other: CategoryOtherIcon
 	}
 
+	const albums = $derived(data.albums)
+
 	const isEmpty = $derived(
 		data.currentItems.length === 0 &&
 			data.favoriteItems.length === 0 &&
@@ -63,6 +66,24 @@
 	{#if isEmpty}
 		<Page>
 			<p class="empty">Nothing here yet.</p>
+		</Page>
+	{/if}
+
+	{#if data.recentItems.length > 0}
+		<Page>
+			{#snippet header()}
+				<h2>Recently added</h2>
+			{/snippet}
+
+			<div class="items-grid">
+				{#each data.recentItems.slice(0, 5) as item (item.id)}
+					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
+						{#if item.imageUrl}
+							<img src={item.imageUrl} alt={item.title} />
+						{/if}
+					</a>
+				{/each}
+			</div>
 		</Page>
 	{/if}
 
@@ -102,23 +123,13 @@
 		</Page>
 	{/if}
 
-	{#if data.recentItems.length > 0}
-		<Page>
-			{#snippet header()}
-				<h2>Recently added</h2>
-			{/snippet}
+	<Page noHorizontalPadding={true}>
+		{#snippet header()}
+			<h2>Now playing</h2>
+		{/snippet}
 
-			<div class="items-grid">
-				{#each data.recentItems.slice(0, 5) as item (item.id)}
-					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
-						{#if item.imageUrl}
-							<img src={item.imageUrl} alt={item.title} />
-						{/if}
-					</a>
-				{/each}
-			</div>
-		</Page>
-	{/if}
+		<RecentAlbums {albums} />
+	</Page>
 
 	{#if data.activeCategories.length > 0}
 		<Page>

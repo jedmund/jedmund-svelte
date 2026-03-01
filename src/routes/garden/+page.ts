@@ -1,8 +1,18 @@
 import type { PageLoad } from './$types'
 import type { GardenItem } from '@prisma/client'
+import type { Album } from '$lib/types/lastfm'
 import { GARDEN_CATEGORIES } from '$lib/constants/garden'
 
 export const load: PageLoad = async ({ fetch }) => {
+	const [gardenData, albums] = await Promise.all([
+		fetchGardenData(fetch),
+		fetchRecentAlbums(fetch)
+	])
+
+	return { ...gardenData, albums }
+}
+
+async function fetchGardenData(fetch: typeof globalThis.fetch) {
 	try {
 		const res = await fetch('/api/garden')
 		const data = await res.json()
@@ -30,5 +40,15 @@ export const load: PageLoad = async ({ fetch }) => {
 		return { currentItems, favoriteItems, recentItems, activeCategories }
 	} catch {
 		return { currentItems: [], favoriteItems: [], recentItems: [], activeCategories: [] }
+	}
+}
+
+async function fetchRecentAlbums(fetch: typeof globalThis.fetch): Promise<Album[]> {
+	try {
+		const response = await fetch('/api/lastfm')
+		const musicData: { albums: Album[] } = await response.json()
+		return musicData.albums
+	} catch {
+		return []
 	}
 }
