@@ -171,6 +171,7 @@
 	.items-grid {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
+		align-items: end;
 		gap: $unit-2x;
 
 		@include breakpoint('phone') {
@@ -183,7 +184,6 @@
 		display: block;
 		border-radius: $unit;
 		overflow: hidden;
-		background-color: $gray-90;
 		transition:
 			transform 0.2s ease,
 			box-shadow 0.2s ease;
