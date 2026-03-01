@@ -77,7 +77,9 @@
 
 			<div class="items-grid">
 				{#each data.recentItems.slice(0, 5) as item (item.id)}
-					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
+					<a href="/garden/{item.category}/{item.slug}" class="cover-link"
+						style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg"
+					>
 						{#if item.imageUrl}
 							<img src={item.imageUrl} alt={item.title} />
 						{/if}
@@ -95,7 +97,9 @@
 
 			<div class="items-grid">
 				{#each data.currentItems.slice(0, 5) as item (item.id)}
-					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
+					<a href="/garden/{item.category}/{item.slug}" class="cover-link"
+						style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg"
+					>
 						{#if item.imageUrl}
 							<img src={item.imageUrl} alt={item.title} />
 						{/if}
@@ -113,7 +117,9 @@
 
 			<div class="items-grid">
 				{#each data.favoriteItems.slice(0, 5) as item (item.id)}
-					<a href="/garden/{item.category}/{item.slug}" class="cover-link">
+					<a href="/garden/{item.category}/{item.slug}" class="cover-link"
+						style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg"
+					>
 						{#if item.imageUrl}
 							<img src={item.imageUrl} alt={item.title} />
 						{/if}
@@ -206,7 +212,7 @@
 		}
 
 		&:hover {
-			transform: scale3d(1.05, 1.05, 1.05);
+			transform: scale3d(1.05, 1.05, 1.05) rotate(var(--hover-rotate, 0deg));
 			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		}
 	}
