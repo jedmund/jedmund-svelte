@@ -1,10 +1,13 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
 	import BackButton from '$components/BackButton.svelte'
+	import GardenCard from '$components/GardenCard.svelte'
+	import GardenSortFilter from '$components/GardenSortFilter.svelte'
 	import GardenIcon from '$icons/garden.svg?component'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
-	import StarIcon from '$icons/star.svg?component'
+	import { goto } from '$app/navigation'
+	import { browser } from '$app/environment'
 	import type { PageData } from './$types'
 
 	let { data } = $props<{ data: PageData }>()
@@ -19,6 +22,28 @@
 			titleFormat: { type: 'default' }
 		})
 	)
+
+	function handleSortChange(sort: string) {
+		if (!browser) return
+		const url = new URL($page.url)
+		if (sort === 'display-order') {
+			url.searchParams.delete('sort')
+		} else {
+			url.searchParams.set('sort', sort)
+		}
+		goto(url.toString(), { replaceState: true, keepFocus: true })
+	}
+
+	function handleBangersToggle(active: boolean) {
+		if (!browser) return
+		const url = new URL($page.url)
+		if (active) {
+			url.searchParams.set('bangers', 'true')
+		} else {
+			url.searchParams.delete('bangers')
+		}
+		goto(url.toString(), { replaceState: true, keepFocus: true })
+	}
 </script>
 
 <svelte:head>
@@ -41,55 +66,35 @@
 		<Page>
 			<p class="error">Category not found.</p>
 		</Page>
-	{:else if !data.items || data.items.length === 0}
-		<Page>
-			{#snippet header()}
-				<h2>{data.categoryLabel}</h2>
-			{/snippet}
-			<p class="empty">Nothing here yet.</p>
-		</Page>
 	{:else}
 		<Page>
 			{#snippet header()}
-				<h2>{data.categoryLabel}</h2>
+				<div class="category-header">
+					<h2>{data.categoryLabel}</h2>
+					<GardenSortFilter
+						sort={data.sort}
+						bangers={data.bangers}
+						onSortChange={handleSortChange}
+						onBangersToggle={handleBangersToggle}
+					/>
+				</div>
 			{/snippet}
 
-			<div class="items-grid">
-				{#each data.items as item (item.id)}
-					<a
-						href="/garden/{item.category}/{item.slug}"
-						class="garden-card"
-						style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg"
-					>
-						{#if item.imageUrl}
-							<div class="card-image">
-								<img src={item.imageUrl} alt={item.title} />
-							</div>
-						{/if}
-						<div class="card-info">
-							<h3>{item.title}</h3>
-							{#if item.creator}
-								<span class="card-creator">{item.creator}</span>
-							{/if}
-							{#if item.rating}
-								<div class="star-rating">
-									{#each { length: item.rating } as _}
-										<StarIcon />
-									{/each}
-								</div>
-							{/if}
-							<div class="badges">
-								{#if item.isCurrent}
-									<span class="badge current">Currently enjoying</span>
-								{/if}
-								{#if item.isFavorite}
-									<span class="badge favorite">Banger</span>
-								{/if}
-							</div>
-						</div>
-					</a>
-				{/each}
-			</div>
+			{#if !data.items || data.items.length === 0}
+				<p class="empty">
+					{#if data.bangers}
+						No bangers in this category yet.
+					{:else}
+						Nothing here yet.
+					{/if}
+				</p>
+			{:else}
+				<div class="items-grid">
+					{#each data.items as item (item.id)}
+						<GardenCard {item} showBadges={true} />
+					{/each}
+				</div>
+			{/if}
 
 			<footer class="page-footer">
 				<BackButton href="/garden" label="Back to Garden" />
@@ -117,12 +122,19 @@
 		}
 	}
 
+	.category-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: $unit-2x;
+		width: 100%;
+	}
+
 	h2 {
 		color: $accent-color;
 		font-size: 1.2rem;
 		font-weight: $font-weight-med;
 		margin: 0;
-		padding-bottom: $unit;
 	}
 
 	.items-grid {
@@ -133,89 +145,6 @@
 		@include breakpoint('phone') {
 			grid-template-columns: repeat(2, 1fr);
 			gap: $unit-3x;
-		}
-	}
-
-	.garden-card {
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
-		text-decoration: none;
-		color: inherit;
-		border-radius: $unit;
-	}
-
-	.card-image {
-		width: 100%;
-		border-radius: $unit;
-		overflow: hidden;
-		background-color: $gray-90;
-		transition:
-			transform 0.2s ease,
-			box-shadow 0.2s ease;
-
-		img {
-			width: 100%;
-			height: auto;
-			display: block;
-		}
-	}
-
-	.garden-card:hover .card-image {
-		transform: scale3d(1.03, 1.03, 1.03) rotate(var(--hover-rotate, 0deg));
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	}
-
-	.card-info {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-
-		h3 {
-			font-size: 0.9375rem;
-			font-weight: $font-weight-bold;
-			margin: 0;
-			color: $gray-10;
-		}
-	}
-
-	.card-creator {
-		font-size: 0.8125rem;
-		color: $gray-40;
-	}
-
-	.star-rating {
-		display: flex;
-		gap: 2px;
-
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-			fill: $red-50;
-		}
-	}
-
-	.badges {
-		display: flex;
-		gap: $unit-half;
-		flex-wrap: wrap;
-	}
-
-	.badge {
-		font-size: $font-size-extra-small;
-		font-weight: $font-weight-med;
-		padding: 2px $unit;
-		border-radius: $unit;
-		width: fit-content;
-
-		&.current {
-			background-color: $green-95;
-			color: $green-40;
-		}
-
-		&.favorite {
-			background-color: $blue-95;
-			color: $blue-40;
 		}
 	}
 
