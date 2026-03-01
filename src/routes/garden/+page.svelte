@@ -1,11 +1,17 @@
 <script lang="ts">
 	import Page from '$components/Page.svelte'
+	import GardenCard from '$components/GardenCard.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
-	import { GARDEN_CATEGORIES } from '$lib/constants/garden'
-	import StarIcon from '$icons/star.svg?component'
+	import CategoryBookIcon from '$icons/category-book.svg?component'
+	import CategoryGameIcon from '$icons/category-game.svg?component'
+	import CategoryMangaIcon from '$icons/category-manga.svg?component'
+	import CategoryMovieIcon from '$icons/category-movie.svg?component'
+	import CategoryMusicIcon from '$icons/category-music.svg?component'
+	import CategoryTVIcon from '$icons/category-tv.svg?component'
+	import CategoryDeviceIcon from '$icons/category-device.svg?component'
+	import CategoryOtherIcon from '$icons/category-other.svg?component'
 	import type { PageData } from './$types'
-	import type { GardenItem } from '@prisma/client'
 
 	let { data } = $props<{ data: PageData }>()
 
@@ -21,21 +27,21 @@
 		})
 	)
 
-	// Group items by category
-	const itemsByCategory = $derived.by(() => {
-		const groups: Record<string, GardenItem[]> = {}
-		for (const item of data.items as GardenItem[]) {
-			if (!groups[item.category]) {
-				groups[item.category] = []
-			}
-			groups[item.category].push(item)
-		}
-		return groups
-	})
+	const CATEGORY_ICONS: Record<string, typeof CategoryBookIcon> = {
+		books: CategoryBookIcon,
+		games: CategoryGameIcon,
+		manga: CategoryMangaIcon,
+		movies: CategoryMovieIcon,
+		music: CategoryMusicIcon,
+		'tv-shows': CategoryTVIcon,
+		devices: CategoryDeviceIcon,
+		other: CategoryOtherIcon
+	}
 
-	// Only show categories that have items, in defined order
-	const activeCategories = $derived(
-		GARDEN_CATEGORIES.filter((c) => itemsByCategory[c.value]?.length > 0)
+	const isEmpty = $derived(
+		data.currentItems.length === 0 &&
+			data.favoriteItems.length === 0 &&
+			data.recentItems.length === 0
 	)
 </script>
 
@@ -55,53 +61,73 @@
 </svelte:head>
 
 <section class="garden-container">
-	{#if activeCategories.length === 0}
+	{#if isEmpty}
 		<Page>
 			<p class="empty">Nothing here yet.</p>
 		</Page>
-	{:else}
-		{#each activeCategories as cat}
-			<Page>
-				{#snippet header()}
-					<h2>
-						<a href="/garden/{cat.value}">{cat.label}</a>
-					</h2>
-				{/snippet}
+	{/if}
 
-				<div class="items-grid">
-					{#each itemsByCategory[cat.value] as item}
-						<a
-							href="/garden/{item.category}/{item.slug}"
-							class="garden-card"
-							style="--hover-rotate: {(Math.random() * 3 - 1.5).toFixed(1)}deg"
-						>
-							{#if item.imageUrl}
-								<div class="card-image">
-									<img src={item.imageUrl} alt={item.title} />
-								</div>
-							{/if}
-							<div class="card-info">
-								<h3>{item.title}</h3>
-								{#if item.creator}
-									<span class="card-creator">{item.creator}</span>
-								{/if}
-								{#if item.rating}
-									<div class="star-rating">
-										{#each { length: item.rating } as _}
-											<StarIcon />
-										{/each}
-									</div>
-								{/if}
-							</div>
-						</a>
-					{/each}
-				</div>
+	{#if data.currentItems.length > 0}
+		<Page>
+			{#snippet header()}
+				<h2>Currently enjoying</h2>
+			{/snippet}
 
-				{#if itemsByCategory[cat.value].length > 6}
-					<a href="/garden/{cat.value}" class="view-all">View all {cat.label.toLowerCase()}</a>
-				{/if}
-			</Page>
-		{/each}
+			<div class="items-grid">
+				{#each data.currentItems as item (item.id)}
+					<GardenCard {item} />
+				{/each}
+			</div>
+		</Page>
+	{/if}
+
+	{#if data.favoriteItems.length > 0}
+		<Page>
+			{#snippet header()}
+				<h2>Bangers</h2>
+			{/snippet}
+
+			<div class="items-grid">
+				{#each data.favoriteItems as item (item.id)}
+					<GardenCard {item} />
+				{/each}
+			</div>
+		</Page>
+	{/if}
+
+	{#if data.recentItems.length > 0}
+		<Page>
+			{#snippet header()}
+				<h2>Recently added</h2>
+			{/snippet}
+
+			<div class="items-grid">
+				{#each data.recentItems as item (item.id)}
+					<GardenCard {item} />
+				{/each}
+			</div>
+		</Page>
+	{/if}
+
+	{#if data.activeCategories.length > 0}
+		<Page>
+			{#snippet header()}
+				<h2>Browse</h2>
+			{/snippet}
+
+			<div class="category-grid">
+				{#each data.activeCategories as cat}
+					{@const CatIcon = CATEGORY_ICONS[cat.value]}
+					<a href="/garden/{cat.value}" class="category-card">
+						{#if CatIcon}
+							<CatIcon />
+						{/if}
+						<span class="category-label">{cat.label}</span>
+						<span class="category-count">{cat.count}</span>
+					</a>
+				{/each}
+			</div>
+		</Page>
 	{/if}
 </section>
 
@@ -129,16 +155,6 @@
 		font-weight: $font-weight-med;
 		margin: 0;
 		padding-bottom: $unit;
-
-		a {
-			color: inherit;
-			text-decoration: none;
-
-			&:hover {
-				text-decoration: underline;
-				text-decoration-style: wavy;
-			}
-		}
 	}
 
 	.items-grid {
@@ -152,75 +168,51 @@
 		}
 	}
 
-	.garden-card {
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
-		text-decoration: none;
-		color: inherit;
-		border-radius: $unit;
+	.category-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: $unit-2x;
+
+		@include breakpoint('phone') {
+			grid-template-columns: 1fr;
+		}
 	}
 
-	.card-image {
-		width: 100%;
-		border-radius: $unit;
-		overflow: hidden;
-		background-color: $gray-90;
+	.category-card {
+		display: flex;
+		align-items: center;
+		gap: $unit-2x;
+		padding: $unit-2x $unit-3x;
+		background: $green-90;
+		border-radius: $corner-radius-2xl;
+		text-decoration: none;
+		color: $green-10;
 		transition:
-			transform 0.2s ease,
-			box-shadow 0.2s ease;
-
-		img {
-			width: 100%;
-			height: auto;
-			display: block;
-		}
-	}
-
-	.garden-card:hover .card-image {
-		transform: scale3d(1.03, 1.03, 1.03) rotate(var(--hover-rotate, 0deg));
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	}
-
-	.card-info {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-
-		h3 {
-			font-size: 0.9375rem;
-			font-weight: $font-weight-bold;
-			margin: 0;
-			color: $gray-10;
-		}
-	}
-
-	.card-creator {
-		font-size: 0.8125rem;
-		color: $gray-40;
-	}
-
-	.star-rating {
-		display: flex;
-		gap: 2px;
-
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-			fill: $red-50;
-		}
-	}
-
-	.view-all {
-		display: block;
-		margin-top: $unit;
-		font-size: $font-size-small;
-		color: $accent-color;
-		text-decoration: none;
+			background $transition-fast ease,
+			transform $transition-fast ease;
 
 		&:hover {
-			text-decoration: underline;
+			background: $green-80;
+			transform: translateY(-2px);
 		}
+
+		:global(svg) {
+			width: 24px;
+			height: 24px;
+			flex-shrink: 0;
+			color: $green-30;
+		}
+	}
+
+	.category-label {
+		font-size: $font-size-small;
+		font-weight: $font-weight-bold;
+	}
+
+	.category-count {
+		margin-left: auto;
+		font-size: $font-size-small;
+		color: $green-40;
 	}
 
 	.empty {
