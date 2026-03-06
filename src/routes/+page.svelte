@@ -37,4 +37,4 @@
 	<link rel="canonical" href={metaTags.other.canonical} />
 </svelte:head>
 
-<ProjectList projects={data?.projects || []} />
+<ProjectList projects={data?.projects || []} shortBio={data?.shortBio} />

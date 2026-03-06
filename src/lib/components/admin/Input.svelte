@@ -14,6 +14,7 @@
 			| 'date'
 			| 'time'
 			| 'color'
+			| 'month'
 		label?: string
 		error?: string
 		helpText?: string

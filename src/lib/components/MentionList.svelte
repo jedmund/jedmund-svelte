@@ -1,7 +1,19 @@
-<script>
+<script lang="ts">
 	import Mention from './Mention.svelte'
 
-	const mentions = [
+	interface MentionData {
+		href: string
+		title: string
+		sourceType: string
+		date: string
+		source?: string | null
+	}
+
+	interface Props {
+		mentions?: MentionData[]
+	}
+
+	const defaultMentions: MentionData[] = [
 		{
 			href: 'https://medium.com/figma-design/pinterests-first-design-hire-built-a-habit-formation-app-a6aee9103610',
 			title: "Pinterest's first design hire built an app for passion projects",
@@ -42,6 +54,10 @@
 			date: 'Apr 2012'
 		}
 	]
+
+	let { mentions: propMentions }: Props = $props()
+
+	const mentions = $derived(propMentions && propMentions.length > 0 ? propMentions : defaultMentions)
 </script>
 
 <section class="links">
