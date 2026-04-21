@@ -14,8 +14,7 @@ interface SessionPayload {
 function sessionSecret(): string {
 	const secret = process.env.ADMIN_SESSION_SECRET
 	if (!secret) {
-		if (dev) return 'dev-session-secret'
-		throw new Error('ADMIN_SESSION_SECRET environment variable is required in production')
+		throw new Error('ADMIN_SESSION_SECRET environment variable is required')
 	}
 	return secret
 }
