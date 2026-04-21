@@ -12,6 +12,7 @@ import {
 import { logger } from '$lib/server/logger'
 import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { createSlug, ensureUniqueSlug } from '$lib/server/database'
+import { getProjects, sanitizeProjectList } from '$lib/server/queries/projects'
 import {
 	trackMediaUsage,
 	extractMediaIds,
@@ -47,73 +48,28 @@ interface ProjectCreateBody {
 export const GET: RequestHandler = async (event) => {
 	try {
 		const { page, limit } = getPaginationParams(event.url)
-		const skip = (page - 1) * limit
-
-		// Check if admin is authenticated
 		const isAdmin = checkAdminAuth(event)
 
-		// Get filter parameters
-		const status = event.url.searchParams.get('status')
-		const projectType = event.url.searchParams.get('projectType')
-		const includeListOnly = event.url.searchParams.get('includeListOnly') === 'true'
-		const includePasswordProtected =
-			event.url.searchParams.get('includePasswordProtected') === 'true'
-
-		// Build where clause
-		const where: Prisma.ProjectWhereInput = {}
-
-		if (status) {
-			where.status = status
-		} else if (!isAdmin) {
-			// For non-admin users: only show published projects by default
-			const allowedStatuses = ['published']
-
-			if (includeListOnly) {
-				allowedStatuses.push('list-only')
-			}
-
-			if (includePasswordProtected) {
-				allowedStatuses.push('password-protected')
-			}
-
-			where.status = { in: allowedStatuses }
-		}
-		// For admin users: show all projects (no status filter applied)
-
-		if (projectType) {
-			where.projectType = projectType
-		}
-
-		// Get total count
-		const total = await prisma.project.count({ where })
-
-		// Get projects
-		const projects = await prisma.project.findMany({
-			where,
-			orderBy: [{ displayOrder: 'asc' }, { year: 'desc' }, { createdAt: 'desc' }],
-			skip,
-			take: limit
+		const { projects, total } = await getProjects({
+			isAdmin,
+			status: event.url.searchParams.get('status') ?? undefined,
+			projectType: event.url.searchParams.get('projectType') ?? undefined,
+			includeListOnly: event.url.searchParams.get('includeListOnly') === 'true',
+			includePasswordProtected:
+				event.url.searchParams.get('includePasswordProtected') === 'true',
+			page,
+			limit
 		})
-
-		const pagination = getPaginationMeta(total, page, limit)
 
 		logger.info('Projects list retrieved', { total, page, limit })
 
-		// Strip passwords and lock content for non-admin responses
-		const unlockedIds = isAdmin ? [] : getUnlockedProjectIds(event.cookies)
 		const safeProjects = isAdmin
 			? projects
-			: projects.map(({ password, ...rest }) => {
-					const isLocked = rest.status === 'password-protected' && !unlockedIds.includes(rest.id)
-					if (isLocked) {
-						return { ...rest, caseStudyContent: null, gallery: [], hasPassword: true, locked: true }
-					}
-					return { ...rest, hasPassword: !!password, locked: false }
-				})
+			: sanitizeProjectList(projects, { unlockedIds: getUnlockedProjectIds(event.cookies) })
 
 		return jsonResponse({
 			projects: safeProjects,
-			pagination
+			pagination: getPaginationMeta(total, page, limit)
 		})
 	} catch (error) {
 		logger.error('Failed to retrieve projects', error as Error)
