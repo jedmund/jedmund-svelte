@@ -60,6 +60,7 @@ model Post {
   @@index([slug])
   @@index([status])
   @@index([postType])
+  @@index([status, postType])
 }
 
 model Album {
@@ -142,6 +143,8 @@ model Media {
   albums           AlbumMedia[]
   usage            MediaUsage[]
   photos           Photo[]
+
+  @@index([isPhotography])
 }
 
 model MediaUsage {
@@ -245,27 +248,27 @@ model Setting {
 }
 
 model GardenItem {
-  id           Int      @id @default(autoincrement())
-  category     String   @db.VarChar(50)
-  title        String   @db.VarChar(255)
-  slug         String   @db.VarChar(255)
-  creator      String?  @db.VarChar(255)
-  imageUrl       String?  @db.VarChar(500)
-  sourceImageUrl String?  @db.VarChar(500)
-  url            String?  @db.VarChar(500)
-  sourceId     String?  @db.VarChar(255)
-  metadata     Json?
-  summary      String?   @db.Text
-  date         DateTime? @db.Date
-  note         Json?
-  rating       Int?
-  isCurrent    Boolean  @default(false)
-  isFavorite   Boolean  @default(false)
-  status       String   @default("draft") @db.VarChar(50)
-  publishedAt  DateTime?
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  category       String    @db.VarChar(50)
+  title          String    @db.VarChar(255)
+  slug           String    @db.VarChar(255)
+  creator        String?   @db.VarChar(255)
+  imageUrl       String?   @db.VarChar(500)
+  sourceImageUrl String?   @db.VarChar(500)
+  url            String?   @db.VarChar(500)
+  sourceId       String?   @db.VarChar(255)
+  metadata       Json?
+  summary        String?   @db.Text
+  date           DateTime? @db.Date
+  note           Json?
+  rating         Int?
+  isCurrent      Boolean   @default(false)
+  isFavorite     Boolean   @default(false)
+  status         String    @default("draft") @db.VarChar(50)
+  publishedAt    DateTime?
+  displayOrder   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@unique([category, slug])
   @@index([category])

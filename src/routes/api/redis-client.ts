@@ -1,6 +1,6 @@
-import 'dotenv/config'
 import { Redis } from 'ioredis'
+import { env } from '$lib/server/env'
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
+const redis = new Redis(env.redisUrl)
 
 export default redis

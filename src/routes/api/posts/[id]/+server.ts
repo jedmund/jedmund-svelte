@@ -26,8 +26,15 @@ export const GET: RequestHandler = async (event) => {
 			where: { id },
 			include: {
 				tags: {
-					include: {
-						tag: true
+					select: {
+						tag: {
+							select: {
+								id: true,
+								name: true,
+								displayName: true,
+								slug: true
+							}
+						}
 					}
 				}
 			}

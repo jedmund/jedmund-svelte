@@ -70,7 +70,7 @@ export const GET: RequestHandler = async (event) => {
 				publishedAt: true,
 				createdAt: true,
 				tags: {
-					include: {
+					select: {
 						tag: {
 							select: {
 								id: true,
