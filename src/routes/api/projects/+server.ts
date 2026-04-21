@@ -55,8 +55,7 @@ export const GET: RequestHandler = async (event) => {
 			status: event.url.searchParams.get('status') ?? undefined,
 			projectType: event.url.searchParams.get('projectType') ?? undefined,
 			includeListOnly: event.url.searchParams.get('includeListOnly') === 'true',
-			includePasswordProtected:
-				event.url.searchParams.get('includePasswordProtected') === 'true',
+			includePasswordProtected: event.url.searchParams.get('includePasswordProtected') === 'true',
 			page,
 			limit
 		})
