@@ -124,7 +124,7 @@
 
 			if (!response.ok) {
 				const errorData = await response.json()
-				throw new Error(errorData.message || 'Failed to create album')
+				throw new Error(errorData.error?.message || 'Failed to create album')
 			}
 
 			const newAlbum = await response.json()

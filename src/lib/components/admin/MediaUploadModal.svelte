@@ -86,7 +86,10 @@
 
 				if (!response.ok) {
 					const error = await response.json()
-					uploadErrors = [...uploadErrors, `${file.name}: ${error.message || 'Upload failed'}`]
+					uploadErrors = [
+						...uploadErrors,
+						`${file.name}: ${error.error?.message || 'Upload failed'}`
+					]
 				} else {
 					successCount++
 					uploadProgress = { ...uploadProgress, [file.name]: 100 }

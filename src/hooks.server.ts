@@ -79,7 +79,7 @@ function requiresAdmin(pathname: string): boolean {
 
 function unauthorized(): Response {
 	return withSecurityHeaders(
-		new Response(JSON.stringify({ error: 'Unauthorized' }), {
+		new Response(JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})

@@ -204,7 +204,7 @@
 			if (!response.ok) {
 				const errorData = await response.json()
 				throw new Error(
-					errorData.message || `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
+					errorData.error?.message || `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
 				)
 			}
 

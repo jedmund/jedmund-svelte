@@ -1,5 +1,6 @@
 import type { RequestEvent } from '@sveltejs/kit'
 import { getSessionUser } from '$lib/server/admin/session'
+import { codeForStatus } from '$lib/server/error-codes'
 
 // Response helpers
 export function jsonResponse(data: unknown, status = 200): Response {
@@ -9,8 +10,12 @@ export function jsonResponse(data: unknown, status = 200): Response {
 	})
 }
 
-export function errorResponse(message: string, status = 400): Response {
-	return jsonResponse({ error: message }, status)
+export function errorResponse(message: string, status = 400, details?: unknown): Response {
+	const body: { error: { code: string; message: string; details?: unknown } } = {
+		error: { code: codeForStatus(status), message }
+	}
+	if (details !== undefined) body.error.details = details
+	return jsonResponse(body, status)
 }
 
 // Pagination helper
