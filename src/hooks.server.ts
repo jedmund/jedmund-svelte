@@ -1,4 +1,5 @@
 import type { Handle } from '@sveltejs/kit'
+import '$lib/server/env'
 
 // --- Rate limiter ---
 const attempts = new Map<string, { count: number; resetAt: number }>()

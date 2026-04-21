@@ -1,6 +1,7 @@
 import { dev } from '$app/environment'
 import type { Cookies } from '@sveltejs/kit'
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { env } from '$lib/server/env'
 import type { SessionUser } from '$lib/types/session'
 
 const SESSION_COOKIE_NAME = 'admin_session'
@@ -11,16 +12,8 @@ interface SessionPayload {
 	exp: number
 }
 
-function sessionSecret(): string {
-	const secret = process.env.ADMIN_SESSION_SECRET
-	if (!secret) {
-		throw new Error('ADMIN_SESSION_SECRET environment variable is required')
-	}
-	return secret
-}
-
 function signPayload(payload: string): Buffer {
-	const hmac = createHmac('sha256', sessionSecret())
+	const hmac = createHmac('sha256', env.adminSessionSecret)
 	hmac.update(payload)
 	return hmac.digest()
 }
@@ -74,7 +67,7 @@ function parseToken(token: string): SessionPayload | null {
 }
 
 export function validateAdminPassword(password: string): SessionUser | null {
-	const expected = process.env.ADMIN_PASSWORD
+	const expected = env.adminPassword
 	if (!expected) {
 		if (dev) {
 			console.warn('ADMIN_PASSWORD not set — login disabled in dev')
