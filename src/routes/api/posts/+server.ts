@@ -61,7 +61,7 @@ export const GET: RequestHandler = async (event) => {
 			take: limit,
 			include: {
 				tags: {
-					include: {
+					select: {
 						tag: {
 							select: {
 								id: true,
