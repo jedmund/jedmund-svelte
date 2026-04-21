@@ -61,6 +61,8 @@ export async function getAllAlbums({ limit = 50, offset = 0 }: ListParams = {}) 
 	return { albums, total }
 }
 
+// Shape matches what the public API used to emit via JSON.stringify — dates
+// as ISO strings so server-loaded pages and API responses are identical.
 export function toAlbumListItem(album: AlbumWithCover, { isAdmin }: { isAdmin: boolean }) {
 	const cover = album.media[0]?.media
 	const base = {
@@ -68,7 +70,7 @@ export function toAlbumListItem(album: AlbumWithCover, { isAdmin }: { isAdmin: b
 		slug: album.slug,
 		title: album.title,
 		description: album.description,
-		date: album.date,
+		date: album.date?.toISOString() ?? null,
 		location: album.location,
 		photoCount: album._count.media,
 		coverPhoto: cover
@@ -91,9 +93,9 @@ export function toAlbumListItem(album: AlbumWithCover, { isAdmin }: { isAdmin: b
 		...base,
 		status: album.status,
 		showInUniverse: album.showInUniverse,
-		publishedAt: album.publishedAt,
-		createdAt: album.createdAt,
-		updatedAt: album.updatedAt,
+		publishedAt: album.publishedAt?.toISOString() ?? null,
+		createdAt: album.createdAt.toISOString(),
+		updatedAt: album.updatedAt.toISOString(),
 		coverPhotoId: album.coverPhotoId,
 		photos: album.media.map((m) => ({
 			id: m.media.id,

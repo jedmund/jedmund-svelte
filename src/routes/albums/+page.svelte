@@ -8,24 +8,24 @@
 	import type { ColorPalette } from '$lib/types/photos'
 
 	interface Album {
-		id: string
+		id: number
 		slug: string
 		title: string
-		description?: string
-		date?: string
-		location?: string
+		description: string | null
+		date: string | null
+		location: string | null
 		photoCount: number
-		coverPhoto?: {
-			id: string
+		coverPhoto: {
+			id: number
 			url: string
-			thumbnailUrl?: string
-			width?: number
-			height?: number
-			dominantColor?: string
-			colors?: ColorPalette[]
-			aspectRatio?: number
-			caption?: string
-		}
+			thumbnailUrl: string | null
+			width: number | null
+			height: number | null
+			dominantColor: string | null
+			colors: unknown
+			aspectRatio: number | null
+			caption: string | null
+		} | null
 		hasContent: boolean
 	}
 
