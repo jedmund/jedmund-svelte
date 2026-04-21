@@ -85,7 +85,7 @@
 
 			if (!response.ok) {
 				const errorData = await response.json()
-				throw new Error(errorData.error || `Upload failed for ${file.name}`)
+				throw new Error(errorData.error?.message || `Upload failed for ${file.name}`)
 			}
 
 			return await response.json()

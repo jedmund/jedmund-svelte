@@ -227,7 +227,7 @@
 				goto('/admin/login')
 			} else {
 				const errorData = await response.json()
-				error = errorData.error || 'Failed to delete album'
+				error = errorData.error?.message || 'Failed to delete album'
 			}
 		} catch (err) {
 			console.error('Failed to delete album:', err)

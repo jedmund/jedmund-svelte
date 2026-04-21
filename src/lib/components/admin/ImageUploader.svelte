@@ -91,7 +91,7 @@
 
 		if (!response.ok) {
 			const errorData = await response.json()
-			throw new Error(errorData.error || 'Upload failed')
+			throw new Error(errorData.error?.message || 'Upload failed')
 		}
 
 		return await response.json()
