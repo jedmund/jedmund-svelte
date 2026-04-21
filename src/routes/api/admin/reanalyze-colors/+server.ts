@@ -1,16 +1,11 @@
 import type { RequestHandler } from './$types'
 import { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { selectBestDominantColor, isGreyColor } from '$lib/server/color-utils'
 
-export const POST: RequestHandler = async (event) => {
-	// Check authentication
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
+export const POST: RequestHandler = async () => {
 	try {
 		const results = {
 			processed: 0,

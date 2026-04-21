@@ -1,15 +1,10 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { isGreyColor } from '$lib/server/color-utils'
 
-export const GET: RequestHandler = async (event) => {
-	// Check authentication
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
+export const GET: RequestHandler = async () => {
 	try {
 		// Get total media count
 		const totalMedia = await prisma.media.count()

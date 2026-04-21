@@ -1,11 +1,6 @@
 import type { RequestHandler } from './$types'
 import { prisma, createSlug, ensureUniqueCategorySlug } from '$lib/server/database'
-import {
-	jsonResponse,
-	errorResponse,
-	checkAdminAuth,
-	parseRequestBody
-} from '$lib/server/api-utils'
+import { jsonResponse, errorResponse, parseRequestBody } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { isValidCategory } from '$lib/constants/garden'
 import { cacheGardenImage } from '$lib/server/garden-images'
@@ -31,10 +26,6 @@ interface GardenItemCreateBody {
 
 // GET /api/admin/garden - List all garden items
 export const GET: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	try {
 		const category = event.url.searchParams.get('category')
 
@@ -54,10 +45,6 @@ export const GET: RequestHandler = async (event) => {
 
 // POST /api/admin/garden - Create a new garden item
 export const POST: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	try {
 		const body = await parseRequestBody<GardenItemCreateBody>(event.request)
 		if (!body) {

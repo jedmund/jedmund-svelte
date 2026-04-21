@@ -1,11 +1,6 @@
 import type { RequestHandler } from './$types'
 import { prisma, createSlug, ensureUniqueCategorySlug } from '$lib/server/database'
-import {
-	jsonResponse,
-	errorResponse,
-	checkAdminAuth,
-	parseRequestBody
-} from '$lib/server/api-utils'
+import { jsonResponse, errorResponse, parseRequestBody } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { isValidCategory } from '$lib/constants/garden'
 import { cacheGardenImage } from '$lib/server/garden-images'
@@ -33,10 +28,6 @@ interface GardenItemUpdateBody {
 
 // GET /api/admin/garden/[id] - Get a single garden item
 export const GET: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	const id = parseInt(event.params.id)
 	if (isNaN(id)) {
 		return errorResponse('Invalid item ID', 400)
@@ -58,10 +49,6 @@ export const GET: RequestHandler = async (event) => {
 
 // PUT /api/admin/garden/[id] - Update a garden item
 export const PUT: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	const id = parseInt(event.params.id)
 	if (isNaN(id)) {
 		return errorResponse('Invalid item ID', 400)
@@ -170,10 +157,6 @@ export const PUT: RequestHandler = async (event) => {
 
 // DELETE /api/admin/garden/[id] - Delete a garden item
 export const DELETE: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	const id = parseInt(event.params.id)
 	if (isNaN(id)) {
 		return errorResponse('Invalid item ID', 400)

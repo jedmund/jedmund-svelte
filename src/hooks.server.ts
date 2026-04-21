@@ -1,22 +1,39 @@
 import type { Handle } from '@sveltejs/kit'
 import '$lib/server/env'
+import { getSessionUser } from '$lib/server/admin/session'
 
 // --- Rate limiter ---
-const attempts = new Map<string, { count: number; resetAt: number }>()
-const MAX_ATTEMPTS = 5
-const WINDOW_MS = 60_000 // 1 minute
+interface RateLimitConfig {
+	prefix: string
+	max: number
+	windowMs: number
+}
 
-function isRateLimited(key: string): boolean {
+const RATE_LIMITS: RateLimitConfig[] = [
+	{ prefix: '/admin/login', max: 5, windowMs: 60_000 },
+	{ prefix: '/api/projects/', max: 5, windowMs: 60_000 },
+	{ prefix: '/api/media/upload', max: 30, windowMs: 60_000 },
+	{ prefix: '/api/media/bulk-upload', max: 30, windowMs: 60_000 }
+]
+
+const attempts = new Map<string, { count: number; resetAt: number }>()
+
+function matchLimit(pathname: string, method: string): RateLimitConfig | null {
+	if (method !== 'POST') return null
+	return RATE_LIMITS.find((cfg) => pathname.startsWith(cfg.prefix)) ?? null
+}
+
+function isRateLimited(key: string, config: RateLimitConfig): boolean {
 	const now = Date.now()
 	const entry = attempts.get(key)
 
 	if (!entry || now > entry.resetAt) {
-		attempts.set(key, { count: 1, resetAt: now + WINDOW_MS })
+		attempts.set(key, { count: 1, resetAt: now + config.windowMs })
 		return false
 	}
 
 	entry.count++
-	return entry.count > MAX_ATTEMPTS
+	return entry.count > config.max
 }
 
 // Periodically clean up stale entries
@@ -56,30 +73,40 @@ function withSecurityHeaders(response: Response): Response {
 	return response
 }
 
-// Paths that accept passwords and should be rate-limited
-const RATE_LIMITED_POSTS = [
-	'/admin/login',
-	'/api/projects/' // matches /api/projects/123/unlock
-]
+function requiresAdmin(pathname: string): boolean {
+	return pathname.startsWith('/api/admin/')
+}
 
-function shouldRateLimit(pathname: string, method: string): boolean {
-	if (method !== 'POST') return false
-	return RATE_LIMITED_POSTS.some((prefix) => pathname.startsWith(prefix))
+function unauthorized(): Response {
+	return withSecurityHeaders(
+		new Response(JSON.stringify({ error: 'Unauthorized' }), {
+			status: 401,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	)
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url
 	const method = event.request.method
 
-	if (shouldRateLimit(pathname, method)) {
+	const limit = matchLimit(pathname, method)
+	if (limit) {
 		const ip = event.getClientAddress()
-		if (isRateLimited(ip)) {
+		const key = `${limit.prefix}:${ip}`
+		if (isRateLimited(key, limit)) {
 			return withSecurityHeaders(
 				new Response('Too many attempts. Try again in a minute.', {
 					status: 429,
 					headers: { 'Retry-After': '60' }
 				})
 			)
+		}
+	}
+
+	if (requiresAdmin(pathname)) {
+		if (!getSessionUser(event.cookies)) {
+			return unauthorized()
 		}
 	}
 

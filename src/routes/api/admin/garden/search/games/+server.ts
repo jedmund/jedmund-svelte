@@ -2,7 +2,7 @@ import 'dotenv/config'
 import redis from '../../../../redis-client'
 
 import type { RequestHandler } from './$types'
-import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 
 const CACHE_TTL = 60 * 60 // 1 hour
 const TOKEN_CACHE_KEY = 'igdb:access_token'
@@ -33,10 +33,6 @@ function getCoverUrl(imageId: string): string {
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	const query = event.url.searchParams.get('q')?.trim()
 	if (!query) {
 		return errorResponse('Query parameter "q" is required')
