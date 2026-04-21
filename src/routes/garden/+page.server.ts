@@ -1,22 +1,20 @@
-import type { PageLoad } from './$types'
-import type { GardenItem } from '@prisma/client'
+import type { PageServerLoad } from './$types'
 import type { Album } from '$lib/types/lastfm'
 import { GARDEN_CATEGORIES } from '$lib/constants/garden'
+import { getPublishedGardenItems } from '$lib/server/queries/garden'
+import { logger } from '$lib/server/logger'
 
-export const load: PageLoad = async ({ fetch }) => {
-	const [gardenData, albums] = await Promise.all([
-		fetchGardenData(fetch),
-		fetchRecentAlbums(fetch)
-	])
+export const load: PageServerLoad = async ({ fetch, setHeaders }) => {
+	setHeaders({ 'cache-control': 'public, max-age=1800, stale-while-revalidate=86400' })
+
+	const [gardenData, albums] = await Promise.all([loadGarden(), loadRecentAlbums(fetch)])
 
 	return { ...gardenData, albums }
 }
 
-async function fetchGardenData(fetch: typeof globalThis.fetch) {
+async function loadGarden() {
 	try {
-		const res = await fetch('/api/garden')
-		const data = await res.json()
-		const items: GardenItem[] = data.items ?? []
+		const items = await getPublishedGardenItems()
 
 		const currentItems = items.filter((item) => item.isCurrent)
 		const favoriteItems = items.filter((item) => item.isFavorite)
@@ -38,12 +36,13 @@ async function fetchGardenData(fetch: typeof globalThis.fetch) {
 		).map((c) => ({ ...c, count: categoryCounts[c.value] || 0 }))
 
 		return { currentItems, favoriteItems, recentItems, activeCategories }
-	} catch {
+	} catch (error) {
+		logger.error('Failed to load garden items', error as Error)
 		return { currentItems: [], favoriteItems: [], recentItems: [], activeCategories: [] }
 	}
 }
 
-async function fetchRecentAlbums(fetch: typeof globalThis.fetch): Promise<Album[]> {
+async function loadRecentAlbums(fetch: typeof globalThis.fetch): Promise<Album[]> {
 	try {
 		const response = await fetch('/api/lastfm')
 		const musicData: { albums: Album[] } = await response.json()

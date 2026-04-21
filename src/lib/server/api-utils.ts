@@ -39,6 +39,34 @@ export function getPaginationMeta(total: number, page: number, limit: number) {
 	}
 }
 
+// Offset-based pagination (used by albums, photos)
+export interface OffsetPaginationParams {
+	limit: number
+	offset: number
+}
+
+export function getOffsetPaginationParams(
+	url: URL,
+	defaults: { limit?: number; maxLimit?: number } = {}
+): OffsetPaginationParams {
+	const { limit: defaultLimit = 50, maxLimit = 100 } = defaults
+	const limit = Math.min(
+		maxLimit,
+		Math.max(1, parseInt(url.searchParams.get('limit') || String(defaultLimit)))
+	)
+	const offset = Math.max(0, parseInt(url.searchParams.get('offset') || '0'))
+	return { limit, offset }
+}
+
+export function getOffsetPaginationMeta(total: number, limit: number, offset: number) {
+	return {
+		total,
+		limit,
+		offset,
+		hasMore: offset + limit < total
+	}
+}
+
 // Status validation
 export const VALID_STATUSES = ['draft', 'published'] as const
 export type Status = (typeof VALID_STATUSES)[number]
