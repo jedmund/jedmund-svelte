@@ -6,7 +6,9 @@ import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { logger } from '$lib/server/logger'
 
 export const load: PageServerLoad = async ({ fetch, cookies, setHeaders }) => {
-	setHeaders({ 'cache-control': 'public, max-age=300, stale-while-revalidate=86400' })
+	// private: response includes per-viewer project unlock state, so a shared
+	// cache would leak one viewer's unlocked gallery/caseStudyContent to others.
+	setHeaders({ 'cache-control': 'private, max-age=60' })
 
 	const unlockedIds = getUnlockedProjectIds(cookies)
 
