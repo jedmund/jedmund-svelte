@@ -172,7 +172,7 @@ export const DELETE: RequestHandler = async (event) => {
 		// Invalidate all caches (related posts depend on tags)
 		await redis.flushdb()
 
-		return new Response(null, { status: 204 })
+		return json({ success: true })
 	} catch (error) {
 		if (error instanceof Error && error.message.includes('Record to delete does not exist')) {
 			return json(

@@ -2,6 +2,24 @@ import type { RequestEvent } from '@sveltejs/kit'
 import { getSessionUser } from '$lib/server/admin/session'
 import { codeForStatus } from '$lib/server/error-codes'
 
+/**
+ * Mutation response contract
+ * -----------------------------------------------------------------------------
+ * API routes (`/api/*` — returns a Response):
+ *   • success:      return jsonResponse(data, status?)
+ *                   DELETE success: return jsonResponse({ success: true })
+ *   • error:        return errorResponse(message, status, details?)
+ *                   body is always { error: { code, message, details? } }
+ *
+ * Form actions (`actions` in +page.server.ts):
+ *   • success:      throw redirect(303, path)  — never return a body alongside
+ *   • error:        return fail(status, { message })
+ *
+ * Never mix shapes: form actions don't emit `errorResponse`, API routes don't
+ * call `fail()`. See A-14/A-15 in the architecture audit for context.
+ * -----------------------------------------------------------------------------
+ */
+
 // Response helpers
 export function jsonResponse(data: unknown, status = 200): Response {
 	return new Response(JSON.stringify(data), {

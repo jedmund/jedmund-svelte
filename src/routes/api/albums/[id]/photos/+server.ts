@@ -267,7 +267,7 @@ export const DELETE: RequestHandler = async (event) => {
 			albumId: albumId
 		})
 
-		return new Response(null, { status: 204 })
+		return jsonResponse({ success: true })
 	} catch (error) {
 		logger.error('Failed to remove media from album', error as Error)
 		return errorResponse('Failed to remove media from album', 500)

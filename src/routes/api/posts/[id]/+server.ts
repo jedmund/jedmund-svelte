@@ -260,7 +260,7 @@ export const DELETE: RequestHandler = async (event) => {
 		})
 
 		logger.info('Post deleted', { id })
-		return new Response(null, { status: 204 })
+		return jsonResponse({ success: true })
 	} catch (error) {
 		logger.error('Failed to delete post', error as Error)
 		return errorResponse('Failed to delete post', 500)

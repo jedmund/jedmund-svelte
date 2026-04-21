@@ -132,7 +132,7 @@ export const DELETE: RequestHandler = async (event) => {
 
 		logger.info('Media removed from photography', { mediaId: id })
 
-		return new Response(null, { status: 204 })
+		return jsonResponse({ success: true })
 	} catch (error) {
 		logger.error('Failed to remove photo', error as Error)
 		return errorResponse('Failed to remove photo', 500)

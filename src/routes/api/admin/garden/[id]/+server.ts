@@ -174,7 +174,7 @@ export const DELETE: RequestHandler = async (event) => {
 
 		await prisma.gardenItem.delete({ where: { id } })
 		logger.info('Garden item deleted', { id })
-		return new Response(null, { status: 204 })
+		return jsonResponse({ success: true })
 	} catch (error) {
 		logger.error('Failed to delete garden item', error as Error)
 		return errorResponse('Failed to delete garden item', 500)
