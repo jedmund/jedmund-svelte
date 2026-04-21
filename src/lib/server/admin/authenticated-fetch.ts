@@ -33,10 +33,14 @@ export async function adminFetch(
 		let detail: string | undefined
 		try {
 			const json = await response.clone().json()
-			detail =
-				typeof json === 'object' && json !== null && 'error' in json
-					? String(json.error)
-					: undefined
+			if (typeof json === 'object' && json !== null && 'error' in json) {
+				const err = (json as { error: unknown }).error
+				if (typeof err === 'string') detail = err
+				else if (err && typeof err === 'object' && 'message' in err) {
+					const msg = (err as { message: unknown }).message
+					if (typeof msg === 'string') detail = msg
+				}
+			}
 		} catch {
 			try {
 				detail = await response.clone().text()
