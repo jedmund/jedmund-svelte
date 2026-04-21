@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import Modal from './Modal.svelte'
-	import Composer from './composer'
+	import Composer from './composer/LazyComposer.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'

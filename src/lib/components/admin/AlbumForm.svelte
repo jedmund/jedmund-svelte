@@ -8,7 +8,7 @@
 	import DropdownSelectField from './DropdownSelectField.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
-	import Composer from './composer'
+	import Composer from './composer/LazyComposer.svelte'
 	import SyndicationStatus from './SyndicationStatus.svelte'
 	import { toast } from '$lib/stores/toast'
 	import type { Album, Media } from '@prisma/client'

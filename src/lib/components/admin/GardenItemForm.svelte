@@ -5,7 +5,7 @@
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
-	import Composer from './composer'
+	import Composer from './composer/LazyComposer.svelte'
 	import Typeahead from './Typeahead.svelte'
 	import GardenSelectionCard from './GardenSelectionCard.svelte'
 	import Input from './Input.svelte'
