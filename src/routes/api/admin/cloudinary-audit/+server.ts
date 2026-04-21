@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
-import { checkAdminAuth } from '$lib/server/api-utils'
 import {
 	auditCloudinaryResources,
 	deleteOrphanedFiles,
@@ -11,10 +10,6 @@ import { isCloudinaryConfigured } from '$lib/server/cloudinary'
 
 export const GET: RequestHandler = async (event) => {
 	try {
-		if (!checkAdminAuth(event)) {
-			return json({ error: 'Unauthorized' }, { status: 401 })
-		}
-
 		if (!(await isCloudinaryConfigured())) {
 			return json({ error: 'Cloudinary is not configured' }, { status: 503 })
 		}
@@ -59,10 +54,6 @@ export const GET: RequestHandler = async (event) => {
 
 export const DELETE: RequestHandler = async (event) => {
 	try {
-		if (!checkAdminAuth(event)) {
-			return json({ error: 'Unauthorized' }, { status: 401 })
-		}
-
 		if (!(await isCloudinaryConfigured())) {
 			return json({ error: 'Cloudinary is not configured' }, { status: 503 })
 		}
@@ -93,10 +84,6 @@ export const DELETE: RequestHandler = async (event) => {
 
 export const PATCH: RequestHandler = async (event) => {
 	try {
-		if (!checkAdminAuth(event)) {
-			return json({ error: 'Unauthorized' }, { status: 401 })
-		}
-
 		const body = await event.request.json()
 		const { publicIds } = body
 

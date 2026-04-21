@@ -1,7 +1,7 @@
 import redis from '../../../../redis-client'
 
 import type { RequestHandler } from './$types'
-import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 
 const CACHE_TTL = 60 * 60 // 1 hour
 const OPENLIBRARY_BASE = 'https://openlibrary.org'
@@ -18,10 +18,6 @@ async function resolveCoverUrl(coverId: number): Promise<string | null> {
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	const query = event.url.searchParams.get('q')?.trim()
 	if (!query) {
 		return errorResponse('Query parameter "q" is required')

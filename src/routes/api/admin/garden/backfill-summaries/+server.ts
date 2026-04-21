@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import redis from '../../../redis-client'
 
@@ -109,11 +109,7 @@ async function fetchSummary(category: string, sourceId: string): Promise<string 
 }
 
 // POST /api/admin/garden/backfill-summaries
-export const POST: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
+export const POST: RequestHandler = async () => {
 	const items = await prisma.gardenItem.findMany({
 		where: {
 			sourceId: { not: null },

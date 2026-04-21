@@ -1,16 +1,12 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { isCloudinaryUrl } from '$lib/server/cloudinary'
 import { cacheGardenImage } from '$lib/server/garden-images'
 
 // POST /api/admin/garden/backfill-images - Migrate existing images to Cloudinary
-export const POST: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
+export const POST: RequestHandler = async () => {
 	try {
 		const items = await prisma.gardenItem.findMany({
 			where: {

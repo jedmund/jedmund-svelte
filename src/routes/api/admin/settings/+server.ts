@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types'
-import { checkAdminAuth, jsonResponse, errorResponse } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import {
 	getAllSettings,
 	setConfig,
@@ -10,20 +10,12 @@ import {
 const MASKED_VALUE = '••••••••'
 const VALID_KEYS = new Set(SETTING_DEFINITIONS.map((d) => d.key))
 
-export const GET: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
+export const GET: RequestHandler = async () => {
 	const { values, meta } = await getAllSettings()
 	return jsonResponse({ settings: values, meta })
 }
 
 export const PUT: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	let body: Record<string, string>
 	try {
 		body = await event.request.json()

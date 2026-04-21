@@ -1,20 +1,10 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import {
-	jsonResponse,
-	errorResponse,
-	checkAdminAuth,
-	parseRequestBody
-} from '$lib/server/api-utils'
+import { jsonResponse, errorResponse, parseRequestBody } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { selectBestDominantColor, getVibrantPalette } from '$lib/server/color-utils'
 
 export const POST: RequestHandler = async (event) => {
-	// Check authentication
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	try {
 		const body = await parseRequestBody<{ mediaId: number }>(event.request)
 
@@ -96,11 +86,6 @@ export const POST: RequestHandler = async (event) => {
 
 // PUT endpoint to update with new color
 export const PUT: RequestHandler = async (event) => {
-	// Check authentication
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	try {
 		const body = await parseRequestBody<{
 			mediaId: number

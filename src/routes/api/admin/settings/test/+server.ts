@@ -1,14 +1,10 @@
 import type { RequestHandler } from './$types'
-import { checkAdminAuth, jsonResponse, errorResponse } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { getConfig } from '$lib/server/config'
 
 type ServiceName = 'lastfm' | 'cloudinary' | 'apple_music' | 'bluesky' | 'mastodon'
 
 export const POST: RequestHandler = async (event) => {
-	if (!checkAdminAuth(event)) {
-		return errorResponse('Unauthorized', 401)
-	}
-
 	let body: { service: ServiceName }
 	try {
 		body = await event.request.json()
