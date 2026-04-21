@@ -2,6 +2,7 @@ import redis from '../../../../redis-client'
 
 import type { RequestHandler } from './$types'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
+import { safeKey } from '$lib/server/cache-keys'
 
 const CACHE_TTL = 60 * 60 // 1 hour
 const TMDB_BASE = 'https://api.themoviedb.org/3'
@@ -43,7 +44,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const limit = Math.min(10, Math.max(1, parseInt(event.url.searchParams.get('limit') || '5')))
 
-	const cacheKey = `tmdb:search:${query.toLowerCase()}`
+	const cacheKey = `tmdb:search:${safeKey(query.toLowerCase())}`
 	const cachedData = await redis.get(cacheKey)
 	if (cachedData) {
 		return jsonResponse({ results: JSON.parse(cachedData) })

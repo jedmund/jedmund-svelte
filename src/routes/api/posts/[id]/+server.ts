@@ -100,32 +100,32 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
-		const post = await prisma.post.update({
-			where: { id },
-			data: {
-				title: data.title,
-				slug: data.slug,
-				postType: data.type,
-				status: data.status,
-				content: data.content,
-				excerpt: data.excerpt ?? undefined,
-				syndicationText: data.syndicationText ?? undefined,
-				featuredImage: featuredImageId,
-				syndicateBluesky: data.syndicateBluesky ?? undefined,
-				syndicateMastodon: data.syndicateMastodon ?? undefined,
-				appendLink: data.appendLink ?? undefined,
-				attachments:
-					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
-				publishedAt: data.publishedAt,
-				...tagUpdate
-			}
-		})
+		const post = await prisma.$transaction(async (tx) => {
+			const updated = await tx.post.update({
+				where: { id },
+				data: {
+					title: data.title,
+					slug: data.slug,
+					postType: data.type,
+					status: data.status,
+					content: data.content,
+					excerpt: data.excerpt ?? undefined,
+					syndicationText: data.syndicationText ?? undefined,
+					featuredImage: featuredImageId,
+					syndicateBluesky: data.syndicateBluesky ?? undefined,
+					syndicateMastodon: data.syndicateMastodon ?? undefined,
+					appendLink: data.appendLink ?? undefined,
+					attachments:
+						data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
+					publishedAt: data.publishedAt,
+					...tagUpdate
+				}
+			})
 
-		try {
-			await removeMediaUsage('post', id)
+			await removeMediaUsage('post', id, undefined, tx)
+
 			const usageReferences: MediaUsageReference[] = []
-
-			const featuredImageIds = extractMediaIds(post, 'featuredImage')
+			const featuredImageIds = extractMediaIds(updated, 'featuredImage')
 			featuredImageIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
@@ -135,7 +135,7 @@ export const PUT: RequestHandler = async (event) => {
 				})
 			})
 
-			const attachmentIds = extractMediaIds(post, 'attachments')
+			const attachmentIds = extractMediaIds(updated, 'attachments')
 			attachmentIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
@@ -145,7 +145,7 @@ export const PUT: RequestHandler = async (event) => {
 				})
 			})
 
-			const contentIds = extractMediaIds(post, 'content')
+			const contentIds = extractMediaIds(updated, 'content')
 			contentIds.forEach((mediaId) => {
 				usageReferences.push({
 					mediaId,
@@ -155,12 +155,10 @@ export const PUT: RequestHandler = async (event) => {
 				})
 			})
 
-			if (usageReferences.length > 0) {
-				await trackMediaUsage(usageReferences)
-			}
-		} catch (_error) {
-			logger.warn('Failed to update media usage for post', { postId: id })
-		}
+			await trackMediaUsage(usageReferences, tx)
+
+			return updated
+		})
 
 		logger.info('Post updated', { id })
 
@@ -256,9 +254,9 @@ export const DELETE: RequestHandler = async (event) => {
 			return errorResponse('Invalid post ID', 400)
 		}
 
-		await removeMediaUsage('post', id)
-		await prisma.post.delete({
-			where: { id }
+		await prisma.$transaction(async (tx) => {
+			await removeMediaUsage('post', id, undefined, tx)
+			await tx.post.delete({ where: { id } })
 		})
 
 		logger.info('Post deleted', { id })

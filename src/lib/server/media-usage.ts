@@ -1,4 +1,7 @@
+import type { Prisma } from '@prisma/client'
 import { prisma } from './database.js'
+
+type TxClient = Prisma.TransactionClient
 
 export interface MediaUsageReference {
 	mediaId: number
@@ -18,14 +21,14 @@ export interface MediaUsageDisplay {
 }
 
 /**
- * Track media usage for a piece of content
+ * Track media usage for a piece of content.
+ * Accepts an optional transaction client; when omitted, runs its own transaction.
  */
-export async function trackMediaUsage(references: MediaUsageReference[]) {
+export async function trackMediaUsage(references: MediaUsageReference[], tx?: TxClient) {
 	if (references.length === 0) return
 
-	// Use upsert to handle duplicates gracefully
-	const operations = references.map((ref) =>
-		prisma.mediaUsage.upsert({
+	const upsertFor = (client: TxClient | typeof prisma, ref: MediaUsageReference) =>
+		client.mediaUsage.upsert({
 			where: {
 				mediaId_contentType_contentId_fieldName: {
 					mediaId: ref.mediaId,
@@ -34,9 +37,7 @@ export async function trackMediaUsage(references: MediaUsageReference[]) {
 					fieldName: ref.fieldName
 				}
 			},
-			update: {
-				updatedAt: new Date()
-			},
+			update: { updatedAt: new Date() },
 			create: {
 				mediaId: ref.mediaId,
 				contentType: ref.contentType,
@@ -44,16 +45,28 @@ export async function trackMediaUsage(references: MediaUsageReference[]) {
 				fieldName: ref.fieldName
 			}
 		})
-	)
 
-	await prisma.$transaction(operations)
+	if (tx) {
+		for (const ref of references) {
+			await upsertFor(tx, ref)
+		}
+	} else {
+		await prisma.$transaction(references.map((ref) => upsertFor(prisma, ref)))
+	}
 }
 
 /**
- * Remove media usage tracking for a piece of content
+ * Remove media usage tracking for a piece of content.
+ * Accepts an optional transaction client.
  */
-export async function removeMediaUsage(contentType: string, contentId: number, fieldName?: string) {
-	await prisma.mediaUsage.deleteMany({
+export async function removeMediaUsage(
+	contentType: string,
+	contentId: number,
+	fieldName?: string,
+	tx?: TxClient
+) {
+	const client = tx ?? prisma
+	await client.mediaUsage.deleteMany({
 		where: {
 			contentType,
 			contentId,
