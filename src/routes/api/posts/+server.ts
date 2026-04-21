@@ -122,33 +122,33 @@ export const POST: RequestHandler = async (event) => {
 			featuredImageId = data.attachedPhotos[0]
 		}
 
-		const post = await prisma.post.create({
-			data: {
-				title: data.title,
-				slug: data.slug,
-				postType: data.type,
-				status: data.status,
-				content: data.content,
-				excerpt: data.excerpt || null,
-				syndicationText: data.syndicationText || null,
-				featuredImage: featuredImageId,
-				syndicateBluesky: data.syndicateBluesky ?? true,
-				syndicateMastodon: data.syndicateMastodon ?? true,
-				attachments:
-					data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
-				publishedAt: data.publishedAt,
-				tags:
-					data.tagIds && Array.isArray(data.tagIds) && data.tagIds.length > 0
-						? {
-								create: data.tagIds.map((tagId: number) => ({
-									tag: { connect: { id: tagId } }
-								}))
-							}
-						: undefined
-			}
-		})
+		const post = await prisma.$transaction(async (tx) => {
+			const created = await tx.post.create({
+				data: {
+					title: data.title,
+					slug: data.slug,
+					postType: data.type,
+					status: data.status,
+					content: data.content,
+					excerpt: data.excerpt || null,
+					syndicationText: data.syndicationText || null,
+					featuredImage: featuredImageId,
+					syndicateBluesky: data.syndicateBluesky ?? true,
+					syndicateMastodon: data.syndicateMastodon ?? true,
+					attachments:
+						data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
+					publishedAt: data.publishedAt,
+					tags:
+						data.tagIds && Array.isArray(data.tagIds) && data.tagIds.length > 0
+							? {
+									create: data.tagIds.map((tagId: number) => ({
+										tag: { connect: { id: tagId } }
+									}))
+								}
+							: undefined
+				}
+			})
 
-		try {
 			const usageReferences: MediaUsageReference[] = []
 
 			const featuredImageIds = extractMediaIds({ featuredImage: featuredImageId }, 'featuredImage')
@@ -156,7 +156,7 @@ export const POST: RequestHandler = async (event) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'post',
-					contentId: post.id,
+					contentId: created.id,
 					fieldName: 'featuredImage'
 				})
 			})
@@ -166,7 +166,7 @@ export const POST: RequestHandler = async (event) => {
 					usageReferences.push({
 						mediaId,
 						contentType: 'post',
-						contentId: post.id,
+						contentId: created.id,
 						fieldName: 'attachments'
 					})
 				})
@@ -177,7 +177,7 @@ export const POST: RequestHandler = async (event) => {
 					usageReferences.push({
 						mediaId,
 						contentType: 'post',
-						contentId: post.id,
+						contentId: created.id,
 						fieldName: 'gallery'
 					})
 				})
@@ -188,17 +188,15 @@ export const POST: RequestHandler = async (event) => {
 				usageReferences.push({
 					mediaId,
 					contentType: 'post',
-					contentId: post.id,
+					contentId: created.id,
 					fieldName: 'content'
 				})
 			})
 
-			if (usageReferences.length > 0) {
-				await trackMediaUsage(usageReferences)
-			}
-		} catch (_error) {
-			logger.warn('Failed to track media usage for post', { postId: post.id })
-		}
+			await trackMediaUsage(usageReferences, tx)
+
+			return created
+		})
 
 		logger.info('Post created', { id: post.id, title: post.title })
 
