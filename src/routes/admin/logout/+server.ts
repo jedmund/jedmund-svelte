@@ -6,8 +6,3 @@ export const POST: RequestHandler = async ({ cookies }) => {
 	clearSessionCookie(cookies)
 	throw redirect(303, '/admin/login')
 }
-
-export const GET: RequestHandler = async ({ cookies }) => {
-	clearSessionCookie(cookies)
-	throw redirect(303, '/admin/login')
-}
