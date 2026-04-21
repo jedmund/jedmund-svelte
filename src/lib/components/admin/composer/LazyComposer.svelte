@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, untrack } from 'svelte'
+	import { onMount } from 'svelte'
 	import type { Component } from 'svelte'
 	import type { ComposerProps } from './types'
 
@@ -22,9 +22,7 @@
 
 	onMount(async () => {
 		const mod = await import('./ComposerCore.svelte')
-		untrack(() => {
-			Composer = mod.default as Component<ComposerProps>
-		})
+		Composer = mod.default as Component<ComposerProps>
 	})
 
 	export function focus() {
@@ -69,7 +67,7 @@
 		width: 40px;
 		height: 40px;
 		border: 3px solid var(--card-border);
-		border-top-color: var(--copy-color);
+		border-top-color: var(--text-color);
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
 	}
