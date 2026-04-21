@@ -3,6 +3,7 @@ import { json } from '@sveltejs/kit'
 import redis from '../../redis-client'
 import { errorResponse } from '$lib/server/api-utils'
 import { suggestTags } from '$lib/server/tags/operations'
+import { safeKey } from '$lib/server/cache-keys'
 
 /**
  * GET /api/tags/suggest
@@ -22,7 +23,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		// Cache suggestions for 2 minutes
-		const cacheKey = `tags:suggest:${query}:${limit}`
+		const cacheKey = `tags:suggest:${safeKey(query)}:${limit}`
 		const cached = await redis.get(cacheKey)
 
 		if (cached) {

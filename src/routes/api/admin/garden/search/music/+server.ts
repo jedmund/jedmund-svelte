@@ -4,6 +4,7 @@ import { getArtworkUrl } from '$lib/types/apple-music'
 
 import type { RequestHandler } from './$types'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
+import { safeKey } from '$lib/server/cache-keys'
 
 const CACHE_TTL = 60 * 60 // 1 hour
 
@@ -15,7 +16,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const limit = Math.min(10, Math.max(1, parseInt(event.url.searchParams.get('limit') || '5')))
 
-	const cacheKey = `apple-music:search:${query.toLowerCase()}`
+	const cacheKey = `apple-music:search:${safeKey(query.toLowerCase())}`
 	const cachedData = await redis.get(cacheKey)
 	if (cachedData) {
 		return jsonResponse({ results: JSON.parse(cachedData) })

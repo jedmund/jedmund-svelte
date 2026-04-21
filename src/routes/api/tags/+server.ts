@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types'
 import { json } from '@sveltejs/kit'
 import redis from '../redis-client'
 import { checkAdminAuth, errorResponse } from '$lib/server/api-utils'
+import { safeKey } from '$lib/server/cache-keys'
 import { createTag, listTags } from '$lib/server/tags/operations'
 import { createTagSchema } from '$lib/server/tags/schemas'
 
@@ -25,7 +26,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		// Try cache first
-		const cacheKey = `tags:list:${page}:${limit}:${sort}:${order}:${search ?? ''}`
+		const cacheKey = `tags:list:${page}:${limit}:${sort}:${order}:${safeKey(search)}`
 		const cached = await redis.get(cacheKey)
 
 		if (cached) {

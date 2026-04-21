@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import redis from '../redis-client'
+import { safeKey } from '$lib/server/cache-keys'
 
 export const GET: RequestHandler = async ({ url }) => {
 	const targetUrl = url.searchParams.get('url')
@@ -12,7 +13,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		// Check cache first (unless force refresh is requested)
-		const cacheKey = `og-metadata:${targetUrl}`
+		const cacheKey = `og-metadata:${safeKey(targetUrl)}`
 
 		if (!forceRefresh) {
 			const cached = await redis.get(cacheKey)
@@ -181,7 +182,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	try {
 		// Check cache first - using same cache key format
-		const cacheKey = `og-metadata:${targetUrl}`
+		const cacheKey = `og-metadata:${safeKey(targetUrl)}`
 		const cached = await redis.get(cacheKey)
 
 		if (cached) {
