@@ -143,7 +143,7 @@
 		>
 			{#if post.postType === 'essay'}
 				<p>
-					{@html essayExcerpt.html}{#if essayExcerpt.truncated}...&nbsp;<a
+					{@html essayExcerpt.html}{#if essayExcerpt.truncated}&nbsp;...&nbsp;<a
 							href="/universe/{post.slug}"
 							class="read-more"
 							tabindex="-1">Continue reading</a

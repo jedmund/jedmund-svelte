@@ -35,7 +35,7 @@
 
 			{#if excerpt.html}
 				<p class="card-excerpt">
-					{@html excerpt.html}{#if excerpt.truncated}...&nbsp;<a
+					{@html excerpt.html}{#if excerpt.truncated}&nbsp;...&nbsp;<a
 							{href}
 							class="read-more"
 							tabindex="-1">Continue reading</a
