@@ -266,6 +266,7 @@ model GardenItem {
   rating         Int?
   isCurrent      Boolean   @default(false)
   isFavorite     Boolean   @default(false)
+  showInUniverse Boolean   @default(false)
   status         String    @default("draft") @db.VarChar(50)
   publishedAt    DateTime?
   displayOrder   Int       @default(0)

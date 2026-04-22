@@ -21,6 +21,7 @@ interface GardenItemUpdateBody {
 	rating?: number | null
 	isCurrent?: boolean
 	isFavorite?: boolean
+	showInUniverse?: boolean
 	displayOrder?: number
 	status?: string
 	updatedAt?: string
@@ -140,6 +141,7 @@ export const PUT: RequestHandler = async (event) => {
 						: existing.rating,
 				isCurrent: body.isCurrent ?? existing.isCurrent,
 				isFavorite: body.isFavorite ?? existing.isFavorite,
+				showInUniverse: body.showInUniverse ?? existing.showInUniverse,
 				displayOrder: body.displayOrder ?? existing.displayOrder,
 				status: newStatus,
 				publishedAt
