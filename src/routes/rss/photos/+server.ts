@@ -1,22 +1,7 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { logger } from '$lib/server/logger'
-
-// Helper function to escape XML special characters
-function escapeXML(str: string): string {
-	if (!str) return ''
-	return str
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;')
-}
-
-// Helper function to format RFC 822 date
-function formatRFC822Date(date: Date): string {
-	return date.toUTCString()
-}
+import { escapeXML, formatRFC822Date } from '$lib/server/rss/helpers'
 
 interface AlbumItem {
 	type: 'album'

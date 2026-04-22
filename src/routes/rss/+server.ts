@@ -1,95 +1,13 @@
 import type { RequestHandler } from './$types'
-import type { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { logger } from '$lib/server/logger'
-import { renderEdraContent } from '$lib/utils/content'
-
-// Content node types for TipTap/Edra content
-interface TextNode {
-	type: 'text'
-	text: string
-	marks?: unknown[]
-}
-
-interface ParagraphNode {
-	type: 'paragraph'
-	content?: (TextNode | ContentNode)[]
-}
-
-interface ContentNode {
-	type: string
-	content?: ContentNode[]
-	attrs?: Record<string, unknown>
-}
-
-interface DocContent {
-	type: 'doc'
-	content?: ContentNode[]
-}
-
-// Helper function to escape XML special characters
-function escapeXML(str: string): string {
-	if (!str) return ''
-	return str
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;')
-}
-
-// Helper function to convert content to HTML for full content
-function convertContentToHTML(content: Prisma.JsonValue): string {
-	if (!content) return ''
-
-	if (typeof content === 'string') {
-		return `<p>${escapeXML(content)}</p>`
-	}
-
-	return renderEdraContent(content)
-}
-
-// Helper function to extract text summary from content
-function extractTextSummary(content: Prisma.JsonValue, maxLength: number = 300): string {
-	if (!content) return ''
-
-	let text = ''
-
-	if (typeof content === 'string') {
-		text = content
-	} else if (
-		typeof content === 'object' &&
-		content !== null &&
-		'type' in content &&
-		content.type === 'doc' &&
-		'content' in content &&
-		Array.isArray(content.content)
-	) {
-		const docContent = content as unknown as DocContent
-		text =
-			docContent.content
-				?.filter((node): node is ParagraphNode => node.type === 'paragraph')
-				.map((node) => {
-					if (node.content && Array.isArray(node.content)) {
-						return node.content
-							.filter((child): child is TextNode => 'type' in child && child.type === 'text')
-							.map((child) => child.text || '')
-							.join('')
-					}
-					return ''
-				})
-				.filter((t) => t.length > 0)
-				.join(' ') || ''
-	}
-
-	text = text.replace(/\s+/g, ' ').trim()
-	return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
-}
-
-// Helper function to format RFC 822 date
-function formatRFC822Date(date: Date): string {
-	return date.toUTCString()
-}
+import {
+	escapeXML,
+	formatRFC822Date,
+	extractTextSummary,
+	convertContentToHTML
+} from '$lib/server/rss/helpers'
 
 export const GET: RequestHandler = async (event) => {
 	try {
@@ -116,6 +34,17 @@ export const GET: RequestHandler = async (event) => {
 			},
 			orderBy: { createdAt: 'desc' },
 			take: 25
+		})
+
+		// Get published garden items with notes that opt into the Everything feed
+		const gardenItems = await prisma.gardenItem.findMany({
+			where: {
+				status: 'published',
+				showInUniverse: true,
+				note: { not: Prisma.DbNull }
+			},
+			orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+			take: 50
 		})
 
 		// Combine and sort by date
@@ -155,6 +84,20 @@ export const GET: RequestHandler = async (event) => {
 				updatedDate: album.updatedAt,
 				postType: 'album' as const,
 				featuredImage: null
+			})),
+			...gardenItems.map((item) => ({
+				type: 'garden' as const,
+				section: 'garden',
+				id: item.id.toString(),
+				title: item.title,
+				description: extractTextSummary(item.note) || item.summary || '',
+				content: convertContentToHTML(item.note),
+				link: `${event.url.origin}/garden/${item.category}/${item.slug}`,
+				guid: `${event.url.origin}/garden/${item.category}/${item.slug}`,
+				pubDate: item.publishedAt || item.createdAt,
+				updatedDate: item.updatedAt,
+				postType: item.category,
+				featuredImage: item.imageUrl
 			}))
 		].sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 
