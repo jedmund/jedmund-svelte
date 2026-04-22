@@ -8,7 +8,7 @@
 	const href = $derived(`/garden/${garden.category}/${garden.slug}`)
 
 	const excerpt = $derived(
-		garden.content ? renderInlineExcerpt(garden.content, 220) : { html: '', truncated: false }
+		garden.content ? renderInlineExcerpt(garden.content) : { html: '', truncated: false }
 	)
 </script>
 
@@ -100,18 +100,9 @@
 		color: $gray-10;
 		font-size: 1rem;
 		line-height: 1.5;
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 3;
-		line-clamp: 3;
-		overflow: hidden;
 
 		:global(p) {
 			margin: 0;
-		}
-
-		:global(p + p) {
-			margin-top: $unit;
 		}
 
 		:global(a) {

@@ -26,10 +26,10 @@
 			: null
 	)
 
-	// Rich excerpt (preserves inline marks incl. links) for essay previews
+	// First paragraph (inline marks/links preserved) for essay previews
 	const essayExcerpt = $derived(
 		post.postType === 'essay' && post.content
-			? renderInlineExcerpt(post.content, 300)
+			? renderInlineExcerpt(post.content)
 			: { html: '', truncated: false }
 	)
 
@@ -216,20 +216,8 @@
 			font-style: italic;
 		}
 
-		&.post-excerpt--essay {
-			display: -webkit-box;
-			-webkit-box-orient: vertical;
-			-webkit-line-clamp: 3;
-			line-clamp: 3;
-			overflow: hidden;
-
-			:global(p) {
-				margin: 0;
-			}
-
-			:global(p + p) {
-				margin-top: $unit;
-			}
+		&.post-excerpt--essay :global(p) {
+			margin: 0;
 		}
 
 		// Hide embeds in the rendered content since we show them separately

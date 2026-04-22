@@ -409,10 +409,11 @@ export interface InlineExcerpt {
 	truncated: boolean
 }
 
-// Build an excerpt that preserves inline marks (bold/italic/link/code/etc.)
-// by walking only the top-level paragraphs of a Tiptap doc. Non-paragraph blocks
-// (images, figures, embeds, code blocks) are skipped — hero media handles those.
-export const renderInlineExcerpt = (content: unknown, maxLength = 200): InlineExcerpt => {
+// Build an excerpt that renders the first paragraph of a Tiptap doc in full,
+// preserving inline marks (bold/italic/link/code/etc.). Non-paragraph blocks
+// are skipped — hero media handles those. `truncated` is true whenever there is
+// any content beyond that first paragraph so the caller can show a CTA.
+export const renderInlineExcerpt = (content: unknown): InlineExcerpt => {
 	if (!content) return { html: '', truncated: false }
 
 	const escapeHtml = (str: string): string =>
@@ -459,50 +460,37 @@ export const renderInlineExcerpt = (content: unknown, maxLength = 200): InlineEx
 
 	const contentObj = content as Record<string, unknown>
 	if (contentObj.type !== 'doc' || !Array.isArray(contentObj.content)) {
-		// Fallback: plain-text excerpt escaped
-		const text = getContentExcerpt(content, maxLength)
-		return { html: escapeHtml(text), truncated: text.endsWith('...') }
+		const text = getContentExcerpt(content)
+		return { html: escapeHtml(text), truncated: false }
 	}
 
 	const blocks = contentObj.content as ContentNode[]
-	const paragraphs = blocks.filter((b) => b.type === 'paragraph')
 
-	let remaining = maxLength
-	let truncated = false
-	const rendered: string[] = []
-
-	for (let i = 0; i < paragraphs.length; i++) {
-		const para = paragraphs[i]
-		const inline = Array.isArray(para.content) ? para.content : []
+	// Find the first paragraph that actually has some text content.
+	let firstIndex = -1
+	let firstParaHtml = ''
+	for (let i = 0; i < blocks.length; i++) {
+		const block = blocks[i]
+		if (block.type !== 'paragraph') continue
+		const inline = Array.isArray(block.content) ? block.content : []
 		let paraHtml = ''
-
 		for (const node of inline) {
-			if (remaining <= 0) {
-				truncated = true
-				break
-			}
 			if (node.type !== 'text') continue
-			let text = node.text ?? ''
-			if (text.length > remaining) {
-				text = text.slice(0, remaining).trimEnd() + '...'
-				truncated = true
-			}
-			remaining -= text.length
-			paraHtml += applyMarks(escapeHtml(text), node.marks)
+			paraHtml += applyMarks(escapeHtml(node.text ?? ''), node.marks)
 		}
-
-		if (paraHtml) rendered.push(`<p>${paraHtml}</p>`)
-		if (truncated) break
-	}
-
-	// Flag truncation if we stopped early or the doc had non-paragraph blocks
-	if (!truncated) {
-		if (rendered.length < paragraphs.length || blocks.length > paragraphs.length) {
-			truncated = true
+		if (paraHtml.trim()) {
+			firstIndex = i
+			firstParaHtml = paraHtml
+			break
 		}
 	}
 
-	return { html: sanitize(rendered.join('')), truncated }
+	if (firstIndex === -1) return { html: '', truncated: blocks.length > 0 }
+
+	// Anything after the chosen paragraph counts as "more" content.
+	const truncated = blocks.length > firstIndex + 1
+
+	return { html: sanitize(`<p>${firstParaHtml}</p>`), truncated }
 }
 
 // Extract text content from Edra JSON for excerpt
