@@ -1,15 +1,15 @@
 <script lang="ts">
 	import UniverseCard from './UniverseCard.svelte'
-	import { getContentExcerpt } from '$lib/utils/content'
+	import { renderInlineExcerpt } from '$lib/utils/content'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
 	let { garden }: { garden: UniverseItem } = $props()
 
 	const href = $derived(`/garden/${garden.category}/${garden.slug}`)
 
-	const excerpt = $derived(garden.content ? getContentExcerpt(garden.content, 220) : '')
-
-	const isContentTruncated = $derived(excerpt.endsWith('...'))
+	const excerpt = $derived(
+		garden.content ? renderInlineExcerpt(garden.content, 220) : { html: '', truncated: false }
+	)
 </script>
 
 <UniverseCard
@@ -33,13 +33,13 @@
 				<p class="card-creator">{garden.creator}</p>
 			{/if}
 
-			{#if excerpt}
-				<p class="card-excerpt">{excerpt}</p>
+			{#if excerpt.html}
+				<div class="card-excerpt">{@html excerpt.html}</div>
 			{/if}
 
-			{#if isContentTruncated}
+			{#if excerpt.truncated}
 				<p>
-					<a {href} class="read-more" tabindex="-1">Read more</a>
+					<a {href} class="read-more" tabindex="-1">Continue reading</a>
 				</p>
 			{/if}
 		</div>
@@ -97,7 +97,6 @@
 	}
 
 	.card-excerpt {
-		margin: 0;
 		color: $gray-10;
 		font-size: 1rem;
 		line-height: 1.5;
@@ -106,6 +105,23 @@
 		-webkit-line-clamp: 3;
 		line-clamp: 3;
 		overflow: hidden;
+
+		:global(p) {
+			margin: 0;
+		}
+
+		:global(p + p) {
+			margin-top: $unit;
+		}
+
+		:global(a) {
+			color: $red-60;
+			text-decoration: none;
+		}
+
+		:global(a:hover) {
+			text-decoration: underline;
+		}
 	}
 
 	.read-more {

@@ -404,6 +404,107 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 	return (doc.content as ContentNode[]).map(renderNode).join('')
 }
 
+export interface InlineExcerpt {
+	html: string
+	truncated: boolean
+}
+
+// Build an excerpt that preserves inline marks (bold/italic/link/code/etc.)
+// by walking only the top-level paragraphs of a Tiptap doc. Non-paragraph blocks
+// (images, figures, embeds, code blocks) are skipped — hero media handles those.
+export const renderInlineExcerpt = (content: unknown, maxLength = 200): InlineExcerpt => {
+	if (!content) return { html: '', truncated: false }
+
+	const escapeHtml = (str: string): string =>
+		str
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#039;')
+
+	const applyMarks = (text: string, marks: Mark[] | undefined): string => {
+		if (!marks) return text
+		let out = text
+		for (const mark of marks) {
+			switch (mark.type) {
+				case 'bold':
+					out = `<strong>${out}</strong>`
+					break
+				case 'italic':
+					out = `<em>${out}</em>`
+					break
+				case 'underline':
+					out = `<u>${out}</u>`
+					break
+				case 'strike':
+					out = `<s>${out}</s>`
+					break
+				case 'code':
+					out = `<code>${out}</code>`
+					break
+				case 'link': {
+					const href = escapeHtml(String(mark.attrs?.href ?? '#'))
+					const target = escapeHtml(String(mark.attrs?.target ?? '_blank'))
+					out = `<a href="${href}" target="${target}" rel="noopener noreferrer">${out}</a>`
+					break
+				}
+				case 'highlight':
+					out = `<mark>${out}</mark>`
+					break
+			}
+		}
+		return out
+	}
+
+	const contentObj = content as Record<string, unknown>
+	if (contentObj.type !== 'doc' || !Array.isArray(contentObj.content)) {
+		// Fallback: plain-text excerpt escaped
+		const text = getContentExcerpt(content, maxLength)
+		return { html: escapeHtml(text), truncated: text.endsWith('...') }
+	}
+
+	const blocks = contentObj.content as ContentNode[]
+	const paragraphs = blocks.filter((b) => b.type === 'paragraph')
+
+	let remaining = maxLength
+	let truncated = false
+	const rendered: string[] = []
+
+	for (let i = 0; i < paragraphs.length; i++) {
+		const para = paragraphs[i]
+		const inline = Array.isArray(para.content) ? para.content : []
+		let paraHtml = ''
+
+		for (const node of inline) {
+			if (remaining <= 0) {
+				truncated = true
+				break
+			}
+			if (node.type !== 'text') continue
+			let text = node.text ?? ''
+			if (text.length > remaining) {
+				text = text.slice(0, remaining).trimEnd() + '...'
+				truncated = true
+			}
+			remaining -= text.length
+			paraHtml += applyMarks(escapeHtml(text), node.marks)
+		}
+
+		if (paraHtml) rendered.push(`<p>${paraHtml}</p>`)
+		if (truncated) break
+	}
+
+	// Flag truncation if we stopped early or the doc had non-paragraph blocks
+	if (!truncated) {
+		if (rendered.length < paragraphs.length || blocks.length > paragraphs.length) {
+			truncated = true
+		}
+	}
+
+	return { html: sanitize(rendered.join('')), truncated }
+}
+
 // Extract text content from Edra JSON for excerpt
 export const getContentExcerpt = (content: EditorData | unknown, maxLength = 200): string => {
 	if (!content) return ''

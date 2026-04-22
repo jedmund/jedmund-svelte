@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte'
 	import UniverseCard from './UniverseCard.svelte'
 	import TagPill from './TagPill.svelte'
-	import { getContentExcerpt, renderEdraContent } from '$lib/utils/content'
+	import { renderEdraContent, renderInlineExcerpt } from '$lib/utils/content'
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
 	import { extractHeroMedia } from '$lib/utils/extractHeroMedia'
 	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
@@ -26,15 +26,12 @@
 			: null
 	)
 
-	// Check if content is truncated
-	const isContentTruncated = $derived(() => {
-		if (post.content) {
-			// Check if the excerpt is shorter than the full content
-			const excerpt = getContentExcerpt(post.content)
-			return excerpt.endsWith('...')
-		}
-		return false
-	})
+	// Rich excerpt (preserves inline marks incl. links) for essay previews
+	const essayExcerpt = $derived(
+		post.postType === 'essay' && post.content
+			? renderInlineExcerpt(post.content, 300)
+			: { html: '', truncated: false }
+	)
 
 	let excerptEl: HTMLDivElement | undefined = $state()
 	let cleanupAudio: (() => void) | undefined
@@ -139,9 +136,13 @@
 	{/if}
 
 	{#if post.content}
-		<div class="post-excerpt" bind:this={excerptEl}>
+		<div
+			class="post-excerpt"
+			class:post-excerpt--essay={post.postType === 'essay'}
+			bind:this={excerptEl}
+		>
 			{#if post.postType === 'essay'}
-				<p>{getContentExcerpt(post.content, 300)}</p>
+				{@html essayExcerpt.html}
 			{:else}
 				{@html renderEdraContent(post.content)}
 			{/if}
@@ -156,7 +157,7 @@
 		</div>
 	{/if}
 
-	{#if post.postType === 'essay' && isContentTruncated()}
+	{#if post.postType === 'essay' && essayExcerpt.truncated}
 		<p>
 			<a href="/universe/{post.slug}" class="read-more" tabindex="-1">Continue reading</a>
 		</p>
@@ -185,22 +186,6 @@
 	}
 
 	.post-excerpt {
-		p {
-			margin: 0;
-			color: $gray-10;
-			font-size: 1rem;
-			line-height: 1.5;
-		}
-
-		// Only apply truncation for essay excerpts
-		p:only-child {
-			display: -webkit-box;
-			-webkit-box-orient: vertical;
-			-webkit-line-clamp: 2;
-			line-clamp: 2;
-			overflow: hidden;
-		}
-
 		// Styles for full content (non-essays)
 		:global(p) {
 			margin: 0 0 $unit-2x;
@@ -229,6 +214,22 @@
 
 		:global(em) {
 			font-style: italic;
+		}
+
+		&.post-excerpt--essay {
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 3;
+			line-clamp: 3;
+			overflow: hidden;
+
+			:global(p) {
+				margin: 0;
+			}
+
+			:global(p + p) {
+				margin-top: $unit;
+			}
 		}
 
 		// Hide embeds in the rendered content since we show them separately
