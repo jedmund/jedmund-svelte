@@ -15,6 +15,7 @@ import {
 	extractMediaIds,
 	type MediaUsageReference
 } from '$lib/server/media-usage.js'
+import { enrichUrlEmbeds } from '$lib/server/enrich-url-embeds'
 
 export const GET: RequestHandler = async (event) => {
 	if (!checkAdminAuth(event)) {
@@ -121,6 +122,8 @@ export const POST: RequestHandler = async (event) => {
 		if (data.attachedPhotos && data.attachedPhotos.length > 0 && !featuredImageId) {
 			featuredImageId = data.attachedPhotos[0]
 		}
+
+		await enrichUrlEmbeds(data.content)
 
 		const post = await prisma.$transaction(async (tx) => {
 			const created = await tx.post.create({
