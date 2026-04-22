@@ -119,6 +119,9 @@ function extFromContentType(contentType: string): string {
 			return 'avif'
 		case 'image/svg+xml':
 			return 'svg'
+		case 'image/x-icon':
+		case 'image/vnd.microsoft.icon':
+			return 'ico'
 		default:
 			return 'img'
 	}

@@ -1,5 +1,5 @@
 import { scrapeOgMetadata, type OgMetadata } from './og-metadata'
-import { downloadOgImage } from './og-image-download'
+import { downloadOgImage, type DownloadedOgImage } from './og-image-download'
 
 interface UrlEmbedAttrs {
 	url?: string
@@ -8,6 +8,7 @@ interface UrlEmbedAttrs {
 	image?: string
 	imageMediaId?: number
 	favicon?: string
+	faviconMediaId?: number
 	siteName?: string
 	[key: string]: unknown
 }
@@ -39,18 +40,26 @@ export async function enrichUrlEmbeds(content: unknown): Promise<void> {
 		[...unique.entries()].map(async ([url, targets]) => {
 			try {
 				const metadata = await scrapeOgMetadata(url)
-				const hosted =
-					metadata.image && !isLocallyHosted(metadata.image)
-						? await downloadOgImage(metadata.image, url)
-						: null
+				const [hostedImage, hostedFavicon] = await Promise.all([
+					downloadIfRemote(metadata.image, url),
+					downloadIfRemote(metadata.favicon, url)
+				])
 				for (const node of targets) {
-					applyMetadata(node, metadata, hosted)
+					applyMetadata(node, metadata, hostedImage, hostedFavicon)
 				}
 			} catch (err) {
 				console.error(`Failed to enrich urlEmbed for ${url}:`, err)
 			}
 		})
 	)
+}
+
+async function downloadIfRemote(
+	imageUrl: string | null,
+	referer: string
+): Promise<DownloadedOgImage | null> {
+	if (!imageUrl || isLocallyHosted(imageUrl)) return null
+	return downloadOgImage(imageUrl, referer)
 }
 
 function isLocallyHosted(imageUrl: string): boolean {
@@ -73,29 +82,36 @@ function collectMissing(node: RichTextNode, out: RichTextNode[]): void {
 
 function needsEnrichment(attrs: UrlEmbedAttrs): boolean {
 	if (!attrs.title) return true
-	if (!attrs.image) return true
-	// Legacy/hotlinked images should be re-hosted on our own storage.
-	if (!isLocallyHosted(attrs.image)) return true
+	if (!attrs.image || !isLocallyHosted(attrs.image)) return true
+	// Favicon is optional, but if present it should also be self-hosted.
+	if (attrs.favicon && !isLocallyHosted(attrs.favicon)) return true
 	return false
 }
 
 function applyMetadata(
 	node: RichTextNode,
 	metadata: OgMetadata,
-	hosted: { mediaId: number; url: string } | null
+	hostedImage: DownloadedOgImage | null,
+	hostedFavicon: DownloadedOgImage | null
 ): void {
 	const attrs: UrlEmbedAttrs = { ...(node.attrs ?? {}) }
 	if (!attrs.title && metadata.title) attrs.title = metadata.title
 	if (!attrs.description && metadata.description) attrs.description = metadata.description
 
-	if (hosted) {
-		attrs.image = hosted.url
-		attrs.imageMediaId = hosted.mediaId
+	if (hostedImage) {
+		attrs.image = hostedImage.url
+		attrs.imageMediaId = hostedImage.mediaId
 	} else if (!attrs.image && metadata.image) {
 		attrs.image = metadata.image
 	}
 
-	if (!attrs.favicon && metadata.favicon) attrs.favicon = metadata.favicon
+	if (hostedFavicon) {
+		attrs.favicon = hostedFavicon.url
+		attrs.faviconMediaId = hostedFavicon.mediaId
+	} else if (!attrs.favicon && metadata.favicon) {
+		attrs.favicon = metadata.favicon
+	}
+
 	if (!attrs.siteName && metadata.siteName) attrs.siteName = metadata.siteName
 	node.attrs = attrs
 }

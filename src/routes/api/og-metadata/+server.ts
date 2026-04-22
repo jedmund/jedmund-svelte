@@ -20,18 +20,24 @@ export const GET: RequestHandler = async ({ url }) => {
 }
 
 /**
- * Rewrite the image url to point at our same-origin proxy so browsers with a
- * strict `img-src 'self'` CSP can still render the preview during editing.
- * Server-side callers (enrichUrlEmbeds) call `scrapeOgMetadata` directly and
- * keep the raw url, which is what gets downloaded into Media at save time.
+ * Rewrite remote image urls (og:image + favicon) to point at our same-origin
+ * proxy so browsers with a strict `img-src 'self'` CSP can still render the
+ * preview during editing. Server-side callers (enrichUrlEmbeds) call
+ * `scrapeOgMetadata` directly and keep the raw urls, which is what gets
+ * downloaded into Media at save time.
  */
 function proxyRemoteImage(metadata: OgMetadata): OgMetadata {
-	if (!metadata.image) return metadata
-	if (metadata.image.startsWith('/')) return metadata
 	return {
 		...metadata,
-		image: `/api/og-image-proxy?url=${encodeURIComponent(metadata.image)}`
+		image: toProxyUrl(metadata.image),
+		favicon: toProxyUrl(metadata.favicon)
 	}
+}
+
+function toProxyUrl(src: string | null): string | null {
+	if (!src) return src
+	if (src.startsWith('/')) return src
+	return `/api/og-image-proxy?url=${encodeURIComponent(src)}`
 }
 
 export const POST: RequestHandler = async ({ request }) => {
