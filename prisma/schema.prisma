@@ -127,6 +127,7 @@ model Media {
   originalName     String?      @db.VarChar(255)
   updatedAt        DateTime     @updatedAt
   isPhotography    Boolean      @default(false)
+  isLinkCardImage  Boolean      @default(false)
   exifData         Json?
   photoCaption     String?
   photoTitle       String?      @db.VarChar(255)
@@ -145,6 +146,7 @@ model Media {
   photos           Photo[]
 
   @@index([isPhotography])
+  @@index([isLinkCardImage])
 }
 
 model MediaUsage {
