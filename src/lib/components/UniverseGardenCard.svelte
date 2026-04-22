@@ -34,12 +34,10 @@
 			{/if}
 
 			{#if excerpt.html}
-				<div class="card-excerpt">{@html excerpt.html}</div>
-			{/if}
-
-			{#if excerpt.truncated}
-				<p>
-					<a {href} class="read-more" tabindex="-1">Continue reading</a>
+				<p class="card-excerpt">
+					{@html excerpt.html}{#if excerpt.truncated}&nbsp;<a {href} class="read-more" tabindex="-1"
+							>Continue reading</a
+						>{/if}
 				</p>
 			{/if}
 		</div>
@@ -97,13 +95,10 @@
 	}
 
 	.card-excerpt {
+		margin: 0;
 		color: $gray-10;
 		font-size: 1rem;
 		line-height: 1.5;
-
-		:global(p) {
-			margin: 0;
-		}
 
 		:global(a) {
 			color: $red-60;
@@ -116,11 +111,13 @@
 	}
 
 	.read-more {
-		display: inline-block;
-		margin-top: $unit;
 		color: $red-60;
 		text-decoration: none;
-		font-size: 0.875rem;
+		font-size: inherit;
 		font-weight: 500;
+
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 </style>

@@ -142,7 +142,13 @@
 			bind:this={excerptEl}
 		>
 			{#if post.postType === 'essay'}
-				{@html essayExcerpt.html}
+				<p>
+					{@html essayExcerpt.html}{#if essayExcerpt.truncated}&nbsp;<a
+							href="/universe/{post.slug}"
+							class="read-more"
+							tabindex="-1">Continue reading</a
+						>{/if}
+				</p>
 			{:else}
 				{@html renderEdraContent(post.content)}
 			{/if}
@@ -155,12 +161,6 @@
 				<TagPill {tag} size="small" href="/universe?tags={tag.slug}" />
 			{/each}
 		</div>
-	{/if}
-
-	{#if post.postType === 'essay' && essayExcerpt.truncated}
-		<p>
-			<a href="/universe/{post.slug}" class="read-more" tabindex="-1">Continue reading</a>
-		</p>
 	{/if}
 
 	{#if post.attachments && Array.isArray(post.attachments) && post.attachments.length > 0}
@@ -262,9 +262,13 @@
 	.read-more {
 		color: $red-60;
 		text-decoration: none;
-		font-size: 0.875rem;
+		font-size: inherit;
 		font-weight: 500;
 		transition: all 0.2s ease;
+
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 
 	// Hero media pulled from the first image/video node in content

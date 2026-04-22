@@ -410,9 +410,10 @@ export interface InlineExcerpt {
 }
 
 // Build an excerpt that renders the first paragraph of a Tiptap doc in full,
-// preserving inline marks (bold/italic/link/code/etc.). Non-paragraph blocks
-// are skipped — hero media handles those. `truncated` is true whenever there is
-// any content beyond that first paragraph so the caller can show a CTA.
+// preserving inline marks (bold/italic/link/code/etc.). The returned `html` is
+// the paragraph's inner HTML (no outer <p>) so callers can splice inline CTAs
+// like "Continue reading" into the same flow. `truncated` is true whenever
+// there's any content beyond that first paragraph.
 export const renderInlineExcerpt = (content: unknown): InlineExcerpt => {
 	if (!content) return { html: '', truncated: false }
 
@@ -490,7 +491,7 @@ export const renderInlineExcerpt = (content: unknown): InlineExcerpt => {
 	// Anything after the chosen paragraph counts as "more" content.
 	const truncated = blocks.length > firstIndex + 1
 
-	return { html: sanitize(`<p>${firstParaHtml}</p>`), truncated }
+	return { html: sanitize(firstParaHtml), truncated }
 }
 
 // Extract text content from Edra JSON for excerpt
