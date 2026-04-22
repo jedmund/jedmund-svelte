@@ -4,6 +4,7 @@
 	import TagPill from './TagPill.svelte'
 	import { getContentExcerpt, renderEdraContent } from '$lib/utils/content'
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
+	import { extractHeroMedia } from '$lib/utils/extractHeroMedia'
 	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
@@ -16,6 +17,14 @@
 			: []
 	)
 	const firstEmbed = $derived(embeds[0])
+
+	// First image/video node from content, used as hero for essay posts where the
+	// rendered preview is a text-only excerpt and inline media would otherwise be hidden.
+	const heroMedia = $derived(
+		post.postType === 'essay' && !firstEmbed && post.content
+			? extractHeroMedia(post.content as unknown as import('$lib/types/editor').TiptapNode)
+			: null
+	)
 
 	// Check if content is truncated
 	const isContentTruncated = $derived(() => {
@@ -59,6 +68,25 @@
 		<h2 class="card-title">
 			<a href="/universe/{post.slug}" class="card-title-link" tabindex="-1">{post.title}</a>
 		</h2>
+	{/if}
+
+	{#if heroMedia}
+		<a href="/universe/{post.slug}" class="hero-media" tabindex="-1">
+			{#if heroMedia.type === 'video'}
+				<video
+					src={heroMedia.src}
+					muted
+					playsinline
+					preload="metadata"
+					aria-label={heroMedia.title ?? 'Video preview'}
+				></video>
+				<span class="hero-play" aria-hidden="true">
+					<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+				</span>
+			{:else}
+				<img src={heroMedia.src} alt={heroMedia.alt ?? heroMedia.title ?? ''} loading="lazy" />
+			{/if}
+		</a>
 	{/if}
 
 	{#if firstEmbed}
@@ -239,6 +267,49 @@
 		font-size: 0.875rem;
 		font-weight: 500;
 		transition: all 0.2s ease;
+	}
+
+	// Hero media pulled from the first image/video node in content
+	.hero-media {
+		position: relative;
+		display: block;
+		width: 100%;
+		margin-bottom: $unit-2x;
+		border-radius: $image-corner-radius;
+		overflow: hidden;
+		background: $gray-95;
+		border: 1px solid $gray-85;
+		aspect-ratio: 16 / 9;
+
+		img,
+		video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+		}
+	}
+
+	.hero-play {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 56px;
+		height: 56px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		background: rgba(0, 0, 0, 0.55);
+		border-radius: 50%;
+		pointer-events: none;
+
+		svg {
+			width: 28px;
+			height: 28px;
+			margin-left: 4px;
+		}
 	}
 
 	// Embed preview styles
