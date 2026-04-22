@@ -10,6 +10,7 @@ import {
 	trackMediaUsage,
 	type MediaUsageReference
 } from '$lib/server/media-usage.js'
+import { enrichUrlEmbeds } from '$lib/server/enrich-url-embeds'
 
 export const GET: RequestHandler = async (event) => {
 	if (!checkAdminAuth(event)) {
@@ -99,6 +100,8 @@ export const PUT: RequestHandler = async (event) => {
 				}
 			}
 		}
+
+		await enrichUrlEmbeds(data.content)
 
 		const post = await prisma.$transaction(async (tx) => {
 			const updated = await tx.post.update({
@@ -210,7 +213,10 @@ export const PATCH: RequestHandler = async (event) => {
 		if (data.title !== undefined) updateData.title = data.title
 		if (data.slug !== undefined) updateData.slug = data.slug
 		if (data.type !== undefined) updateData.postType = data.type
-		if (data.content !== undefined) updateData.content = data.content
+		if (data.content !== undefined) {
+			await enrichUrlEmbeds(data.content)
+			updateData.content = data.content
+		}
 		if (data.featuredImage !== undefined) updateData.featuredImage = data.featuredImage
 		if (data.attachedPhotos !== undefined)
 			updateData.attachments =

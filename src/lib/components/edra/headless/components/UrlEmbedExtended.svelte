@@ -1,24 +1,31 @@
 <script lang="ts">
 	import type { NodeViewProps } from '@tiptap/core'
 	import { NodeViewWrapper } from 'svelte-tiptap'
-	import { onMount } from 'svelte'
 	import MoreHorizontal from '@lucide/svelte/icons/more-horizontal'
 	import EmbedContextMenu from './EmbedContextMenu.svelte'
 
 	const { editor, node, deleteNode, getPos, selected }: NodeViewProps = $props()
 
+	type FetchStatus = 'idle' | 'loading' | 'error'
+
 	let showActions = $state(false)
 	let showContextMenu = $state(false)
 	let contextMenuPosition = $state({ x: 0, y: 0 })
+	let status = $state<FetchStatus>('idle')
+	let lastFetchedUrl: string | null = null
+	let fetchGeneration = 0
 
 	// Check if this is a YouTube URL
 	const isYouTube = $derived(/(?:youtube\.com|youtu\.be)/.test(node.attrs.url || ''))
 
-	// Auto-fetch metadata when node has URL but no title (freshly converted from link)
-	onMount(() => {
-		if (node.attrs.url && !node.attrs.title && !isYouTube) {
-			refreshMetadata()
-		}
+	// Auto-fetch metadata when node has URL but is missing title/image. Re-runs if url changes.
+	$effect(() => {
+		const url = node.attrs.url
+		if (!url || isYouTube) return
+		if (node.attrs.title && node.attrs.image) return
+		if (url === lastFetchedUrl) return
+		lastFetchedUrl = url
+		refreshMetadata()
 	})
 
 	// Extract video ID from YouTube URL
@@ -54,11 +61,14 @@
 	}
 
 	async function refreshMetadata() {
-		if (!node.attrs.url) return
+		const requestUrl = node.attrs.url
+		if (!requestUrl) return
 
+		const generation = ++fetchGeneration
+		status = 'loading'
 		try {
 			const response = await fetch(
-				`/api/og-metadata?url=${encodeURIComponent(node.attrs.url)}&refresh=true`
+				`/api/og-metadata?url=${encodeURIComponent(requestUrl)}&refresh=true`
 			)
 			if (!response.ok) {
 				throw new Error('Failed to fetch metadata')
@@ -66,7 +76,9 @@
 
 			const metadata = await response.json()
 
-			// Update the node attributes
+			// Ignore the response if the node's url changed or a newer fetch was started.
+			if (generation !== fetchGeneration || node.attrs.url !== requestUrl) return
+
 			const pos = getPos()
 			if (typeof pos === 'number') {
 				editor
@@ -81,9 +93,18 @@
 					})
 					.run()
 			}
+			status = 'idle'
 		} catch (err) {
+			if (generation !== fetchGeneration) return
 			console.error('Error refreshing metadata:', err)
+			status = 'error'
 		}
+	}
+
+	function retryFetch(event: MouseEvent) {
+		event.stopPropagation()
+		lastFetchedUrl = null
+		refreshMetadata()
 	}
 
 	function openLink() {
@@ -243,6 +264,8 @@
 					<div class="edra-url-embed-image">
 						<img src={node.attrs.image} alt={node.attrs.title || 'Link preview'} />
 					</div>
+				{:else if status === 'loading'}
+					<div class="edra-url-embed-image edra-url-embed-image-skeleton" aria-hidden="true"></div>
 				{/if}
 				<div class="edra-url-embed-text">
 					<div class="edra-url-embed-meta">
@@ -254,6 +277,19 @@
 								? decodeHtmlEntities(node.attrs.siteName)
 								: getDomain(node.attrs.url)}</span
 						>
+						{#if status === 'loading' && !node.attrs.title}
+							<span class="edra-url-embed-status">Fetching preview…</span>
+						{:else if status === 'error' && !node.attrs.title}
+							<span
+								class="edra-url-embed-retry"
+								role="button"
+								tabindex="0"
+								onclick={retryFetch}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') retryFetch(e as unknown as MouseEvent)
+								}}>Couldn't load preview — Retry</span
+							>
+						{/if}
 					</div>
 					{#if node.attrs.title}
 						<h3 class="edra-url-embed-title">{decodeHtmlEntities(node.attrs.title)}</h3>
@@ -393,6 +429,36 @@
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
+		}
+	}
+
+	.edra-url-embed-image-skeleton {
+		background: linear-gradient(90deg, $gray-85 0%, $gray-90 50%, $gray-85 100%);
+		background-size: 200% 100%;
+		animation: edra-url-embed-shimmer 1.2s ease-in-out infinite;
+	}
+
+	@keyframes edra-url-embed-shimmer {
+		0% {
+			background-position: 200% 0;
+		}
+		100% {
+			background-position: -200% 0;
+		}
+	}
+
+	.edra-url-embed-status {
+		font-style: italic;
+		color: $gray-50;
+	}
+
+	.edra-url-embed-retry {
+		color: $primary-color;
+		cursor: pointer;
+		text-decoration: underline;
+
+		&:hover {
+			text-decoration: none;
 		}
 	}
 
