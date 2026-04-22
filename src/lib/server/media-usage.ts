@@ -270,9 +270,14 @@ function extractMediaFromRichText(content: unknown): number[] {
 			}
 		}
 
-		// Handle urlEmbed link-card thumbnails that we downloaded into our media store
-		if (node.type === 'urlEmbed' && typeof node.attrs?.imageMediaId === 'number') {
-			mediaIds.push(node.attrs.imageMediaId as number)
+		// Handle urlEmbed link-card thumbnails and favicons that we downloaded into our media store
+		if (node.type === 'urlEmbed') {
+			if (typeof node.attrs?.imageMediaId === 'number') {
+				mediaIds.push(node.attrs.imageMediaId as number)
+			}
+			if (typeof node.attrs?.faviconMediaId === 'number') {
+				mediaIds.push(node.attrs.faviconMediaId as number)
+			}
 		}
 
 		// Recursively traverse child nodes

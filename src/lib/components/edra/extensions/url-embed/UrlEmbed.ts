@@ -65,6 +65,9 @@ export const UrlEmbed = Node.create<UrlEmbedOptions>({
 			favicon: {
 				default: null
 			},
+			faviconMediaId: {
+				default: null
+			},
 			siteName: {
 				default: null
 			}

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
-import { scrapeOgMetadata } from '$lib/server/og-metadata'
+import { scrapeOgMetadata, type OgMetadata } from '$lib/server/og-metadata'
 
 export const GET: RequestHandler = async ({ url }) => {
 	const targetUrl = url.searchParams.get('url')
@@ -12,11 +12,32 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		const metadata = await scrapeOgMetadata(targetUrl, { forceRefresh })
-		return json(metadata)
+		return json(proxyRemoteImage(metadata))
 	} catch (error) {
 		console.error('Error fetching OpenGraph data:', error)
 		return json({ error: 'Failed to fetch metadata', url: targetUrl }, { status: 500 })
 	}
+}
+
+/**
+ * Rewrite remote image urls (og:image + favicon) to point at our same-origin
+ * proxy so browsers with a strict `img-src 'self'` CSP can still render the
+ * preview during editing. Server-side callers (enrichUrlEmbeds) call
+ * `scrapeOgMetadata` directly and keep the raw urls, which is what gets
+ * downloaded into Media at save time.
+ */
+function proxyRemoteImage(metadata: OgMetadata): OgMetadata {
+	return {
+		...metadata,
+		image: toProxyUrl(metadata.image),
+		favicon: toProxyUrl(metadata.favicon)
+	}
+}
+
+function toProxyUrl(src: string | null): string | null {
+	if (!src) return src
+	if (src.startsWith('/')) return src
+	return `/api/og-image-proxy?url=${encodeURIComponent(src)}`
 }
 
 export const POST: RequestHandler = async ({ request }) => {
