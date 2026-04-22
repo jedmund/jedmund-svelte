@@ -135,11 +135,6 @@
 				color: $red-60;
 			}
 
-			:global(.card-icon) {
-				fill: $red-60;
-				transform: rotate(15deg);
-			}
-
 			:global(.card-title-link) {
 				color: $red-60;
 			}
@@ -149,6 +144,24 @@
 			color: $gray-10;
 			text-decoration: none;
 			transition: all $transition-normal ease;
+		}
+	}
+
+	.universe-card--post {
+		.card-content:hover :global(.card-icon) {
+			fill: $red-60;
+			transform: rotate(15deg);
+		}
+	}
+
+	.universe-card--garden {
+		:global(.card-icon) {
+			transform-origin: center bottom;
+		}
+
+		.card-content:hover :global(.card-icon) {
+			fill: $red-60;
+			animation: leafSway 0.6s ease;
 		}
 	}
 
