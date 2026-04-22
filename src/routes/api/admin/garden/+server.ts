@@ -20,6 +20,7 @@ interface GardenItemCreateBody {
 	rating?: number
 	isCurrent?: boolean
 	isFavorite?: boolean
+	showInUniverse?: boolean
 	displayOrder?: number
 	status?: string
 }
@@ -84,6 +85,7 @@ export const POST: RequestHandler = async (event) => {
 				rating: body.rating != null ? Math.min(5, Math.max(1, body.rating)) : null,
 				isCurrent: body.isCurrent ?? false,
 				isFavorite: body.isFavorite ?? false,
+				showInUniverse: body.showInUniverse ?? false,
 				displayOrder: body.displayOrder ?? 0,
 				status,
 				publishedAt: status === 'published' ? new Date() : null

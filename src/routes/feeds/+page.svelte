@@ -24,6 +24,11 @@
 			name: 'Photos',
 			url: '/rss/photos',
 			description: 'Photo albums and standalone photos.'
+		},
+		{
+			name: 'Garden',
+			url: '/rss/garden',
+			description: 'Books, movies, games, music, and more — with notes and ratings.'
 		}
 	]
 </script>

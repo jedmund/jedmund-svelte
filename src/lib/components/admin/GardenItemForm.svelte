@@ -49,6 +49,7 @@
 	let rating = $state<number | null>(item?.rating ?? null)
 	let isCurrent = $state(item?.isCurrent ?? false)
 	let isFavorite = $state(item?.isFavorite ?? false)
+	let showInUniverse = $state(item?.showInUniverse ?? false)
 	let status = $state<'draft' | 'published'>((item?.status as 'draft' | 'published') ?? 'draft')
 	let note = $state<JSONContent>(
 		(item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
@@ -106,6 +107,7 @@
 		rating: item?.rating ?? null,
 		isCurrent: item?.isCurrent ?? false,
 		isFavorite: item?.isFavorite ?? false,
+		showInUniverse: item?.showInUniverse ?? false,
 		status: (item?.status as 'draft' | 'published') ?? 'draft',
 		note: JSON.stringify(
 			(item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
@@ -125,6 +127,7 @@
 			rating !== original.rating ||
 			isCurrent !== original.isCurrent ||
 			isFavorite !== original.isFavorite ||
+			showInUniverse !== original.showInUniverse ||
 			status !== original.status ||
 			JSON.stringify(note) !== original.note
 	)
@@ -281,6 +284,7 @@
 				rating,
 				isCurrent,
 				isFavorite,
+				showInUniverse,
 				status: saveStatus,
 				note: note && note.content && note.content.length > 0 ? note : null,
 				updatedAt: mode === 'edit' ? item?.updatedAt : undefined
@@ -310,6 +314,7 @@
 				rating: savedItem.rating ?? null,
 				isCurrent: savedItem.isCurrent,
 				isFavorite: savedItem.isFavorite,
+				showInUniverse: savedItem.showInUniverse,
 				status: savedItem.status as 'draft' | 'published',
 				note: JSON.stringify(savedItem.note ?? { type: 'doc', content: [{ type: 'paragraph' }] })
 			}
@@ -398,6 +403,7 @@
 				rating,
 				isCurrent,
 				isFavorite,
+				showInUniverse,
 				status,
 				note: JSON.stringify(note)
 			}
@@ -524,6 +530,16 @@
 								<span class="switch-description">This one's a banger</span>
 							</div>
 							<Switch bind:checked={isFavorite} />
+						</div>
+
+						<div class="switch-field">
+							<div class="switch-info">
+								<span class="switch-label">Show in Universe</span>
+								<span class="switch-description"
+									>Include this Garden post in the jedmund.com Everything feed</span
+								>
+							</div>
+							<Switch bind:checked={showInUniverse} />
 						</div>
 					</form>
 				</div>
