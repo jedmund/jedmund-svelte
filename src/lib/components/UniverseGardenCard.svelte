@@ -10,25 +10,6 @@
 	const excerpt = $derived(garden.content ? getContentExcerpt(garden.content, 220) : '')
 
 	const isContentTruncated = $derived(excerpt.endsWith('...'))
-
-	const categoryLabel = $derived.by(() => {
-		switch (garden.category) {
-			case 'books':
-				return 'Book'
-			case 'movies':
-				return 'Movie'
-			case 'games':
-				return 'Game'
-			case 'music':
-				return 'Music'
-			case 'tv':
-				return 'TV'
-			case 'manga':
-				return 'Manga'
-			default:
-				return garden.category ?? ''
-		}
-	})
 </script>
 
 <UniverseCard
@@ -36,13 +17,6 @@
 	type="garden"
 	{href}
 >
-	<div class="card-header">
-		<span class="garden-eyebrow">
-			{categoryLabel}{#if garden.isFavorite}&nbsp;· Favorite{/if}{#if garden.isCurrent}&nbsp;·
-				Currently enjoying{/if}
-		</span>
-	</div>
-
 	<div class="card-body">
 		{#if garden.imageUrl}
 			<a {href} class="hero-image" tabindex="-1">
@@ -73,18 +47,6 @@
 </UniverseCard>
 
 <style lang="scss">
-	.card-header {
-		margin-bottom: $unit-2x;
-	}
-
-	.garden-eyebrow {
-		font-size: 0.8125rem;
-		font-weight: 500;
-		color: $gray-40;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
 	.card-body {
 		display: flex;
 		gap: $unit-3x;
@@ -98,22 +60,20 @@
 
 	.hero-image {
 		flex-shrink: 0;
-		width: 140px;
-		aspect-ratio: 2 / 3;
+		max-width: 140px;
 		border-radius: $image-corner-radius;
 		overflow: hidden;
 		background: $gray-95;
 		display: block;
 
 		@include breakpoint('phone') {
-			width: 100%;
-			aspect-ratio: 16 / 9;
+			max-width: 100%;
 		}
 
 		img {
+			display: block;
 			width: 100%;
-			height: 100%;
-			object-fit: cover;
+			height: auto;
 		}
 	}
 

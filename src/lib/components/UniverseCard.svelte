@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte'
 	import UniverseIcon from '$icons/universe.svg?component'
 	import PhotosIcon from '$icons/photos.svg?component'
+	import GardenIcon from '$icons/garden.svg?component'
 	import { formatDate } from '$lib/utils/date'
 	import { goto } from '$app/navigation'
 
@@ -62,6 +63,8 @@
 			</a>
 			{#if type === 'album'}
 				<PhotosIcon class="card-icon" />
+			{:else if type === 'garden'}
+				<GardenIcon class="card-icon" />
 			{:else}
 				<UniverseIcon class="card-icon" />
 			{/if}
