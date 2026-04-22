@@ -270,6 +270,11 @@ function extractMediaFromRichText(content: unknown): number[] {
 			}
 		}
 
+		// Handle urlEmbed link-card thumbnails that we downloaded into our media store
+		if (node.type === 'urlEmbed' && typeof node.attrs?.imageMediaId === 'number') {
+			mediaIds.push(node.attrs.imageMediaId as number)
+		}
+
 		// Recursively traverse child nodes
 		if (node.content) {
 			for (const child of node.content) {

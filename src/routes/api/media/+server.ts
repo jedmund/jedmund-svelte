@@ -29,8 +29,8 @@ export const GET: RequestHandler = async (event) => {
 		const sort = event.url.searchParams.get('sort') || 'newest'
 		const albumId = event.url.searchParams.get('albumId')
 
-		// Build where clause
-		const whereConditions: Prisma.MediaWhereInput[] = []
+		// Build where clause. Link-card thumbnails are internal assets and never shown in the library.
+		const whereConditions: Prisma.MediaWhereInput[] = [{ isLinkCardImage: false }]
 
 		// Handle mime type filtering
 		if (mimeType && mimeType !== 'all') {
