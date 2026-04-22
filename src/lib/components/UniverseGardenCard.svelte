@@ -61,7 +61,7 @@
 	.hero-image {
 		flex-shrink: 0;
 		max-width: 140px;
-		border-radius: $image-corner-radius;
+		border-radius: 4px;
 		overflow: hidden;
 		background: $gray-95;
 		border: 2px solid rgba(0, 0, 0, 0.01);
