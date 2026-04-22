@@ -64,6 +64,7 @@
 		border-radius: $image-corner-radius;
 		overflow: hidden;
 		background: $gray-95;
+		border: 2px solid rgba(0, 0, 0, 0.01);
 		display: block;
 
 		@include breakpoint('phone') {
