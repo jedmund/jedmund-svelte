@@ -14,14 +14,18 @@
 	let {
 		item,
 		type = 'post',
+		href: hrefOverride,
 		children
 	}: {
 		item: UniverseItem
-		type?: 'post' | 'album'
+		type?: 'post' | 'album' | 'garden'
+		href?: string
 		children?: Snippet
 	} = $props()
 
-	const href = $derived(type === 'album' ? `/photos/${item.slug}` : `/universe/${item.slug}`)
+	const href = $derived(
+		hrefOverride ?? (type === 'album' ? `/photos/${item.slug}` : `/universe/${item.slug}`)
+	)
 
 	const handleCardClick = (event: MouseEvent) => {
 		// Check if the click is on an interactive element
@@ -121,7 +125,8 @@
 		transition: all $transition-normal ease;
 	}
 
-	.universe-card--post {
+	.universe-card--post,
+	.universe-card--garden {
 		.card-content:hover {
 			.card-date {
 				color: $red-60;
