@@ -81,7 +81,16 @@
 					aria-label={heroMedia.title ?? 'Video preview'}
 				></video>
 				<span class="hero-play" aria-hidden="true">
-					<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+					<svg viewBox="0 0 24 24">
+						<path
+							d="M9 6 L19 12 L9 18 Z"
+							fill="currentColor"
+							stroke="currentColor"
+							stroke-width="3"
+							stroke-linejoin="round"
+							stroke-linecap="round"
+						/>
+					</svg>
 				</span>
 			{:else}
 				<img src={heroMedia.src} alt={heroMedia.alt ?? heroMedia.title ?? ''} loading="lazy" />
@@ -279,14 +288,12 @@
 		overflow: hidden;
 		background: $gray-95;
 		border: 1px solid $gray-85;
-		aspect-ratio: 16 / 9;
 
 		img,
 		video {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
 			display: block;
+			width: 100%;
+			height: auto;
 		}
 	}
 
@@ -308,7 +315,6 @@
 		svg {
 			width: 28px;
 			height: 28px;
-			margin-left: 4px;
 		}
 	}
 
