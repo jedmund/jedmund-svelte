@@ -323,6 +323,8 @@
 				const created = await api.post<ApiPost>('/api/posts', postData)
 				id = created.id
 				updatedAt = created.updatedAt
+				slug = created.slug
+				slugManuallySet = true
 				replaceState(`/admin/posts/${created.id}/edit`, {})
 			} else {
 				const saved = await api.put<ApiPost>(`/api/posts/${id}`, {
@@ -331,6 +333,8 @@
 				})
 				if (saved) {
 					updatedAt = saved.updatedAt
+					slug = saved.slug
+					slugManuallySet = true
 				}
 			}
 			status = targetStatus
@@ -456,7 +460,7 @@
 				/>
 			</div>
 
-			{#if id !== null && initialPost}
+			{#if id !== null}
 				<div class="panel content-wrapper" class:active={activeTab === 'syndication'}>
 					<PostSyndicationForm
 						{postType}
