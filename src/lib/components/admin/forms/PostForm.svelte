@@ -180,19 +180,28 @@
 		}
 		if (!isDirty || navigation.type === 'leave' || !navigation.to) return
 
-		// For drafts, the user expects auto-save to "just save" — flush silently and let the navigation continue.
+		const targetUrl = navigation.to.url.pathname
+
+		// Drafts: try to flush auto-save silently, then continue. If the flush fails
+		// (network, 409, etc), fall back to the unsaved-changes modal so we never drop edits silently.
 		if (status === 'draft' && autoSave.state !== 'conflict') {
-			const targetUrl = navigation.to.url.pathname
 			navigation.cancel()
-			void autoSave.flush().finally(() => {
-				allowNavigation = true
-				goto(targetUrl)
-			})
+			autoSave.flush().then(
+				() => {
+					allowNavigation = true
+					goto(targetUrl)
+				},
+				() => {
+					// Save failed — keep the user on the page and surface the modal.
+					pendingNavigationUrl = targetUrl
+					showUnsavedChangesModal = true
+				}
+			)
 			return
 		}
 
 		// Published / conflict: keep the existing unsaved-changes prompt.
-		pendingNavigationUrl = navigation.to.url.pathname
+		pendingNavigationUrl = targetUrl
 		navigation.cancel()
 		showUnsavedChangesModal = true
 	})
@@ -334,6 +343,13 @@
 		const targetStatus = (target as 'draft' | 'published') || status
 		saving = true
 
+		// Apply the status transition BEFORE building the payload + capturing the version, so the
+		// snapshot reflects everything we're about to submit. Drain the reactive scheduler to absorb
+		// any $effect-driven bumps from the status write before we read editVersion.
+		status = targetStatus
+		flushSync()
+		const submittingVersion = editVersion
+
 		const postData = {
 			title: config?.showTitle ? title : null,
 			slug: slug || `post-${Date.now()}`,
@@ -350,11 +366,15 @@
 		}
 
 		try {
+			let postAwaitVersion: number
 			if (id === null) {
 				const created = await api.post<ApiPost>('/api/posts', postData)
+				flushSync()
+				postAwaitVersion = editVersion
 				id = created.id
 				updatedAt = created.updatedAt
-				slug = created.slug
+				// Adopt the server-canonicalized slug (we may have submitted a generated `post-${Date.now()}`).
+				if (slug !== created.slug) slug = created.slug
 				slugManuallySet = true
 				replaceState(`/admin/posts/${created.id}/edit`, {})
 			} else {
@@ -362,16 +382,19 @@
 					...postData,
 					updatedAt
 				})
+				flushSync()
+				postAwaitVersion = editVersion
 				if (saved) {
 					updatedAt = saved.updatedAt
-					slug = saved.slug
+					// Don't sync slug back — server doesn't mutate slug, and syncing would clobber
+					// a slug edit the user may have made during the in-flight save.
 					slugManuallySet = true
 				}
 			}
-			status = targetStatus
-			// Drain the reactive scheduler so the field-tracking $effect bumps editVersion before we capture it.
 			flushSync()
-			savedVersion = editVersion
+			// Fold post-await server-sync writes into savedVersion, but keep mid-await user keystrokes
+			// (postAwaitVersion - submittingVersion) marked dirty so the next debounce picks them up.
+			savedVersion = submittingVersion + (editVersion - postAwaitVersion)
 		} catch (error) {
 			console.error('Failed to save post:', error)
 			throw error
@@ -502,6 +525,7 @@
 					createdAt={initialPost?.createdAt ?? new Date().toISOString()}
 					updatedAt={initialPost?.updatedAt ?? new Date().toISOString()}
 					publishedAt={initialPost?.publishedAt ?? null}
+					onSlugEdit={() => (slugManuallySet = true)}
 				/>
 			</div>
 
