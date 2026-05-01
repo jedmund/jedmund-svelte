@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto, beforeNavigate } from '$app/navigation'
+	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import { api } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Composer from '$lib/components/admin/composer'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
-	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'
+	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 
 	let saving = $state(false)
@@ -33,15 +33,35 @@
 	let showUnsavedChangesModal = $state(false)
 	let pendingNavigationUrl = $state<string | null>(null)
 	let allowNavigation = $state(false)
+	let postId = $state<number | null>(null)
+	let savedSnapshot = $state<string | null>(null)
 
-	// Check if form has any content (unsaved changes for new post)
+	function snapshot() {
+		return JSON.stringify({
+			title,
+			postType,
+			status,
+			slug,
+			excerpt,
+			syndicationText,
+			content,
+			tagIds: tags
+				.map((t) => t.id)
+				.sort()
+				.join(',')
+		})
+	}
+
+	// Before first save: dirty if the form has any content. After save: dirty if state diverges from saved snapshot.
 	let isDirty = $derived(
-		title.trim() !== '' ||
-			slug.trim() !== '' ||
-			excerpt.trim() !== '' ||
-			syndicationText.trim() !== '' ||
-			tags.length > 0 ||
-			(content.content && content.content.length > 0)
+		savedSnapshot === null
+			? title.trim() !== '' ||
+					slug.trim() !== '' ||
+					excerpt.trim() !== '' ||
+					syndicationText.trim() !== '' ||
+					tags.length > 0 ||
+					(content.content && content.content.length > 0)
+			: snapshot() !== savedSnapshot
 	)
 
 	// Auto-generate slug from title when title changes and slug hasn't been manually set
@@ -123,11 +143,12 @@
 
 	async function handleSave(publishStatus?: 'draft' | 'published') {
 		saving = true
+		const targetStatus = publishStatus || status
 		const postData = {
 			title: config?.showTitle ? title : null,
 			slug: slug || `post-${Date.now()}`,
 			type: postType, // No mapping needed anymore
-			status: publishStatus || status,
+			status: targetStatus,
 			content: config?.showContent ? content : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
 			syndicationText: syndicationText || null,
@@ -135,10 +156,17 @@
 		}
 
 		try {
-			const newPost = await api.post<{ id: number }>('/api/posts', postData)
-			goto(`/admin/posts/${newPost.id}/edit`)
+			if (postId === null) {
+				const created = await api.post<{ id: number }>('/api/posts', postData)
+				postId = created.id
+				replaceState(`/admin/posts/${created.id}/edit`, {})
+			} else {
+				await api.put(`/api/posts/${postId}`, postData)
+			}
+			status = targetStatus
+			savedSnapshot = snapshot()
 		} catch (error) {
-			console.error('Failed to create post:', error)
+			console.error('Failed to save post:', error)
 		} finally {
 			saving = false
 		}
@@ -225,9 +253,9 @@
 						/>
 					{/if}
 				</div>
-				<PublishDropdown
-					onPublish={() => handleSave('published')}
-					onSaveDraft={() => handleSave('draft')}
+				<StatusDropdown
+					{status}
+					onSave={(target) => handleSave(target as 'draft' | 'published')}
 					disabled={saving}
 					isLoading={saving}
 				/>
@@ -257,7 +285,6 @@
 />
 
 <style lang="scss">
-
 	.header-left {
 		display: flex;
 		align-items: center;

@@ -75,18 +75,6 @@
 	let autoSlug = $state(mode === 'create')
 	let isSavedNavigation = $state(false)
 
-	const primaryAction = $derived(
-		status === 'draft'
-			? { label: 'Save draft', status: 'draft' }
-			: { label: 'Save', status: 'published' }
-	)
-
-	const dropdownActions = $derived(
-		status === 'draft'
-			? [{ label: 'Publish', status: 'published' }]
-			: [{ label: 'Unpublish', status: 'draft' }]
-	)
-
 	const viewUrl = $derived(
 		status === 'published' && slug ? `/garden/${category}/${slug}` : undefined
 	)
@@ -427,12 +415,10 @@
 			</div>
 			<div class="header-actions">
 				<StatusDropdown
-					currentStatus={status}
-					onStatusChange={handleSave}
+					{status}
+					onSave={handleSave}
 					disabled={isSaving}
 					isLoading={isSaving}
-					{primaryAction}
-					{dropdownActions}
 					{viewUrl}
 					onDelete={mode === 'edit' ? openDeleteConfirmation : undefined}
 					onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}

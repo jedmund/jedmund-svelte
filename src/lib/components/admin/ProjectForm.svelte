@@ -36,23 +36,22 @@
 		{ value: 'case-study', label: 'Case Study' }
 	]
 
-	// StatusDropdown configuration
-	const primaryAction = $derived(
-		formStore.fields.status === 'draft'
-			? { label: 'Save draft', status: 'draft' }
-			: { label: 'Save', status: formStore.fields.status }
-	)
+	// Status-specific dropdown labels for project's extra statuses (list-only,
+	// password-protected); StatusDropdown handles draft/published defaults itself.
+	const altActions = $derived.by(() => {
+		const s = formStore.fields.status
+		if (s === 'draft' || s === 'published') return undefined
+		return [
+			{ label: 'Publish', target: 'published' },
+			{ label: 'Save as draft', target: 'draft' }
+		]
+	})
 
-	const dropdownActions = $derived(
-		formStore.fields.status === 'draft'
-			? [{ label: 'Publish', status: 'published' }]
-			: formStore.fields.status === 'published'
-				? [{ label: 'Unpublish', status: 'draft' }]
-				: [
-						{ label: 'Publish', status: 'published' },
-						{ label: 'Save as draft', status: 'draft' }
-					]
-	)
+	const primaryLabel = $derived.by(() => {
+		const s = formStore.fields.status
+		if (s === 'draft' || s === 'published') return undefined
+		return 'Save'
+	})
 
 	const viewUrl = $derived(
 		mode === 'edit' && project?.slug
@@ -194,12 +193,12 @@
 			</div>
 			<div class="header-actions">
 				<StatusDropdown
-					currentStatus={formStore.fields.status}
-					onStatusChange={handleSave}
+					status={formStore.fields.status}
+					onSave={handleSave}
 					disabled={isSaving}
 					isLoading={isSaving}
-					{primaryAction}
-					{dropdownActions}
+					{primaryLabel}
+					{altActions}
 					{viewUrl}
 				/>
 			</div>

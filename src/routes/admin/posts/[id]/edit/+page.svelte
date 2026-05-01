@@ -512,16 +512,10 @@
 				</div>
 				<div class="header-actions">
 					<StatusDropdown
-						currentStatus={status}
-						onStatusChange={handleSave}
+						{status}
+						onSave={handleSave}
 						disabled={saving}
 						isLoading={saving}
-						primaryAction={status === 'draft'
-							? { label: 'Save draft', status: 'draft' }
-							: { label: 'Save post', status: 'published' }}
-						dropdownActions={status === 'draft'
-							? [{ label: 'Publish', status: 'published' }]
-							: [{ label: 'Save as Draft', status: 'draft' }]}
 						viewUrl={slug ? `/universe/${slug}` : undefined}
 						onDelete={openDeleteConfirmation}
 						onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
@@ -614,7 +608,6 @@
 />
 
 <style lang="scss">
-
 	header {
 		display: grid;
 		grid-template-columns: 250px 1fr 250px;
