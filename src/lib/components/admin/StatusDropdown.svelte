@@ -18,7 +18,9 @@
 		viewUrl?: string
 		onDelete?: () => void
 		onCopyPreviewLink?: () => void
-		hidePrimary?: boolean
+		// When provided, the trigger renders as a single text + chevron button (no separate primary action button).
+		// Used for the auto-save flow where the status text replaces the manual save button.
+		triggerText?: string
 	}
 
 	let {
@@ -31,7 +33,7 @@
 		viewUrl,
 		onDelete,
 		onCopyPreviewLink,
-		hidePrimary = false
+		triggerText
 	}: Props = $props()
 
 	let isDropdownOpen = $state(false)
@@ -69,9 +71,40 @@
 	}
 </script>
 
-<BaseDropdown bind:isOpen={isDropdownOpen} {disabled} {isLoading} class="status-dropdown">
-	{#snippet trigger()}
-		{#if !hidePrimary}
+<BaseDropdown
+	bind:isOpen={isDropdownOpen}
+	{disabled}
+	{isLoading}
+	class="status-dropdown"
+	combined={triggerText !== undefined}
+>
+	{#snippet trigger(toggle)}
+		{#if triggerText !== undefined}
+			<button
+				type="button"
+				class="combined-trigger"
+				onclick={toggle}
+				disabled={disabled || isLoading}
+			>
+				<span class="combined-trigger__label">{triggerText}</span>
+				<svg
+					class="combined-trigger__chevron"
+					width="12"
+					height="12"
+					viewBox="0 0 12 12"
+					fill="none"
+					aria-hidden="true"
+				>
+					<path
+						d="M3 4.5L6 7.5L9 4.5"
+						stroke="currentColor"
+						stroke-width="1.5"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+			</button>
+		{:else}
 			<Button
 				variant="primary"
 				buttonSize="medium"
@@ -128,6 +161,41 @@
 </BaseDropdown>
 
 <style lang="scss">
+	.combined-trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: $unit-2x;
+		padding: $unit $unit-3x;
+		background: $gray-95;
+		border: 1px solid $gray-90;
+		border-radius: 50px;
+		font-size: 0.875rem;
+		color: $gray-20;
+		cursor: pointer;
+		transition:
+			background-color $transition-normal ease,
+			border-color $transition-normal ease;
+
+		&:hover:not(:disabled) {
+			background: $gray-90;
+			border-color: $gray-85;
+		}
+
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+		}
+	}
+
+	.combined-trigger__label {
+		white-space: nowrap;
+	}
+
+	.combined-trigger__chevron {
+		flex-shrink: 0;
+		opacity: 0.6;
+	}
+
 	.dropdown-divider {
 		height: 1px;
 		background-color: $gray-80;

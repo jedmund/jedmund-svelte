@@ -10,7 +10,6 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
-	import SaveStatus from '$lib/components/admin/SaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { ApiPost, PostFormTag as Tag } from './post-types'
 	import { useAutoSave } from './useAutoSave.svelte'
@@ -121,6 +120,23 @@
 		enabled: () => status === 'draft',
 		isDirty: () => isDirty,
 		save: () => handleSave(status)
+	})
+
+	const autoSaveLabel = $derived.by(() => {
+		switch (autoSave.state) {
+			case 'saving':
+				return 'Saving…'
+			case 'unsaved':
+				return 'Unsaved'
+			case 'failed':
+				return 'Save failed'
+			case 'conflict':
+				return 'Conflict — reload'
+			case 'saved':
+			case 'idle':
+			default:
+				return 'Saved'
+		}
 	})
 
 	// Auto-generate slug from title for new posts.
@@ -463,9 +479,6 @@
 				/>
 			</div>
 			<div class="header-actions">
-				{#if status === 'draft'}
-					<SaveStatus state={autoSave.state} onRetry={() => autoSave.flush()} />
-				{/if}
 				<StatusDropdown
 					{status}
 					onSave={(target) => {
@@ -478,7 +491,7 @@
 					}}
 					disabled={saving}
 					isLoading={saving}
-					hidePrimary={status === 'draft'}
+					triggerText={status === 'draft' ? autoSaveLabel : undefined}
 					viewUrl={status === 'published' && slug ? `/universe/${slug}` : undefined}
 					onDelete={id !== null ? openDeleteConfirmation : undefined}
 					onCopyPreviewLink={id !== null && slug ? handleCopyPreviewLink : undefined}
