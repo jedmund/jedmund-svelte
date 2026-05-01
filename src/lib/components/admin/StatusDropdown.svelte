@@ -18,6 +18,7 @@
 		viewUrl?: string
 		onDelete?: () => void
 		onCopyPreviewLink?: () => void
+		hidePrimary?: boolean
 	}
 
 	let {
@@ -29,7 +30,8 @@
 		altActions,
 		viewUrl,
 		onDelete,
-		onCopyPreviewLink
+		onCopyPreviewLink,
+		hidePrimary = false
 	}: Props = $props()
 
 	let isDropdownOpen = $state(false)
@@ -69,16 +71,18 @@
 
 <BaseDropdown bind:isOpen={isDropdownOpen} {disabled} {isLoading} class="status-dropdown">
 	{#snippet trigger()}
-		<Button
-			variant="primary"
-			buttonSize="medium"
-			onclick={handlePrimary}
-			disabled={disabled || isLoading}
-		>
-			{#snippet children()}
-				{resolvedPrimaryLabel}
-			{/snippet}
-		</Button>
+		{#if !hidePrimary}
+			<Button
+				variant="primary"
+				buttonSize="medium"
+				onclick={handlePrimary}
+				disabled={disabled || isLoading}
+			>
+				{#snippet children()}
+					{resolvedPrimaryLabel}
+				{/snippet}
+			</Button>
+		{/if}
 	{/snippet}
 
 	{#snippet dropdown()}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto, beforeNavigate, replaceState } from '$app/navigation'
-	import { onMount } from 'svelte'
+	import { onMount, flushSync } from 'svelte'
 	import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminSegmentedControl from '$lib/components/admin/AdminSegmentedControl.svelte'
@@ -10,8 +10,10 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
+	import SaveStatus from '$lib/components/admin/SaveStatus.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { ApiPost, PostFormTag as Tag } from './post-types'
+	import { useAutoSave } from './useAutoSave.svelte'
 
 	// Legacy blocks format (pre-Tiptap) — still in some old posts.
 	interface BlockContent {
@@ -66,7 +68,33 @@
 	let showUnsavedChangesModal = $state(false)
 	let pendingNavigationUrl = $state<string | null>(null)
 	let allowNavigation = $state(false)
-	let savedSnapshot = $state<string | null>(initialPost ? snapshot() : null)
+
+	// O(1) dirty tracking: editVersion bumps on any tracked field change; savedVersion is captured at save time.
+	let editVersion = $state(0)
+	let savedVersion = $state(0)
+	let editVersionInitialized = false
+
+	$effect(() => {
+		// Subscribe to all editable fields. Reading them inside the effect registers them as dependencies,
+		// so any change re-runs this and bumps editVersion.
+		void title
+		void postType
+		void status
+		void slug
+		void excerpt
+		void syndicationText
+		void featuredImage
+		void syndicateBluesky
+		void syndicateMastodon
+		void appendLink
+		void content
+		void tags
+		if (editVersionInitialized) {
+			editVersion++
+		} else {
+			editVersionInitialized = true
+		}
+	})
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -87,37 +115,15 @@
 				]
 	)
 
-	function snapshot() {
-		return JSON.stringify({
-			title,
-			postType,
-			status,
-			slug,
-			excerpt,
-			syndicationText,
-			featuredImage,
-			syndicateBluesky,
-			syndicateMastodon,
-			appendLink,
-			content,
-			tagIds: tags
-				.map((t) => t.id)
-				.sort()
-				.join(',')
-		})
-	}
+	let isDirty = $derived(editVersion > savedVersion)
 
-	// Pre-first-save: dirty if the form has any content. After save: dirty if state diverges from the saved snapshot.
-	let isDirty = $derived(
-		savedSnapshot === null
-			? title.trim() !== '' ||
-					slug.trim() !== '' ||
-					excerpt.trim() !== '' ||
-					syndicationText.trim() !== '' ||
-					tags.length > 0 ||
-					(content.content && content.content.length > 0)
-			: snapshot() !== savedSnapshot
-	)
+	// Auto-save runs only for drafts (publishing has explicit syndication side effects we shouldn't trigger silently).
+	// Pre-first-save it requires a real change so a blank /admin/posts/new doesn't post an empty post on mount.
+	const autoSave = useAutoSave({
+		enabled: () => status === 'draft',
+		isDirty: () => isDirty,
+		save: () => handleSave(status)
+	})
 
 	// Auto-generate slug from title for new posts.
 	$effect(() => {
@@ -130,16 +136,29 @@
 		}
 	})
 
-	// Cmd+S keyboard shortcut.
+	// Cmd+S keyboard shortcut. For drafts: flush the auto-save debounce. For published: trigger save directly.
 	$effect(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
 				e.preventDefault()
-				handleSave(status)
+				if (status === 'draft') {
+					void autoSave.flush()
+				} else {
+					handleSave(status)
+				}
 			}
 		}
 		document.addEventListener('keydown', handleKeydown)
 		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Flush pending auto-save when the window loses focus (matches Notion's behavior).
+	$effect(() => {
+		function handleBlur() {
+			if (status === 'draft') void autoSave.flush()
+		}
+		window.addEventListener('blur', handleBlur)
+		return () => window.removeEventListener('blur', handleBlur)
 	})
 
 	// Browser warning for page unloads (refresh/close).
@@ -159,11 +178,23 @@
 			allowNavigation = false
 			return
 		}
-		if (isDirty && navigation.type !== 'leave' && navigation.to) {
-			pendingNavigationUrl = navigation.to.url.pathname
+		if (!isDirty || navigation.type === 'leave' || !navigation.to) return
+
+		// For drafts, the user expects auto-save to "just save" — flush silently and let the navigation continue.
+		if (status === 'draft' && autoSave.state !== 'conflict') {
+			const targetUrl = navigation.to.url.pathname
 			navigation.cancel()
-			showUnsavedChangesModal = true
+			void autoSave.flush().finally(() => {
+				allowNavigation = true
+				goto(targetUrl)
+			})
+			return
 		}
+
+		// Published / conflict: keep the existing unsaved-changes prompt.
+		pendingNavigationUrl = navigation.to.url.pathname
+		navigation.cancel()
+		showUnsavedChangesModal = true
 	})
 
 	function normalizeContent(raw: unknown): JSONContent {
@@ -338,9 +369,12 @@
 				}
 			}
 			status = targetStatus
-			savedSnapshot = snapshot()
+			// Drain the reactive scheduler so the field-tracking $effect bumps editVersion before we capture it.
+			flushSync()
+			savedVersion = editVersion
 		} catch (error) {
 			console.error('Failed to save post:', error)
+			throw error
 		} finally {
 			saving = false
 		}
@@ -414,11 +448,22 @@
 				/>
 			</div>
 			<div class="header-actions">
+				{#if status === 'draft'}
+					<SaveStatus state={autoSave.state} onRetry={() => autoSave.flush()} />
+				{/if}
 				<StatusDropdown
 					{status}
-					onSave={handleSave}
+					onSave={(target) => {
+						// If the user is publishing a dirty draft, flush any pending auto-save first so we publish on top of the latest saved snapshot.
+						if (status === 'draft' && target !== 'draft' && isDirty) {
+							void autoSave.flush().then(() => handleSave(target))
+						} else {
+							handleSave(target)
+						}
+					}}
 					disabled={saving}
 					isLoading={saving}
+					hidePrimary={status === 'draft'}
 					viewUrl={status === 'published' && slug ? `/universe/${slug}` : undefined}
 					onDelete={id !== null ? openDeleteConfirmation : undefined}
 					onCopyPreviewLink={id !== null && slug ? handleCopyPreviewLink : undefined}
