@@ -165,7 +165,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: $unit-2x;
-		padding: $unit $unit-3x;
+		padding: $unit $unit-2x;
 		background: $gray-95;
 		border: 1px solid $gray-90;
 		border-radius: 50px;
