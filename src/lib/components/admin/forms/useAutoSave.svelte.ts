@@ -1,5 +1,9 @@
 // Notion/Coda-style draft auto-save: debounced, single-in-flight, with a small status state machine.
 // Intentionally minimal — no localStorage fallback, no draft recovery, no offline retry queue.
+//
+// Design note: the visible state ('idle' | 'unsaved' | …) is a $derived computed from a few
+// primitive flags. The debounce $effect only writes non-reactive timer handles, never the state
+// it also reads — that combination is what produces feedback loops with caller-side trackers.
 
 export type AutoSaveState = 'idle' | 'unsaved' | 'saving' | 'saved' | 'failed' | 'conflict'
 
@@ -23,12 +27,23 @@ export function useAutoSave(opts: AutoSaveOptions): AutoSave {
 	const debounceMs = opts.debounceMs ?? DEFAULT_DEBOUNCE_MS
 	const savedVisibleMs = opts.savedVisibleMs ?? DEFAULT_SAVED_VISIBLE_MS
 
-	let state = $state<AutoSaveState>('idle')
+	let isSaving = $state(false)
+	let savedFlash = $state(false)
+	let saveError = $state<'failed' | 'conflict' | null>(null)
+
 	let timer: ReturnType<typeof setTimeout> | null = null
 	let savedTimer: ReturnType<typeof setTimeout> | null = null
 	let inflight: Promise<void> | null = null
-	// True if a change came in while a save was running — schedule one follow-up after.
 	let pending = false
+
+	const state: AutoSaveState = $derived.by(() => {
+		if (saveError === 'conflict') return 'conflict'
+		if (saveError === 'failed') return 'failed'
+		if (isSaving) return 'saving'
+		if (savedFlash) return 'saved'
+		if (opts.enabled() && opts.isDirty()) return 'unsaved'
+		return 'idle'
+	})
 
 	function clearTimer() {
 		if (timer !== null) {
@@ -47,37 +62,36 @@ export function useAutoSave(opts: AutoSaveOptions): AutoSave {
 	async function runSave(): Promise<void> {
 		clearTimer()
 		clearSavedTimer()
-		if (!opts.enabled()) return
-		if (state === 'conflict') return
-		state = 'saving'
+		if (!opts.enabled() || saveError === 'conflict') return
+		isSaving = true
+		savedFlash = false
 		try {
 			await opts.save()
-			// If the user kept editing during the save, we'll fire another save below
-			// but still flash 'saved' briefly to confirm progress.
-			state = 'saved'
+			isSaving = false
+			savedFlash = true
 			savedTimer = setTimeout(() => {
-				if (state === 'saved') state = opts.isDirty() ? 'unsaved' : 'idle'
+				savedFlash = false
 				savedTimer = null
 			}, savedVisibleMs)
 		} catch (err) {
+			isSaving = false
 			const status = (err as { status?: number } | null)?.status
-			state = status === 409 ? 'conflict' : 'failed'
+			saveError = status === 409 ? 'conflict' : 'failed'
 			throw err
 		}
 	}
 
 	async function performSave(): Promise<void> {
 		if (inflight) {
-			// One save running; coalesce: schedule one follow-up after it lands.
 			pending = true
 			try {
 				await inflight
 			} catch {
-				// swallow — the original caller already saw the error
+				// swallow — original caller already saw it
 			}
 			if (!pending) return
 			pending = false
-			if (!opts.isDirty() || !opts.enabled() || state === 'conflict') return
+			if (!opts.isDirty() || !opts.enabled() || saveError === 'conflict') return
 			return performSave()
 		}
 		inflight = (async () => {
@@ -90,8 +104,7 @@ export function useAutoSave(opts: AutoSaveOptions): AutoSave {
 		try {
 			await inflight
 		} finally {
-			// If changes piled up during the save, fire one more pass.
-			if (pending && opts.isDirty() && opts.enabled() && state !== 'conflict') {
+			if (pending && opts.isDirty() && opts.enabled() && saveError !== 'conflict') {
 				pending = false
 				await performSave()
 			} else {
@@ -100,31 +113,28 @@ export function useAutoSave(opts: AutoSaveOptions): AutoSave {
 		}
 	}
 
-	// Debounce: bump state to 'unsaved' immediately on dirty, but wait debounceMs before saving.
+	// Debounce timer driver. Only reads enabled/isDirty/saveError; never writes state-related $state
+	// inside this effect — those writes happen from runSave (an async call out of band).
 	$effect(() => {
-		if (!opts.enabled()) {
+		if (!opts.enabled() || saveError === 'conflict') {
 			clearTimer()
-			if (state === 'saving') return
-			state = 'idle'
 			return
 		}
-		if (state === 'conflict') return
-		if (!opts.isDirty()) return
-
-		// Visible "unsaved" cue while debounce window is active (unless mid-save).
-		if (state !== 'saving') state = 'unsaved'
-
+		if (!opts.isDirty()) {
+			clearTimer()
+			return
+		}
 		clearTimer()
 		timer = setTimeout(() => {
 			timer = null
-			if (!opts.enabled() || !opts.isDirty() || state === 'conflict') return
+			if (!opts.enabled() || !opts.isDirty() || saveError === 'conflict') return
 			void performSave()
 		}, debounceMs)
 	})
 
 	async function flush(): Promise<void> {
 		clearTimer()
-		if (!opts.enabled() || state === 'conflict') return
+		if (!opts.enabled() || saveError === 'conflict') return
 		if (!opts.isDirty() && !inflight) return
 		await performSave()
 	}

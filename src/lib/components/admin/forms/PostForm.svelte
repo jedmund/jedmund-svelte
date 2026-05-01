@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto, beforeNavigate, replaceState } from '$app/navigation'
-	import { onMount, flushSync } from 'svelte'
+	import { onMount } from 'svelte'
 	import { api } from '$lib/admin/api'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminSegmentedControl from '$lib/components/admin/AdminSegmentedControl.svelte'
@@ -69,32 +69,30 @@
 	let pendingNavigationUrl = $state<string | null>(null)
 	let allowNavigation = $state(false)
 
-	// O(1) dirty tracking: editVersion bumps on any tracked field change; savedVersion is captured at save time.
-	let editVersion = $state(0)
-	let savedVersion = $state(0)
-	let editVersionInitialized = false
+	// Snapshot-based dirty tracking. The $derived only recomputes when one of the read fields changes,
+	// and crucially does NOT write any reactive state — so it can't form a feedback loop with the
+	// auto-save effect that reads isDirty.
+	function snapshot() {
+		return JSON.stringify([
+			title,
+			postType,
+			status,
+			slug,
+			excerpt,
+			syndicationText,
+			featuredImage,
+			syndicateBluesky,
+			syndicateMastodon,
+			appendLink,
+			content,
+			tags
+				.map((t) => t.id)
+				.sort()
+				.join(',')
+		])
+	}
 
-	$effect(() => {
-		// Subscribe to all editable fields. Reading them inside the effect registers them as dependencies,
-		// so any change re-runs this and bumps editVersion.
-		void title
-		void postType
-		void status
-		void slug
-		void excerpt
-		void syndicationText
-		void featuredImage
-		void syndicateBluesky
-		void syndicateMastodon
-		void appendLink
-		void content
-		void tags
-		if (editVersionInitialized) {
-			editVersion++
-		} else {
-			editVersionInitialized = true
-		}
-	})
+	let savedSnapshot = $state<string>(snapshot())
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -115,7 +113,7 @@
 				]
 	)
 
-	let isDirty = $derived(editVersion > savedVersion)
+	let isDirty = $derived(snapshot() !== savedSnapshot)
 
 	// Auto-save runs only for drafts (publishing has explicit syndication side effects we shouldn't trigger silently).
 	// Pre-first-save it requires a real change so a blank /admin/posts/new doesn't post an empty post on mount.
@@ -343,12 +341,12 @@
 		const targetStatus = (target as 'draft' | 'published') || status
 		saving = true
 
-		// Apply the status transition BEFORE building the payload + capturing the version, so the
-		// snapshot reflects everything we're about to submit. Drain the reactive scheduler to absorb
-		// any $effect-driven bumps from the status write before we read editVersion.
+		// Apply the status transition first so the submitting snapshot reflects what we're about to send.
 		status = targetStatus
-		flushSync()
-		const submittingVersion = editVersion
+
+		// Capture the snapshot BEFORE the await. Mid-save keystrokes won't be reflected in this string —
+		// they'll show as dirty after the save completes, and the next debounce picks them up.
+		const submittingSnapshot = snapshot()
 
 		const postData = {
 			title: config?.showTitle ? title : null,
@@ -366,11 +364,8 @@
 		}
 
 		try {
-			let postAwaitVersion: number
 			if (id === null) {
 				const created = await api.post<ApiPost>('/api/posts', postData)
-				flushSync()
-				postAwaitVersion = editVersion
 				id = created.id
 				updatedAt = created.updatedAt
 				// Adopt the server-canonicalized slug (we may have submitted a generated `post-${Date.now()}`).
@@ -382,8 +377,6 @@
 					...postData,
 					updatedAt
 				})
-				flushSync()
-				postAwaitVersion = editVersion
 				if (saved) {
 					updatedAt = saved.updatedAt
 					// Don't sync slug back — server doesn't mutate slug, and syncing would clobber
@@ -391,10 +384,9 @@
 					slugManuallySet = true
 				}
 			}
-			flushSync()
-			// Fold post-await server-sync writes into savedVersion, but keep mid-await user keystrokes
-			// (postAwaitVersion - submittingVersion) marked dirty so the next debounce picks them up.
-			savedVersion = submittingVersion + (editVersion - postAwaitVersion)
+			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
+			// snapshot, so isDirty stays true and the next debounce flushes them.
+			savedSnapshot = submittingSnapshot
 		} catch (error) {
 			console.error('Failed to save post:', error)
 			throw error
