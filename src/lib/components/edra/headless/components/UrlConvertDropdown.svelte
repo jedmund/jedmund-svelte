@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { fly } from 'svelte/transition'
+	import { computePosition, flip, offset, shift, type Placement } from '@floating-ui/dom'
 
 	// Convert CSS transition durations to milliseconds for Svelte transitions
 	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
@@ -15,6 +16,9 @@
 	let { x, y, onConvert, onDismiss }: Props = $props()
 
 	let dropdown: HTMLDivElement
+	let menuX = $state(x)
+	let menuY = $state(y)
+	let positioned = $state(false)
 
 	function handleConvert() {
 		onConvert()
@@ -34,13 +38,40 @@
 		}
 	}
 
+	async function position() {
+		if (!dropdown) return
+		const virtualEl = {
+			getBoundingClientRect: () =>
+				({
+					x,
+					y,
+					top: y,
+					left: x,
+					right: x,
+					bottom: y,
+					width: 0,
+					height: 0,
+					toJSON: () => ({})
+				}) as DOMRect
+		}
+		const { x: nx, y: ny } = await computePosition(virtualEl, dropdown, {
+			placement: 'bottom-start' as Placement,
+			middleware: [
+				offset(0),
+				flip({ fallbackPlacements: ['bottom-end', 'top-start', 'top-end'] }),
+				shift({ padding: 8 })
+			]
+		})
+		menuX = nx
+		menuY = ny
+		positioned = true
+	}
+
 	onMount(() => {
-		// Add event listeners
 		document.addEventListener('click', handleClickOutside)
 		document.addEventListener('keydown', handleKeydown)
-
+		position()
 		// Don't focus the dropdown - this steals focus from the editor
-		// dropdown?.focus()
 	})
 
 	onDestroy(() => {
@@ -52,7 +83,9 @@
 <div
 	bind:this={dropdown}
 	class="url-convert-dropdown"
-	style="left: {x}px; top: {y}px;"
+	style:left="{menuX}px"
+	style:top="{menuY}px"
+	style:visibility={positioned ? 'visible' : 'hidden'}
 	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
 	tabindex="-1"
 >
