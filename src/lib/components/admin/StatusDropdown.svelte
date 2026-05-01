@@ -164,7 +164,7 @@
 	.combined-trigger {
 		display: inline-flex;
 		align-items: center;
-		gap: $unit-2x;
+		gap: $unit-half;
 		padding: $unit $unit-2x;
 		background: $gray-95;
 		border: 1px solid $gray-90;
