@@ -4,7 +4,7 @@
 	import { api } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
-	import Composer from '$lib/components/admin/composer'
+	import Composer from '$lib/components/admin/composer/LazyComposer.svelte'
 	import PostMetadataPopover from '$lib/components/admin/PostMetadataPopover.svelte'
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import PublishDropdown from '$lib/components/admin/PublishDropdown.svelte'

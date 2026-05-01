@@ -5,7 +5,7 @@
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
 	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
-	import Composer from './composer'
+	import Composer from './composer/LazyComposer.svelte'
 	import ProjectMetadataForm from './ProjectMetadataForm.svelte'
 	import ProjectBrandingForm from './ProjectBrandingForm.svelte'
 	import { toast } from '$lib/stores/toast'
