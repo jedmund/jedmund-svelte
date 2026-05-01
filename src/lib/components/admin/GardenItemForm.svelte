@@ -317,6 +317,7 @@
 			slug = savedItem.slug
 			sourceId = savedItem.sourceId ?? ''
 			metadata = (savedItem.metadata as Record<string, unknown>) ?? null
+			autoSlug = false
 			if (mode === 'create') {
 				mode = 'edit'
 				replaceState(`/admin/garden/${savedItem.id}/edit`, {})

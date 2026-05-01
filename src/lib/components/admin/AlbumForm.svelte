@@ -248,11 +248,14 @@
 				toast.success(`Album ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 			}
 
+			const wasCreate = mode === 'create'
 			album = savedAlbum
 			populateFormData(savedAlbum)
-			if (mode === 'create') {
+			if (wasCreate) {
 				mode = 'edit'
+				pendingMediaIds = []
 				replaceState(`/admin/albums/${savedAlbum.id}/edit`, {})
+				await loadAlbumMedia()
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
