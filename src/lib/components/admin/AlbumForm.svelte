@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, replaceState } from '$app/navigation'
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
@@ -19,7 +19,11 @@
 		mode: 'create' | 'edit'
 	}
 
-	let { album = null, mode }: Props = $props()
+	let { album: initialAlbum = null, mode: initialMode }: Props = $props()
+
+	// Local state so we can transition create → edit in place after first save.
+	let album = $state(initialAlbum)
+	let mode = $state<'create' | 'edit'>(initialMode)
 
 	// Album schema for validation
 	const albumSchema = z.object({
@@ -244,12 +248,11 @@
 				toast.success(`Album ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 			}
 
+			album = savedAlbum
+			populateFormData(savedAlbum)
 			if (mode === 'create') {
-				goto(`/admin/albums/${savedAlbum.id}/edit`)
-			} else if (mode === 'edit' && album) {
-				// Update the album object to reflect saved changes
-				album = savedAlbum
-				populateFormData(savedAlbum)
+				mode = 'edit'
+				replaceState(`/admin/albums/${savedAlbum.id}/edit`, {})
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)

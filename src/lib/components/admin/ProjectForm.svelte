@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, beforeNavigate } from '$app/navigation'
+	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
@@ -17,7 +17,11 @@
 		mode: 'create' | 'edit'
 	}
 
-	let { project = null, mode }: Props = $props()
+	let { project: initialProject = null, mode: initialMode }: Props = $props()
+
+	// Local state so we can transition create → edit in place after first save.
+	let project = $state(initialProject)
+	let mode = $state<'create' | 'edit'>(initialMode)
 
 	// Form store - centralized state management
 	const formStore = createProjectFormStore(project)
@@ -138,11 +142,11 @@
 			toast.dismiss(loadingToastId)
 			toast.success(`Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 
+			project = savedProject
+			formStore.populateFromProject(savedProject)
 			if (mode === 'create') {
-				goto(`/admin/projects/${savedProject.id}/edit`)
-			} else {
-				project = savedProject
-				formStore.populateFromProject(savedProject)
+				mode = 'edit'
+				replaceState(`/admin/projects/${savedProject.id}/edit`, {})
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
