@@ -81,17 +81,15 @@
 
 			const pos = getPos()
 			if (typeof pos === 'number') {
-				editor
-					.chain()
-					.focus()
-					.updateAttributes('urlEmbed', {
-						title: metadata.title,
-						description: metadata.description,
-						image: metadata.image,
-						favicon: metadata.favicon,
-						siteName: metadata.siteName
-					})
-					.run()
+				const tr = editor.state.tr.setNodeMarkup(pos, undefined, {
+					...node.attrs,
+					title: metadata.title,
+					description: metadata.description,
+					image: metadata.image,
+					favicon: metadata.favicon,
+					siteName: metadata.siteName
+				})
+				editor.view.dispatch(tr)
 			}
 			status = 'idle'
 		} catch (err) {

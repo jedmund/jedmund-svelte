@@ -180,8 +180,6 @@
 			onShowUrlConvertDropdown: features.urlEmbed
 				? (pos: number, url: string) => linkManagerRef?.handleShowUrlConvertDropdown(pos, url)
 				: undefined,
-			onShowLinkContextMenu: (pos: number, url: string) =>
-				linkManagerRef?.handleShowLinkContextMenu(pos, url),
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			imagePlaceholderComponent: ImagePlaceholder as any
 		})
@@ -271,7 +269,7 @@
 	{/if}
 
 	{#if editor}
-		<ComposerLinkBubble {editor} />
+		<ComposerLinkBubble {editor} {features} />
 		{#if features.tables}
 			<TableRowMenu {editor} />
 			<TableColMenu {editor} />
@@ -339,7 +337,6 @@
 {/if}
 
 <style lang="scss">
-
 	.composer {
 		--muted-foreground: #{$gray-60};
 		width: 100%;

@@ -5,12 +5,18 @@ import svg from '@poppanator/sveltekit-svg'
 
 export default defineConfig({
 	server: {
+		port: 5175,
+		strictPort: true,
 		watch: {
 			usePolling: true
 		},
 		fs: {
 			allow: ['../../../']
 		}
+	},
+	preview: {
+		port: 5175,
+		strictPort: true
 	},
 	plugins: [
 		sveltekit(),
