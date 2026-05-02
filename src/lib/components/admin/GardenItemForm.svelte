@@ -14,6 +14,7 @@
 	import StatusDropdown from './StatusDropdown.svelte'
 	import DeleteConfirmationModal from './DeleteConfirmationModal.svelte'
 	import Switch from './Switch.svelte'
+	import { useAutoSave } from './forms/useAutoSave.svelte'
 	import { toast } from '$lib/stores/toast'
 	import {
 		SEARCH_CONFIGS,
@@ -77,7 +78,7 @@
 	let showDeleteConfirmation = $state(false)
 	let pendingNavigation = $state<BeforeNavigate | null>(null)
 	let autoSlug = $state(mode === 'create')
-	let isSavedNavigation = $state(false)
+	let allowNavigation = $state(false)
 
 	const viewUrl = $derived(
 		status === 'published' && slug ? `/garden/${category}/${slug}` : undefined
@@ -85,44 +86,57 @@
 
 	const isSearchable = $derived(!!SEARCH_CONFIGS[category])
 
-	// Track original values for dirty checking
-	let original = $state({
-		category: item?.category ?? 'books',
-		title: item?.title ?? '',
-		slug: item?.slug ?? '',
-		creator: item?.creator ?? '',
-		imageUrl: item?.imageUrl ?? '',
-		url: item?.url ?? '',
-		sourceId: item?.sourceId ?? '',
-		metadata: JSON.stringify((item?.metadata as Record<string, unknown>) ?? null),
-		date: item?.date ? new Date(item.date).toISOString().slice(0, 10) : '',
-		rating: item?.rating ?? null,
-		isCurrent: item?.isCurrent ?? false,
-		isFavorite: item?.isFavorite ?? false,
-		showInUniverse: item?.showInUniverse ?? false,
-		status: (item?.status as 'draft' | 'published') ?? 'draft',
-		note: JSON.stringify(
-			(item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
-		)
+	// Snapshot dirty tracking — same pattern as PostForm. The $derived recomputes only when one of the
+	// referenced fields changes, and crucially does NOT write any reactive state, so it can't form a
+	// feedback loop with the auto-save effect that reads it.
+	function snapshot(): string {
+		return JSON.stringify([
+			category,
+			title,
+			slug,
+			creator,
+			imageUrl,
+			url,
+			sourceId,
+			metadata,
+			summary,
+			date,
+			rating,
+			isCurrent,
+			isFavorite,
+			showInUniverse,
+			status,
+			note
+		])
+	}
+
+	let savedSnapshot = $state<string>(snapshot())
+	let isDirty = $derived(snapshot() !== savedSnapshot)
+
+	// Auto-save runs only for drafts and only after the title is non-empty (the server requires a title,
+	// and we don't want autosave to fire prematurely on an otherwise blank form).
+	const autoSave = useAutoSave({
+		enabled: () => status === 'draft' && title.trim() !== '',
+		isDirty: () => isDirty,
+		save: () => handleSave(status, { silent: true })
 	})
 
-	const isDirty = $derived(
-		category !== original.category ||
-			title !== original.title ||
-			slug !== original.slug ||
-			creator !== original.creator ||
-			imageUrl !== original.imageUrl ||
-			url !== original.url ||
-			sourceId !== original.sourceId ||
-			JSON.stringify(metadata) !== original.metadata ||
-			date !== original.date ||
-			rating !== original.rating ||
-			isCurrent !== original.isCurrent ||
-			isFavorite !== original.isFavorite ||
-			showInUniverse !== original.showInUniverse ||
-			status !== original.status ||
-			JSON.stringify(note) !== original.note
-	)
+	const autoSaveLabel = $derived.by(() => {
+		switch (autoSave.state) {
+			case 'saving':
+				return 'Saving…'
+			case 'unsaved':
+				return 'Unsaved'
+			case 'failed':
+				return 'Save failed'
+			case 'conflict':
+				return 'Conflict — reload'
+			case 'saved':
+			case 'idle':
+			default:
+				return 'Saved'
+		}
+	})
 
 	const creatorLabel = $derived(getCreatorLabel(category))
 
@@ -216,16 +230,29 @@
 		}
 	}
 
-	// Cmd+S keyboard shortcut
+	// Cmd+S keyboard shortcut. For drafts: flush the auto-save debounce. For published: trigger save directly.
 	$effect(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
 				e.preventDefault()
-				handleSave()
+				if (status === 'draft') {
+					void autoSave.flush()
+				} else {
+					handleSave(status)
+				}
 			}
 		}
 		document.addEventListener('keydown', handleKeydown)
 		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Flush pending auto-save when the window loses focus (matches Notion's behavior).
+	$effect(() => {
+		function handleBlur() {
+			if (status === 'draft') void autoSave.flush()
+		}
+		window.addEventListener('blur', handleBlur)
+		return () => window.removeEventListener('blur', handleBlur)
 	})
 
 	// Browser warning for page unloads
@@ -242,24 +269,56 @@
 
 	// Navigation guard
 	beforeNavigate((navigation) => {
-		if (isSavedNavigation) return
-		if (isDirty && navigation.type !== 'leave') {
-			pendingNavigation = navigation
-			navigation.cancel()
-			showUnsavedChangesModal = true
+		if (allowNavigation) {
+			allowNavigation = false
+			return
 		}
-	})
+		if (!isDirty || navigation.type === 'leave' || !navigation.to) return
 
-	async function handleSave(newStatus?: string) {
-		if (!title.trim()) {
-			toast.error('Title is required')
+		const targetUrl = navigation.to.url.pathname
+
+		// Drafts: try to flush auto-save silently, then continue. If the flush fails, fall back to the
+		// unsaved-changes modal so we never drop edits silently.
+		if (status === 'draft' && autoSave.state !== 'conflict') {
+			navigation.cancel()
+			autoSave.flush().then(
+				() => {
+					allowNavigation = true
+					goto(targetUrl)
+				},
+				() => {
+					pendingNavigation = navigation
+					showUnsavedChangesModal = true
+				}
+			)
 			return
 		}
 
+		// Published / conflict: keep the existing unsaved-changes prompt.
+		pendingNavigation = navigation
+		navigation.cancel()
+		showUnsavedChangesModal = true
+	})
+
+	async function handleSave(newStatus?: string, { silent = false } = {}) {
 		const saveStatus = (newStatus as 'draft' | 'published') || status
 
+		if (!title.trim()) {
+			if (!silent) toast.error('Title is required')
+			return
+		}
+
+		// Apply the status transition first so the submitting snapshot reflects what we're about to send.
+		status = saveStatus
+
+		// Capture the snapshot BEFORE the await. Mid-save keystrokes won't be reflected in this string —
+		// they'll show as dirty after the save completes, and the next debounce picks them up.
+		const submittingSnapshot = snapshot()
+
 		isSaving = true
-		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} item...`)
+		const loadingToastId = silent
+			? null
+			: toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} item...`)
 
 		try {
 			const payload = {
@@ -289,52 +348,38 @@
 				savedItem = (await api.post('/api/admin/garden', payload)) as GardenItem
 			}
 
-			toast.dismiss(loadingToastId)
-			toast.success(`Item ${mode === 'edit' ? 'saved' : 'created'}!`)
-
-			// Update original to match saved state
-			original = {
-				category: savedItem.category,
-				title: savedItem.title,
-				slug: savedItem.slug,
-				creator: savedItem.creator ?? '',
-				imageUrl: savedItem.imageUrl ?? '',
-				url: savedItem.url ?? '',
-				sourceId: savedItem.sourceId ?? '',
-				metadata: JSON.stringify((savedItem.metadata as Record<string, unknown>) ?? null),
-				date: savedItem.date ? new Date(savedItem.date).toISOString().slice(0, 10) : '',
-				rating: savedItem.rating ?? null,
-				isCurrent: savedItem.isCurrent,
-				isFavorite: savedItem.isFavorite,
-				showInUniverse: savedItem.showInUniverse,
-				status: savedItem.status as 'draft' | 'published',
-				note: JSON.stringify(savedItem.note ?? { type: 'doc', content: [{ type: 'paragraph' }] })
+			if (loadingToastId) {
+				toast.dismiss(loadingToastId)
+				toast.success(`Item ${mode === 'edit' ? 'saved' : 'created'}!`)
 			}
 
 			item = savedItem
-			// Sync local state with saved data
-			status = savedItem.status as 'draft' | 'published'
-			slug = savedItem.slug
+			// Sync values that the server may canonicalize. Don't overwrite slug if the user edited it
+			// during the in-flight save — the server doesn't mutate slug, so the local value is correct.
+			if (slug !== savedItem.slug) slug = savedItem.slug
 			sourceId = savedItem.sourceId ?? ''
 			metadata = (savedItem.metadata as Record<string, unknown>) ?? null
 			autoSlug = false
+
+			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
+			// snapshot, so isDirty stays true and the next debounce flushes them.
+			savedSnapshot = submittingSnapshot
+
 			if (mode === 'create') {
 				mode = 'edit'
 				replaceState(`/admin/garden/${savedItem.id}/edit`, {})
 			}
 		} catch (err) {
-			toast.dismiss(loadingToastId)
-			if (
-				err &&
-				typeof err === 'object' &&
-				'status' in err &&
-				(err as { status: number }).status === 409
-			) {
-				toast.error('This item has changed in another tab. Please reload.')
-			} else {
+			if (loadingToastId) toast.dismiss(loadingToastId)
+			const errStatus =
+				err && typeof err === 'object' && 'status' in err
+					? (err as { status: number }).status
+					: undefined
+			if (errStatus !== 409 && !silent) {
 				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} item`)
 			}
 			console.error(err)
+			throw err
 		} finally {
 			isSaving = false
 		}
@@ -364,7 +409,7 @@
 	async function handleDelete() {
 		try {
 			await api.delete(`/api/admin/garden/${item?.id}`)
-			isSavedNavigation = true
+			allowNavigation = true
 			goto('/admin/garden')
 		} catch {
 			toast.error('Failed to delete item')
@@ -378,28 +423,13 @@
 
 	function handleLeaveWithoutSaving() {
 		showUnsavedChangesModal = false
-		if (pendingNavigation) {
-			const nav = pendingNavigation
-			pendingNavigation = null
-			// Reset original to current values so isDirty becomes false
-			original = {
-				category,
-				title,
-				slug,
-				creator,
-				imageUrl,
-				url,
-				sourceId,
-				metadata: JSON.stringify(metadata),
-				date,
-				rating,
-				isCurrent,
-				isFavorite,
-				showInUniverse,
-				status,
-				note: JSON.stringify(note)
-			}
-			if (nav.to) goto(nav.to.url.pathname)
+		const nav = pendingNavigation
+		pendingNavigation = null
+		// Mark current state as saved so we don't re-trigger the modal on the next navigation.
+		savedSnapshot = snapshot()
+		if (nav?.to) {
+			allowNavigation = true
+			goto(nav.to.url.pathname)
 		}
 	}
 </script>
@@ -420,9 +450,16 @@
 			<div class="header-actions">
 				<StatusDropdown
 					{status}
-					onSave={handleSave}
+					onSave={(target) => {
+						if (status === 'draft' && target !== 'draft' && isDirty) {
+							void autoSave.flush().then(() => handleSave(target))
+						} else {
+							handleSave(target)
+						}
+					}}
 					disabled={isSaving}
 					isLoading={isSaving}
+					triggerText={status === 'draft' ? autoSaveLabel : undefined}
 					{viewUrl}
 					onDelete={mode === 'edit' ? openDeleteConfirmation : undefined}
 					onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
@@ -439,7 +476,7 @@
 					<form
 						onsubmit={(e) => {
 							e.preventDefault()
-							handleSave()
+							handleSave(status)
 						}}
 					>
 						{#if isSearchable}
@@ -642,12 +679,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit-6x;
-	}
-
-	.field-label {
-		font-size: 14px;
-		font-weight: 500;
-		color: $gray-20;
 	}
 
 	.image-preview {
