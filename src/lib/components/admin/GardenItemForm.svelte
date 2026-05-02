@@ -236,7 +236,7 @@
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
 				e.preventDefault()
 				if (status === 'draft') {
-					void autoSave.flush()
+					autoSave.flush().catch(() => {})
 				} else {
 					handleSave(status)
 				}
@@ -249,7 +249,7 @@
 	// Flush pending auto-save when the window loses focus (matches Notion's behavior).
 	$effect(() => {
 		function handleBlur() {
-			if (status === 'draft') void autoSave.flush()
+			if (status === 'draft') autoSave.flush().catch(() => {})
 		}
 		window.addEventListener('blur', handleBlur)
 		return () => window.removeEventListener('blur', handleBlur)
@@ -404,7 +404,11 @@
 				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} item`)
 			}
 			console.error(err)
-			throw err
+			// Only re-throw on the silent (autosave) path — useAutoSave needs the rejection to
+			// transition its state machine to 'failed' / 'conflict'. Manual save call sites have
+			// already had the error surfaced via toast/console; rethrowing them produces unhandled
+			// promise rejections at the fire-and-forget call sites (Cmd+S, form onsubmit, etc).
+			if (silent) throw err
 		} finally {
 			isSaving = false
 		}
@@ -477,7 +481,12 @@
 					{status}
 					onSave={(target) => {
 						if (status === 'draft' && target !== 'draft' && isDirty) {
-							void autoSave.flush().then(() => handleSave(target))
+							autoSave.flush().then(
+								() => handleSave(target),
+								() => {
+									/* autoSave already surfaced the failure via its trigger label */
+								}
+							)
 						} else {
 							handleSave(target)
 						}
