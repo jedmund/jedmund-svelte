@@ -56,7 +56,7 @@ export const GET: RequestHandler = async (event) => {
 					}
 				}
 			},
-			orderBy: { createdAt: 'desc' },
+			orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
 			take: 50 // Limit to most recent 50 albums
 		})
 
@@ -82,7 +82,7 @@ export const GET: RequestHandler = async (event) => {
 						`Photography album${album.location ? ` from ${album.location}` : ''} with ${album._count.media} photo${album._count.media !== 1 ? 's' : ''}`,
 					content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
 					link: `${event.url.origin}/photos/${album.slug}`,
-					pubDate: album.createdAt,
+					pubDate: album.publishedAt || album.createdAt,
 					updatedDate: album.updatedAt,
 					guid: `${event.url.origin}/photos/${album.slug}`,
 					photoCount: album._count.media,

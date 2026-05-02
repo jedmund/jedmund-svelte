@@ -118,6 +118,7 @@ export const GET: RequestHandler = async (event) => {
 				date: true,
 				location: true,
 				content: true,
+				publishedAt: true,
 				createdAt: true,
 				_count: {
 					select: { media: true }
@@ -139,7 +140,7 @@ export const GET: RequestHandler = async (event) => {
 					}
 				}
 			},
-			orderBy: { createdAt: 'desc' }
+			orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }]
 		})
 
 		// Transform posts to universe items
@@ -181,7 +182,7 @@ export const GET: RequestHandler = async (event) => {
 				coverPhoto: photos[0] || null, // Keep for backward compatibility
 				photos: photos, // Add all photos for slideshow
 				hasContent: !!album.content, // Add content indicator
-				publishedAt: album.createdAt.toISOString(), // Albums use createdAt as publishedAt
+				publishedAt: (album.publishedAt ?? album.createdAt).toISOString(),
 				createdAt: album.createdAt.toISOString()
 			}
 		})

@@ -32,7 +32,7 @@ export const GET: RequestHandler = async (event) => {
 					select: { media: true }
 				}
 			},
-			orderBy: { createdAt: 'desc' },
+			orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
 			take: 25
 		})
 
@@ -80,7 +80,7 @@ export const GET: RequestHandler = async (event) => {
 				content: album.description ? `<p>${escapeXML(album.description)}</p>` : '',
 				link: `${event.url.origin}/photos/${album.slug}`,
 				guid: `${event.url.origin}/photos/${album.slug}`,
-				pubDate: album.createdAt,
+				pubDate: album.publishedAt || album.createdAt,
 				updatedDate: album.updatedAt,
 				postType: 'album' as const,
 				featuredImage: null
