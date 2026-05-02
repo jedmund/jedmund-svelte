@@ -12,6 +12,7 @@
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import type { JSONContent } from '@tiptap/core'
 	import type { ApiPost, PostFormTag as Tag } from './post-types'
+	import { useAutoSave } from './useAutoSave.svelte'
 
 	// Legacy blocks format (pre-Tiptap) — still in some old posts.
 	interface BlockContent {
@@ -66,7 +67,31 @@
 	let showUnsavedChangesModal = $state(false)
 	let pendingNavigationUrl = $state<string | null>(null)
 	let allowNavigation = $state(false)
-	let savedSnapshot = $state<string | null>(initialPost ? snapshot() : null)
+
+	// Snapshot-based dirty tracking. The $derived only recomputes when one of the read fields changes,
+	// and crucially does NOT write any reactive state — so it can't form a feedback loop with the
+	// auto-save effect that reads isDirty.
+	function snapshot() {
+		return JSON.stringify([
+			title,
+			postType,
+			status,
+			slug,
+			excerpt,
+			syndicationText,
+			featuredImage,
+			syndicateBluesky,
+			syndicateMastodon,
+			appendLink,
+			content,
+			tags
+				.map((t) => t.id)
+				.sort()
+				.join(',')
+		])
+	}
+
+	let savedSnapshot = $state<string>(snapshot())
 
 	const postTypeConfig = {
 		post: { icon: '💭', label: 'Post', showTitle: false, showContent: true },
@@ -87,37 +112,32 @@
 				]
 	)
 
-	function snapshot() {
-		return JSON.stringify({
-			title,
-			postType,
-			status,
-			slug,
-			excerpt,
-			syndicationText,
-			featuredImage,
-			syndicateBluesky,
-			syndicateMastodon,
-			appendLink,
-			content,
-			tagIds: tags
-				.map((t) => t.id)
-				.sort()
-				.join(',')
-		})
-	}
+	let isDirty = $derived(snapshot() !== savedSnapshot)
 
-	// Pre-first-save: dirty if the form has any content. After save: dirty if state diverges from the saved snapshot.
-	let isDirty = $derived(
-		savedSnapshot === null
-			? title.trim() !== '' ||
-					slug.trim() !== '' ||
-					excerpt.trim() !== '' ||
-					syndicationText.trim() !== '' ||
-					tags.length > 0 ||
-					(content.content && content.content.length > 0)
-			: snapshot() !== savedSnapshot
-	)
+	// Auto-save runs only for drafts (publishing has explicit syndication side effects we shouldn't trigger silently).
+	// Pre-first-save it requires a real change so a blank /admin/posts/new doesn't post an empty post on mount.
+	const autoSave = useAutoSave({
+		enabled: () => status === 'draft',
+		isDirty: () => isDirty,
+		save: () => handleSave(status)
+	})
+
+	const autoSaveLabel = $derived.by(() => {
+		switch (autoSave.state) {
+			case 'saving':
+				return 'Saving…'
+			case 'unsaved':
+				return 'Unsaved'
+			case 'failed':
+				return 'Save failed'
+			case 'conflict':
+				return 'Conflict — reload'
+			case 'saved':
+			case 'idle':
+			default:
+				return 'Saved'
+		}
+	})
 
 	// Auto-generate slug from title for new posts.
 	$effect(() => {
@@ -130,16 +150,29 @@
 		}
 	})
 
-	// Cmd+S keyboard shortcut.
+	// Cmd+S keyboard shortcut. For drafts: flush the auto-save debounce. For published: trigger save directly.
 	$effect(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
 				e.preventDefault()
-				handleSave(status)
+				if (status === 'draft') {
+					void autoSave.flush()
+				} else {
+					handleSave(status)
+				}
 			}
 		}
 		document.addEventListener('keydown', handleKeydown)
 		return () => document.removeEventListener('keydown', handleKeydown)
+	})
+
+	// Flush pending auto-save when the window loses focus (matches Notion's behavior).
+	$effect(() => {
+		function handleBlur() {
+			if (status === 'draft') void autoSave.flush()
+		}
+		window.addEventListener('blur', handleBlur)
+		return () => window.removeEventListener('blur', handleBlur)
 	})
 
 	// Browser warning for page unloads (refresh/close).
@@ -159,11 +192,32 @@
 			allowNavigation = false
 			return
 		}
-		if (isDirty && navigation.type !== 'leave' && navigation.to) {
-			pendingNavigationUrl = navigation.to.url.pathname
+		if (!isDirty || navigation.type === 'leave' || !navigation.to) return
+
+		const targetUrl = navigation.to.url.pathname
+
+		// Drafts: try to flush auto-save silently, then continue. If the flush fails
+		// (network, 409, etc), fall back to the unsaved-changes modal so we never drop edits silently.
+		if (status === 'draft' && autoSave.state !== 'conflict') {
 			navigation.cancel()
-			showUnsavedChangesModal = true
+			autoSave.flush().then(
+				() => {
+					allowNavigation = true
+					goto(targetUrl)
+				},
+				() => {
+					// Save failed — keep the user on the page and surface the modal.
+					pendingNavigationUrl = targetUrl
+					showUnsavedChangesModal = true
+				}
+			)
+			return
 		}
+
+		// Published / conflict: keep the existing unsaved-changes prompt.
+		pendingNavigationUrl = targetUrl
+		navigation.cancel()
+		showUnsavedChangesModal = true
 	})
 
 	function normalizeContent(raw: unknown): JSONContent {
@@ -303,6 +357,13 @@
 		const targetStatus = (target as 'draft' | 'published') || status
 		saving = true
 
+		// Apply the status transition first so the submitting snapshot reflects what we're about to send.
+		status = targetStatus
+
+		// Capture the snapshot BEFORE the await. Mid-save keystrokes won't be reflected in this string —
+		// they'll show as dirty after the save completes, and the next debounce picks them up.
+		const submittingSnapshot = snapshot()
+
 		const postData = {
 			title: config?.showTitle ? title : null,
 			slug: slug || `post-${Date.now()}`,
@@ -323,7 +384,8 @@
 				const created = await api.post<ApiPost>('/api/posts', postData)
 				id = created.id
 				updatedAt = created.updatedAt
-				slug = created.slug
+				// Adopt the server-canonicalized slug (we may have submitted a generated `post-${Date.now()}`).
+				if (slug !== created.slug) slug = created.slug
 				slugManuallySet = true
 				replaceState(`/admin/posts/${created.id}/edit`, {})
 			} else {
@@ -333,14 +395,17 @@
 				})
 				if (saved) {
 					updatedAt = saved.updatedAt
-					slug = saved.slug
+					// Don't sync slug back — server doesn't mutate slug, and syncing would clobber
+					// a slug edit the user may have made during the in-flight save.
 					slugManuallySet = true
 				}
 			}
-			status = targetStatus
-			savedSnapshot = snapshot()
+			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
+			// snapshot, so isDirty stays true and the next debounce flushes them.
+			savedSnapshot = submittingSnapshot
 		} catch (error) {
 			console.error('Failed to save post:', error)
+			throw error
 		} finally {
 			saving = false
 		}
@@ -416,9 +481,17 @@
 			<div class="header-actions">
 				<StatusDropdown
 					{status}
-					onSave={handleSave}
+					onSave={(target) => {
+						// If the user is publishing a dirty draft, flush any pending auto-save first so we publish on top of the latest saved snapshot.
+						if (status === 'draft' && target !== 'draft' && isDirty) {
+							void autoSave.flush().then(() => handleSave(target))
+						} else {
+							handleSave(target)
+						}
+					}}
 					disabled={saving}
 					isLoading={saving}
+					triggerText={status === 'draft' ? autoSaveLabel : undefined}
 					viewUrl={status === 'published' && slug ? `/universe/${slug}` : undefined}
 					onDelete={id !== null ? openDeleteConfirmation : undefined}
 					onCopyPreviewLink={id !== null && slug ? handleCopyPreviewLink : undefined}
@@ -457,6 +530,7 @@
 					createdAt={initialPost?.createdAt ?? new Date().toISOString()}
 					updatedAt={initialPost?.updatedAt ?? new Date().toISOString()}
 					publishedAt={initialPost?.publishedAt ?? null}
+					onSlugEdit={() => (slugManuallySet = true)}
 				/>
 			</div>
 
