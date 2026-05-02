@@ -11,8 +11,10 @@
 		dropdownTriggerSize?: 'small' | 'medium' | 'large'
 		class?: string
 		onToggle?: (isOpen: boolean) => void
-		trigger: Snippet
+		trigger: Snippet<[(e: MouseEvent) => void]>
 		dropdown?: Snippet
+		// When true, suppress the auto chevron button — the caller's trigger snippet is the only thing that opens the menu.
+		combined?: boolean
 	}
 
 	let {
@@ -23,7 +25,8 @@
 		class: className = '',
 		onToggle,
 		trigger,
-		dropdown
+		dropdown,
+		combined = false
 	}: Props = $props()
 
 	function handleDropdownToggle(e: MouseEvent) {
@@ -44,9 +47,9 @@
 	onclickoutside={handleClickOutside}
 >
 	<div class="dropdown-trigger">
-		{@render trigger()}
+		{@render trigger(handleDropdownToggle)}
 
-		{#if dropdown}
+		{#if dropdown && !combined}
 			<Button
 				variant="ghost"
 				iconOnly
