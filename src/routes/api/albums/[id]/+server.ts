@@ -118,6 +118,14 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
+		const nextStatus = body.status !== undefined ? body.status : existing.status
+		let publishedAt: Date | null = existing.publishedAt
+		if (nextStatus === 'published' && existing.status !== 'published') {
+			publishedAt = new Date()
+		} else if (nextStatus === 'draft' && existing.status === 'published') {
+			publishedAt = null
+		}
+
 		// Update album
 		const album = await prisma.album.update({
 			where: { id },
@@ -128,7 +136,8 @@ export const PUT: RequestHandler = async (event) => {
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				location: body.location !== undefined ? body.location : existing.location,
 				coverPhotoId: body.coverPhotoId !== undefined ? body.coverPhotoId : existing.coverPhotoId,
-				status: body.status !== undefined ? body.status : existing.status,
+				status: nextStatus,
+				publishedAt,
 				showInUniverse:
 					body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse,
 				content:

@@ -79,8 +79,10 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
-		if (data.status === 'published' && existing.status !== 'published' && !existing.publishedAt) {
+		if (data.status === 'published' && existing.status !== 'published') {
 			data.publishedAt = new Date()
+		} else if (data.status === 'draft' && existing.status === 'published') {
+			data.publishedAt = null
 		}
 
 		const featuredImageId = data.featuredImage
@@ -204,9 +206,9 @@ export const PATCH: RequestHandler = async (event) => {
 
 		if (data.status !== undefined) {
 			updateData.status = data.status
-			if (data.status === 'published' && !existing.publishedAt) {
+			if (data.status === 'published' && existing.status !== 'published') {
 				updateData.publishedAt = new Date()
-			} else if (data.status === 'draft') {
+			} else if (data.status === 'draft' && existing.status === 'published') {
 				updateData.publishedAt = null
 			}
 		}
@@ -222,7 +224,6 @@ export const PATCH: RequestHandler = async (event) => {
 			updateData.attachments =
 				data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
 		if (data.tags !== undefined) updateData.tags = data.tags
-		if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt
 		if (data.excerpt !== undefined) updateData.excerpt = data.excerpt
 		if (data.syndicationText !== undefined) updateData.syndicationText = data.syndicationText
 		if (data.syndicateBluesky !== undefined) updateData.syndicateBluesky = data.syndicateBluesky
