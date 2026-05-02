@@ -168,7 +168,6 @@
 {/if}
 
 <style lang="scss">
-
 	// Base button styles
 	.btn {
 		display: inline-flex;
@@ -303,15 +302,15 @@
 	}
 
 	.btn-danger {
-		background-color: $yellow-60;
-		color: $yellow-10;
+		background-color: $red-60;
+		color: $white;
 
 		&:hover:not(:disabled) {
-			background-color: $yellow-50;
+			background-color: $red-50;
 		}
 
 		&:active:not(:disabled) {
-			background-color: $yellow-40;
+			background-color: $red-40;
 		}
 	}
 

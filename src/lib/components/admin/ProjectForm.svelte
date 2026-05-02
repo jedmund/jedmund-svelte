@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, beforeNavigate } from '$app/navigation'
+	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
@@ -17,7 +17,11 @@
 		mode: 'create' | 'edit'
 	}
 
-	let { project = null, mode }: Props = $props()
+	let { project: initialProject = null, mode: initialMode }: Props = $props()
+
+	// Local state so we can transition create → edit in place after first save.
+	let project = $state(initialProject)
+	let mode = $state<'create' | 'edit'>(initialMode)
 
 	// Form store - centralized state management
 	const formStore = createProjectFormStore(project)
@@ -36,23 +40,22 @@
 		{ value: 'case-study', label: 'Case Study' }
 	]
 
-	// StatusDropdown configuration
-	const primaryAction = $derived(
-		formStore.fields.status === 'draft'
-			? { label: 'Save draft', status: 'draft' }
-			: { label: 'Save', status: formStore.fields.status }
-	)
+	// Status-specific dropdown labels for project's extra statuses (list-only,
+	// password-protected); StatusDropdown handles draft/published defaults itself.
+	const altActions = $derived.by(() => {
+		const s = formStore.fields.status
+		if (s === 'draft' || s === 'published') return undefined
+		return [
+			{ label: 'Publish', target: 'published' },
+			{ label: 'Save as draft', target: 'draft' }
+		]
+	})
 
-	const dropdownActions = $derived(
-		formStore.fields.status === 'draft'
-			? [{ label: 'Publish', status: 'published' }]
-			: formStore.fields.status === 'published'
-				? [{ label: 'Unpublish', status: 'draft' }]
-				: [
-						{ label: 'Publish', status: 'published' },
-						{ label: 'Save as draft', status: 'draft' }
-					]
-	)
+	const primaryLabel = $derived.by(() => {
+		const s = formStore.fields.status
+		if (s === 'draft' || s === 'published') return undefined
+		return 'Save'
+	})
 
 	const viewUrl = $derived(
 		mode === 'edit' && project?.slug
@@ -139,11 +142,11 @@
 			toast.dismiss(loadingToastId)
 			toast.success(`Project ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
 
+			project = savedProject
+			formStore.populateFromProject(savedProject)
 			if (mode === 'create') {
-				goto(`/admin/projects/${savedProject.id}/edit`)
-			} else {
-				project = savedProject
-				formStore.populateFromProject(savedProject)
+				mode = 'edit'
+				replaceState(`/admin/projects/${savedProject.id}/edit`, {})
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
@@ -194,12 +197,12 @@
 			</div>
 			<div class="header-actions">
 				<StatusDropdown
-					currentStatus={formStore.fields.status}
-					onStatusChange={handleSave}
+					status={formStore.fields.status}
+					onSave={handleSave}
 					disabled={isSaving}
 					isLoading={isSaving}
-					{primaryAction}
-					{dropdownActions}
+					{primaryLabel}
+					{altActions}
 					{viewUrl}
 				/>
 			</div>

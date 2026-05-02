@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, beforeNavigate } from '$app/navigation'
+	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import type { BeforeNavigate } from '@sveltejs/kit'
 	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
@@ -31,7 +31,11 @@
 		mode: 'create' | 'edit'
 	}
 
-	let { item = null, mode }: Props = $props()
+	let { item: initialItem = null, mode: initialMode }: Props = $props()
+
+	// Local state so we can transition create → edit in place after first save.
+	let item = $state(initialItem)
+	let mode = $state<'create' | 'edit'>(initialMode)
 
 	// Form state
 	let category = $state<GardenCategory>((item?.category as GardenCategory) ?? 'books')
@@ -74,18 +78,6 @@
 	let pendingNavigation = $state<BeforeNavigate | null>(null)
 	let autoSlug = $state(mode === 'create')
 	let isSavedNavigation = $state(false)
-
-	const primaryAction = $derived(
-		status === 'draft'
-			? { label: 'Save draft', status: 'draft' }
-			: { label: 'Save', status: 'published' }
-	)
-
-	const dropdownActions = $derived(
-		status === 'draft'
-			? [{ label: 'Publish', status: 'published' }]
-			: [{ label: 'Unpublish', status: 'draft' }]
-	)
 
 	const viewUrl = $derived(
 		status === 'published' && slug ? `/garden/${category}/${slug}` : undefined
@@ -319,16 +311,16 @@
 				note: JSON.stringify(savedItem.note ?? { type: 'doc', content: [{ type: 'paragraph' }] })
 			}
 
+			item = savedItem
+			// Sync local state with saved data
+			status = savedItem.status as 'draft' | 'published'
+			slug = savedItem.slug
+			sourceId = savedItem.sourceId ?? ''
+			metadata = (savedItem.metadata as Record<string, unknown>) ?? null
+			autoSlug = false
 			if (mode === 'create') {
-				isSavedNavigation = true
-				goto(`/admin/garden/${savedItem.id}/edit`)
-			} else {
-				item = savedItem
-				// Sync local state with saved data
-				status = savedItem.status as 'draft' | 'published'
-				slug = savedItem.slug
-				sourceId = savedItem.sourceId ?? ''
-				metadata = (savedItem.metadata as Record<string, unknown>) ?? null
+				mode = 'edit'
+				replaceState(`/admin/garden/${savedItem.id}/edit`, {})
 			}
 		} catch (err) {
 			toast.dismiss(loadingToastId)
@@ -427,12 +419,10 @@
 			</div>
 			<div class="header-actions">
 				<StatusDropdown
-					currentStatus={status}
-					onStatusChange={handleSave}
+					{status}
+					onSave={handleSave}
 					disabled={isSaving}
 					isLoading={isSaving}
-					{primaryAction}
-					{dropdownActions}
 					{viewUrl}
 					onDelete={mode === 'edit' ? openDeleteConfirmation : undefined}
 					onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
