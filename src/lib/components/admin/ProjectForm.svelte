@@ -157,9 +157,15 @@
 
 		const targetUrl = navigation.to.url.pathname
 
-		// Drafts: try to flush auto-save silently, then continue. If the flush fails (network, 409, etc),
-		// fall back to the unsaved-changes modal so we never drop edits silently.
-		if (formStore.fields.status === 'draft' && autoSave.state !== 'conflict') {
+		// Drafts with content: try to flush auto-save silently, then continue. If the flush fails
+		// (network, 409, etc), fall back to the unsaved-changes modal so we never drop edits silently.
+		// If autosave isn't enabled (e.g. empty title gates it off), don't fall through to its silent
+		// path — the form is still dirty in other fields and we'd drop those edits.
+		const draftCanAutoSave =
+			formStore.fields.status === 'draft' &&
+			formStore.fields.title.trim() !== '' &&
+			autoSave.state !== 'conflict'
+		if (draftCanAutoSave) {
 			navigation.cancel()
 			autoSave.flush().then(
 				() => {
@@ -181,9 +187,7 @@
 	})
 
 	async function handleSave(newStatus?: string, { silent = false } = {}) {
-		if (newStatus) {
-			formStore.setField('status', newStatus as ProjectStatus)
-		}
+		const saveStatus = (newStatus as ProjectStatus) || formStore.fields.status
 
 		// Strict validation only for explicit user-driven saves. Auto-save never blocks on validation —
 		// the form may be partial; the next save attempt will pick up new fields when they're filled in.
@@ -192,7 +196,10 @@
 			return
 		}
 
-		const submittingSnapshot = snapshot()
+		// Snapshot what we're about to submit (with saveStatus, even though we haven't applied it
+		// locally yet). Don't mutate formStore.fields.status here — if the save fails, we'd be lying
+		// to the dropdown about what state the server has.
+		const submittingSnapshot = JSON.stringify({ ...formStore.fields, status: saveStatus })
 
 		isSaving = true
 		const loadingToastId = silent
@@ -202,6 +209,8 @@
 		try {
 			const payload = {
 				...formStore.buildPayload(),
+				status: saveStatus,
+				password: saveStatus === 'password-protected' ? formStore.fields.password : null,
 				// Include updatedAt for concurrency control in edit mode
 				updatedAt: mode === 'edit' ? project?.updatedAt : undefined
 			}
@@ -222,6 +231,9 @@
 			// the new slug. Don't call formStore.populateFromProject here — that would clobber any
 			// keystrokes the user made during the await.
 			project = savedProject
+
+			// Apply the status transition only after the server has accepted it.
+			formStore.setField('status', saveStatus)
 
 			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
 			// snapshot, so isDirty stays true and the next debounce flushes them.

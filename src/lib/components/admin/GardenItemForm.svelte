@@ -277,9 +277,13 @@
 
 		const targetUrl = navigation.to.url.pathname
 
-		// Drafts: try to flush auto-save silently, then continue. If the flush fails, fall back to the
-		// unsaved-changes modal so we never drop edits silently.
-		if (status === 'draft' && autoSave.state !== 'conflict') {
+		// Drafts with content: try to flush auto-save silently, then continue. If the flush fails, fall
+		// back to the unsaved-changes modal so we never drop edits silently. If autosave isn't enabled
+		// yet (e.g. empty title), don't fall through to its silent path — the form is still dirty in
+		// other fields and we'd drop those edits.
+		const draftCanAutoSave =
+			status === 'draft' && title.trim() !== '' && autoSave.state !== 'conflict'
+		if (draftCanAutoSave) {
 			navigation.cancel()
 			autoSave.flush().then(
 				() => {
@@ -308,12 +312,28 @@
 			return
 		}
 
-		// Apply the status transition first so the submitting snapshot reflects what we're about to send.
-		status = saveStatus
-
-		// Capture the snapshot BEFORE the await. Mid-save keystrokes won't be reflected in this string —
-		// they'll show as dirty after the save completes, and the next debounce picks them up.
-		const submittingSnapshot = snapshot()
+		// Build the snapshot that represents what we're about to submit (not what's currently in the
+		// form, which may diverge from saveStatus if the user clicked Publish on a draft). Don't apply
+		// `status = saveStatus` locally yet — if the request fails we'd be left showing a status the
+		// server hasn't actually accepted.
+		const submittingSnapshot = JSON.stringify([
+			category,
+			title,
+			slug,
+			creator,
+			imageUrl,
+			url,
+			sourceId,
+			metadata,
+			summary,
+			date,
+			rating,
+			isCurrent,
+			isFavorite,
+			showInUniverse,
+			saveStatus,
+			note
+		])
 
 		isSaving = true
 		const loadingToastId = silent
@@ -354,12 +374,17 @@
 			}
 
 			item = savedItem
-			// Sync values that the server may canonicalize. Don't overwrite slug if the user edited it
-			// during the in-flight save — the server doesn't mutate slug, so the local value is correct.
-			if (slug !== savedItem.slug) slug = savedItem.slug
+			// Adopt the server-canonicalized slug only on first save (where we may have submitted an
+			// auto-generated slug). On edit we never sync slug back — the server doesn't mutate it, and
+			// syncing would clobber an in-flight slug edit.
+			if (mode === 'create') {
+				if (slug !== savedItem.slug) slug = savedItem.slug
+			}
 			sourceId = savedItem.sourceId ?? ''
 			metadata = (savedItem.metadata as Record<string, unknown>) ?? null
 			autoSlug = false
+			// Sync status only on success — if the publish failed above we'd be lying to the dropdown.
+			status = saveStatus
 
 			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
 			// snapshot, so isDirty stays true and the next debounce flushes them.
