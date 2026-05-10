@@ -3,7 +3,7 @@
 	import BackButton from '$components/BackButton.svelte'
 	import HeartButton from '$components/HeartButton.svelte'
 	import { generateMetaTags } from '$lib/utils/metadata'
-	import { renderEdraContent } from '$lib/utils/content'
+	import { renderEdraContent, cleanSummary } from '$lib/utils/content'
 	import { formatDate } from '$lib/utils/date'
 	import StarIcon from '$icons/star.svg?component'
 	import CheckboxIcon from '$icons/checkbox-checked.svg?component'
@@ -32,6 +32,7 @@
 	const renderedNote = $derived(
 		data.item?.note ? renderEdraContent(data.item.note).replace(/(<p><br><\/p>\s*)+$/, '') : ''
 	)
+	const cleanedSummary = $derived(cleanSummary(data.item?.summary))
 	const dateStr = $derived(data.item?.date ? data.item.date.toString() : '')
 	const year = $derived.by(() => {
 		if (!data.item?.date) return null
@@ -127,9 +128,9 @@
 							<p class="item-subtitle">{subtitle}</p>
 						{/if}
 
-						{#if data.item.summary}
+						{#if cleanedSummary}
 							<p class="item-summary" class:collapsed={!summaryExpanded} bind:this={summaryEl}>
-								{data.item.summary}
+								{cleanedSummary}
 							</p>
 							{#if summaryOverflows || summaryExpanded}
 								<button class="summary-toggle" onclick={() => (summaryExpanded = !summaryExpanded)}>
