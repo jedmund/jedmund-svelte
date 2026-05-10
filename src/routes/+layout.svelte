@@ -7,10 +7,20 @@
 	import { generatePersonJsonLd } from '$lib/utils/metadata'
 	import { Toaster } from 'svelte-sonner'
 
-	let { children } = $props()
+	let { children, data } = $props()
 
 	const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'))
 	const isAboutPage = $derived($page.url.pathname === '/about')
+
+	const socialLinksForJsonLd = $derived(
+		data.socialLinks && data.socialLinks.length > 0
+			? data.socialLinks.map((l: { url: string }) => l.url)
+			: [
+					'https://twitter.com/jedmund',
+					'https://github.com/jedmund',
+					'https://www.linkedin.com/in/jedmund'
+				]
+	)
 
 	// Generate person structured data for the site
 	const personJsonLd = $derived(
@@ -19,11 +29,7 @@
 			jobTitle: 'Software Designer',
 			description: 'Software designer based in San Francisco',
 			url: 'https://jedmund.com',
-			sameAs: [
-				'https://twitter.com/jedmund',
-				'https://github.com/jedmund',
-				'https://www.linkedin.com/in/jedmund'
-			]
+			sameAs: socialLinksForJsonLd
 		})
 	)
 
@@ -59,7 +65,7 @@
 	</main>
 
 	{#if !isAdminRoute}
-		<Footer />
+		<Footer socialLinks={data.socialLinks} />
 	{/if}
 </div>
 

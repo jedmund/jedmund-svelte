@@ -7,6 +7,7 @@
 	import MediaIcon from '$icons/media.svg?component'
 	import GardenIcon from '$icons/garden.svg?component'
 	import TagIcon from '$icons/tag.svg?component'
+	import AboutIcon from '$icons/about.svg?component'
 	import SettingsIcon from '$icons/settings.svg?component'
 
 	const currentPath = $derived($page.url.pathname)
@@ -25,7 +26,8 @@
 		{ text: 'Garden', href: '/admin/garden', icon: GardenIcon },
 		{ text: 'Albums', href: '/admin/albums', icon: AlbumIcon },
 		{ text: 'Media', href: '/admin/media', icon: MediaIcon },
-		{ text: 'Tags', href: '/admin/tags', icon: TagIcon }
+		{ text: 'Tags', href: '/admin/tags', icon: TagIcon },
+		{ text: 'About', href: '/admin/about', icon: AboutIcon }
 	]
 
 	const settingsItem: NavItem = { text: 'Settings', href: '/admin/settings', icon: SettingsIcon }
@@ -38,7 +40,7 @@
 			'/admin/albums',
 			'/admin/media',
 			'/admin/tags',
-			'/admin/settings'
+			'/admin/about'
 		]
 		return prefixes.findIndex((p) => currentPath.startsWith(p)) ?? -1
 	})
