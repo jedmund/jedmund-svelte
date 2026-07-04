@@ -34,7 +34,6 @@ function createMusicStream() {
 		eventSource = new EventSource('/api/lastfm/stream')
 
 		eventSource.addEventListener('connected', () => {
-			console.log('Music stream connected')
 			reconnectAttempts = 0
 			update((state) => ({ ...state, connected: true }))
 		})
@@ -42,21 +41,7 @@ function createMusicStream() {
 		eventSource.addEventListener('albums', (event) => {
 			try {
 				const albums: Album[] = JSON.parse(event.data)
-				const nowPlayingAlbum = albums.find((a) => a.isNowPlaying)
 				const updateTime = new Date()
-
-				console.log('🎵 Music stream update at', updateTime.toLocaleTimeString(), {
-					totalAlbums: albums.length,
-					nowPlaying: nowPlayingAlbum
-						? `${nowPlayingAlbum.artist.name} - ${nowPlayingAlbum.name}`
-						: 'none',
-					albums: albums.map((a) => ({
-						name: a.name,
-						artist: a.artist.name,
-						isNowPlaying: a.isNowPlaying,
-						nowPlayingTrack: a.nowPlayingTrack
-					}))
-				})
 
 				update((state) => ({
 					...state,
@@ -71,10 +56,6 @@ function createMusicStream() {
 		eventSource.addEventListener('heartbeat', (event) => {
 			try {
 				const data = JSON.parse(event.data)
-				console.log('💓 Heartbeat at', new Date(data.timestamp).toLocaleTimeString(), {
-					interval: data.interval,
-					hasUpdates: data.hasUpdates
-				})
 
 				// Update lastUpdate time even on heartbeat to keep countdown in sync
 				update((state) => ({
