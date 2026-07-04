@@ -18,3 +18,5 @@ Disallow: /
 # Allow all other bots
 User-agent: *
 Allow: /
+
+Sitemap: https://jedmund.com/sitemap.xml
