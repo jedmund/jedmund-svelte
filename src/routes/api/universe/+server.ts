@@ -57,7 +57,7 @@ export const GET: RequestHandler = async (event) => {
 		const posts = await prisma.post.findMany({
 			where: {
 				status: 'published',
-				publishedAt: { not: null }
+				publishedAt: { lte: new Date() }
 			},
 			select: {
 				id: true,
@@ -89,7 +89,8 @@ export const GET: RequestHandler = async (event) => {
 		const albums = await prisma.album.findMany({
 			where: {
 				status: 'published',
-				showInUniverse: true
+				showInUniverse: true,
+				NOT: { publishedAt: { gt: new Date() } }
 			},
 			select: {
 				id: true,

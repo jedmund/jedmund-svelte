@@ -32,7 +32,10 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Only return published posts unless valid preview token
-		if (!isPreview && (post.status !== 'published' || !post.publishedAt)) {
+		if (
+			!isPreview &&
+			(post.status !== 'published' || !post.publishedAt || post.publishedAt > new Date())
+		) {
 			return errorResponse('Post not found', 404)
 		}
 

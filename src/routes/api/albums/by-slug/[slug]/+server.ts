@@ -53,6 +53,11 @@ export const GET: RequestHandler = async (event) => {
 			return errorResponse('Album not found', 404)
 		}
 
+		// Only published albums are public
+		if (album.status !== 'published' || (album.publishedAt && album.publishedAt > new Date())) {
+			return errorResponse('Album not found', 404)
+		}
+
 		// Transform the album data to include photos array
 		const transformedAlbum = {
 			...album,

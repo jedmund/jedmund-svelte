@@ -34,7 +34,10 @@ interface ListParams {
 }
 
 export async function getPublishedAlbums({ limit = 50, offset = 0 }: ListParams = {}) {
-	const where = { status: 'published' as const }
+	const where: Prisma.AlbumWhereInput = {
+		status: 'published',
+		NOT: { publishedAt: { gt: new Date() } }
+	}
 	const [albums, total] = await Promise.all([
 		prisma.album.findMany({
 			where,
