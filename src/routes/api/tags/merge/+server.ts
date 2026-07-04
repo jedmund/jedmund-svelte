@@ -85,8 +85,7 @@ export const POST: RequestHandler = async (event) => {
 			{
 				error: {
 					code: 'MERGE_FAILED',
-					message: 'Failed to merge tags',
-					details: error instanceof Error ? error.message : 'Unknown error'
+					message: 'Failed to merge tags'
 				}
 			},
 			{ status: 500 }
