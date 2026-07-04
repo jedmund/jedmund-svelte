@@ -79,8 +79,31 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
-		if (data.status === 'published' && existing.status !== 'published' && !existing.publishedAt) {
-			data.publishedAt = new Date()
+		// Coerce client-supplied publishedAt instead of trusting it raw
+		if (data.publishedAt !== undefined && data.publishedAt !== null) {
+			const parsed = new Date(data.publishedAt)
+			if (isNaN(parsed.getTime())) {
+				return errorResponse('Invalid publishedAt date', 400)
+			}
+			data.publishedAt = parsed
+		}
+
+		const nextStatus = data.status ?? existing.status
+		if (nextStatus === 'scheduled') {
+			const scheduledFor = data.publishedAt ?? existing.publishedAt
+			if (!scheduledFor || scheduledFor <= new Date()) {
+				return errorResponse('Scheduled posts need a publish date in the future', 400)
+			}
+			data.publishedAt = scheduledFor
+		} else if (nextStatus === 'published') {
+			if (data.status === 'published' && existing.status !== 'published') {
+				// Fresh publish (incl. "publish now" on a scheduled post): stamp now
+				// unless an explicit past date was chosen
+				const chosen = data.publishedAt ?? existing.publishedAt
+				data.publishedAt = !chosen || chosen > new Date() ? new Date() : chosen
+			} else if (data.publishedAt && data.publishedAt > new Date()) {
+				return errorResponse('Use the scheduled status to publish in the future', 400)
+			}
 		}
 
 		const featuredImageId = data.featuredImage
@@ -202,13 +225,41 @@ export const PATCH: RequestHandler = async (event) => {
 
 		const updateData: Prisma.PostUpdateInput = {}
 
+		// Coerce client-supplied publishedAt instead of trusting it raw
+		let publishedAtInput: Date | null | undefined
+		if (data.publishedAt !== undefined) {
+			if (data.publishedAt === null) {
+				publishedAtInput = null
+			} else {
+				const parsed = new Date(data.publishedAt)
+				if (isNaN(parsed.getTime())) {
+					return errorResponse('Invalid publishedAt date', 400)
+				}
+				publishedAtInput = parsed
+			}
+		}
+
 		if (data.status !== undefined) {
 			updateData.status = data.status
-			if (data.status === 'published' && !existing.publishedAt) {
-				updateData.publishedAt = new Date()
+			if (data.status === 'scheduled') {
+				const scheduledFor = publishedAtInput ?? existing.publishedAt
+				if (!scheduledFor || scheduledFor <= new Date()) {
+					return errorResponse('Scheduled posts need a publish date in the future', 400)
+				}
+				updateData.publishedAt = scheduledFor
+			} else if (data.status === 'published') {
+				// Stamp now on fresh publishes and missing/future dates; keep an
+				// explicit or existing past date (backdating)
+				const effective = publishedAtInput !== undefined ? publishedAtInput : existing.publishedAt
+				updateData.publishedAt = !effective || effective > new Date() ? new Date() : effective
 			} else if (data.status === 'draft') {
 				updateData.publishedAt = null
 			}
+		} else if (publishedAtInput !== undefined) {
+			if (existing.status === 'published' && publishedAtInput && publishedAtInput > new Date()) {
+				return errorResponse('Use the scheduled status to publish in the future', 400)
+			}
+			updateData.publishedAt = publishedAtInput
 		}
 		if (data.title !== undefined) updateData.title = data.title
 		if (data.slug !== undefined) updateData.slug = data.slug
@@ -222,7 +273,6 @@ export const PATCH: RequestHandler = async (event) => {
 			updateData.attachments =
 				data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
 		if (data.tags !== undefined) updateData.tags = data.tags
-		if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt
 		if (data.excerpt !== undefined) updateData.excerpt = data.excerpt
 		if (data.syndicationText !== undefined) updateData.syndicationText = data.syndicationText
 		if (data.syndicateBluesky !== undefined) updateData.syndicateBluesky = data.syndicateBluesky

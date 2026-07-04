@@ -91,7 +91,7 @@ export function getOffsetPaginationMeta(total: number, limit: number, offset: nu
 }
 
 // Status validation
-export const VALID_STATUSES = ['draft', 'published'] as const
+export const VALID_STATUSES = ['draft', 'published', 'scheduled'] as const
 export type Status = (typeof VALID_STATUSES)[number]
 
 export function isValidStatus(status: unknown): status is Status {
