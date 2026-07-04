@@ -205,7 +205,7 @@
 	onCancel={cancelDelete}
 />
 
-<form method="POST" action="?/toggle-status" class="hidden-form" bind:this={toggleForm}>
+<form method="POST" action="?/toggleStatus" class="hidden-form" bind:this={toggleForm}>
 	<input type="hidden" name="id" bind:this={toggleIdField} />
 	<input type="hidden" name="status" bind:this={toggleStatusField} />
 	<input type="hidden" name="updatedAt" bind:this={toggleUpdatedAtField} />
