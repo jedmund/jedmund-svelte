@@ -21,7 +21,7 @@
 		heartCount?: number
 		createdAt: string | Date
 		updatedAt: string | Date
-		publishedAt: string | Date | null
+		publishedAt?: string | Date | null
 	}
 
 	let {
@@ -33,8 +33,42 @@
 		heartCount,
 		createdAt,
 		updatedAt,
-		publishedAt
+		publishedAt = $bindable(null)
 	}: PostMetadataFormProps = $props()
+
+	function toLocalInputValue(value: string | Date | null | undefined): string {
+		if (!value) return ''
+		const date = new Date(value)
+		if (isNaN(date.getTime())) return ''
+		const pad = (n: number) => String(n).padStart(2, '0')
+		return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+	}
+
+	function toIso(local: string): string | null {
+		if (!local) return null
+		const date = new Date(local)
+		return isNaN(date.getTime()) ? null : date.toISOString()
+	}
+
+	let publishedAtLocal = $state(toLocalInputValue(publishedAt))
+	let lastPropLocal = toLocalInputValue(publishedAt)
+
+	// External change (e.g. server stamped the publish time) → refresh the input
+	$effect(() => {
+		const propLocal = toLocalInputValue(publishedAt)
+		if (propLocal !== lastPropLocal) {
+			lastPropLocal = propLocal
+			publishedAtLocal = propLocal
+		}
+	})
+
+	// Edits in the input → propagate out as ISO
+	$effect(() => {
+		if (publishedAtLocal !== lastPropLocal) {
+			lastPropLocal = publishedAtLocal
+			publishedAt = toIso(publishedAtLocal)
+		}
+	})
 
 	// Featured image media state for ImagePicker
 	let featuredImageMedia = $state<Media | null>(null)
@@ -128,6 +162,14 @@
 		aspectRatio="2:1"
 	/>
 
+	<Input
+		type="datetime-local"
+		label="Publish date"
+		size="jumbo"
+		bind:value={publishedAtLocal}
+		helpText="Set a future date and use Schedule to publish later; past dates backdate the post"
+	/>
+
 	<div class="metadata-section">
 		<h3 class="metadata-title">Post Information</h3>
 		<div class="metadata-grid">
@@ -138,10 +180,6 @@
 			<div class="metadata-item">
 				<span class="metadata-label">Last Updated</span>
 				<span class="metadata-value">{formatDate(updatedAt)}</span>
-			</div>
-			<div class="metadata-item">
-				<span class="metadata-label">Published</span>
-				<span class="metadata-value">{formatDate(publishedAt)}</span>
 			</div>
 			{#if heartCount != null}
 				<div class="metadata-item">

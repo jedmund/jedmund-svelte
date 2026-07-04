@@ -13,6 +13,7 @@
 			| 'tel'
 			| 'date'
 			| 'time'
+			| 'datetime-local'
 			| 'color'
 		label?: string
 		error?: string
@@ -192,7 +193,6 @@
 </div>
 
 <style lang="scss">
-
 	// Wrapper styles
 	.input-wrapper {
 		display: inline-block;

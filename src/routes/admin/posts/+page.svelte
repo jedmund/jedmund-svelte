@@ -57,6 +57,7 @@
 	const statusFilterOptions = [
 		{ value: 'all', label: 'All statuses' },
 		{ value: 'published', label: 'Published' },
+		{ value: 'scheduled', label: 'Scheduled' },
 		{ value: 'draft', label: 'Draft' }
 	]
 
@@ -215,7 +216,6 @@
 </form>
 
 <style lang="scss">
-
 	.composer-section {
 		margin-bottom: $unit-4x;
 		padding: $unit $unit 0;

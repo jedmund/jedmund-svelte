@@ -12,7 +12,11 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
+	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
+	import type { ApiError } from '$lib/admin/api'
 	import type { JSONContent } from '@tiptap/core'
+
+	type PostStatus = 'draft' | 'published' | 'scheduled'
 
 	interface Tag {
 		id: number
@@ -64,7 +68,8 @@
 
 	let title = $state('')
 	let postType = $state<'post' | 'essay'>('post')
-	let status = $state<'draft' | 'published'>('draft')
+	let status = $state<PostStatus>('draft')
+	let publishedAt = $state<string | null>(null)
 	let slug = $state('')
 	let excerpt = $state('')
 	let syndicationText = $state('')
@@ -77,6 +82,7 @@
 	let activeTab = $state('content')
 	let heartCount = $state<number | undefined>()
 	let showDeleteConfirmation = $state(false)
+	let saveError = $state('')
 	let showUnsavedChangesModal = $state(false)
 	let pendingNavigationUrl = $state<string | null>(null)
 	let allowNavigation = $state(false)
@@ -85,7 +91,8 @@
 	let initialValues = $state<{
 		title: string
 		postType: 'post' | 'essay'
-		status: 'draft' | 'published'
+		status: PostStatus
+		publishedAt: string | null
 		slug: string
 		excerpt: string
 		syndicationText: string
@@ -99,6 +106,7 @@
 		title: '',
 		postType: 'post',
 		status: 'draft',
+		publishedAt: null,
 		slug: '',
 		excerpt: '',
 		syndicationText: '',
@@ -116,6 +124,7 @@
 			(title !== initialValues.title ||
 				postType !== initialValues.postType ||
 				status !== initialValues.status ||
+				publishedAt !== initialValues.publishedAt ||
 				slug !== initialValues.slug ||
 				excerpt !== initialValues.excerpt ||
 				syndicationText !== initialValues.syndicationText ||
@@ -335,7 +344,8 @@
 				// Populate form fields
 				title = data.title || ''
 				postType = (data.postType as 'post' | 'essay') || 'post'
-				status = (data.status as 'draft' | 'published') || 'draft'
+				status = (data.status as PostStatus) || 'draft'
+				publishedAt = data.publishedAt
 				slug = data.slug || ''
 				excerpt = data.excerpt || ''
 				syndicationText = data.syndicationText || ''
@@ -361,6 +371,7 @@
 					title,
 					postType,
 					status,
+					publishedAt,
 					slug,
 					excerpt,
 					syndicationText,
@@ -393,6 +404,7 @@
 
 	async function handleSave(newStatus?: string) {
 		saving = true
+		saveError = ''
 
 		// Save content in native Tiptap format to preserve all formatting
 		const saveContent = content
@@ -402,6 +414,7 @@
 			slug,
 			type: postType, // No mapping needed anymore
 			status: newStatus || status,
+			publishedAt,
 			content: config?.showContent ? saveContent : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
 			syndicationText: syndicationText || null,
@@ -419,13 +432,15 @@
 			})
 			if (saved) {
 				post = saved
-				if (newStatus) status = newStatus as 'draft' | 'published'
+				if (newStatus) status = newStatus as PostStatus
+				publishedAt = saved.publishedAt
 
 				// Update initial values to reflect saved state
 				initialValues = {
 					title,
 					postType,
 					status,
+					publishedAt,
 					slug,
 					excerpt,
 					syndicationText,
@@ -438,6 +453,8 @@
 				}
 			}
 		} catch (error) {
+			const details = (error as ApiError)?.details as { error?: { message?: string } } | undefined
+			saveError = details?.error?.message || 'Failed to save post'
 			console.error('Failed to save post:', error)
 		} finally {
 			saving = false
@@ -518,10 +535,20 @@
 						isLoading={saving}
 						primaryAction={status === 'draft'
 							? { label: 'Save draft', status: 'draft' }
-							: { label: 'Save post', status: 'published' }}
+							: status === 'scheduled'
+								? { label: 'Save schedule', status: 'scheduled' }
+								: { label: 'Save post', status: 'published' }}
 						dropdownActions={status === 'draft'
-							? [{ label: 'Publish', status: 'published' }]
-							: [{ label: 'Save as Draft', status: 'draft' }]}
+							? [
+									{ label: 'Publish', status: 'published' },
+									{ label: 'Schedule', status: 'scheduled' }
+								]
+							: status === 'scheduled'
+								? [
+										{ label: 'Publish now', status: 'published' },
+										{ label: 'Save as Draft', status: 'draft' }
+									]
+								: [{ label: 'Save as Draft', status: 'draft' }]}
 						viewUrl={slug ? `/universe/${slug}` : undefined}
 						onDelete={openDeleteConfirmation}
 						onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
@@ -532,6 +559,9 @@
 	{/snippet}
 
 	<div class="admin-container">
+		{#if saveError}
+			<ErrorMessage message={saveError} dismissible onDismiss={() => (saveError = '')} />
+		{/if}
 		{#if loading}
 			<div class="loading-container">
 				<LoadingSpinner />
@@ -567,10 +597,10 @@
 						bind:excerpt
 						bind:featuredImage
 						bind:tags
+						bind:publishedAt
 						{heartCount}
 						createdAt={post.createdAt}
 						updatedAt={post.updatedAt}
-						publishedAt={post.publishedAt}
 					/>
 				</div>
 
@@ -614,7 +644,6 @@
 />
 
 <style lang="scss">
-
 	header {
 		display: grid;
 		grid-template-columns: 250px 1fr 250px;
