@@ -52,12 +52,17 @@ export const GET: RequestHandler = async (event) => {
 		const url = new URL(event.request.url)
 		const limit = parseInt(url.searchParams.get('limit') || '20')
 		const offset = parseInt(url.searchParams.get('offset') || '0')
+		const tagSlugs = (url.searchParams.get('tags') || '')
+			.split(',')
+			.map((t) => t.trim())
+			.filter(Boolean)
 
 		// Fetch published posts
 		const posts = await prisma.post.findMany({
 			where: {
 				status: 'published',
-				publishedAt: { lte: new Date() }
+				publishedAt: { lte: new Date() },
+				...(tagSlugs.length > 0 ? { tags: { some: { tag: { slug: { in: tagSlugs } } } } } : {})
 			},
 			select: {
 				id: true,
@@ -85,44 +90,47 @@ export const GET: RequestHandler = async (event) => {
 			orderBy: { publishedAt: 'desc' }
 		})
 
-		// Fetch published albums marked for Universe
-		const albums = await prisma.album.findMany({
-			where: {
-				status: 'published',
-				showInUniverse: true,
-				NOT: { publishedAt: { gt: new Date() } }
-			},
-			select: {
-				id: true,
-				slug: true,
-				title: true,
-				description: true,
-				date: true,
-				location: true,
-				content: true,
-				createdAt: true,
-				_count: {
-					select: { media: true }
-				},
-				media: {
-					take: 6, // Fetch enough for 5 thumbnails + 1 background
-					orderBy: { displayOrder: 'asc' },
-					include: {
+		// Fetch published albums marked for Universe (albums are untagged, so a
+		// tag-filtered feed is posts-only)
+		const albums = tagSlugs.length
+			? []
+			: await prisma.album.findMany({
+					where: {
+						status: 'published',
+						showInUniverse: true,
+						NOT: { publishedAt: { gt: new Date() } }
+					},
+					select: {
+						id: true,
+						slug: true,
+						title: true,
+						description: true,
+						date: true,
+						location: true,
+						content: true,
+						createdAt: true,
+						_count: {
+							select: { media: true }
+						},
 						media: {
-							select: {
-								id: true,
-								url: true,
-								thumbnailUrl: true,
-								photoCaption: true,
-								width: true,
-								height: true
+							take: 6, // Fetch enough for 5 thumbnails + 1 background
+							orderBy: { displayOrder: 'asc' },
+							include: {
+								media: {
+									select: {
+										id: true,
+										url: true,
+										thumbnailUrl: true,
+										photoCaption: true,
+										width: true,
+										height: true
+									}
+								}
 							}
 						}
-					}
-				}
-			},
-			orderBy: { createdAt: 'desc' }
-		})
+					},
+					orderBy: { createdAt: 'desc' }
+				})
 
 		// Transform posts to universe items
 		const postItems: UniverseItem[] = posts.map((post) => ({
