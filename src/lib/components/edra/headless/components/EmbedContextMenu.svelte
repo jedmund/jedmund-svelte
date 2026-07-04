@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { fly } from 'svelte/transition'
+	import { computePosition, flip, offset, shift, type Placement } from '@floating-ui/dom'
 
 	// Convert CSS transition durations to milliseconds for Svelte transitions
 	const TRANSITION_NORMAL_MS = 200 // $transition-normal: 0.2s
@@ -30,6 +31,9 @@
 	}: Props = $props()
 
 	let dropdown: HTMLDivElement
+	let menuX = $state(x)
+	let menuY = $state(y)
+	let positioned = $state(false)
 
 	function handleClickOutside(event: MouseEvent) {
 		if (dropdown && !dropdown.contains(event.target as Node)) {
@@ -39,43 +43,95 @@
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
+			event.preventDefault()
 			onDismiss()
+			return
 		}
+
+		const buttons = Array.from(dropdown?.querySelectorAll<HTMLButtonElement>('.menu-item') ?? [])
+		if (!buttons.length) return
+		const current = buttons.indexOf(document.activeElement as HTMLButtonElement)
+
+		if (event.key === 'ArrowDown') {
+			event.preventDefault()
+			buttons[current < 0 ? 0 : (current + 1) % buttons.length].focus()
+		} else if (event.key === 'ArrowUp') {
+			event.preventDefault()
+			buttons[current <= 0 ? buttons.length - 1 : current - 1].focus()
+		} else if (event.key === 'Home') {
+			event.preventDefault()
+			buttons[0].focus()
+		} else if (event.key === 'End') {
+			event.preventDefault()
+			buttons[buttons.length - 1].focus()
+		}
+	}
+
+	async function position() {
+		if (!dropdown) return
+		const virtualEl = {
+			getBoundingClientRect: () =>
+				({
+					x,
+					y,
+					top: y,
+					left: x,
+					right: x,
+					bottom: y,
+					width: 0,
+					height: 0,
+					toJSON: () => ({})
+				}) as DOMRect
+		}
+		const { x: nx, y: ny } = await computePosition(virtualEl, dropdown, {
+			placement: 'bottom-start' as Placement,
+			middleware: [
+				offset(0),
+				flip({ fallbackPlacements: ['bottom-end', 'top-start', 'top-end'] }),
+				shift({ padding: 8 })
+			]
+		})
+		menuX = nx
+		menuY = ny
+		positioned = true
 	}
 
 	onMount(() => {
 		document.addEventListener('click', handleClickOutside)
-		document.addEventListener('keydown', handleKeydown)
+		position()
 		dropdown?.focus()
 	})
 
 	onDestroy(() => {
 		document.removeEventListener('click', handleClickOutside)
-		document.removeEventListener('keydown', handleKeydown)
 	})
 </script>
 
 <div
 	bind:this={dropdown}
 	class="embed-context-menu"
-	style="left: {x}px; top: {y}px;"
+	style:left="{menuX}px"
+	style:top="{menuY}px"
+	style:visibility={positioned ? 'visible' : 'hidden'}
+	onkeydown={handleKeydown}
 	transition:fly={{ y: -10, duration: TRANSITION_NORMAL_MS }}
+	role="menu"
 	tabindex="-1"
 >
 	<div class="menu-url">{url}</div>
 	<div class="menu-divider"></div>
 
-	<button class="menu-item" onclick={onOpenLink}> Open link </button>
+	<button class="menu-item" role="menuitem" onclick={onOpenLink}> Open link </button>
 
-	<button class="menu-item" onclick={onCopyLink}> Copy link </button>
+	<button class="menu-item" role="menuitem" onclick={onCopyLink}> Copy link </button>
 
-	<button class="menu-item" onclick={onRefresh}> Refresh preview </button>
+	<button class="menu-item" role="menuitem" onclick={onRefresh}> Refresh preview </button>
 
-	<button class="menu-item" onclick={onConvertToLink}> Convert to link </button>
+	<button class="menu-item" role="menuitem" onclick={onConvertToLink}> Convert to link </button>
 
 	<div class="menu-divider"></div>
 
-	<button class="menu-item danger" onclick={onRemove}> Remove card </button>
+	<button class="menu-item danger" role="menuitem" onclick={onRemove}> Remove card </button>
 </div>
 
 <style lang="scss">

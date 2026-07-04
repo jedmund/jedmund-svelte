@@ -99,11 +99,13 @@ export const PUT: RequestHandler = async (event) => {
 			if (data.status === 'published' && existing.status !== 'published') {
 				// Fresh publish (incl. "publish now" on a scheduled post): stamp now
 				// unless an explicit past date was chosen
-				const chosen = data.publishedAt ?? existing.publishedAt
-				data.publishedAt = !chosen || chosen > new Date() ? new Date() : chosen
+				data.publishedAt =
+					data.publishedAt && data.publishedAt <= new Date() ? data.publishedAt : new Date()
 			} else if (data.publishedAt && data.publishedAt > new Date()) {
 				return errorResponse('Use the scheduled status to publish in the future', 400)
 			}
+		} else if (data.status === 'draft' && existing.status !== 'draft') {
+			data.publishedAt = null
 		}
 
 		const featuredImageId = data.featuredImage
@@ -248,11 +250,18 @@ export const PATCH: RequestHandler = async (event) => {
 				}
 				updateData.publishedAt = scheduledFor
 			} else if (data.status === 'published') {
-				// Stamp now on fresh publishes and missing/future dates; keep an
-				// explicit or existing past date (backdating)
-				const effective = publishedAtInput !== undefined ? publishedAtInput : existing.publishedAt
-				updateData.publishedAt = !effective || effective > new Date() ? new Date() : effective
-			} else if (data.status === 'draft') {
+				if (existing.status !== 'published') {
+					// Fresh publish (incl. "publish now" on a scheduled post): stamp now
+					// unless an explicit past date was chosen
+					updateData.publishedAt =
+						publishedAtInput && publishedAtInput <= new Date() ? publishedAtInput : new Date()
+				} else if (publishedAtInput !== undefined) {
+					if (publishedAtInput && publishedAtInput > new Date()) {
+						return errorResponse('Use the scheduled status to publish in the future', 400)
+					}
+					updateData.publishedAt = publishedAtInput
+				}
+			} else if (data.status === 'draft' && existing.status !== 'draft') {
 				updateData.publishedAt = null
 			}
 		} else if (publishedAtInput !== undefined) {

@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte'
 	import UniverseIcon from '$icons/universe.svg?component'
 	import PhotosIcon from '$icons/photos.svg?component'
+	import GardenIcon from '$icons/garden.svg?component'
 	import { formatDate } from '$lib/utils/date'
 	import { goto } from '$app/navigation'
 
@@ -14,14 +15,18 @@
 	let {
 		item,
 		type = 'post',
+		href: hrefOverride,
 		children
 	}: {
 		item: UniverseItem
-		type?: 'post' | 'album'
+		type?: 'post' | 'album' | 'garden'
+		href?: string
 		children?: Snippet
 	} = $props()
 
-	const href = $derived(type === 'album' ? `/photos/${item.slug}` : `/universe/${item.slug}`)
+	const href = $derived(
+		hrefOverride ?? (type === 'album' ? `/photos/${item.slug}` : `/universe/${item.slug}`)
+	)
 
 	const handleCardClick = (event: MouseEvent) => {
 		// Check if the click is on an interactive element
@@ -58,6 +63,8 @@
 			</a>
 			{#if type === 'album'}
 				<PhotosIcon class="card-icon" />
+			{:else if type === 'garden'}
+				<GardenIcon class="card-icon" />
 			{:else}
 				<UniverseIcon class="card-icon" />
 			{/if}
@@ -121,15 +128,11 @@
 		transition: all $transition-normal ease;
 	}
 
-	.universe-card--post {
+	.universe-card--post,
+	.universe-card--garden {
 		.card-content:hover {
 			.card-date {
 				color: $red-60;
-			}
-
-			:global(.card-icon) {
-				fill: $red-60;
-				transform: rotate(15deg);
 			}
 
 			:global(.card-title-link) {
@@ -141,6 +144,24 @@
 			color: $gray-10;
 			text-decoration: none;
 			transition: all $transition-normal ease;
+		}
+	}
+
+	.universe-card--post {
+		.card-content:hover :global(.card-icon) {
+			fill: $red-60;
+			transform: rotate(15deg);
+		}
+	}
+
+	.universe-card--garden {
+		:global(.card-icon) {
+			transform-origin: center bottom;
+		}
+
+		.card-content:hover :global(.card-icon) {
+			fill: $red-60;
+			animation: leafSway 0.6s ease;
 		}
 	}
 

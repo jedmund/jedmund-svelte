@@ -33,7 +33,7 @@ export const GET: RequestHandler = async (event) => {
 					select: { media: true }
 				}
 			},
-			orderBy: { createdAt: 'desc' },
+			orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
 			take: 25
 		})
 

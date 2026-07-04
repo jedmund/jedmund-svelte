@@ -1,22 +1,13 @@
 import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
-export interface LinkContextMenuOptions {
-	onShowContextMenu?: (pos: number, url: string, coords: { x: number; y: number }) => void
-}
-
-export const LinkContextMenu = Extension.create<LinkContextMenuOptions>({
+// Suppresses the native browser context menu when right-clicking a link, so the
+// link bubble menu (which is already visible because the cursor is on the link)
+// remains the single, consistent UI for link actions.
+export const LinkContextMenu = Extension.create({
 	name: 'linkContextMenu',
 
-	addOptions() {
-		return {
-			onShowContextMenu: undefined
-		}
-	},
-
 	addProseMirrorPlugins() {
-		const options = this.options
-
 		return [
 			new Plugin({
 				key: new PluginKey('linkContextMenu'),
@@ -29,19 +20,10 @@ export const LinkContextMenu = Extension.create<LinkContextMenuOptions>({
 							if (!pos) return false
 
 							const $pos = state.doc.resolve(pos.pos)
-							const marks = $pos.marks()
-							const linkMark = marks.find((mark) => mark.type.name === 'link')
+							const linkMark = $pos.marks().find((mark) => mark.type.name === 'link')
 
 							if (linkMark && linkMark.attrs.href) {
 								event.preventDefault()
-
-								if (options.onShowContextMenu) {
-									options.onShowContextMenu(pos.pos, linkMark.attrs.href, {
-										x: event.clientX,
-										y: event.clientY
-									})
-								}
-
 								return true
 							}
 

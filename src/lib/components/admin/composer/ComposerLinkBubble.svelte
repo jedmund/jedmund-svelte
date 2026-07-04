@@ -8,12 +8,14 @@
 	import Check from '@lucide/svelte/icons/check'
 	import X from '@lucide/svelte/icons/x'
 	import Trash2 from '@lucide/svelte/icons/trash-2'
+	import LayoutTemplate from '@lucide/svelte/icons/layout-template'
 
 	interface Props {
 		editor: Editor
+		features?: { urlEmbed?: boolean }
 	}
 
-	const { editor }: Props = $props()
+	const { editor, features = {} }: Props = $props()
 
 	let isEditing = $state(false)
 	let linkInput = $state('')
@@ -78,6 +80,10 @@
 
 	function removeLink() {
 		editor.chain().focus().extendMarkRange('link').unsetLink().run()
+	}
+
+	function convertToCard() {
+		editor.commands.convertLinkToEmbed(editor.state.selection.from)
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -158,6 +164,11 @@
 				<button class="link-action-button" onclick={copyLink} title="Copy link">
 					<Copy size={16} />
 				</button>
+				{#if features.urlEmbed}
+					<button class="link-action-button" onclick={convertToCard} title="Convert to card">
+						<LayoutTemplate size={16} />
+					</button>
+				{/if}
 				<button
 					class="link-action-button link-action-button--danger"
 					onclick={removeLink}
@@ -171,7 +182,6 @@
 </BubbleMenu>
 
 <style lang="scss">
-
 	:global(.composer-link-bubble) {
 		z-index: 30;
 	}

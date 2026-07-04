@@ -22,6 +22,7 @@
 		createdAt: string | Date
 		updatedAt: string | Date
 		publishedAt?: string | Date | null
+		onSlugEdit?: () => void
 	}
 
 	let {
@@ -33,7 +34,8 @@
 		heartCount,
 		createdAt,
 		updatedAt,
-		publishedAt = $bindable(null)
+		publishedAt = $bindable(null),
+		onSlugEdit
 	}: PostMetadataFormProps = $props()
 
 	function toLocalInputValue(value: string | Date | null | undefined): string {
@@ -138,6 +140,7 @@
 		label="Slug"
 		size="jumbo"
 		bind:value={slug}
+		oninput={() => onSlugEdit?.()}
 		placeholder="post-slug"
 		helpText="URL-friendly identifier for this post"
 	/>

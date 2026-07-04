@@ -1,6 +1,7 @@
 <script lang="ts">
 	import UniversePostCard from './UniversePostCard.svelte'
 	import UniverseAlbumCard from './UniverseAlbumCard.svelte'
+	import UniverseGardenCard from './UniverseGardenCard.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
@@ -72,6 +73,8 @@
 				<UniversePostCard post={item} />
 			{:else if item.type === 'album'}
 				<UniverseAlbumCard album={item} />
+			{:else if item.type === 'garden'}
+				<UniverseGardenCard garden={item} />
 			{/if}
 		{/each}
 

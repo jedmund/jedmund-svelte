@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types'
-import type { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
@@ -23,7 +23,7 @@ interface Tag {
 
 export interface UniverseItem {
 	id: number
-	type: 'post' | 'album'
+	type: 'post' | 'album' | 'garden'
 	slug: string
 	title?: string
 	content?: Prisma.JsonValue
@@ -44,6 +44,15 @@ export interface UniverseItem {
 	coverPhoto?: AlbumPhoto
 	photos?: AlbumPhoto[]
 	hasContent?: boolean
+
+	// Garden-specific fields
+	category?: string
+	creator?: string
+	imageUrl?: string
+	summary?: string
+	rating?: number
+	isFavorite?: boolean
+	isCurrent?: boolean
 }
 
 // GET /api/universe - Get mixed feed of published posts and albums
@@ -90,8 +99,22 @@ export const GET: RequestHandler = async (event) => {
 			orderBy: { publishedAt: 'desc' }
 		})
 
-		// Fetch published albums marked for Universe (albums are untagged, so a
-		// tag-filtered feed is posts-only)
+		// Garden items and albums are untagged, so a tag-filtered feed is posts-only
+
+		// Fetch published garden items opted into the Universe feed
+		const gardenItems = tagSlugs.length
+			? []
+			: await prisma.gardenItem.findMany({
+					where: {
+						status: 'published',
+						showInUniverse: true,
+						note: { not: Prisma.DbNull },
+						NOT: { publishedAt: { gt: new Date() } }
+					},
+					orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }]
+				})
+
+		// Fetch published albums marked for Universe
 		const albums = tagSlugs.length
 			? []
 			: await prisma.album.findMany({
@@ -108,8 +131,8 @@ export const GET: RequestHandler = async (event) => {
 						date: true,
 						location: true,
 						content: true,
-						createdAt: true,
 						publishedAt: true,
+						createdAt: true,
 						_count: {
 							select: { media: true }
 						},
@@ -130,7 +153,7 @@ export const GET: RequestHandler = async (event) => {
 							}
 						}
 					},
-					orderBy: { createdAt: 'desc' }
+					orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }]
 				})
 
 		// Transform posts to universe items
@@ -177,8 +200,29 @@ export const GET: RequestHandler = async (event) => {
 			}
 		})
 
+		// Transform garden items to universe items
+		const gardenUniverseItems: UniverseItem[] = gardenItems.map((item) => {
+			const pubDate = item.publishedAt ?? item.createdAt
+			return {
+				id: item.id,
+				type: 'garden' as const,
+				slug: item.slug,
+				title: item.title,
+				content: item.note,
+				category: item.category,
+				creator: item.creator || undefined,
+				imageUrl: item.imageUrl || undefined,
+				summary: item.summary || undefined,
+				rating: item.rating ?? undefined,
+				isFavorite: item.isFavorite,
+				isCurrent: item.isCurrent,
+				publishedAt: pubDate.toISOString(),
+				createdAt: item.createdAt.toISOString()
+			}
+		})
+
 		// Combine and sort by publishedAt
-		const allItems = [...postItems, ...albumItems].sort(
+		const allItems = [...postItems, ...albumItems, ...gardenUniverseItems].sort(
 			(a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
 		)
 

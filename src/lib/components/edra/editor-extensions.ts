@@ -45,7 +45,6 @@ const lowlight = createLowlight(all)
 export interface EditorExtensionOptions {
 	showSlashCommands?: boolean
 	onShowUrlConvertDropdown?: (pos: number, url: string) => void
-	onShowLinkContextMenu?: (pos: number, url: string, coords: { x: number; y: number }) => void
 	imagePlaceholderComponent?: Component
 }
 
@@ -53,7 +52,6 @@ export function getEditorExtensions(options: EditorExtensionOptions = {}): Exten
 	const {
 		showSlashCommands = true,
 		onShowUrlConvertDropdown,
-		onShowLinkContextMenu,
 		imagePlaceholderComponent = ImagePlaceholderComponent
 	} = options
 
@@ -91,14 +89,9 @@ export function getEditorExtensions(options: EditorExtensionOptions = {}): Exten
 		)
 	}
 
-	// Add Link Context Menu with callback if provided
-	if (onShowLinkContextMenu) {
-		extensions.push(
-			LinkContextMenu.configure({
-				onShowContextMenu: onShowLinkContextMenu
-			})
-		)
-	}
+	// Suppress native browser context menu when right-clicking on a link
+	// (link bubble menu provides the custom UI instead)
+	extensions.push(LinkContextMenu)
 
 	// Add slash commands if enabled
 	if (showSlashCommands) {
