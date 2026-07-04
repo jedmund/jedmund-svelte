@@ -1,20 +1,104 @@
 <script lang="ts">
 	import UniversePostCard from './UniversePostCard.svelte'
 	import UniverseAlbumCard from './UniverseAlbumCard.svelte'
+	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
+	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
 	import type { UniverseItem } from '../../routes/api/universe/+server'
 
-	let { items }: { items: UniverseItem[] } = $props()
+	interface Pagination {
+		total: number
+		limit: number
+		offset: number
+		hasMore: boolean
+	}
+
+	let {
+		items,
+		pagination = null,
+		tags = ''
+	}: { items: UniverseItem[]; pagination?: Pagination | null; tags?: string } = $props()
+
+	const loaderState = new LoaderState()
+
+	let allItems = $state<UniverseItem[]>(items || [])
+	let currentOffset = $state(pagination?.limit || 20)
+	let loadedKeys = $state(new Set((items || []).map((item) => `${item.type}-${item.id}`)))
+
+	async function loadMore() {
+		try {
+			const params = new URLSearchParams({ limit: '20', offset: String(currentOffset) })
+			if (tags) params.set('tags', tags)
+
+			const response = await fetch(`/api/universe?${params}`)
+			if (!response.ok) {
+				throw new Error(`Failed to fetch universe feed: ${response.statusText}`)
+			}
+
+			const data = await response.json()
+			const newItems = (data.items || []).filter(
+				(item: UniverseItem) => !loadedKeys.has(`${item.type}-${item.id}`)
+			)
+
+			newItems.forEach((item: UniverseItem) => loadedKeys.add(`${item.type}-${item.id}`))
+			allItems = [...allItems, ...newItems]
+			currentOffset += data.pagination?.limit || 20
+
+			if (!data.pagination?.hasMore || newItems.length === 0) {
+				loaderState.complete()
+			} else {
+				loaderState.loaded()
+			}
+		} catch (err) {
+			console.error('Error loading more universe items:', err)
+			loaderState.error()
+		}
+	}
+
+	let hasInitialized = false
+	$effect(() => {
+		if (!hasInitialized) {
+			hasInitialized = true
+			if (!pagination?.hasMore) {
+				loaderState.complete()
+			}
+		}
+	})
 </script>
 
 <div class="universe-feed">
-	{#if items && items.length > 0}
-		{#each items as item}
+	{#if allItems && allItems.length > 0}
+		{#each allItems as item (`${item.type}-${item.id}`)}
 			{#if item.type === 'post'}
 				<UniversePostCard post={item} />
 			{:else if item.type === 'album'}
 				<UniverseAlbumCard album={item} />
 			{/if}
 		{/each}
+
+		<InfiniteLoader
+			{loaderState}
+			triggerLoad={loadMore}
+			intersectionOptions={{ rootMargin: '0px 0px 200px 0px' }}
+		>
+			<div style="height: 1px;"></div>
+
+			{#snippet loading()}
+				<div class="loading-container">
+					<LoadingSpinner size="medium" text="Loading more..." />
+				</div>
+			{/snippet}
+
+			{#snippet error()}
+				<div class="loader-message">
+					<p>Couldn't load more posts.</p>
+					<button type="button" onclick={() => loadMore()}>Try again</button>
+				</div>
+			{/snippet}
+
+			{#snippet noData()}
+				<div class="loader-message end-message">You've reached the end</div>
+			{/snippet}
+		</InfiniteLoader>
 	{:else}
 		<div class="empty-container">
 			<div class="empty-message">
@@ -31,6 +115,36 @@
 		flex-direction: column;
 		gap: $unit-2x;
 		padding: 0 $unit-2x;
+	}
+
+	.loading-container {
+		display: flex;
+		justify-content: center;
+		padding: $unit-4x 0;
+	}
+
+	.loader-message {
+		text-align: center;
+		padding: $unit-3x 0;
+		color: $gray-40;
+		font-size: 0.925rem;
+
+		p {
+			margin: 0 0 $unit;
+		}
+
+		button {
+			background: none;
+			border: none;
+			color: $gray-30;
+			text-decoration: underline;
+			cursor: pointer;
+			font-size: inherit;
+		}
+	}
+
+	.end-message {
+		color: $gray-50;
 	}
 
 	.empty-container {

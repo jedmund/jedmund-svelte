@@ -49,7 +49,13 @@
 				<a href="/universe">Clear</a>
 			</div>
 		{/if}
-		<UniverseFeed items={data.universeItems || []} />
+		{#key data.activeTags}
+			<UniverseFeed
+				items={data.universeItems || []}
+				pagination={data.pagination}
+				tags={data.activeTags}
+			/>
+		{/key}
 	{/if}
 </div>
 
