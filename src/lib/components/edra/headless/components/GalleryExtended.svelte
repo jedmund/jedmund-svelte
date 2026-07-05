@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { NodeViewWrapper } from 'svelte-tiptap'
 	import type { NodeViewProps } from '@tiptap/core'
+	import tippy, { type Instance } from 'tippy.js'
+	import 'tippy.js/dist/tippy.css'
 	import Grid from '@lucide/svelte/icons/grid-3x3'
 	import Columns from '@lucide/svelte/icons/columns'
+	import RectangleVertical from '@lucide/svelte/icons/rectangle-vertical'
+	import Columns2 from '@lucide/svelte/icons/columns-2'
+	import Columns3 from '@lucide/svelte/icons/columns-3'
 	import Trash from '@lucide/svelte/icons/trash'
 	import Edit from '@lucide/svelte/icons/edit'
 	import Plus from '@lucide/svelte/icons/plus'
@@ -13,6 +18,57 @@
 
 	let isMediaLibraryOpen = $state(false)
 	let editingMode = $state(false)
+
+	// Hover toolbar (same pattern as MediaExtended) — controls must never sit
+	// in the content flow since they don't exist on the published page
+	let groupRef = $state<HTMLElement>()
+	let toolbarRef = $state<HTMLElement>()
+	let tippyInstance: Instance | undefined
+
+	$effect(() => {
+		if (!groupRef || !toolbarRef || !editor?.isEditable) {
+			tippyInstance?.destroy()
+			tippyInstance = undefined
+			return
+		}
+
+		tippyInstance = tippy(groupRef, {
+			content: toolbarRef,
+			interactive: true,
+			trigger: 'mouseenter',
+			placement: 'top-end',
+			appendTo: () => document.body,
+			arrow: false,
+			theme: 'media-toolbar',
+			delay: [100, 300],
+			offset: [0, 8],
+			interactiveBorder: 20,
+			zIndex: 200,
+			popperOptions: {
+				modifiers: [
+					{
+						name: 'preventOverflow',
+						options: { boundary: 'viewport', padding: 8 }
+					},
+					{
+						name: 'flip',
+						options: {
+							fallbackPlacements: ['bottom-end', 'top-start', 'bottom-start']
+						}
+					}
+				]
+			}
+		})
+
+		return () => {
+			tippyInstance?.destroy()
+			tippyInstance = undefined
+		}
+	})
+
+	$effect(() => {
+		if (selected && tippyInstance) tippyInstance.show()
+	})
 
 	function handleEditGallery() {
 		editingMode = true
@@ -80,7 +136,7 @@
 	data-layout={layout}
 	style={`--columns: ${columns}`}
 >
-	<div class="edra-gallery-content">
+	<div bind:this={groupRef} class="edra-gallery-content">
 		{#if images.length === 0}
 			<div class="edra-gallery-empty">
 				<Grid class="edra-gallery-empty-icon" />
@@ -106,53 +162,58 @@
 		{/if}
 
 		{#if editor?.isEditable}
-			<div class="edra-gallery-toolbar">
-				<div class="edra-gallery-toolbar-section">
-					<button
-						class={`edra-toolbar-button ${layout === 'grid' ? 'active' : ''}`}
-						onclick={() => changeLayout('grid')}
-						title="Grid Layout"
-					>
-						<Grid />
-					</button>
-					<button
-						class={`edra-toolbar-button ${layout === 'masonry' ? 'active' : ''}`}
-						onclick={() => changeLayout('masonry')}
-						title="Masonry Layout"
-					>
-						<Columns />
-					</button>
-				</div>
-
-				<div class="edra-gallery-toolbar-section">
-					<select
-						class="edra-gallery-columns-select"
-						value={columns}
-						onchange={(e) => changeColumns(parseInt(e.currentTarget.value))}
-						title="Columns"
-					>
-						<option value="2">2 cols</option>
-						<option value="3">3 cols</option>
-						<option value="4">4 cols</option>
-						<option value="5">5 cols</option>
-					</select>
-				</div>
-
-				<div class="edra-gallery-toolbar-section">
-					<button class="edra-toolbar-button" onclick={handleAddImages} title="Add Images">
-						<Plus />
-					</button>
-					<button class="edra-toolbar-button" onclick={handleEditGallery} title="Edit Gallery">
-						<Edit />
-					</button>
-					<button
-						class="edra-toolbar-button edra-destructive"
-						onclick={() => deleteNode()}
-						title="Delete Gallery"
-					>
-						<Trash />
-					</button>
-				</div>
+			<div bind:this={toolbarRef} class="edra-media-toolbar">
+				<button
+					class={`edra-toolbar-button ${layout === 'grid' ? 'active' : ''}`}
+					onclick={() => changeLayout('grid')}
+					title="Grid Layout"
+				>
+					<Grid />
+				</button>
+				<button
+					class={`edra-toolbar-button ${layout === 'masonry' ? 'active' : ''}`}
+					onclick={() => changeLayout('masonry')}
+					title="Masonry Layout"
+				>
+					<Columns />
+				</button>
+				<div class="edra-toolbar-divider"></div>
+				<button
+					class={`edra-toolbar-button ${columns === 1 ? 'active' : ''}`}
+					onclick={() => changeColumns(1)}
+					title="1 column"
+				>
+					<RectangleVertical />
+				</button>
+				<button
+					class={`edra-toolbar-button ${columns === 2 ? 'active' : ''}`}
+					onclick={() => changeColumns(2)}
+					title="2 columns"
+				>
+					<Columns2 />
+				</button>
+				<button
+					class={`edra-toolbar-button ${columns === 3 ? 'active' : ''}`}
+					onclick={() => changeColumns(3)}
+					title="3 columns"
+				>
+					<Columns3 />
+				</button>
+				<div class="edra-toolbar-divider"></div>
+				<button class="edra-toolbar-button" onclick={handleAddImages} title="Add Images">
+					<Plus />
+				</button>
+				<button class="edra-toolbar-button" onclick={handleEditGallery} title="Edit Gallery">
+					<Edit />
+				</button>
+				<div class="edra-toolbar-divider"></div>
+				<button
+					class="edra-toolbar-button edra-destructive"
+					onclick={() => deleteNode()}
+					title="Delete Gallery"
+				>
+					<Trash />
+				</button>
 			</div>
 		{/if}
 	</div>
@@ -211,7 +272,17 @@
 		grid-template-columns: repeat(var(--columns), 1fr);
 	}
 
+	// In grid view, cells share a row height — fill them edge to edge like the
+	// published page does (object-fit: cover), cropping centered rather than
+	// letterboxing shorter images
+	.edra-gallery-grid.grid .edra-gallery-item img {
+		height: 100%;
+		object-fit: cover;
+	}
+
 	.edra-gallery-grid.masonry {
+		// column-count needs block layout; the base class is display: grid
+		display: block;
 		column-count: var(--columns);
 		column-gap: $unit;
 	}
@@ -267,38 +338,6 @@
 		height: $unit-12px;
 	}
 
-	.edra-gallery-toolbar {
-		display: flex;
-		align-items: center;
-		gap: $unit-12px;
-		padding: $unit;
-		background: rgba(255, 255, 255, 0.95);
-		border: $unit-1px solid #e5e7eb;
-		border-radius: $corner-radius-sm;
-		margin-top: $unit;
-		backdrop-filter: blur($unit-half);
-	}
-
-	.edra-gallery-toolbar-section {
-		display: flex;
-		align-items: center;
-		gap: $unit-half;
-	}
-
-	.edra-gallery-columns-select {
-		padding: $unit-half $unit;
-		border: $unit-1px solid #e5e7eb;
-		border-radius: $corner-radius-xs;
-		background: white;
-		font-size: $unit-12px;
-		cursor: pointer;
-	}
-
-	.edra-gallery-columns-select:focus {
-		outline: none;
-		border-color: #3b82f6;
-	}
-
 	:global(.edra-toolbar-button) {
 		display: flex;
 		align-items: center;
@@ -333,11 +372,11 @@
 
 	@media (max-width: 768px) {
 		.edra-gallery-grid.grid {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(min(var(--columns), 2), 1fr);
 		}
 
 		.edra-gallery-grid.masonry {
-			column-count: 2;
+			column-count: min(var(--columns), 2);
 		}
 	}
 </style>
