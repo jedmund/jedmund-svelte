@@ -328,6 +328,7 @@
 				>
 					<Accessibility size={16} strokeWidth={2} />
 				</button>
+				<div class="edra-toolbar-divider"></div>
 				<button
 					class="edra-toolbar-button"
 					onclick={() => {
@@ -348,6 +349,7 @@
 				>
 					<Fullscreen size={16} strokeWidth={2} />
 				</button>
+				<div class="edra-toolbar-divider"></div>
 				<button
 					class="edra-toolbar-button edra-destructive"
 					onclick={() => {

@@ -4,14 +4,82 @@
 	import { onMount } from 'svelte'
 	import { mount, unmount } from 'svelte'
 	import type L from 'leaflet'
+	import tippy, { type Instance } from 'tippy.js'
+	import 'tippy.js/dist/tippy.css'
+	import Edit from '@lucide/svelte/icons/edit'
+	import CopyIcon from '@lucide/svelte/icons/copy'
+	import Trash from '@lucide/svelte/icons/trash'
 	import MapPopup from './MapPopup.svelte'
+	import { duplicateContent } from '../../utils.js'
 
 	type Props = NodeViewProps
-	let { node, selected }: Props = $props()
+	let { node, editor, selected, deleteNode, getPos }: Props = $props()
 
 	let mapContainer: HTMLDivElement
 	let map: L.Map | null = null
 	let leaflet: typeof L
+
+	// Hover toolbar (same pattern as MediaExtended/GalleryExtended)
+	let groupRef = $state<HTMLElement>()
+	let toolbarRef = $state<HTMLElement>()
+	let tippyInstance: Instance | undefined
+
+	$effect(() => {
+		if (!groupRef || !toolbarRef || !editor?.isEditable) {
+			tippyInstance?.destroy()
+			tippyInstance = undefined
+			return
+		}
+
+		tippyInstance = tippy(groupRef, {
+			content: toolbarRef,
+			interactive: true,
+			trigger: 'mouseenter',
+			placement: 'top-end',
+			appendTo: () => document.body,
+			arrow: false,
+			theme: 'media-toolbar',
+			delay: [100, 300],
+			offset: [0, 8],
+			interactiveBorder: 20,
+			zIndex: 200,
+			popperOptions: {
+				modifiers: [
+					{
+						name: 'preventOverflow',
+						options: { boundary: 'viewport', padding: 8 }
+					},
+					{
+						name: 'flip',
+						options: {
+							fallbackPlacements: ['bottom-end', 'top-start', 'bottom-start']
+						}
+					}
+				]
+			}
+		})
+
+		return () => {
+			tippyInstance?.destroy()
+			tippyInstance = undefined
+		}
+	})
+
+	$effect(() => {
+		if (selected && tippyInstance) tippyInstance.show()
+	})
+
+	// Swap the node back to a placeholder so the location picker reopens
+	function changeLocation() {
+		const pos = getPos?.()
+		if (typeof pos !== 'number') return
+		editor
+			.chain()
+			.focus()
+			.deleteRange({ from: pos, to: pos + node.nodeSize })
+			.insertContentAt(pos, { type: 'geolocation-placeholder' })
+			.run()
+	}
 
 	const latitude = node.attrs.latitude as number
 	const longitude = node.attrs.longitude as number
@@ -74,8 +142,31 @@
 </script>
 
 <NodeViewWrapper>
-	<div class="geolocation-node" class:selected>
+	<div bind:this={groupRef} class="geolocation-node" class:selected>
 		<div bind:this={mapContainer} class="map-container"></div>
+
+		{#if editor?.isEditable}
+			<div bind:this={toolbarRef} class="edra-media-toolbar">
+				<button class="edra-toolbar-button" onclick={changeLocation} title="Change location">
+					<Edit size={16} strokeWidth={2} />
+				</button>
+				<button
+					class="edra-toolbar-button"
+					onclick={() => duplicateContent(editor, node)}
+					title="Duplicate"
+				>
+					<CopyIcon size={16} strokeWidth={2} />
+				</button>
+				<div class="edra-toolbar-divider"></div>
+				<button
+					class="edra-toolbar-button edra-destructive"
+					onclick={() => deleteNode()}
+					title="Delete"
+				>
+					<Trash size={16} strokeWidth={2} />
+				</button>
+			</div>
+		{/if}
 	</div>
 </NodeViewWrapper>
 
@@ -91,7 +182,7 @@
 
 	.geolocation-node {
 		margin: 16px 0;
-		border-radius: 8px;
+		border-radius: var(--corner-radius);
 		overflow: hidden;
 		border: 2px solid transparent;
 		transition: border-color 0.2s;

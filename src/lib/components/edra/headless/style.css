@@ -110,6 +110,7 @@
 .edra-media-container video {
 	max-width: 100%;
 	height: auto;
+	border-radius: var(--corner-radius);
 }
 
 .edra-media-container.selected {
@@ -189,6 +190,14 @@
 	-webkit-backdrop-filter: blur(12px);
 	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 	padding: 4px;
+}
+
+.edra-toolbar-divider {
+	width: 1px;
+	height: 16px;
+	background: rgba(0, 0, 0, 0.1);
+	margin: 0 4px;
+	flex-shrink: 0;
 }
 
 .tippy-box[data-theme~='media-toolbar'] {

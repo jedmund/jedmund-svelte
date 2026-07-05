@@ -10,7 +10,7 @@
 	margin: $unit-3x 0;
 
 	@media (max-width: 600px) {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(min(var(--gallery-columns, 3), 2), 1fr);
 	}
 
 	.gallery-item {
@@ -29,6 +29,25 @@
 			font-size: $font-size-small;
 			color: $gray-40;
 			line-height: 1.4;
+		}
+	}
+}
+
+.content-gallery--masonry {
+	display: block;
+	column-count: var(--gallery-columns, 3);
+	column-gap: $unit-2x;
+
+	@media (max-width: 600px) {
+		column-count: min(var(--gallery-columns, 3), 2);
+	}
+
+	.gallery-item {
+		break-inside: avoid;
+		margin-bottom: $unit-2x;
+
+		img {
+			height: auto;
 		}
 	}
 }

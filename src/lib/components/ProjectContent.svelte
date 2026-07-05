@@ -106,7 +106,7 @@
 			:global(img) {
 				width: 100%;
 				height: auto;
-				border-radius: $unit;
+				border-radius: $corner-radius;
 			}
 
 			:global(figcaption) {
