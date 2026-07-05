@@ -108,13 +108,20 @@
 				height: auto;
 				border-radius: $unit;
 			}
-		}
 
-		:global(.audio-figure) {
 			:global(figcaption) {
 				font-size: $font-size-extra-small;
 				color: $gray-40;
 				margin-top: $unit;
+			}
+
+			:global(figcaption:empty) {
+				display: none;
+			}
+		}
+
+		:global(.audio-figure) {
+			:global(figcaption) {
 				padding: 0 $unit-2x;
 			}
 		}
