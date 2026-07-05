@@ -129,6 +129,44 @@
 		}
 	}
 
+	// Swipe navigation (mobile). The photo container uses touch-action:
+	// pinch-zoom, so single-finger horizontal swipes reach us; a second
+	// finger (pinch) cancels the gesture via the touches-length guard.
+	let touchStartX = 0
+	let touchStartY = 0
+	let touchStartTime = 0
+	let touchActive = false
+
+	function handleTouchStart(e: TouchEvent) {
+		if (e.touches.length !== 1) {
+			touchActive = false
+			return
+		}
+		touchActive = true
+		touchStartX = e.touches[0].clientX
+		touchStartY = e.touches[0].clientY
+		touchStartTime = Date.now()
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		if (!touchActive) return
+		touchActive = false
+
+		const dx = e.changedTouches[0].clientX - touchStartX
+		const dy = e.changedTouches[0].clientY - touchStartY
+		const elapsed = Date.now() - touchStartTime
+
+		// Quick, mostly-horizontal swipes only — taps and scrolls fall through
+		if (elapsed > 600) return
+		if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+
+		if (dx < 0) {
+			navigateToPhoto(adjacentPhotos().next)
+		} else {
+			navigateToPhoto(adjacentPhotos().prev)
+		}
+	}
+
 	// Set default button positions when component mounts
 	$effect(() => {
 		if (!photo) return
@@ -384,7 +422,7 @@
 		onmousemove={handleMouseMove}
 		onmouseleave={handleMouseLeave}
 	>
-		<div class="photo-content-wrapper">
+		<div class="photo-content-wrapper" ontouchstart={handleTouchStart} ontouchend={handleTouchEnd}>
 			<PhotoViewEnhanced
 				src={photo.url}
 				alt={photo.caption}
@@ -394,6 +432,30 @@
 				height={photo.height}
 			/>
 		</div>
+
+		<!-- Static prev/next for touch devices (floating buttons are desktop-only) -->
+		{#if adjacentPhotos().prev || adjacentPhotos().next}
+			<nav class="mobile-photo-nav" aria-label="Photo navigation">
+				<button
+					class="mobile-nav-button"
+					type="button"
+					disabled={!adjacentPhotos().prev}
+					onclick={() => navigateToPhoto(adjacentPhotos().prev)}
+					aria-label="Previous photo"
+				>
+					<ArrowLeft />
+				</button>
+				<button
+					class="mobile-nav-button"
+					type="button"
+					disabled={!adjacentPhotos().next}
+					onclick={() => navigateToPhoto(adjacentPhotos().next)}
+					aria-label="Next photo"
+				>
+					<ArrowRight />
+				</button>
+			</nav>
+		{/if}
 
 		<!-- Adjacent Photos Navigation -->
 		<div class="adjacent-navigation">
@@ -525,6 +587,47 @@
 		// Hide on mobile and tablet
 		@include breakpoint('tablet') {
 			display: none;
+		}
+	}
+
+	// Static touch navigation — shown where the floating buttons are hidden
+	.mobile-photo-nav {
+		display: none;
+		width: 100%;
+		max-width: 700px;
+		margin: 0 auto;
+		justify-content: space-between;
+
+		@include breakpoint('tablet') {
+			display: flex;
+		}
+	}
+
+	.mobile-nav-button {
+		width: 44px;
+		height: 44px;
+		border: none;
+		padding: 0;
+		background: $gray-95;
+		cursor: pointer;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		&:disabled {
+			opacity: 0.35;
+			cursor: default;
+		}
+
+		:global(svg) {
+			stroke: $gray-10;
+			width: 16px;
+			height: 16px;
+			fill: none;
+			stroke-width: 2px;
+			stroke-linecap: round;
+			stroke-linejoin: round;
 		}
 	}
 
