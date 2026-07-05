@@ -414,13 +414,22 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				if (!isFinite(lat) || !isFinite(lng)) return ''
 				const title = (node.attrs?.title || '') as string
 				const description = (node.attrs?.description || '') as string
-				const mapUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`
-				let html = `<a href="${mapUrl}" target="_blank" rel="noopener noreferrer" class="content-location">`
+				const bbox = [
+					(lng - 0.004).toFixed(5),
+					(lat - 0.002).toFixed(5),
+					(lng + 0.004).toFixed(5),
+					(lat + 0.002).toFixed(5)
+				].join('%2C')
+				const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`
+				const mapUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`
+				let html = '<figure class="content-location">'
+				html += `<div class="content-location-map"><iframe src="${embedUrl}" loading="lazy" title="${escapeHtml(title || 'Map')}"></iframe></div>`
+				html += `<figcaption><a href="${mapUrl}" target="_blank" rel="noopener noreferrer">`
 				html += `<span class="content-location-title">${escapeHtml(title || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</span>`
 				if (description) {
 					html += `<span class="content-location-description">${escapeHtml(description)}</span>`
 				}
-				html += `</a>`
+				html += `</a></figcaption></figure>`
 				return html
 			}
 
