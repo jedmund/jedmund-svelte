@@ -1,6 +1,9 @@
 @use 'variables' as *;
 
 :root {
+	// Shared shape tokens (for plain-CSS consumers like the Edra editor styles)
+	--corner-radius: #{$corner-radius};
+
 	// Base page colors
 	--bg-color: #{$gray-80};
 	--page-color: #{$gray-100};

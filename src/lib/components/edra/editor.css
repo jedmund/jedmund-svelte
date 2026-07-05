@@ -43,6 +43,13 @@
 	margin-bottom: 1rem;
 }
 
+.tiptap h3,
+.tiptap h4,
+.tiptap h5,
+.tiptap h6 {
+	margin-bottom: 0.75rem;
+}
+
 .tiptap h1 {
 	font-size: 2.25rem;
 	font-weight: 800;
@@ -286,31 +293,68 @@ ul[data-type='taskList'] li[data-checked='true'] div {
 	--table-hover-transition: 200ms ease-in-out;
 	--table-focus-ring: 2px;
 }
+/* Full-width table, with a gutter carved out via negative margin so the
+   hover grip handles (top -0.9rem / left -0.9rem) still have room to render */
 .ProseMirror .tableWrapper {
-	padding: 1.25rem 1rem;
-	margin: 0;
-	margin: 0.5rem 0;
+	padding: 1.25rem 0 0 1rem;
+	margin: 0.5rem 0 0.5rem -1rem;
 	overflow-x: auto;
 }
 
+/* Matches the published table look (.content-table): outer border with
+   rounded corners, inner dividers only. border-collapse: separate is what
+   lets the radius actually render. */
 .ProseMirror table {
 	box-sizing: border-box;
 	width: 100%;
 	margin-top: 1rem;
 	margin-bottom: 1rem;
-	border-collapse: collapse;
+	border-collapse: separate;
+	border-spacing: 0;
 	border: var(--table-border-size) solid var(--table-border);
-	border-radius: 0.25rem;
+	border-radius: var(--corner-radius);
 }
 
 .ProseMirror table td,
 .ProseMirror table th {
 	position: relative;
 	min-width: 100px;
-	padding: 0.5rem;
+	padding: 0.5rem 1rem;
 	vertical-align: top;
 	text-align: left;
-	border: var(--table-border-size) solid var(--table-border);
+	border-right: var(--table-border-size) solid var(--table-border);
+	border-bottom: var(--table-border-size) solid var(--table-border);
+}
+
+.ProseMirror table td:last-child,
+.ProseMirror table th:last-child {
+	border-right: 0;
+}
+
+.ProseMirror table tr:last-child td,
+.ProseMirror table tr:last-child th {
+	border-bottom: 0;
+}
+
+/* Round the corner cells so their backgrounds don't poke past the radius */
+.ProseMirror table tr:first-child th:first-child,
+.ProseMirror table tr:first-child td:first-child {
+	border-top-left-radius: calc(var(--corner-radius) - 1px);
+}
+
+.ProseMirror table tr:first-child th:last-child,
+.ProseMirror table tr:first-child td:last-child {
+	border-top-right-radius: calc(var(--corner-radius) - 1px);
+}
+
+.ProseMirror table tr:last-child td:first-child,
+.ProseMirror table tr:last-child th:first-child {
+	border-bottom-left-radius: calc(var(--corner-radius) - 1px);
+}
+
+.ProseMirror table tr:last-child td:last-child,
+.ProseMirror table tr:last-child th:last-child {
+	border-bottom-right-radius: calc(var(--corner-radius) - 1px);
 }
 
 .ProseMirror table td:first-of-type:not(a),
@@ -551,7 +595,10 @@ ul[data-type='taskList'] li[data-checked='true'] div {
 }
 
 .tiptap iframe {
+	width: 100%;
 	aspect-ratio: 16 / 9;
+	border: 0;
+	border-radius: var(--corner-radius);
 }
 
 /* Mathematics extension styles */
