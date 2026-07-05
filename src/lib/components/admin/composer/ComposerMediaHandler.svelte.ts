@@ -72,11 +72,12 @@ export class ComposerMediaHandler {
 					type: 'image',
 					attrs: {
 						src: media.url,
-						alt: media.filename || '',
-						title: media.description || '',
+						// Description is written for humans — use it as alt text.
+						// Captions (title) are opt-in via the media toolbar.
+						alt: media.description || '',
+						title: null,
 						width: displayWidth,
 						height: media.height,
-						align: 'center',
 						mediaId: media.id?.toString()
 					}
 				},
@@ -119,7 +120,8 @@ export class ComposerMediaHandler {
 				type: 'video',
 				attrs: {
 					src: media.url,
-					title: media.description || media.filename || '',
+					alt: media.description || '',
+					title: null,
 					mediaId: media.id.toString()
 				}
 			})
@@ -133,11 +135,12 @@ export class ComposerMediaHandler {
 					type: 'image',
 					attrs: {
 						src: media.url,
-						alt: media.filename || '',
-						title: media.description || '',
+						// Description is written for humans — use it as alt text.
+						// Captions (title) are opt-in via the media toolbar.
+						alt: media.description || '',
+						title: null,
 						width: displayWidth,
 						height: media.height,
-						align: 'center',
 						mediaId: media.id.toString()
 					}
 				},
