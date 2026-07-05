@@ -41,7 +41,6 @@ function createNowPlayingStream() {
 		eventSource = new EventSource('/api/lastfm/stream')
 
 		eventSource.addEventListener('connected', () => {
-			console.log('Now Playing stream connected')
 			reconnectAttempts = 0
 			update((state) => ({ ...state, connected: true }))
 		})

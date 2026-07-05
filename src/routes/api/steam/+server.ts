@@ -1,20 +1,24 @@
 import 'dotenv/config'
-import { error } from '@sveltejs/kit'
 import redis from '../redis-client'
 import SteamAPI, { UserPlaytime, GameInfoExtended, Game, GameInfo } from 'steamapi'
 
 import type { RequestHandler } from './$types'
 import type { SerializableGameInfo } from '$lib/types/steam'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
+import { logger } from '$lib/server/logger'
 
 const CACHE_TTL = 60 * 60 // 1 hour
 const STEAM_ID = '76561197997279808'
 
 export const GET: RequestHandler = async () => {
+	if (!process.env.STEAM_API_KEY) {
+		return errorResponse('Steam integration not configured', 503)
+	}
+
 	try {
 		// Check if data is in cache
 		const cachedData = await redis.get(`steam:${STEAM_ID}`)
 		if (cachedData) {
-			console.log('Using cached Steam data')
 			return new Response(cachedData, {
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -23,12 +27,10 @@ export const GET: RequestHandler = async () => {
 		// If not in cache, fetch and cache the data
 		const games = await getSerializedGames(STEAM_ID)
 
-		return new Response(JSON.stringify(games), {
-			headers: { 'Content-Type': 'application/json' }
-		})
+		return jsonResponse(games)
 	} catch (err) {
-		console.error('Error fetching recent game:', err)
-		throw error(500, 'Error fetching recent game data')
+		logger.error('Error fetching recent game data', err as Error)
+		return errorResponse('Error fetching recent game data', 500)
 	}
 }
 
@@ -56,7 +58,7 @@ function sortUserPlaytimes(
 async function getSerializedGames(steamId: string): Promise<SerializableGameInfo[]> {
 	// Fetch all owned games from Steam
 	// This is necessary because the recently played API only returns games played in the last 14 days.
-	const steam = new SteamAPI(process.env.STEAM_API_KEY || '')
+	const steam = new SteamAPI(process.env.STEAM_API_KEY!)
 	const steamGames = await steam.getUserOwnedGames(steamId, { includeExtendedAppInfo: true })
 
 	// Sort games based on when they were last played and take the first five games.

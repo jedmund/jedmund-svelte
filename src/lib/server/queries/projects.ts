@@ -37,6 +37,7 @@ export async function getProjects(params: ProjectListParams) {
 		if (includeListOnly) allowed.push('list-only')
 		if (includePasswordProtected) allowed.push('password-protected')
 		where.status = { in: allowed }
+		where.NOT = { publishedAt: { gt: new Date() } }
 	}
 
 	if (projectType) where.projectType = projectType

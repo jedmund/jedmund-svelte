@@ -1,5 +1,6 @@
 import redis from '../../routes/api/redis-client'
 import { safeKey } from './cache-keys'
+import { assertAllowedExternalUrl } from './url-guard'
 
 export interface OgMetadata {
 	url: string
@@ -24,6 +25,8 @@ export async function scrapeOgMetadata(
 	targetUrl: string,
 	{ forceRefresh = false }: ScrapeOptions = {}
 ): Promise<OgMetadata> {
+	assertAllowedExternalUrl(targetUrl)
+
 	const cacheKey = `og-metadata:${safeKey(targetUrl)}`
 
 	if (!forceRefresh) {

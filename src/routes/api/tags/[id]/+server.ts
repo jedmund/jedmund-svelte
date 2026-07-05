@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types'
 import { json } from '@sveltejs/kit'
 import redis from '../../redis-client'
 import { checkAdminAuth, errorResponse } from '$lib/server/api-utils'
-import { updateTag, deleteTag, getTagById } from '$lib/server/tags/operations'
+import { updateTag, deleteTag, getTagById, TagValidationError } from '$lib/server/tags/operations'
 import { updateTagSchema } from '$lib/server/tags/schemas'
 
 /**
@@ -96,21 +96,8 @@ export const PUT: RequestHandler = async (event) => {
 
 		return json({ tag })
 	} catch (error) {
-		if (error instanceof Error) {
-			// Tag not found
-			if (error.message.includes('Record to update not found')) {
-				return json(
-					{
-						error: {
-							code: 'TAG_NOT_FOUND',
-							message: 'Tag not found'
-						}
-					},
-					{ status: 404 }
-				)
-			}
-
-			// Duplicate name
+		// Only validation errors carry messages safe to echo to the client
+		if (error instanceof TagValidationError) {
 			if (error.message.includes('already exists')) {
 				return json(
 					{
@@ -124,23 +111,29 @@ export const PUT: RequestHandler = async (event) => {
 				)
 			}
 
-			// Validation errors
-			if (
-				error.message.includes('reserved') ||
-				error.message.includes('invalid') ||
-				error.message.includes('long')
-			) {
-				return json(
-					{
-						error: {
-							code: 'TAG_NAME_INVALID',
-							message: error.message,
-							field: 'name'
-						}
-					},
-					{ status: 400 }
-				)
-			}
+			return json(
+				{
+					error: {
+						code: 'TAG_NAME_INVALID',
+						message: error.message,
+						field: 'name'
+					}
+				},
+				{ status: 400 }
+			)
+		}
+
+		// Tag not found (Prisma error, message not echoed)
+		if (error instanceof Error && error.message.includes('Record to update not found')) {
+			return json(
+				{
+					error: {
+						code: 'TAG_NOT_FOUND',
+						message: 'Tag not found'
+					}
+				},
+				{ status: 404 }
+			)
 		}
 
 		console.error('Error updating tag:', error)

@@ -14,7 +14,8 @@ export const GET: RequestHandler = async (event) => {
 		const items = await prisma.gardenItem.findMany({
 			where: {
 				status: 'published',
-				note: { not: Prisma.DbNull }
+				note: { not: Prisma.DbNull },
+				NOT: { publishedAt: { gt: new Date() } }
 			},
 			orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
 			take: 50

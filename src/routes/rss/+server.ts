@@ -15,7 +15,7 @@ export const GET: RequestHandler = async (event) => {
 		const posts = await prisma.post.findMany({
 			where: {
 				status: 'published',
-				publishedAt: { not: null }
+				publishedAt: { lte: new Date() }
 			},
 			orderBy: { publishedAt: 'desc' },
 			take: 50
@@ -25,7 +25,8 @@ export const GET: RequestHandler = async (event) => {
 		const albums = await prisma.album.findMany({
 			where: {
 				status: 'published',
-				showInUniverse: true
+				showInUniverse: true,
+				NOT: { publishedAt: { gt: new Date() } }
 			},
 			include: {
 				_count: {
@@ -41,7 +42,8 @@ export const GET: RequestHandler = async (event) => {
 			where: {
 				status: 'published',
 				showInUniverse: true,
-				note: { not: Prisma.DbNull }
+				note: { not: Prisma.DbNull },
+				NOT: { publishedAt: { gt: new Date() } }
 			},
 			orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
 			take: 50

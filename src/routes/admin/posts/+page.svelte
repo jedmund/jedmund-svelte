@@ -57,6 +57,7 @@
 	const statusFilterOptions = [
 		{ value: 'all', label: 'All statuses' },
 		{ value: 'published', label: 'Published' },
+		{ value: 'scheduled', label: 'Scheduled' },
 		{ value: 'draft', label: 'Draft' }
 	]
 
@@ -204,7 +205,7 @@
 	onCancel={cancelDelete}
 />
 
-<form method="POST" action="?/toggle-status" class="hidden-form" bind:this={toggleForm}>
+<form method="POST" action="?/toggleStatus" class="hidden-form" bind:this={toggleForm}>
 	<input type="hidden" name="id" bind:this={toggleIdField} />
 	<input type="hidden" name="status" bind:this={toggleStatusField} />
 	<input type="hidden" name="updatedAt" bind:this={toggleUpdatedAtField} />
@@ -215,7 +216,6 @@
 </form>
 
 <style lang="scss">
-
 	.composer-section {
 		margin-bottom: $unit-4x;
 		padding: $unit $unit 0;

@@ -105,6 +105,15 @@
 		return `${postTypeLabels[post.postType] || post.postType} without content`
 	}
 
+	function formatScheduledDate(dateString: string): string {
+		return new Date(dateString).toLocaleString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit'
+		})
+	}
+
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString)
 		const now = new Date()
@@ -154,10 +163,16 @@
 		<AdminByline
 			sections={[
 				postTypeLabels[post.postType] || post.postType,
-				post.status === 'published' ? 'Published' : 'Draft',
+				post.status === 'published'
+					? 'Published'
+					: post.status === 'scheduled'
+						? 'Scheduled'
+						: 'Draft',
 				post.status === 'published' && post.publishedAt
 					? `published ${formatDate(post.publishedAt)}`
-					: `created ${formatDate(post.createdAt)}`
+					: post.status === 'scheduled' && post.publishedAt
+						? `scheduled for ${formatScheduledDate(post.publishedAt)}`
+						: `created ${formatDate(post.createdAt)}`
 			]}
 		/>
 	</div>

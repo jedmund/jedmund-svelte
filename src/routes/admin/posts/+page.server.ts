@@ -11,10 +11,12 @@ function toStatusCounts(posts: AdminPost[]) {
 	return posts.reduce(
 		(counts, post) => {
 			counts.all += 1
-			counts[post.status as 'draft' | 'published'] += 1
+			if (post.status in counts) {
+				counts[post.status as 'draft' | 'published' | 'scheduled'] += 1
+			}
 			return counts
 		},
-		{ all: 0, published: 0, draft: 0 }
+		{ all: 0, published: 0, draft: 0, scheduled: 0 }
 	)
 }
 
