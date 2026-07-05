@@ -110,46 +110,13 @@
 			{/if}
 
 			{#if colorCommands.length > 0}
-				<ToolBarIcon
-					command={colorCommands[0]}
-					{editor}
-					style={`color: ${editor.getAttributes('textStyle').color};`}
-					onclick={() => {
-						const color = editor.getAttributes('textStyle').color
-						const hasColor = editor.isActive('textStyle', { color })
-						if (hasColor) {
-							editor.chain().focus().unsetColor().run()
-						} else {
-							const color = prompt('Enter the color of the text:')
-							if (color !== null) {
-								editor.chain().focus().setColor(color).run()
-							}
-						}
-					}}
-				/>
-				<ToolBarIcon
-					command={colorCommands[1]}
-					{editor}
-					style={`background-color: ${editor.getAttributes('highlight').color};`}
-					onclick={() => {
-						const hasHightlight = editor.isActive('highlight')
-						if (hasHightlight) {
-							editor.chain().focus().unsetHighlight().run()
-						} else {
-							const color = prompt('Enter the color of the highlight:')
-							if (color !== null) {
-								editor.chain().focus().setHighlight({ color }).run()
-							}
-						}
-					}}
-				/>
+				<ToolBarIcon command={colorCommands[0]} {editor} />
 			{/if}
 		</div>
 	</div>
 </div>
 
 <style lang="scss">
-
 	.editor-toolbar {
 		position: sticky;
 		top: $unit;

@@ -1,6 +1,5 @@
 import { type Content, Editor, type EditorOptions, type Extensions } from '@tiptap/core'
 import CharacterCount from '@tiptap/extension-character-count'
-import Color from '@tiptap/extension-color'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -8,18 +7,15 @@ import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
-import TextAlign from '@tiptap/extension-text-align'
-import TextStyle from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
+import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
 import AutoJoiner from 'tiptap-extension-auto-joiner'
 import { ColorHighlighter } from './extensions/ColorHighlighter.js'
 import SearchAndReplace from './extensions/FindAndReplace.js'
 import { SmilieReplacer } from './extensions/SmilieReplacer.js'
-import { FontSize } from './extensions/FontSize.js'
 import { Table, TableCell, TableHeader, TableRow } from './extensions/table/index.js'
 import { Markdown } from 'tiptap-markdown'
-import { LinkColorStrip } from './extensions/LinkColorStrip.js'
 import strings from './strings.js'
 
 export default (
@@ -59,9 +55,7 @@ export default (
 				}
 			}),
 			CharacterCount,
-			Highlight.configure({
-				multicolor: true
-			}),
+			Highlight,
 			Placeholder.configure({
 				emptyEditorClass: 'is-empty',
 				// Use a placeholder:
@@ -76,16 +70,11 @@ export default (
 					return ''
 				}
 			}),
-			Color,
 			Subscript,
 			Superscript,
 			Typography,
+			Underline,
 			ColorHighlighter,
-			TextStyle,
-			FontSize,
-			TextAlign.configure({
-				types: ['heading', 'paragraph']
-			}),
 			TaskList,
 			TaskItem.configure({
 				nested: true
@@ -98,7 +87,6 @@ export default (
 			TableRow,
 			TableCell,
 			Markdown,
-			LinkColorStrip,
 
 			...(extensions ?? [])
 		],
