@@ -223,10 +223,15 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				const src = (node.attrs?.src || '') as string
 				const alt = (node.attrs?.alt || '') as string
 				const title = (node.attrs?.title || '') as string
-				const width = node.attrs?.width
-				const height = node.attrs?.height
-				const widthAttr = width ? ` width="${width}"` : ''
-				const heightAttr = height ? ` height="${height}"` : ''
+				// Width may be stored as 600, "600px", or "45%"; the HTML attribute
+				// wants a bare pixel number
+				const widthPx = parseInt(String(node.attrs?.width ?? ''), 10)
+				const heightPx = parseInt(String(node.attrs?.height ?? ''), 10)
+				const widthAttr =
+					Number.isFinite(widthPx) && !String(node.attrs?.width).includes('%')
+						? ` width="${widthPx}"`
+						: ''
+				const heightAttr = Number.isFinite(heightPx) ? ` height="${heightPx}"` : ''
 
 				// Check if we have a media ID stored in attributes first
 				const mediaId = node.attrs?.mediaId || extractMediaIdFromUrl(src)

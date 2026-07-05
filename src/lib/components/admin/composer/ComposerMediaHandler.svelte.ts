@@ -65,7 +65,7 @@ export class ComposerMediaHandler {
 			const media = await response.json()
 
 			// Replace placeholder with actual URL
-			const displayWidth = media.width && media.width > 600 ? 600 : media.width
+			const displayWidth = media.width ? `${Math.min(media.width, 600)}px` : '100%'
 
 			this.editor.commands.insertContent([
 				{
@@ -127,7 +127,7 @@ export class ComposerMediaHandler {
 			})
 		} else {
 			// Calculate display dimensions
-			const displayWidth = media.width && media.width > 600 ? 600 : media.width
+			const displayWidth = media.width ? `${Math.min(media.width, 600)}px` : '100%'
 
 			// Insert image
 			this.editor.commands.insertContent([

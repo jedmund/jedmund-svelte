@@ -32,6 +32,14 @@
 	const minWidthPercent = 15
 	const maxWidthPercent = 100
 
+	// Older content stores width as a bare number (e.g. 600), which is invalid
+	// CSS and silently ignored — letting huge images render at natural size
+	function cssWidth(width: unknown): string {
+		if (width === null || width === undefined || width === '') return '100%'
+		const str = String(width)
+		return /^\d+(\.\d+)?$/.test(str) ? `${str}px` : str
+	}
+
 	let nodeRef = $state<HTMLElement>()
 	let groupRef = $state<HTMLElement>()
 	let toolbarRef = $state<HTMLElement>()
@@ -244,7 +252,7 @@
 
 <NodeViewWrapper
 	id="resizable-container-media"
-	style={`width: ${node.attrs.width}`}
+	style={`width: ${cssWidth(node.attrs.width)}`}
 	class={`edra-media-container ${selected ? 'selected' : ''}`}
 >
 	<div bind:this={groupRef} class={`edra-media-group ${resizing ? 'resizing' : ''}`}>
