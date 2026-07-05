@@ -40,20 +40,8 @@
 	function checkIfUltrawide() {
 		if (width && height) {
 			isUltrawide = width / height > 2
-			console.log('Ultrawide check from props:', {
-				width,
-				height,
-				ratio: width / height,
-				isUltrawide
-			})
 		} else if (imageRef && imageLoaded) {
 			isUltrawide = imageRef.naturalWidth / imageRef.naturalHeight > 2
-			console.log('Ultrawide check from image:', {
-				naturalWidth: imageRef.naturalWidth,
-				naturalHeight: imageRef.naturalHeight,
-				ratio: imageRef.naturalWidth / imageRef.naturalHeight,
-				isUltrawide
-			})
 		}
 	}
 
@@ -199,7 +187,6 @@
 </div>
 
 <style lang="scss">
-
 	.photo-view {
 		display: flex;
 		justify-content: center;
