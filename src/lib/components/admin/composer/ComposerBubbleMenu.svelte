@@ -10,10 +10,8 @@
 	import X from '@lucide/svelte/icons/x'
 	import ChevronDown from '@lucide/svelte/icons/chevron-down'
 	import Type from '@lucide/svelte/icons/type'
-	import Palette from '@lucide/svelte/icons/palette'
 	import Highlighter from '@lucide/svelte/icons/highlighter'
 	import BubbleTextStyleMenu from './BubbleTextStyleMenu.svelte'
-	import BubbleColorPicker from './BubbleColorPicker.svelte'
 
 	interface Props {
 		editor: Editor
@@ -26,11 +24,7 @@
 	let linkInput = $state('')
 	let linkInputElement = $state<HTMLInputElement>()
 	let showTextStyleMenu = $state(false)
-	let showColorPicker = $state(false)
-	let showHighlightPicker = $state(false)
 	let textStyleButtonRef = $state<HTMLElement>()
-	let colorButtonRef = $state<HTMLElement>()
-	let highlightButtonRef = $state<HTMLElement>()
 
 	// Get commands for bubble menu
 	const bubbleMenuCommands = getBubbleMenuCommands()
@@ -119,8 +113,6 @@
 		return () => {
 			isLinkMode = false
 			showTextStyleMenu = false
-			showColorPicker = false
-			showHighlightPicker = false
 		}
 	})
 </script>
@@ -191,8 +183,6 @@
 						class="bubble-menu-button text-style-button"
 						onclick={() => {
 							showTextStyleMenu = !showTextStyleMenu
-							showColorPicker = false
-							showHighlightPicker = false
 						}}
 						title="Text style"
 					>
@@ -222,67 +212,20 @@
 
 				<span class="separator"></span>
 
-				<!-- Color options -->
-				<div class="dropdown-wrapper">
-					<button
-						bind:this={colorButtonRef}
-						class="bubble-menu-button"
-						onclick={() => {
-							showColorPicker = !showColorPicker
-							showTextStyleMenu = false
-							showHighlightPicker = false
-						}}
-						title="Text color"
-						style={editor.getAttributes('textStyle').color
-							? `color: ${editor.getAttributes('textStyle').color}`
-							: ''}
-					>
-						<Palette size={16} />
-					</button>
-
-					<!-- Text Color Picker -->
-					<BubbleColorPicker
-						{editor}
-						isOpen={showColorPicker}
-						onClose={() => (showColorPicker = false)}
-						mode="text"
-						currentColor={editor.getAttributes('textStyle').color}
-					/>
-				</div>
-
-				<div class="dropdown-wrapper">
-					<button
-						bind:this={highlightButtonRef}
-						class="bubble-menu-button"
-						onclick={() => {
-							showHighlightPicker = !showHighlightPicker
-							showTextStyleMenu = false
-							showColorPicker = false
-						}}
-						title="Highlight color"
-						style={editor.getAttributes('highlight').color
-							? `background-color: ${editor.getAttributes('highlight').color}`
-							: ''}
-					>
-						<Highlighter size={16} />
-					</button>
-
-					<!-- Highlight Color Picker -->
-					<BubbleColorPicker
-						{editor}
-						isOpen={showHighlightPicker}
-						onClose={() => (showHighlightPicker = false)}
-						mode="highlight"
-						currentColor={editor.getAttributes('highlight').color}
-					/>
-				</div>
+				<button
+					class="bubble-menu-button"
+					class:active={editor.isActive('highlight')}
+					onclick={() => editor.chain().focus().toggleHighlight().run()}
+					title="Highlight (Cmd/Ctrl+Shift+H)"
+				>
+					<Highlighter size={16} />
+				</button>
 			</div>
 		{/if}
 	</div>
 </BubbleMenu>
 
 <style lang="scss">
-
 	:global(.composer-bubble-menu) {
 		z-index: 30;
 	}
@@ -344,6 +287,15 @@
 		&:disabled {
 			opacity: 0.5;
 			cursor: not-allowed;
+		}
+
+		&.active {
+			background-color: rgba($red-60, 0.1);
+			color: $red-60;
+
+			&:hover {
+				background-color: rgba($red-60, 0.15);
+			}
 		}
 
 		&.text-style-button {

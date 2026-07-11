@@ -223,10 +223,15 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				const src = (node.attrs?.src || '') as string
 				const alt = (node.attrs?.alt || '') as string
 				const title = (node.attrs?.title || '') as string
-				const width = node.attrs?.width
-				const height = node.attrs?.height
-				const widthAttr = width ? ` width="${width}"` : ''
-				const heightAttr = height ? ` height="${height}"` : ''
+				// Width may be stored as 600, "600px", or "45%"; the HTML attribute
+				// wants a bare pixel number
+				const widthPx = parseInt(String(node.attrs?.width ?? ''), 10)
+				const heightPx = parseInt(String(node.attrs?.height ?? ''), 10)
+				const widthAttr =
+					Number.isFinite(widthPx) && !String(node.attrs?.width).includes('%')
+						? ` width="${widthPx}"`
+						: ''
+				const heightAttr = Number.isFinite(heightPx) ? ` height="${heightPx}"` : ''
 
 				// Check if we have a media ID stored in attributes first
 				const mediaId = node.attrs?.mediaId || extractMediaIdFromUrl(src)
@@ -356,6 +361,83 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				return html
 			}
 
+			case 'gallery': {
+				const images = (node.attrs?.images || []) as Array<{
+					id?: number
+					url?: string
+					alt?: string
+					title?: string
+				}>
+				if (!images.length) return ''
+				const columns = Number(node.attrs?.columns) || 3
+				const layout = String(node.attrs?.layout || 'grid').replace(/[^a-z-]/g, '')
+				const items = images
+					.map((img) => {
+						if (!img.url) return ''
+						const caption = img.title ? `<figcaption>${escapeHtml(img.title)}</figcaption>` : ''
+						return `<figure class="gallery-item"><img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.alt || '')}" loading="lazy" />${caption}</figure>`
+					})
+					.join('')
+				return `<div class="content-gallery content-gallery--${layout}" style="--gallery-columns: ${columns}">${items}</div>`
+			}
+
+			case 'table': {
+				const rows = Array.isArray(node.content) ? node.content : []
+				const rowsHtml = rows
+					.map((row: ContentNode) => {
+						const cells = Array.isArray(row.content) ? row.content : []
+						const cellsHtml = cells
+							.map((cell: ContentNode) => {
+								const tag = cell.type === 'tableHeader' ? 'th' : 'td'
+								const colspan = Number(cell.attrs?.colspan)
+								const rowspan = Number(cell.attrs?.rowspan)
+								const colspanAttr = colspan > 1 ? ` colspan="${colspan}"` : ''
+								const rowspanAttr = rowspan > 1 ? ` rowspan="${rowspan}"` : ''
+								const cellContent = Array.isArray(cell.content)
+									? cell.content.map(renderNode).join('')
+									: ''
+								return `<${tag}${colspanAttr}${rowspanAttr}>${cellContent}</${tag}>`
+							})
+							.join('')
+						return `<tr>${cellsHtml}</tr>`
+					})
+					.join('')
+				return `<div class="content-table-wrapper"><table class="content-table"><tbody>${rowsHtml}</tbody></table></div>`
+			}
+
+			case 'iframe': {
+				const src = (node.attrs?.src || '') as string
+				// http(s) sources only; note the site CSP's frame-src still governs
+				// which hosts actually load in the browser
+				if (!/^https?:\/\//i.test(src)) return ''
+				return `<div class="content-iframe-wrapper"><iframe src="${escapeHtml(src)}" frameborder="0" allowfullscreen loading="lazy"></iframe></div>`
+			}
+
+			case 'geolocation': {
+				const lat = Number(node.attrs?.latitude)
+				const lng = Number(node.attrs?.longitude)
+				if (!isFinite(lat) || !isFinite(lng)) return ''
+				const title = (node.attrs?.title || '') as string
+				const description = (node.attrs?.description || '') as string
+				const bbox = [
+					(lng - 0.004).toFixed(5),
+					(lat - 0.002).toFixed(5),
+					(lng + 0.004).toFixed(5),
+					(lat + 0.002).toFixed(5)
+				].join('%2C')
+				const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`
+				const mapUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`
+				let html = '<figure class="content-location">'
+				html += `<div class="content-location-map"><iframe src="${embedUrl}" loading="lazy" title="${escapeHtml(title || 'Map')}"></iframe></div>`
+				html += `<figcaption><a href="${mapUrl}" target="_blank" rel="noopener noreferrer">`
+				html += `<span class="content-location-title">${escapeHtml(title || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</span>`
+				if (description) {
+					html += `<span class="content-location-description">${escapeHtml(description)}</span>`
+				}
+				html += `</a></figcaption></figure>`
+				return html
+			}
+
 			default: {
 				// For any unknown block types, try to render their content
 				if (node.content) {
@@ -400,6 +482,12 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 								}
 								case 'highlight':
 									text = `<mark>${text}</mark>`
+									break
+								case 'superscript':
+									text = `<sup>${text}</sup>`
+									break
+								case 'subscript':
+									text = `<sub>${text}</sub>`
 									break
 							}
 						})
@@ -476,6 +564,12 @@ export const renderInlineExcerpt = (content: unknown): InlineExcerpt => {
 				}
 				case 'highlight':
 					out = `<mark>${out}</mark>`
+					break
+				case 'superscript':
+					out = `<sup>${out}</sup>`
+					break
+				case 'subscript':
+					out = `<sub>${out}</sub>`
 					break
 			}
 		}

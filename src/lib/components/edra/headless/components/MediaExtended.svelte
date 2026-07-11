@@ -6,9 +6,7 @@
 	import 'tippy.js/dist/tippy.css'
 	import strings from '../../strings.js'
 
-	import AlignCenter from '@lucide/svelte/icons/align-center'
-	import AlignLeft from '@lucide/svelte/icons/align-left'
-	import AlignRight from '@lucide/svelte/icons/align-right'
+	import Accessibility from '@lucide/svelte/icons/accessibility'
 	import CopyIcon from '@lucide/svelte/icons/copy'
 	import Fullscreen from '@lucide/svelte/icons/fullscreen'
 	import Trash from '@lucide/svelte/icons/trash'
@@ -34,6 +32,14 @@
 	const minWidthPercent = 15
 	const maxWidthPercent = 100
 
+	// Older content stores width as a bare number (e.g. 600), which is invalid
+	// CSS and silently ignored — letting huge images render at natural size
+	function cssWidth(width: unknown): string {
+		if (width === null || width === undefined || width === '') return '100%'
+		const str = String(width)
+		return /^\d+(\.\d+)?$/.test(str) ? `${str}px` : str
+	}
+
 	let nodeRef = $state<HTMLElement>()
 	let groupRef = $state<HTMLElement>()
 	let toolbarRef = $state<HTMLElement>()
@@ -44,11 +50,68 @@
 	let resizingInitialMouseX = $state(0)
 	let resizingPosition = $state<'left' | 'right'>('left')
 
+	// Caption lives in the node's `title` attr; alt text in `alt`. Local state
+	// mirrors the attrs with a last-seen guard so external attr changes (e.g.
+	// from the media handler) refresh the inputs without clobbering edits.
 	let caption: string | null = $state(node.attrs.title)
+	let lastSeenTitle: string | null = node.attrs.title
+	let altText: string | null = $state(node.attrs.alt)
+	let lastSeenAlt: string | null = node.attrs.alt
+	let captionInputRef = $state<HTMLInputElement>()
+	let altInputRef = $state<HTMLInputElement>()
+	let commitTimer: ReturnType<typeof setTimeout> | undefined
 
-	function commitCaption() {
-		if (caption?.trim() === '') caption = null
-		updateAttributes({ title: caption })
+	$effect(() => {
+		if (node.attrs.title !== lastSeenTitle) {
+			lastSeenTitle = node.attrs.title
+			caption = node.attrs.title
+		}
+		if (node.attrs.alt !== lastSeenAlt) {
+			lastSeenAlt = node.attrs.alt
+			altText = node.attrs.alt
+		}
+	})
+
+	function commitMediaText() {
+		clearTimeout(commitTimer)
+		const title = caption?.trim() ? caption : null
+		const alt = altText?.trim() ? altText : null
+		lastSeenTitle = title
+		lastSeenAlt = alt
+		if (title !== node.attrs.title || alt !== node.attrs.alt) {
+			updateAttributes({ title, alt })
+		}
+	}
+
+	// Debounced commit so edits survive even if blur never fires (e.g. the
+	// node is deleted or the doc is saved mid-edit)
+	function scheduleCommit() {
+		clearTimeout(commitTimer)
+		commitTimer = setTimeout(commitMediaText, 400)
+	}
+
+	function toggleCaption() {
+		if (caption === null) {
+			caption = ''
+			setTimeout(() => captionInputRef?.focus(), 0)
+		} else if (caption.trim() === '') {
+			caption = null
+			commitMediaText()
+		} else {
+			captionInputRef?.focus()
+		}
+	}
+
+	let altVisible = $state(false)
+
+	function toggleAlt() {
+		altVisible = !altVisible
+		if (altVisible) {
+			if (altText === null) altText = ''
+			setTimeout(() => altInputRef?.focus(), 0)
+		} else {
+			commitMediaText()
+		}
 	}
 
 	$effect(() => {
@@ -179,6 +242,7 @@
 	})
 
 	onDestroy(() => {
+		clearTimeout(commitTimer)
 		window.removeEventListener('mousemove', resize)
 		window.removeEventListener('mouseup', endResize)
 		window.removeEventListener('touchmove', handleTouchMove)
@@ -188,14 +252,34 @@
 
 <NodeViewWrapper
 	id="resizable-container-media"
-	style={`width: ${node.attrs.width}`}
-	class={`edra-media-container ${selected ? 'selected' : ''} align-${node.attrs.align}`}
+	style={`width: ${cssWidth(node.attrs.width)}`}
+	class={`edra-media-container ${selected ? 'selected' : ''}`}
 >
 	<div bind:this={groupRef} class={`edra-media-group ${resizing ? 'resizing' : ''}`}>
 		{@render children()}
 
 		{#if caption !== null}
-			<input bind:value={caption} type="text" class="edra-media-caption" onblur={commitCaption} />
+			<input
+				bind:this={captionInputRef}
+				bind:value={caption}
+				type="text"
+				class="edra-media-caption"
+				placeholder="Add a caption…"
+				oninput={scheduleCommit}
+				onblur={commitMediaText}
+			/>
+		{/if}
+
+		{#if altVisible}
+			<input
+				bind:this={altInputRef}
+				bind:value={altText}
+				type="text"
+				class="edra-media-caption edra-media-alt"
+				placeholder="Alt text for screen readers…"
+				oninput={scheduleCommit}
+				onblur={commitMediaText}
+			/>
 		{/if}
 
 		{#if editor?.isEditable}
@@ -231,34 +315,18 @@
 
 			<div bind:this={toolbarRef} class="edra-media-toolbar">
 				<button
-					class={`edra-toolbar-button ${node.attrs.align === 'left' ? 'active' : ''}`}
-					onclick={() => updateAttributes({ align: 'left' })}
-					title={strings.extension.media.alignLeft}
-				>
-					<AlignLeft size={16} strokeWidth={2} />
-				</button>
-				<button
-					class={`edra-toolbar-button ${node.attrs.align === 'center' ? 'active' : ''}`}
-					onclick={() => updateAttributes({ align: 'center' })}
-					title={strings.extension.media.alignCenter}
-				>
-					<AlignCenter size={16} strokeWidth={2} />
-				</button>
-				<button
-					class={`edra-toolbar-button ${node.attrs.align === 'right' ? 'active' : ''}`}
-					onclick={() => updateAttributes({ align: 'right' })}
-					title={strings.extension.media.alignRight}
-				>
-					<AlignRight size={16} strokeWidth={2} />
-				</button>
-				<button
-					class="edra-toolbar-button"
-					onclick={() => {
-						if (caption === null || caption.trim() === '') caption = 'Caption'
-					}}
+					class={`edra-toolbar-button ${caption !== null ? 'active' : ''}`}
+					onclick={toggleCaption}
 					title={strings.extension.media.caption}
 				>
 					<Captions size={16} strokeWidth={2} />
+				</button>
+				<button
+					class={`edra-toolbar-button ${altVisible || altText ? 'active' : ''}`}
+					onclick={toggleAlt}
+					title="Alt text"
+				>
+					<Accessibility size={16} strokeWidth={2} />
 				</button>
 				<button
 					class="edra-toolbar-button"

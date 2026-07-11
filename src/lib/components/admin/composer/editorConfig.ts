@@ -37,15 +37,12 @@ export function getFilteredCommands(
 		delete filtered['undo-redo']
 		delete filtered['headings']
 		delete filtered['lists']
-		delete filtered['alignment']
 		delete filtered['table']
 		delete filtered['media']
-		delete filtered['fonts']
 	} else if (variant === 'inline') {
 		delete filtered['undo-redo']
 		delete filtered['headings']
 		delete filtered['lists']
-		delete filtered['alignment']
 		delete filtered['table']
 		delete filtered['media']
 	} else {
@@ -53,7 +50,6 @@ export function getFilteredCommands(
 		delete filtered['undo-redo']
 		delete filtered['headings'] // In text style dropdown
 		delete filtered['lists'] // In text style dropdown
-		delete filtered['alignment']
 		delete filtered['table']
 		delete filtered['media'] // In media dropdown
 	}
@@ -112,7 +108,7 @@ export function getMediaCommands(features: ComposerFeatures): EdraCommand[] {
 	return mediaCommands
 }
 
-// Get color commands
+// Get highlight command (plain single-color highlight)
 export function getColorCommands(): EdraCommand[] {
 	return commands.colors?.commands || []
 }
@@ -130,7 +126,7 @@ export function getBubbleMenuCommands(): EdraToolBarCommands[] {
 }
 
 // Commands to exclude from toolbar
-export const excludedCommands = ['colors', 'fonts']
+export const excludedCommands = ['colors']
 
 // Default placeholders by variant
 export function getDefaultPlaceholder(variant: ComposerVariant): string {

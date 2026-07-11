@@ -65,18 +65,19 @@ export class ComposerMediaHandler {
 			const media = await response.json()
 
 			// Replace placeholder with actual URL
-			const displayWidth = media.width && media.width > 600 ? 600 : media.width
+			const displayWidth = media.width ? `${Math.min(media.width, 600)}px` : '100%'
 
 			this.editor.commands.insertContent([
 				{
 					type: 'image',
 					attrs: {
 						src: media.url,
-						alt: media.filename || '',
-						title: media.description || '',
+						// Description is written for humans — use it as alt text.
+						// Captions (title) are opt-in via the media toolbar.
+						alt: media.description || '',
+						title: null,
 						width: displayWidth,
 						height: media.height,
-						align: 'center',
 						mediaId: media.id?.toString()
 					}
 				},
@@ -119,13 +120,14 @@ export class ComposerMediaHandler {
 				type: 'video',
 				attrs: {
 					src: media.url,
-					title: media.description || media.filename || '',
+					alt: media.description || '',
+					title: null,
 					mediaId: media.id.toString()
 				}
 			})
 		} else {
 			// Calculate display dimensions
-			const displayWidth = media.width && media.width > 600 ? 600 : media.width
+			const displayWidth = media.width ? `${Math.min(media.width, 600)}px` : '100%'
 
 			// Insert image
 			this.editor.commands.insertContent([
@@ -133,11 +135,12 @@ export class ComposerMediaHandler {
 					type: 'image',
 					attrs: {
 						src: media.url,
-						alt: media.filename || '',
-						title: media.description || '',
+						// Description is written for humans — use it as alt text.
+						// Captions (title) are opt-in via the media toolbar.
+						alt: media.description || '',
+						title: null,
 						width: displayWidth,
 						height: media.height,
-						align: 'center',
 						mediaId: media.id.toString()
 					}
 				},

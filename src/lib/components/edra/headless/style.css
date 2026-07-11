@@ -102,25 +102,18 @@
 	border-radius: 0.5rem;
 	border: 2px solid transparent;
 	margin: 1rem 0;
+	/* Never let an oversized image's intrinsic width blow up the page layout */
+	max-width: 100%;
+}
+
+.edra-media-container img,
+.edra-media-container video {
+	max-width: 100%;
+	height: auto;
 }
 
 .edra-media-container.selected {
 	border-color: #808080;
-}
-
-.edra-media-container.align-left {
-	left: 0;
-	transform: translateX(0);
-}
-
-.edra-media-container.align-center {
-	left: 50%;
-	transform: translateX(-50%);
-}
-
-.edra-media-container.align-right {
-	left: 100%;
-	transform: translateX(-100%);
 }
 
 .edra-media-group {
