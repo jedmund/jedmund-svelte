@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { type Editor } from '@tiptap/core'
+	import { type Editor } from '$lib/components/edra/tiptap/index.js'
+	import type { Editor as CoreEditor } from '@tiptap/core'
 	import { onMount, setContext } from 'svelte'
-	import { initiateEditor, getEditorExtensions } from '$lib/components/edra/editor-extensions.js'
+	import { initiateEditor, getEditorExtensions } from '$lib/editor/jedmund/editor-extensions.js'
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle'
 	import ComposerLinkBubble from './ComposerLinkBubble.svelte'
-	import TableRowMenu from '$lib/components/edra/headless/menus/TableRow.svelte'
-	import TableColMenu from '$lib/components/edra/headless/menus/TableCol.svelte'
-	import DragHandle from '$lib/components/edra/components/DragHandle.svelte'
-	import ImagePlaceholder from '$lib/components/edra/headless/components/ImagePlaceholder.svelte'
+	import TableRowMenu from '$lib/editor/jedmund/headless/menus/TableRow.svelte'
+	import TableColMenu from '$lib/editor/jedmund/headless/menus/TableCol.svelte'
+	import DragHandle from '$lib/editor/jedmund/components/DragHandle.svelte'
+	import ImagePlaceholder from '$lib/editor/jedmund/headless/components/ImagePlaceholder.svelte'
 	import UnifiedMediaModal from '../UnifiedMediaModal.svelte'
 	import { mediaSelectionStore } from '$lib/stores/media-selection'
 	import type { Media } from '@prisma/client'
@@ -35,9 +36,9 @@
 	} from './editorConfig'
 
 	// Import Edra styles
-	import '$lib/components/edra/headless/style.css'
-	import '$lib/components/edra/editor.css'
-	import '$lib/components/edra/onedark.css'
+	import '$lib/editor/jedmund/headless/style.css'
+	import '$lib/editor/jedmund/editor.css'
+	import '$lib/editor/jedmund/onedark.css'
 
 	let {
 		variant = 'full',
@@ -145,7 +146,7 @@
 		editor: updatedEditor,
 		transaction
 	}: {
-		editor: Editor
+		editor: CoreEditor
 		transaction: unknown
 	}) {
 		// Dismiss link menus on typing
@@ -168,7 +169,7 @@
 		if (editor && !isEditorInitialized) {
 			// Set initial content to ensure proper initialization
 			// This ensures the editor has at least an empty paragraph for placeholder
-			editor.commands.setContent(data)
+			editor.commands.setContent(data, { emitUpdate: false })
 			isEditorInitialized = true
 		}
 	})
@@ -234,7 +235,7 @@
 	}
 
 	export function isEmpty() {
-		return editor?.isEmpty || true
+		return editor?.isEmpty ?? true
 	}
 
 	export function getContent() {

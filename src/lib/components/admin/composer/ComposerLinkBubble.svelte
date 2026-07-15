@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { BubbleMenu } from 'svelte-tiptap'
-	import type { Editor } from '@tiptap/core'
-	import type { ShouldShowProps } from '$lib/components/edra/types'
+	import { BubbleMenu, type Editor } from '$lib/components/edra/tiptap/index.js'
+	import type { ShouldShowProps } from '$lib/editor/jedmund/types'
 	import ExternalLink from '@lucide/svelte/icons/external-link'
 	import Pencil from '@lucide/svelte/icons/pencil'
 	import Copy from '@lucide/svelte/icons/copy'
@@ -103,29 +102,13 @@
 	{shouldShow}
 	pluginKey="composer-link-bubble-menu"
 	updateDelay={100}
-	tippyOptions={{
-		theme: 'bubble-menu',
-		popperOptions: {
-			placement: 'top',
-			modifiers: [
-				{
-					name: 'preventOverflow',
-					options: {
-						boundary: 'viewport',
-						padding: 8
-					}
-				},
-				{
-					name: 'flip',
-					options: {
-						fallbackPlacements: ['bottom', 'top-start', 'top-end', 'bottom-start', 'bottom-end']
-					}
-				}
-			]
-		},
-		maxWidth: 'calc(100vw - 16px)',
-		duration: [200, 150],
-		animation: 'fade'
+	options={{
+		placement: 'top',
+		offset: 8,
+		shift: { padding: 8 },
+		flip: {
+			fallbackPlacements: ['bottom', 'top-start', 'top-end', 'bottom-start', 'bottom-end']
+		}
 	}}
 >
 	<div class="link-bubble-content">

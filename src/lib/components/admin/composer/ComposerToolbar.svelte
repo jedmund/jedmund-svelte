@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Editor } from '@tiptap/core'
-	import ToolBarIcon from '$lib/components/edra/headless/components/ToolBarIcon.svelte'
+	import ToolBarIcon from '$lib/editor/jedmund/headless/components/ToolBarIcon.svelte'
 	import type { ComposerVariant } from './types'
 	import type { FilteredCommands } from './editorConfig'
-	import type { EdraCommand } from '$lib/components/edra/commands/types'
+	import type { EdraCommand } from '$lib/editor/jedmund/commands/types'
 
 	interface Props {
 		editor: Editor
@@ -149,7 +149,6 @@
 </div>
 
 <style lang="scss">
-
 	.editor-toolbar {
 		position: sticky;
 		top: $unit;

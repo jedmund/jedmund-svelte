@@ -1,0 +1,46 @@
+import type { NodeViewProps } from '@tiptap/core'
+import type { Component } from 'svelte'
+import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
+import { Video } from './VideoExtension.js'
+
+export const VideoExtended = (content: Component<any>, onDrop?: (file: File) => Promise<string>) =>
+	Video(onDrop).extend({
+		addAttributes() {
+			return {
+				src: {
+					default: null
+				},
+				alt: {
+					default: null
+				},
+				title: {
+					default: null
+				},
+				width: {
+					default: '100%'
+				},
+				height: {
+					default: null
+				},
+				align: {
+					default: 'left'
+				},
+				mediaId: {
+					default: null,
+					parseHTML: (element) => element.getAttribute('data-media-id'),
+					renderHTML: (attributes) => {
+						if (!attributes.mediaId) {
+							return {}
+						}
+						return {
+							'data-media-id': attributes.mediaId
+						}
+					}
+				}
+			}
+		},
+
+		addNodeView: () => {
+			return SvelteNodeViewRenderer(content)
+		}
+	})
