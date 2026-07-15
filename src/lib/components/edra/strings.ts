@@ -24,20 +24,17 @@ const strings = {
 		bulletList: 'Bullet List',
 		orderedList: 'Ordered List',
 		taskList: 'Task List',
-		imagePlaceholder: 'Image',
-		videoPlaceholder: 'Video',
-		audioPlaceholder: 'Audio',
-		iframePlaceholder: 'iFrame',
+		imagePlaceholder: 'Image Placeholder',
+		videoPlaceholder: 'Video Placeholder',
+		audioPlaceholder: 'Audio Placeholder',
+		iframePlaceholder: 'Iframe Placeholder',
 		table: 'Table',
 		inlineExpression: 'Inline Expression',
 		blockExpression: 'Block Expression',
 		horizontalRule: 'Horizontal Rule',
-
+		mermaidDiagram: 'Mermaid Diagram',
 		formatGroup: 'Format',
-		insertGroup: 'Insert',
-		textGroup: 'Text',
-		mediaGroup: 'Media',
-		embedGroup: 'Embeds & Other'
+		insertGroup: 'Insert'
 	},
 	dragHandle: {
 		title: 'Drag Handle',
@@ -155,6 +152,7 @@ const strings = {
 	},
 	menu: {
 		link: {
+			open: 'Open Link',
 			edit: 'Edit Link',
 			copy: 'Copy Link',
 			remove: 'Remove Link',
@@ -241,6 +239,6 @@ const strings = {
 			replaceAll: 'Replace All'
 		}
 	}
-}
+};
 
-export default strings
+export default strings;
