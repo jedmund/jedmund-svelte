@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client'
+import { extractRichTextMediaIds } from '$lib/editor/media-references.js'
 import { prisma } from './database.js'
 
 type TxClient = Prisma.TransactionClient
@@ -226,68 +227,11 @@ export function extractMediaIds(data: unknown, fieldName: string): number[] {
 			return []
 
 		case 'content':
+		case 'caseStudyContent':
 			// Extract from rich text content (Edra editor)
-			return extractMediaFromRichText(value)
+			return extractRichTextMediaIds(value)
 
 		default:
 			return []
 	}
-}
-
-// Type for rich text content nodes (TipTap/Edra JSON)
-interface RichTextNode {
-	type?: string
-	attrs?: Record<string, unknown>
-	content?: RichTextNode[]
-	[key: string]: unknown
-}
-
-/**
- * Extract media IDs from rich text content (TipTap/Edra JSON)
- */
-function extractMediaFromRichText(content: unknown): number[] {
-	if (!content || typeof content !== 'object') return []
-
-	const mediaIds: number[] = []
-
-	function traverse(node: RichTextNode) {
-		if (!node) return
-
-		// Handle image nodes
-		if (node.type === 'image' && node.attrs?.src) {
-			const match = String(node.attrs.src).match(/\/api\/media\/(\d+)/)
-			if (match) {
-				mediaIds.push(parseInt(match[1]))
-			}
-		}
-
-		// Handle gallery nodes
-		if (node.type === 'gallery' && node.attrs?.images) {
-			for (const image of node.attrs.images as Array<{ id?: number }>) {
-				if (image.id) {
-					mediaIds.push(image.id)
-				}
-			}
-		}
-
-		// Handle urlEmbed link-card thumbnails and favicons that we downloaded into our media store
-		if (node.type === 'urlEmbed') {
-			if (typeof node.attrs?.imageMediaId === 'number') {
-				mediaIds.push(node.attrs.imageMediaId as number)
-			}
-			if (typeof node.attrs?.faviconMediaId === 'number') {
-				mediaIds.push(node.attrs.faviconMediaId as number)
-			}
-		}
-
-		// Recursively traverse child nodes
-		if (node.content) {
-			for (const child of node.content) {
-				traverse(child)
-			}
-		}
-	}
-
-	traverse(content as RichTextNode)
-	return [...new Set(mediaIds)] // Remove duplicates
 }

@@ -1,3 +1,9 @@
 onlyBuiltDependencies:
   - '@musicorum/lastfm'
   - 'psn-api'
+
+# pnpm 11 requires Git dependencies with prepare scripts to be approved by
+# their immutable tarball URL. Keep onlyBuiltDependencies above for pnpm 10.
+allowBuilds:
+  '@musicorum/lastfm@https://codeload.github.com/jedmund/lastfm/tar.gz/ec56b053a8d00be63bb71b1e0d41c650f859f0ca': true
+  'psn-api@https://codeload.github.com/jedmund/psn-api/tar.gz/b8fb93bb18ee3bd8fb2145e632f60aa5171a09b0': true

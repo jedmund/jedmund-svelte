@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Editor } from '@tiptap/core'
-	import UrlConvertDropdown from '$lib/components/edra/headless/components/UrlConvertDropdown.svelte'
+	import UrlConvertDropdown from '$lib/editor/jedmund/headless/components/UrlConvertDropdown.svelte'
 
 	interface Props {
 		editor: Editor

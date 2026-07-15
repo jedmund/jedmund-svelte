@@ -34,3 +34,6 @@ storybook-static
 backups/
 server.log
 *.db
+
+# Real Edra corpus exports contain private content. Keep only synthetic fixtures.
+artifacts/edra-corpus/
