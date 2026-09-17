@@ -38,6 +38,7 @@
 	// Import Edra styles
 	import '$lib/editor/jedmund/headless/style.css'
 	import '$lib/editor/jedmund/editor.css'
+	import '$lib/editor/jedmund/selection.css'
 	import '$lib/editor/jedmund/onedark.css'
 
 	let {

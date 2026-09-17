@@ -1,5 +1,5 @@
-import { type Content, type EditorOptions, type Extensions } from '@tiptap/core'
-import { Editor } from '$lib/components/edra/tiptap/index.js'
+import { Extension, type Content, type EditorOptions, type Extensions } from '@tiptap/core'
+import { Editor, SelectAcrossAtoms } from '$lib/components/edra/tiptap/index.js'
 import { CharacterCount, Placeholder } from '@tiptap/extensions'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
@@ -24,17 +24,24 @@ import strings from './strings.js'
 
 const CompatibleBulletList = BulletList.extend({
 	addAttributes() {
-		return { tight: { default: null } }
+		return { ...this.parent?.(), tight: { default: null } }
 	}
 })
 
 const CompatibleOrderedList = OrderedList.extend({
 	addAttributes() {
-		return { tight: { default: null } }
+		return { ...this.parent?.(), tight: { default: null } }
 	}
 })
 
 export const getBaseEditorExtensions = (): Extensions => [
+	SelectAcrossAtoms,
+	Extension.create({
+		name: 'legacyContentClasses',
+		addGlobalAttributes() {
+			return [{ types: ['paragraph', 'link'], attributes: { class: { default: null } } }]
+		}
+	}),
 	StarterKit.configure({
 		orderedList: false,
 		bulletList: false,

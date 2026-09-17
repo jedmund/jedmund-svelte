@@ -1,0 +1,14 @@
+/* Edra 3.1 selection decorations on Jedmund's app-owned NodeViews. */
+.composer .ProseMirror-selectednode.edra-media-container .edra-media-group,
+.composer .ProseMirror-selectednode.edra-gallery-container,
+.composer .ProseMirror-selectednode.edra-url-embed-wrapper,
+.composer .ProseMirror-selectednode > .geolocation-node,
+.composer .ProseMirror-selectednode[data-type='inline-math'],
+.composer .ProseMirror-selectednode[data-type='block-math'] {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 3px;
+}
+
+.composer .edra-media-container.ProseMirror-selectednode .edra-media-resize-handle {
+	opacity: 1;
+}
