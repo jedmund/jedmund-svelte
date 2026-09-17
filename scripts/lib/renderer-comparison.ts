@@ -18,6 +18,13 @@ type Snapshot = {
 	rss: string
 }
 export async function renderCorpus(root: string, documents: CorpusDocument[]): Promise<Snapshot[]> {
+	if (!existsSync(resolve(root, '.svelte-kit/tsconfig.json'))) {
+		const sync = spawnSync(resolve(root, 'node_modules/.bin/svelte-kit'), ['sync'], {
+			cwd: root,
+			encoding: 'utf8'
+		})
+		assert.equal(sync.status, 0, `Renderer SvelteKit sync failed: ${sync.stderr}`)
+	}
 	const server = await createServer({
 		root,
 		configFile: false,
