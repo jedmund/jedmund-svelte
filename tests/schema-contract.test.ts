@@ -13,6 +13,29 @@ import {
 const fixtureUrl = new URL('./fixtures/edra-documents.json', import.meta.url)
 const documents = JSON.parse(readFileSync(fixtureUrl, 'utf8')) as CorpusDocument[]
 
+test('unknown null attributes and top-level/node/mark fields cannot disappear silently', () => {
+	const original = {
+		type: 'doc' as const,
+		custom: 'root',
+		content: [
+			{
+				type: 'paragraph',
+				custom: 'node',
+				attrs: { unknown: null },
+				content: [{ type: 'text', text: 'x', marks: [{ type: 'bold', custom: 'mark' }] }]
+			}
+		]
+	}
+	const normalized = normalizeSchemaRoundTripJson(original)
+	assert.equal(normalized.custom, 'root')
+	assert.equal(normalized.content![0]!.custom, 'node')
+	assert.equal(normalized.content![0]!.attrs!.unknown, null)
+	assert.equal(
+		(normalized.content![0]!.content![0]!.marks![0] as unknown as Record<string, unknown>).custom,
+		'mark'
+	)
+})
+
 test('recognizes TipTap documents and rejects non-doc JSON', () => {
 	assert.equal(isRichTextDocument(documents[0]?.content), true)
 	assert.equal(isRichTextDocument({ blocks: [] }), false)

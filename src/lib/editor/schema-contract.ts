@@ -49,22 +49,56 @@ export interface JsonDifference {
 	after?: JsonValue
 }
 
+const mediaDefaults = {
+	src: null,
+	alt: null,
+	title: null,
+	height: null,
+	align: 'left',
+	width: '100%'
+}
 const NODE_SCHEMA_DEFAULTS: Record<string, Record<string, JsonValue>> = {
-	audio: { align: 'left', width: '100%' },
+	paragraph: { textAlign: null, class: null },
+	heading: { textAlign: null, level: 1 },
+	bulletList: { tight: null },
+	orderedList: { tight: null, start: 1, type: null },
+	codeBlock: { language: null },
+	audio: { ...mediaDefaults, mediaId: null, waveformData: null },
 	gallery: { columns: 3, gap: '16px', layout: 'grid' },
-	geolocation: { markerColor: '#ef4444', zoom: 15 },
-	iframe: { align: 'left', width: '100%' },
-	image: { align: 'left', width: '100%' },
-	tableCell: { colspan: 1, rowspan: 1 },
-	tableHeader: { colspan: 1, rowspan: 1 },
-	video: { align: 'left', width: '100%' }
+	geolocation: {
+		markerColor: '#ef4444',
+		zoom: 15,
+		latitude: null,
+		longitude: null,
+		name: null,
+		address: null
+	},
+	iframe: mediaDefaults,
+	image: { ...mediaDefaults, mediaId: null },
+	tableCell: { colspan: 1, rowspan: 1, colwidth: null },
+	tableHeader: { colspan: 1, rowspan: 1, colwidth: null },
+	video: { ...mediaDefaults, mediaId: null },
+	urlEmbed: {
+		url: null,
+		title: null,
+		description: null,
+		image: null,
+		imageMediaId: null,
+		favicon: null,
+		faviconMediaId: null,
+		siteName: null
+	}
 }
 
 const MARK_SCHEMA_DEFAULTS: Record<string, Record<string, JsonValue>> = {
 	link: {
+		class: null,
+		title: null,
 		rel: 'noopener noreferrer nofollow',
 		target: '_blank'
-	}
+	},
+	highlight: { color: null },
+	textStyle: { color: null, fontSize: null }
 }
 
 const increment = (counts: Record<string, number>, key: string): void => {
@@ -162,7 +196,9 @@ const normalizeAttributes = (
 	if (!attributes) return undefined
 
 	const normalized = Object.fromEntries(
-		Object.entries(attributes).filter(([name, value]) => value !== null && value !== defaults[name])
+		Object.entries(attributes).filter(
+			([name, value]) => !Object.hasOwn(defaults, name) || value !== defaults[name]
+		)
 	) as Record<string, JsonValue>
 
 	return Object.keys(normalized).length > 0 ? normalized : undefined
@@ -175,11 +211,13 @@ const normalizeAttributes = (
 export const normalizeSchemaRoundTripJson = (document: RichTextDocument): RichTextDocument => {
 	const normalizeMark = (mark: RichTextMark): RichTextMark => {
 		const attrs = normalizeAttributes(mark.attrs, MARK_SCHEMA_DEFAULTS[mark.type])
-		return attrs ? { type: mark.type, attrs } : { type: mark.type }
+		const { attrs: _attrs, ...rest } = mark
+		return attrs ? { ...rest, attrs } : rest
 	}
 
 	const normalizeNode = (node: RichTextNode): RichTextNode => {
-		const normalized: RichTextNode = { type: node.type }
+		const { attrs: _attrs, content: _content, marks: _marks, ...rest } = node
+		const normalized: RichTextNode = { ...rest }
 		const attrs = normalizeAttributes(node.attrs, NODE_SCHEMA_DEFAULTS[node.type])
 		if (attrs) normalized.attrs = attrs
 		if (node.text !== undefined) normalized.text = node.text
@@ -193,7 +231,7 @@ export const normalizeSchemaRoundTripJson = (document: RichTextDocument): RichTe
 	}
 
 	return {
-		type: 'doc',
+		...document,
 		...(document.content ? { content: document.content.map(normalizeNode) } : {})
 	}
 }

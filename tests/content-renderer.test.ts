@@ -50,3 +50,36 @@ test('preserves marked inline excerpts and plain-text excerpts', () => {
 	assert.match(getContentExcerpt(documents[2]!.content), /Header/)
 	assert.match(getContentExcerpt(documents[2]!.content), /Done/)
 })
+
+test('uses album-context permalinks without changing other image markup', () => {
+	const document = {
+		type: 'doc',
+		content: [
+			{ type: 'image', attrs: { src: '/api/media/41/image.jpg', mediaId: 41, alt: 'Photo' } }
+		]
+	}
+	assert.equal(
+		renderEdraContent(document, { albumSlug: 'test-album' }),
+		renderEdraContent(document).replace('href="/photos/41"', 'href="/photos/test-album/41"')
+	)
+})
+
+test('sanitizes hostile HTML and URLs in persisted content', () => {
+	const html = renderEdraContent({
+		type: 'doc',
+		content: [
+			{
+				type: 'paragraph',
+				content: [
+					{
+						type: 'text',
+						text: '<script>alert(1)</script>',
+						marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }]
+					}
+				]
+			},
+			{ type: 'image', attrs: { src: 'javascript:alert(1)', alt: '\" onerror=\"alert(1)' } }
+		]
+	})
+	assert.doesNotMatch(html, /<script|href="javascript:|src="javascript:|<img[^>]*\sonerror=/i)
+})

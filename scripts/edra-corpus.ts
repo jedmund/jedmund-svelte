@@ -1,6 +1,5 @@
-import 'dotenv/config'
-import { PrismaClient } from '@prisma/client'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { loadEnvironment } from './lib/database.ts'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import {
 	createSchemaManifest,
@@ -8,21 +7,10 @@ import {
 	normalizeEditorJson,
 	type CorpusDocument
 } from '../src/lib/editor/schema-contract.ts'
-import {
-	getContentExcerpt,
-	renderEdraContent,
-	renderInlineExcerpt
-} from '../src/lib/utils/content.ts'
 
-interface RendererSnapshot {
-	source: string
-	id: string | number
-	field: string
-	html: string
-	inlineExcerpt: ReturnType<typeof renderInlineExcerpt>
-	excerpt: string
-}
-
+const envFlag = process.argv.indexOf('--env-file')
+Object.assign(process.env, loadEnvironment(envFlag >= 0 ? process.argv[envFlag + 1] : undefined))
+const { PrismaClient } = await import('@prisma/client')
 const prisma = new PrismaClient()
 const mode = process.argv.includes('--verify') ? 'verify' : 'snapshot'
 const outputFlag = process.argv.indexOf('--output')
@@ -34,18 +22,6 @@ const outputDir = resolve(
 
 const stableJson = (value: unknown): string =>
 	`${JSON.stringify(normalizeEditorJson(value), null, 2)}\n`
-
-const snapshotPath = resolve(outputDir, 'renderer-snapshots.json')
-
-const createSnapshots = (documents: CorpusDocument[]): RendererSnapshot[] =>
-	documents.map((document) => ({
-		source: document.source,
-		id: document.id,
-		field: document.field,
-		html: renderEdraContent(document.content),
-		inlineExcerpt: renderInlineExcerpt(document.content),
-		excerpt: getContentExcerpt(document.content)
-	}))
 
 const loadCorpus = async (): Promise<CorpusDocument[]> => {
 	const [posts, projects, albums, gardenItems] = await Promise.all([
@@ -92,28 +68,24 @@ const run = async (): Promise<void> => {
 	await mkdir(outputDir, { recursive: true })
 
 	if (mode === 'verify') {
-		const corpus = JSON.parse(
-			await readFile(resolve(outputDir, 'documents.json'), 'utf8')
-		) as CorpusDocument[]
-		const expected = normalizeEditorJson(JSON.parse(await readFile(snapshotPath, 'utf8')))
-		const actual = normalizeEditorJson(createSnapshots(corpus))
-		if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-			throw new Error(
-				`Renderer snapshots differ. Re-run without --verify and review ${snapshotPath}`
-			)
-		}
-		console.log(`Verified ${corpus.length} renderer snapshots in ${outputDir}`)
+		const { verifyRenderers } = await import('./lib/renderer-comparison.ts')
+		const arg = (name: string) =>
+			process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : undefined
+		await verifyRenderers(
+			arg('--corpus') ?? resolve(outputDir, 'documents.json'),
+			arg('--baseline-ref') ?? '2a6fe469f293b31b5b1a25384ec981f5c00ba941',
+			outputDir,
+			arg('--baseline-root')
+		)
 		return
 	}
 
 	const documents = await loadCorpus()
 	const manifest = createSchemaManifest(documents)
-	const snapshots = createSnapshots(documents)
 
 	await Promise.all([
 		writeFile(resolve(outputDir, 'documents.json'), stableJson(documents), { mode: 0o600 }),
-		writeFile(resolve(outputDir, 'schema-manifest.json'), stableJson(manifest), { mode: 0o600 }),
-		writeFile(snapshotPath, stableJson(snapshots), { mode: 0o600 })
+		writeFile(resolve(outputDir, 'schema-manifest.json'), stableJson(manifest), { mode: 0o600 })
 	])
 
 	console.log(`Wrote ${documents.length} private corpus documents to ${outputDir}`)
