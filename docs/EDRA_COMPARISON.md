@@ -1,12 +1,12 @@
-# Edra 3.0.1 integration comparison
+# Edra 3.1.2 integration comparison
 
 The previous version of this document compared two Edra v2 snapshots. That
 comparison is obsolete after the TipTap 3 migration. This is the current merge
 map for future upstream updates.
 
-| Area | Upstream Edra 3.0.1 | Jedmund integration |
+| Area | Upstream Edra 3.1.2 | Jedmund integration |
 | --- | --- | --- |
-| Editor engine | TipTap 3 | TipTap packages aligned to 3.27.4 |
+| Editor engine | TipTap 3 | TipTap packages aligned to 3.28.0 |
 | Svelte NodeViews | Edra's internal renderer | Reused by all custom NodeViews |
 | UI flavor | Headless and shadcn available | Headless only |
 | Core menus | Toolbar, bubble menus, slash command, drag handle | Composer filters/wraps these surfaces |

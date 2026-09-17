@@ -1,11 +1,11 @@
 # Jedmund-owned Edra customizations
 
-This document is the ownership map for Edra 3.0.1. Application behavior must
+This document is the ownership map for Edra 3.1.2. Application behavior must
 not be added to the vendored tree unless the upstream API cannot support it.
 
 ## Upstream-owned source
 
-`src/lib/components/edra/` is the headless Edra 3.0.1 snapshot pinned in
+`src/lib/components/edra/` is the headless Edra 3.1.2 snapshot pinned in
 `UPSTREAM.md`. Changes there should be limited to:
 
 - repository import-path adaptation;
@@ -58,7 +58,7 @@ recognize every stored custom node and mark.
 
 `src/lib/editor/media-references.ts` extracts media references from the same
 JSON contract. `src/lib/server/media-usage.ts` applies that pure scanner to
-Prisma models, including both Project `content` and `caseStudyContent`.
+Prisma models: Post/Album `content`, Project `caseStudyContent`, GardenItem `note`.
 
 ## Required change procedure
 
