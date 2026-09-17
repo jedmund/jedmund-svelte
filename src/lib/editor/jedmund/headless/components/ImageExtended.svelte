@@ -12,3 +12,12 @@
 	{@const node = rest.node}
 	<img bind:this={mediaRef} src={node.attrs.src} alt={node.attrs.alt} title={node.attrs.title} />
 </MediaExtended>
+
+<style>
+	img {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		height: auto;
+	}
+</style>
