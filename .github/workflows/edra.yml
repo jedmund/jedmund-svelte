@@ -35,6 +35,8 @@ jobs:
       REDIS_URL: redis://127.0.0.1:6379
       ADMIN_SESSION_SECRET: synthetic-ci-only-not-a-production-secret
       ADMIN_PASSWORD: synthetic-ci-only
+      # This legacy endpoint constructs its client during build-time route analysis.
+      GIANTBOMB_API_KEY: synthetic-ci-only
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
