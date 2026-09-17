@@ -1,13 +1,13 @@
 # Edra upstream provenance
 
-- Version: `3.0.1`
-- Commit: `d3f27f8d92c091bf5ec01dbf146d95d31efb25ac`
-- Branch at capture: `next`
+- Version: `3.1.2`
+- Commit: `0fa2836174765c30f8ea30dc7835a205d04232a6`
+- Tag: `3.1.2`
 - Flavor: `headless`
-- Source: `~/Developer/Personal/edra-mcp-server/vendor/edra/src/lib/edra`
-- Upstream TipTap range baseline: `^3.27.3`
-- Installed aligned TipTap patch: `3.27.4`
-- Captured: `2026-07-15`
+- Source: `https://github.com/Tsuzat/Edra`, `src/lib/edra`
+- Upstream TipTap range baseline: `^3.28.0`
+- Installed aligned TipTap version: `3.28.0` (including transitive extensions)
+- Refreshed: `2026-09-16`
 
 The directory is copied from the source snapshot above. The unused `shadcn/`
 flavor is excluded. Jedmund-owned extensions and UI live under
@@ -18,12 +18,13 @@ flavor is excluded. Jedmund-owned extensions and UI live under
 The upstream copy assumes it lives directly at `$lib/edra`. Jedmund vendors it
 at `$lib/components/edra`, so absolute imports were rewritten accordingly. Its
 `$lib/utils.js` imports were redirected to the vendored `utils.ts` module.
-The local Svelte renderer accepts typed Svelte components across this
-repository's Svelte version, and `cn` is provided by the vendored utilities
-module for headless class composition. The Mermaid NodeView uses explicit
-diagram types compatible with the installed Mermaid release. The slash-command
-renderer narrows its component props at the renderer boundary, and media command
-declarations are merged with Jedmund's existing TipTap command augmentations.
+After import-path adaptation, exactly three files differ from this upstream
+snapshot: `utils.ts` provides the `cn` helper for headless class composition;
+`tiptap/extensions/audio/index.ts` and `tiptap/extensions/video/Video.ts` retain
+command declarations merged with Jedmund's TipTap command augmentations.
+Previous Svelte renderer and Mermaid typing patches are now upstream and are
+not reapplied. The selection plugin is unmodified; its app-owned NodeView
+styling lives in `src/lib/editor/jedmund/selection.css`.
 
 These are integration patches, not document-schema changes. Keep them as a
 small, reviewable diff when replacing this snapshot.

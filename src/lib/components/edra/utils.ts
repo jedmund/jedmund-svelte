@@ -5,7 +5,6 @@ const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'u
 import strings from './strings.js';
 
 export type ClassValue = string | false | null | undefined;
-
 export const cn = (...values: ClassValue[]): string => values.filter(Boolean).join(' ');
 
 /**

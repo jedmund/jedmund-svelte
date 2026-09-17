@@ -6,7 +6,7 @@
 		extension,
 		...props
 	}: {
-		component: SvelteComponent<any>;
+		component: SvelteComponent;
 		extension?: { name?: string };
 		[key: string]: unknown;
 	} = $props();

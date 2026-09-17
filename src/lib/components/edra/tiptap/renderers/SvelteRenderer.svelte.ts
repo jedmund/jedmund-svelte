@@ -9,6 +9,7 @@ export class SvelteRenderer {
 
 	private componentInstance: Record<string, unknown> | null = null;
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private component: Component<any>;
 
 	private store = $state<Record<string, unknown>>({});
@@ -17,6 +18,7 @@ export class SvelteRenderer {
 
 	el: Element | null = null;
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	constructor(component: Component<any>, { props = {} }: SvelteRendererOptions = {}) {
 		this.component = component;
 		this.container = document.createElement('div');

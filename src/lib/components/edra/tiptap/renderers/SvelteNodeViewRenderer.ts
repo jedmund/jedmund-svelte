@@ -27,7 +27,7 @@ export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
 		| null;
 }
 
-class SvelteNodeView extends NodeView<Component<any>, Editor, SvelteNodeViewRendererOptions> {
+class SvelteNodeView extends NodeView<Component, Editor, SvelteNodeViewRendererOptions> {
 	declare renderer: SvelteRenderer;
 
 	declare decorationClasses: string;
@@ -219,6 +219,7 @@ class SvelteNodeView extends NodeView<Component<any>, Editor, SvelteNodeViewRend
 }
 
 export function SvelteNodeViewRenderer(
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	component: Component<any>,
 	options?: Partial<SvelteNodeViewRendererOptions>
 ): NodeViewRenderer {

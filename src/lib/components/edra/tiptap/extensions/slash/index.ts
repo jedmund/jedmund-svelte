@@ -190,7 +190,7 @@ export default (menuList: Component<any, any, ''>): Extension =>
 						return {
 							onStart: (props: SuggestionProps) => {
 								component = new SvelteRenderer(menuList, {
-									props: props as unknown as Record<string, unknown>
+									props: { ...props }
 								});
 
 								currentClientRect = props.clientRect ?? null;

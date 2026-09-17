@@ -6,7 +6,7 @@ export interface AudioOptions {
 
 declare module '@tiptap/core' {
 	interface Commands<ReturnType> {
-			audio: {
+		audio: {
 			/**
 			 * Set a audio node
 			 */
