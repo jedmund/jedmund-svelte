@@ -34,6 +34,14 @@
 	const minWidthPercent = 15
 	const maxWidthPercent = 100
 
+	// Legacy uploads store pixel widths as numbers; resizing stores CSS percentages.
+	const mediaWidth = $derived.by(() => {
+		const width = typeof node.attrs.width === 'string' ? node.attrs.width.trim() : node.attrs.width
+		if (width == null || width === '') return '100%'
+		if (typeof width === 'number' || /^\d+(?:\.\d+)?$/.test(width)) return `${width}px`
+		return width
+	})
+
 	let nodeRef = $state<HTMLElement>()
 	let groupRef = $state<HTMLElement>()
 	let toolbarRef = $state<HTMLElement>()
@@ -188,7 +196,7 @@
 
 <NodeViewWrapper
 	id="resizable-container-media"
-	style={`width: ${node.attrs.width}`}
+	style={`width: ${mediaWidth}`}
 	class={`edra-media-container ${selected ? 'selected' : ''} align-${node.attrs.align}`}
 >
 	<div bind:this={groupRef} class={`edra-media-group ${resizing ? 'resizing' : ''}`}>
