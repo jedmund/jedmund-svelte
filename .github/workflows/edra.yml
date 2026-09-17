@@ -1,0 +1,64 @@
+name: edra
+
+on:
+  pull_request:
+  push:
+    branches: [main, feature/update-edra]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: jedmund_edra_test_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/jedmund_edra_test_ci
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/jedmund_edra_test_ci
+      REDIS_URL: redis://127.0.0.1:6379
+      ADMIN_SESSION_SECRET: synthetic-ci-only-not-a-production-secret
+      ADMIN_PASSWORD: synthetic-ci-only
+      # This legacy endpoint constructs its client during build-time route analysis.
+      GIANTBOMB_API_KEY: synthetic-ci-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile
+      # The historical migrations assume an existing schema; synthetic CI starts empty.
+      - run: pnpm exec prisma db push --skip-generate
+      - run: pnpm exec tsx scripts/seed-edra-ci.ts
+      - run: pnpm test
+      - name: Synthetic database round-trip
+        run: |
+          pnpm edra:corpus --output artifacts/edra-corpus/ci
+          pnpm exec tsx scripts/verify-edra-schema.ts --corpus artifacts/edra-corpus/ci/documents.json --persist
+      - run: pnpm check:edra
+      - run: pnpm build

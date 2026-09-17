@@ -1,8 +1,8 @@
 import type { Editor } from '@tiptap/core'
 import type { ComposerVariant, ComposerFeatures } from './types'
-import type { EdraCommand, EdraToolBarCommands } from '$lib/components/edra/commands/types'
-import { commands } from '$lib/components/edra/commands/commands.js'
-import toolbarCommands from '$lib/components/edra/commands/toolbar-commands.js'
+import type { EdraCommand, EdraToolBarCommands } from '$lib/editor/jedmund/commands/types'
+import { commands } from '$lib/editor/jedmund/commands/commands.js'
+import toolbarCommands from '$lib/editor/jedmund/commands/toolbar-commands.js'
 
 export interface FilteredCommands {
 	[key: string]: {

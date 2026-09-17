@@ -1,0 +1,58 @@
+[
+	{
+		"source": "fixture",
+		"id": "legacy-lists",
+		"field": "content",
+		"content": {
+			"type": "doc",
+			"content": [
+				{
+					"type": "orderedList",
+					"attrs": { "start": 7, "type": "A", "tight": true },
+					"content": [
+						{
+							"type": "listItem",
+							"content": [
+								{
+									"type": "paragraph",
+									"attrs": { "class": "legacy-paragraph" },
+									"content": [
+										{
+											"type": "text",
+											"text": "Item",
+											"marks": [
+												{
+													"type": "link",
+													"attrs": { "href": "https://example.com", "class": "legacy-link" }
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"source": "fixture",
+		"id": "math",
+		"field": "content",
+		"content": {
+			"type": "doc",
+			"content": [
+				{
+					"type": "paragraph",
+					"content": [
+						{ "type": "text", "text": "Before " },
+						{ "type": "inlineMath", "attrs": { "latex": "x^2" } },
+						{ "type": "text", "text": " after" }
+					]
+				},
+				{ "type": "blockMath", "attrs": { "latex": "y = x^2" } }
+			]
+		}
+	}
+]

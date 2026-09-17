@@ -5,6 +5,8 @@ This directory contains scripts for backing up and restoring the PostgreSQL data
 ## Prerequisites
 
 - PostgreSQL client tools (`pg_dump`, `psql`) must be installed
+- `pg_dump` must be at least the source server major version. For cloning, the
+  local server must also be at least the dump client's major version.
 - Environment variables must be set in `.env` or `.env.local`:
   - `DATABASE_URL` - Local database connection string
   - `REMOTE_DATABASE_URL` or `DATABASE_URL_PRODUCTION` - Remote database connection string
@@ -12,6 +14,19 @@ This directory contains scripts for backing up and restoring the PostgreSQL data
 ## Available Commands
 
 ### Backup Commands
+
+For migration testing, use `pnpm db:clone:local`. It dumps production, creates a
+new loopback `jedmund_edra_test_<timestamp>` database, restores with fail-fast
+transactional SQL, deploys migrations locally, and writes a private env file in
+`backups/`. It refuses existing targets and leaves your development DB alone.
+Pass `--database jedmund_edra_test_<name>` to choose a name.
+
+All database commands support `--env-file <path>` after positional arguments.
+Precedence is process environment > explicit file > `.env.local` > `.env`.
+Values are parsed as dotenv, never sourced as shell. Passwords are passed to
+PostgreSQL through its environment, not command-line arguments; errors redact
+connection URLs. SQL dumps and env files are mode 0600. Dumps are gzip-compressed
+and atomically renamed only after success.
 
 ```bash
 # Backup local database

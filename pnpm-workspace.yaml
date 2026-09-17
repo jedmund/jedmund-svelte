@@ -1,3 +1,55 @@
 onlyBuiltDependencies:
   - '@musicorum/lastfm'
   - 'psn-api'
+
+# pnpm 11 requires Git dependencies with prepare scripts to be approved by
+# their immutable tarball URL. Keep onlyBuiltDependencies above for pnpm 10.
+allowBuilds:
+  '@musicorum/lastfm@https://codeload.github.com/jedmund/lastfm/tar.gz/ec56b053a8d00be63bb71b1e0d41c650f859f0ca': true
+  'psn-api@https://codeload.github.com/jedmund/psn-api/tar.gz/b8fb93bb18ee3bd8fb2145e632f60aa5171a09b0': true
+
+# Keep StarterKit transitive extensions on the same TipTap patch.
+overrides:
+  '@tiptap/core': 3.28.0
+  '@tiptap/extension-blockquote': 3.28.0
+  '@tiptap/extension-bold': 3.28.0
+  '@tiptap/extension-bubble-menu': 3.28.0
+  '@tiptap/extension-bullet-list': 3.28.0
+  '@tiptap/extension-code': 3.28.0
+  '@tiptap/extension-code-block': 3.28.0
+  '@tiptap/extension-code-block-lowlight': 3.28.0
+  '@tiptap/extension-collaboration': 3.28.0
+  '@tiptap/extension-document': 3.28.0
+  '@tiptap/extension-drag-handle': 3.28.0
+  '@tiptap/extension-dropcursor': 3.28.0
+  '@tiptap/extension-gapcursor': 3.28.0
+  '@tiptap/extension-hard-break': 3.28.0
+  '@tiptap/extension-heading': 3.28.0
+  '@tiptap/extension-highlight': 3.28.0
+  '@tiptap/extension-horizontal-rule': 3.28.0
+  '@tiptap/extension-image': 3.28.0
+  '@tiptap/extension-italic': 3.28.0
+  '@tiptap/extension-link': 3.28.0
+  '@tiptap/extension-list': 3.28.0
+  '@tiptap/extension-list-item': 3.28.0
+  '@tiptap/extension-list-keymap': 3.28.0
+  '@tiptap/extension-mathematics': 3.28.0
+  '@tiptap/extension-node-range': 3.28.0
+  '@tiptap/extension-ordered-list': 3.28.0
+  '@tiptap/extension-paragraph': 3.28.0
+  '@tiptap/extension-strike': 3.28.0
+  '@tiptap/extension-subscript': 3.28.0
+  '@tiptap/extension-superscript': 3.28.0
+  '@tiptap/extension-table': 3.28.0
+  '@tiptap/extension-table-of-contents': 3.28.0
+  '@tiptap/extension-text': 3.28.0
+  '@tiptap/extension-text-align': 3.28.0
+  '@tiptap/extension-text-style': 3.28.0
+  '@tiptap/extension-typography': 3.28.0
+  '@tiptap/extension-underline': 3.28.0
+  '@tiptap/extension-unique-id': 3.28.0
+  '@tiptap/extensions': 3.28.0
+  '@tiptap/markdown': 3.28.0
+  '@tiptap/pm': 3.28.0
+  '@tiptap/starter-kit': 3.28.0
+  '@tiptap/suggestion': 3.28.0

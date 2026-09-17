@@ -1,0 +1,349 @@
+{
+	"ref": "1113f9b7ef703978244cdf0583ed79752c49eeaf",
+	"errors": [
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/constants/garden.ts",
+			"message": "'raw' is of type 'unknown'."
+		},
+		{
+			"file": "src/lib/components/Album.stories.js",
+			"message": "Parameter 'args' implicitly has an 'any' type."
+		},
+		{
+			"file": "src/lib/components/Album.stories.js",
+			"message": "Parameter 'story' implicitly has an 'any' type."
+		},
+		{
+			"file": "src/lib/components/Avatar.stories.js",
+			"message": "Parameter 'args' implicitly has an 'any' type."
+		},
+		{
+			"file": "src/lib/components/RecentAlbums.stories.js",
+			"message": "Parameter 'Story' implicitly has an 'any' type."
+		},
+		{
+			"file": "src/stories/admin/Input.stories.js",
+			"message": "Parameter 'args' implicitly has an 'any' type."
+		},
+		{
+			"file": "src/stories/admin/Input.stories.js",
+			"message": "Parameter 'args' implicitly has an 'any' type."
+		},
+		{
+			"file": "src/routes/api/admin/garden/+server.ts",
+			"message": "Type 'Record<string, unknown> | null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'.\n  Type 'null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'."
+		},
+		{
+			"file": "src/routes/api/admin/garden/+server.ts",
+			"message": "Type 'unknown' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'."
+		},
+		{
+			"file": "src/routes/api/admin/garden/[id]/+server.ts",
+			"message": "Type 'string | number | boolean | Record<string, unknown> | JsonArray | null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'.\n  Type 'null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'."
+		},
+		{
+			"file": "src/routes/api/admin/garden/[id]/+server.ts",
+			"message": "Type 'unknown' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'."
+		},
+		{
+			"file": "src/lib/components/admin/Typeahead.svelte",
+			"message": "Argument of type '(query: string) => Promise<void>' is not assignable to parameter of type '(...args: unknown[]) => void'.\n  Types of parameters 'query' and 'args' are incompatible.\n    Type 'unknown' is not assignable to type 'string'."
+		},
+		{
+			"file": "src/lib/components/admin/TagInput.svelte",
+			"message": "Argument of type '(query: string) => Promise<void>' is not assignable to parameter of type '(...args: unknown[]) => void'.\n  Types of parameters 'query' and 'args' are incompatible.\n    Type 'unknown' is not assignable to type 'string'."
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "Type 'unknown' is not assignable to type 'string | number | string[] | null | undefined'."
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "Type 'unknown' is not assignable to type 'boolean | null | undefined'."
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "Type 'unknown' is not assignable to type 'Tag[] | undefined'."
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "No overload matches this call.\n  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.\n    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.\n  Overload 2 of 4, '(value: string | number): Date', gave the following error.\n    Argument of type 'unknown' is not assignable to parameter of type 'string | number'."
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "No overload matches this call.\n  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.\n    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.\n  Overload 2 of 4, '(value: string | number): Date', gave the following error.\n    Argument of type 'unknown' is not assignable to parameter of type 'string | number'."
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "No overload matches this call.\n  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.\n    Argument of type '{}' is not assignable to parameter of type 'string | number | Date'.\n  Overload 2 of 4, '(value: string | number): Date', gave the following error.\n    Argument of type '{}' is not assignable to parameter of type 'string | number'."
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "Argument of type 'object' is not assignable to parameter of type 'ConstructorOfATypedSvelteComponent | Component<any, any, any> | null | undefined'.\n\nPossible causes:\n- You use the instance type of a component where you should use the constructor type\n- Type definitions are missing for this Svelte Component. "
+		},
+		{
+			"file": "src/lib/components/admin/GenericMetadataPopover.svelte",
+			"message": "Property '$$bindings' does not exist on type 'ATypedSvelteComponent | SvelteComponent<{ data: Record<string, unknown>; }, any, any>'.\n  Property '$$bindings' does not exist on type 'ATypedSvelteComponent'."
+		},
+		{
+			"file": "src/lib/components/admin/PostDropdown.svelte",
+			"message": "Type 'SvelteComponent<Props, { [evt: string]: CustomEvent<any>; }, {}> & { $$bindings?: \"\" | undefined; }' is not assignable to type 'HTMLElement | undefined'.\n  Type 'SvelteComponent<Props, { [evt: string]: CustomEvent<any>; }, {}> & { $$bindings?: \"\" | undefined; }' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more."
+		},
+		{
+			"file": "src/lib/components/admin/PostMetadataForm.svelte",
+			"message": "Conversion of type '{ id: number; filename: string; originalName: string; mimeType: string; size: number; url: string; thumbnailUrl: string; width: null; height: null; description: null; usedIn: never[]; createdAt: Date; ... 14 more ...; bitrate: null; }' to type '{ url: string; id: number; description: string | null; createdAt: Date; updatedAt: Date; filename: string; thumbnailUrl: string | null; width: number | null; height: number | null; ... 18 more ...; bitrate: number | null; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n  Property 'isLinkCardImage' is missing in type '{ id: number; filename: string; originalName: string; mimeType: string; size: number; url: string; thumbnailUrl: string; width: null; height: null; description: null; usedIn: never[]; createdAt: Date; ... 14 more ...; bitrate: null; }' but required in type '{ url: string; id: number; description: string | null; createdAt: Date; updatedAt: Date; filename: string; thumbnailUrl: string | null; width: number | null; height: number | null; ... 18 more ...; bitrate: number | null; }'."
+		},
+		{
+			"file": "src/lib/components/admin/ProjectBrandingForm.svelte",
+			"message": "Property 'isLinkCardImage' is missing in type '{ id: number; filename: string; originalName: string; mimeType: string; size: number; url: string; thumbnailUrl: string; width: null; height: null; description: null; usedIn: never[]; createdAt: Date; ... 14 more ...; bitrate: null; }' but required in type '{ url: string; id: number; description: string | null; createdAt: Date; updatedAt: Date; filename: string; thumbnailUrl: string | null; width: number | null; height: number | null; ... 18 more ...; bitrate: number | null; }'."
+		},
+		{
+			"file": "src/lib/components/admin/ProjectImagesForm.svelte",
+			"message": "Property 'isLinkCardImage' is missing in type '{ id: number; filename: string; originalName: string; mimeType: string; size: number; url: string; thumbnailUrl: string; width: null; height: null; description: null; usedIn: never[]; createdAt: Date; ... 14 more ...; bitrate: null; }' but required in type '{ url: string; id: number; description: string | null; createdAt: Date; updatedAt: Date; filename: string; thumbnailUrl: string | null; width: number | null; height: number | null; ... 18 more ...; bitrate: number | null; }'."
+		}
+	]
+}

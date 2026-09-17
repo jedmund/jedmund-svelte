@@ -1,0 +1,57 @@
+[
+	{
+		"key": "Post#1.content",
+		"html": "<h2>Schema contract</h2><p><a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>Marked link</strong></a></p><figure class=\"interactive-figure\"><a href=\"/photos/41\" class=\"photo-link\"><img src=\"/api/media/41/image.jpg\" alt=\"Example\" width=\"100%\"></a><figcaption>Image title</figcaption></figure><figure class=\"video-figure\"><video src=\"/api/media/42/video.mp4\" controls=\"\" preload=\"metadata\" playsinline=\"\"></video><figcaption>Video</figcaption></figure><figure class=\"audio-figure\"><div data-audio-player=\"\" data-src=\"/api/media/43/audio.mp3\" data-title=\"Audio\" data-waveform=\"[0.1,0.5,0.2]\"></div><figcaption>Audio</figcaption></figure>",
+		"albumHtml": "<h2>Schema contract</h2><p><a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>Marked link</strong></a></p><figure class=\"interactive-figure\"><a href=\"/photos/test-album/41\" class=\"photo-link\"><img src=\"/api/media/41/image.jpg\" alt=\"Example\" width=\"100%\"></a><figcaption>Image title</figcaption></figure><figure class=\"video-figure\"><video src=\"/api/media/42/video.mp4\" controls=\"\" preload=\"metadata\" playsinline=\"\"></video><figcaption>Video</figcaption></figure><figure class=\"audio-figure\"><div data-audio-player=\"\" data-src=\"/api/media/43/audio.mp3\" data-title=\"Audio\" data-waveform=\"[0.1,0.5,0.2]\"></div><figcaption>Audio</figcaption></figure>",
+		"inlineExcerpt": {
+			"html": "<a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>Marked link</strong></a>",
+			"truncated": true
+		},
+		"excerpt": "Schema contract Marked link",
+		"rss": "<h2>Schema contract</h2><p><a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>Marked link</strong></a></p><figure class=\"interactive-figure\"><a href=\"/photos/41\" class=\"photo-link\"><img src=\"/api/media/41/image.jpg\" alt=\"Example\" width=\"100%\"></a><figcaption>Image title</figcaption></figure><figure class=\"video-figure\"><video src=\"/api/media/42/video.mp4\" controls=\"\" preload=\"metadata\" playsinline=\"\"></video><figcaption>Video</figcaption></figure><figure class=\"audio-figure\"><div data-audio-player=\"\" data-src=\"/api/media/43/audio.mp3\" data-title=\"Audio\" data-waveform=\"[0.1,0.5,0.2]\"></div><figcaption>Audio</figcaption></figure>"
+	},
+	{
+		"key": "Project#2.caseStudyContent",
+		"html": "<div class=\"edra-gallery-container\" data-layout=\"grid\" data-columns=\"3\"><div class=\"edra-gallery-grid grid\"><figure class=\"edra-gallery-item\"><a href=\"/photos/44\" class=\"photo-link\"><img src=\"/api/media/44/gallery.jpg\" alt=\"Gallery item\" loading=\"lazy\"></a></figure></div></div><figure class=\"geolocation-rendered\" data-latitude=\"37.7749\" data-longitude=\"-122.4194\" data-zoom=\"15\"><a href=\"https://www.openstreetmap.org/?mlat=37.7749&amp;mlon=-122.4194#map=15/37.7749/-122.4194\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>San Francisco</strong><span>Map description</span></a></figure><div class=\"url-embed-rendered\"><a href=\"https://example.com/article\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"url-embed-link\"><div class=\"url-embed-image\"><img src=\"/api/media/45/card.jpg\" alt=\"Article\"></div><div class=\"url-embed-text\"><div class=\"url-embed-meta\"><img src=\"/api/media/46/favicon.png\" alt=\"\" class=\"url-embed-favicon\"><span class=\"url-embed-domain\">Example</span></div><h3 class=\"url-embed-title\">Article</h3><p class=\"url-embed-description\">Description</p></div></a></div><div class=\"iframe-wrapper\"><iframe src=\"https://example.com/embed\" title=\"Embed\" width=\"100%\" height=\"480\" frameborder=\"0\" allowfullscreen=\"\"></iframe></div>",
+		"albumHtml": "<div class=\"edra-gallery-container\" data-layout=\"grid\" data-columns=\"3\"><div class=\"edra-gallery-grid grid\"><figure class=\"edra-gallery-item\"><a href=\"/photos/test-album/44\" class=\"photo-link\"><img src=\"/api/media/44/gallery.jpg\" alt=\"Gallery item\" loading=\"lazy\"></a></figure></div></div><figure class=\"geolocation-rendered\" data-latitude=\"37.7749\" data-longitude=\"-122.4194\" data-zoom=\"15\"><a href=\"https://www.openstreetmap.org/?mlat=37.7749&amp;mlon=-122.4194#map=15/37.7749/-122.4194\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>San Francisco</strong><span>Map description</span></a></figure><div class=\"url-embed-rendered\"><a href=\"https://example.com/article\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"url-embed-link\"><div class=\"url-embed-image\"><img src=\"/api/media/45/card.jpg\" alt=\"Article\"></div><div class=\"url-embed-text\"><div class=\"url-embed-meta\"><img src=\"/api/media/46/favicon.png\" alt=\"\" class=\"url-embed-favicon\"><span class=\"url-embed-domain\">Example</span></div><h3 class=\"url-embed-title\">Article</h3><p class=\"url-embed-description\">Description</p></div></a></div><div class=\"iframe-wrapper\"><iframe src=\"https://example.com/embed\" title=\"Embed\" width=\"100%\" height=\"480\" frameborder=\"0\" allowfullscreen=\"\"></iframe></div>",
+		"inlineExcerpt": {
+			"html": "",
+			"truncated": true
+		},
+		"excerpt": "",
+		"rss": "<div class=\"edra-gallery-container\" data-layout=\"grid\" data-columns=\"3\"><div class=\"edra-gallery-grid grid\"><figure class=\"edra-gallery-item\"><a href=\"/photos/44\" class=\"photo-link\"><img src=\"/api/media/44/gallery.jpg\" alt=\"Gallery item\" loading=\"lazy\"></a></figure></div></div><figure class=\"geolocation-rendered\" data-latitude=\"37.7749\" data-longitude=\"-122.4194\" data-zoom=\"15\"><a href=\"https://www.openstreetmap.org/?mlat=37.7749&amp;mlon=-122.4194#map=15/37.7749/-122.4194\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>San Francisco</strong><span>Map description</span></a></figure><div class=\"url-embed-rendered\"><a href=\"https://example.com/article\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"url-embed-link\"><div class=\"url-embed-image\"><img src=\"/api/media/45/card.jpg\" alt=\"Article\"></div><div class=\"url-embed-text\"><div class=\"url-embed-meta\"><img src=\"/api/media/46/favicon.png\" alt=\"\" class=\"url-embed-favicon\"><span class=\"url-embed-domain\">Example</span></div><h3 class=\"url-embed-title\">Article</h3><p class=\"url-embed-description\">Description</p></div></a></div><div class=\"iframe-wrapper\"><iframe src=\"https://example.com/embed\" title=\"Embed\" width=\"100%\" height=\"480\" frameborder=\"0\" allowfullscreen=\"\"></iframe></div>"
+	},
+	{
+		"key": "GardenItem#3.note",
+		"html": "<div class=\"tableWrapper\"><table><tbody><tr><th><p>Header</p></th></tr><tr><td><p>Cell</p></td></tr></tbody></table></div><ul data-type=\"taskList\"><li data-type=\"taskItem\" data-checked=\"true\"><p>Done</p></li></ul>",
+		"albumHtml": "<div class=\"tableWrapper\"><table><tbody><tr><th><p>Header</p></th></tr><tr><td><p>Cell</p></td></tr></tbody></table></div><ul data-type=\"taskList\"><li data-type=\"taskItem\" data-checked=\"true\"><p>Done</p></li></ul>",
+		"inlineExcerpt": {
+			"html": "",
+			"truncated": true
+		},
+		"excerpt": "Header Cell Done",
+		"rss": "<div class=\"tableWrapper\"><table><tbody><tr><th><p>Header</p></th></tr><tr><td><p>Cell</p></td></tr></tbody></table></div><ul data-type=\"taskList\"><li data-type=\"taskItem\" data-checked=\"true\"><p>Done</p></li></ul>"
+	},
+	{
+		"key": "fixture#legacy-lists.content",
+		"html": "<ol><li><p><a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\">Item</a></p></li></ol>",
+		"albumHtml": "<ol><li><p><a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\">Item</a></p></li></ol>",
+		"inlineExcerpt": {
+			"html": "",
+			"truncated": true
+		},
+		"excerpt": "Item",
+		"rss": "<ol><li><p><a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\">Item</a></p></li></ol>"
+	},
+	{
+		"key": "fixture#math.content",
+		"html": "<p>Before <span class=\"math-inline\" data-latex=\"x^2\">x^2</span> after</p><div class=\"math-block\" data-latex=\"y = x^2\">y = x^2</div>",
+		"albumHtml": "<p>Before <span class=\"math-inline\" data-latex=\"x^2\">x^2</span> after</p><div class=\"math-block\" data-latex=\"y = x^2\">y = x^2</div>",
+		"inlineExcerpt": {
+			"html": "Before  after",
+			"truncated": true
+		},
+		"excerpt": "Before    after",
+		"rss": "<p>Before <span class=\"math-inline\" data-latex=\"x^2\">x^2</span> after</p><div class=\"math-block\" data-latex=\"y = x^2\">y = x^2</div>"
+	}
+]

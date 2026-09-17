@@ -1,0 +1,157 @@
+[
+	{
+		"source": "Post",
+		"id": 1,
+		"field": "content",
+		"content": {
+			"type": "doc",
+			"content": [
+				{
+					"type": "heading",
+					"attrs": { "level": 2 },
+					"content": [{ "type": "text", "text": "Schema contract" }]
+				},
+				{
+					"type": "paragraph",
+					"content": [
+						{
+							"type": "text",
+							"text": "Marked link",
+							"marks": [
+								{ "type": "bold" },
+								{ "type": "link", "attrs": { "href": "https://example.com", "target": "_blank" } }
+							]
+						}
+					]
+				},
+				{
+					"type": "image",
+					"attrs": {
+						"src": "/api/media/41/image.jpg",
+						"alt": "Example",
+						"title": "Image title",
+						"width": "100%",
+						"height": null,
+						"align": "left",
+						"mediaId": "41"
+					}
+				},
+				{
+					"type": "video",
+					"attrs": { "src": "/api/media/42/video.mp4", "title": "Video", "mediaId": "42" }
+				},
+				{
+					"type": "audio",
+					"attrs": {
+						"src": "/api/media/43/audio.mp3",
+						"title": "Audio",
+						"mediaId": "43",
+						"waveformData": [0.1, 0.5, 0.2]
+					}
+				}
+			]
+		}
+	},
+	{
+		"source": "Project",
+		"id": 2,
+		"field": "caseStudyContent",
+		"content": {
+			"type": "doc",
+			"content": [
+				{
+					"type": "gallery",
+					"attrs": {
+						"images": [{ "id": 44, "url": "/api/media/44/gallery.jpg", "alt": "Gallery item" }],
+						"layout": "grid",
+						"columns": 3,
+						"gap": "16px"
+					}
+				},
+				{
+					"type": "geolocation",
+					"attrs": {
+						"latitude": 37.7749,
+						"longitude": -122.4194,
+						"title": "San Francisco",
+						"description": "Map description",
+						"markerColor": "#ef4444",
+						"zoom": 15
+					}
+				},
+				{
+					"type": "urlEmbed",
+					"attrs": {
+						"url": "https://example.com/article",
+						"title": "Article",
+						"description": "Description",
+						"image": "/api/media/45/card.jpg",
+						"imageMediaId": "45",
+						"favicon": "/api/media/46/favicon.png",
+						"faviconMediaId": 46,
+						"siteName": "Example"
+					}
+				},
+				{
+					"type": "iframe",
+					"attrs": {
+						"src": "https://example.com/embed",
+						"title": "Embed",
+						"width": "100%",
+						"height": 480,
+						"align": "left"
+					}
+				}
+			]
+		}
+	},
+	{
+		"source": "GardenItem",
+		"id": 3,
+		"field": "note",
+		"content": {
+			"type": "doc",
+			"content": [
+				{
+					"type": "table",
+					"content": [
+						{
+							"type": "tableRow",
+							"content": [
+								{
+									"type": "tableHeader",
+									"attrs": { "colspan": 1, "rowspan": 1, "colwidth": null, "style": null },
+									"content": [
+										{ "type": "paragraph", "content": [{ "type": "text", "text": "Header" }] }
+									]
+								}
+							]
+						},
+						{
+							"type": "tableRow",
+							"content": [
+								{
+									"type": "tableCell",
+									"attrs": { "colspan": 1, "rowspan": 1, "colwidth": null, "style": null },
+									"content": [
+										{ "type": "paragraph", "content": [{ "type": "text", "text": "Cell" }] }
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"type": "taskList",
+					"content": [
+						{
+							"type": "taskItem",
+							"attrs": { "checked": true },
+							"content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Done" }] }]
+						}
+					]
+				}
+			]
+		}
+	}
+]

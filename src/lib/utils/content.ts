@@ -1,5 +1,5 @@
 import DOMPurify from 'isomorphic-dompurify'
-import type { EditorData } from '$lib/types/editor'
+import type { EditorData } from '../types/editor.js'
 
 // Allow iframes (YouTube embeds) and the attributes they need; everything else
 // falls back to DOMPurify defaults, which strip scripts, event handlers, etc.
@@ -65,7 +65,7 @@ export const renderEdraContent = (
 	// Handle Tiptap format first (has type: 'doc')
 	const contentObj = content as Record<string, unknown>
 	if (contentObj.type === 'doc' && contentObj.content) {
-		return sanitize(renderTiptapContent(contentObj))
+		return sanitize(renderTiptapContent(contentObj, options))
 	}
 
 	// Handle both { blocks: [...] } and { content: [...] } formats
@@ -160,7 +160,10 @@ export const renderEdraContent = (
 }
 
 // Render Tiptap JSON content to HTML
-function renderTiptapContent(doc: Record<string, unknown>): string {
+function renderTiptapContent(
+	doc: Record<string, unknown>,
+	options: { albumSlug?: string } = {}
+): string {
 	if (!doc || !doc.content) return ''
 
 	const renderNode = (node: ContentNode): string => {
@@ -208,6 +211,17 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				return Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
 			}
 
+			case 'taskList': {
+				const items = Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
+				return `<ul data-type="taskList">${items}</ul>`
+			}
+
+			case 'taskItem': {
+				const checked = node.attrs?.checked === true
+				const content = Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
+				return `<li data-type="taskItem" data-checked="${checked}">${content}</li>`
+			}
+
 			case 'blockquote': {
 				const content = Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
 				return `<blockquote>${content}</blockquote>`
@@ -233,7 +247,9 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 
 				if (mediaId) {
 					// Always use direct photo permalink
-					const photoUrl = `/photos/${mediaId}`
+					const photoUrl = options.albumSlug
+						? `/photos/${options.albumSlug}/${mediaId}`
+						: `/photos/${mediaId}`
 					return `<figure class="interactive-figure"><a href="${photoUrl}" class="photo-link"><img src="${src}" alt="${alt}"${widthAttr}${heightAttr} /></a>${title ? `<figcaption>${title}</figcaption>` : ''}</figure>`
 				} else {
 					return `<figure><img src="${src}" alt="${alt}"${widthAttr}${heightAttr} />${title ? `<figcaption>${title}</figcaption>` : ''}</figure>`
@@ -356,6 +372,81 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 				return html
 			}
 
+			case 'gallery': {
+				const images = Array.isArray(node.attrs?.images)
+					? (node.attrs.images as Array<Record<string, unknown>>)
+					: []
+				const layout = escapeHtml(String(node.attrs?.layout ?? 'grid'))
+				const columns = Number(node.attrs?.columns ?? 3)
+				const safeColumns = Number.isFinite(columns) ? Math.min(6, Math.max(1, columns)) : 3
+				const items = images
+					.map((image) => {
+						const id = image.id === undefined || image.id === null ? null : String(image.id)
+						const src = escapeHtml(String(image.url ?? ''))
+						const alt = escapeHtml(String(image.alt ?? ''))
+						const title = escapeHtml(String(image.title ?? ''))
+						const imageHtml = `<img src="${src}" alt="${alt}"${title ? ` title="${title}"` : ''} loading="lazy" />`
+						if (!id) return `<figure class="edra-gallery-item">${imageHtml}</figure>`
+						const photoUrl = options.albumSlug
+							? `/photos/${escapeHtml(options.albumSlug)}/${escapeHtml(id)}`
+							: `/photos/${escapeHtml(id)}`
+						return `<figure class="edra-gallery-item"><a href="${photoUrl}" class="photo-link">${imageHtml}</a></figure>`
+					})
+					.join('')
+				return `<div class="edra-gallery-container" data-layout="${layout}" data-columns="${safeColumns}"><div class="edra-gallery-grid ${layout}">${items}</div></div>`
+			}
+
+			case 'geolocation': {
+				const latitude = Number(node.attrs?.latitude)
+				const longitude = Number(node.attrs?.longitude)
+				if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return ''
+				const zoom = Number(node.attrs?.zoom ?? 15)
+				const safeZoom = Number.isFinite(zoom) ? Math.min(19, Math.max(1, zoom)) : 15
+				const title = escapeHtml(String(node.attrs?.title ?? 'Location'))
+				const description = escapeHtml(String(node.attrs?.description ?? ''))
+				const mapUrl = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=${safeZoom}/${latitude}/${longitude}`
+				return `<figure class="geolocation-rendered" data-latitude="${latitude}" data-longitude="${longitude}" data-zoom="${safeZoom}"><a href="${mapUrl}" target="_blank" rel="noopener noreferrer"><strong>${title}</strong>${description ? `<span>${description}</span>` : ''}</a></figure>`
+			}
+
+			case 'iframe': {
+				const src = escapeHtml(String(node.attrs?.src ?? ''))
+				if (!src) return ''
+				const title = escapeHtml(String(node.attrs?.title ?? 'Embedded content'))
+				const width = escapeHtml(String(node.attrs?.width ?? '100%'))
+				const height = escapeHtml(String(node.attrs?.height ?? '480'))
+				return `<div class="iframe-wrapper"><iframe src="${src}" title="${title}" width="${width}" height="${height}" frameborder="0" allowfullscreen></iframe></div>`
+			}
+
+			case 'table': {
+				const rows = Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
+				return `<div class="tableWrapper"><table><tbody>${rows}</tbody></table></div>`
+			}
+
+			case 'tableRow': {
+				const cells = Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
+				return `<tr>${cells}</tr>`
+			}
+
+			case 'tableHeader':
+			case 'tableCell': {
+				const tag = node.type === 'tableHeader' ? 'th' : 'td'
+				const colspan = Number(node.attrs?.colspan ?? 1)
+				const rowspan = Number(node.attrs?.rowspan ?? 1)
+				const attributes = `${colspan > 1 ? ` colspan="${colspan}"` : ''}${rowspan > 1 ? ` rowspan="${rowspan}"` : ''}`
+				const content = Array.isArray(node.content) ? node.content.map(renderNode).join('') : ''
+				return `<${tag}${attributes}>${content}</${tag}>`
+			}
+
+			case 'inlineMath': {
+				const latex = escapeHtml(String(node.attrs?.latex ?? ''))
+				return `<span class="math-inline" data-latex="${latex}">${latex}</span>`
+			}
+
+			case 'blockMath': {
+				const latex = escapeHtml(String(node.attrs?.latex ?? ''))
+				return `<div class="math-block" data-latex="${latex}">${latex}</div>`
+			}
+
 			default: {
 				// For any unknown block types, try to render their content
 				if (node.content) {
@@ -400,6 +491,12 @@ function renderTiptapContent(doc: Record<string, unknown>): string {
 								}
 								case 'highlight':
 									text = `<mark>${text}</mark>`
+									break
+								case 'subscript':
+									text = `<sub>${text}</sub>`
+									break
+								case 'superscript':
+									text = `<sup>${text}</sup>`
 									break
 							}
 						})
@@ -476,6 +573,12 @@ export const renderInlineExcerpt = (content: unknown): InlineExcerpt => {
 				}
 				case 'highlight':
 					out = `<mark>${out}</mark>`
+					break
+				case 'subscript':
+					out = `<sub>${out}</sub>`
+					break
+				case 'superscript':
+					out = `<sup>${out}</sup>`
 					break
 			}
 		}

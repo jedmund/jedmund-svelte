@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { BubbleMenu } from 'svelte-tiptap'
-	import { isTextSelection, type Editor } from '@tiptap/core'
-	import type { ShouldShowProps } from '$lib/components/edra/utils'
-	import ToolBarIcon from '$lib/components/edra/headless/components/ToolBarIcon.svelte'
+	import { BubbleMenu, isTextSelection, type Editor } from '$lib/components/edra/tiptap/index.js'
+	import type { ShouldShowProps } from '$lib/editor/jedmund/types'
+	import ToolBarIcon from '$lib/editor/jedmund/headless/components/ToolBarIcon.svelte'
 	import type { ComposerFeatures } from './types'
 	import { getBubbleMenuCommands, getCurrentTextStyle } from './editorConfig'
 	import Link from '@lucide/svelte/icons/link'
@@ -131,29 +130,13 @@
 	{shouldShow}
 	pluginKey="composer-bubble-menu"
 	updateDelay={100}
-	tippyOptions={{
-		theme: 'bubble-menu',
-		popperOptions: {
-			placement: 'top',
-			modifiers: [
-				{
-					name: 'preventOverflow',
-					options: {
-						boundary: 'viewport',
-						padding: 8
-					}
-				},
-				{
-					name: 'flip',
-					options: {
-						fallbackPlacements: ['bottom', 'top-start', 'top-end', 'bottom-start', 'bottom-end']
-					}
-				}
-			]
-		},
-		maxWidth: 'calc(100vw - 16px)',
-		duration: [200, 150],
-		animation: 'fade'
+	options={{
+		placement: 'top',
+		offset: 8,
+		shift: { padding: 8 },
+		flip: {
+			fallbackPlacements: ['bottom', 'top-start', 'top-end', 'bottom-start', 'bottom-end']
+		}
 	}}
 >
 	<div class="bubble-menu-content">
@@ -282,7 +265,6 @@
 </BubbleMenu>
 
 <style lang="scss">
-
 	:global(.composer-bubble-menu) {
 		z-index: 30;
 	}

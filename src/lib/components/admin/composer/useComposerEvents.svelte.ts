@@ -2,7 +2,7 @@ import type { Editor } from '@tiptap/core'
 import type { EditorView } from '@tiptap/pm/view'
 import { Selection } from '@tiptap/pm/state'
 import type { ComposerMediaHandler } from './ComposerMediaHandler.svelte'
-import { focusEditor } from '$lib/components/edra/utils'
+import { focusEditor } from '$lib/editor/jedmund/utils'
 
 export interface UseComposerEventsOptions {
 	editor: (() => Editor | undefined) | Editor | undefined
