@@ -25,6 +25,7 @@
 		"db:backup:local": "./scripts/backup-db.sh local",
 		"db:backup:remote": "./scripts/backup-db.sh remote",
 		"db:backup:sync": "./scripts/backup-db.sh sync",
+		"db:clone:local": "node --import tsx scripts/database.ts clone",
 		"db:restore": "./scripts/restore-db.sh",
 		"db:backups": "./scripts/list-backups.sh",
 		"setup:local": "./scripts/setup-local.sh",
