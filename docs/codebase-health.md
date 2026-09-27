@@ -5,7 +5,7 @@ Started September 27, 2026, against `origin/main` at `2c56f37`.
 This ledger tracks the cleanup program, not a declaration that the codebase is
 already healthy. Health-1 is [PR #105](https://github.com/jedmund/jedmund-svelte/pull/105), the
 audit/deletion change on `refactor/codebase-health`.
-Waves A–H are implemented in the working stack. Delivery and validation are recorded
+Waves A–H are implemented in the draft PR stack. Delivery and validation are recorded
 below; no wave is considered merged based on this ledger.
 
 ## Audit method and scope
@@ -265,4 +265,73 @@ sessions; both files were removed. No dynamic, framework or operational callers 
 Validation uses Node 24.16.0, pinned pnpm 10.15.1, loopback PostgreSQL database
 `jedmund_edra_test_health`, Redis database 15, synthetic credentials and fixture data.
 Live provider writes and production persistence are not part of these checks.
-Final command results and PR links are recorded when the stack checks finish.
+All eight wave commits independently pass `pnpm check`, aggregate `pnpm lint`,
+`pnpm test`, `pnpm build` and `pnpm build-storybook` in isolated checkouts. GitHub
+CI is green for each wave. Type checking ends with zero errors and six existing
+CSS warnings. Every test run has zero skips and verifies all six editor fixtures.
+
+| Wave | PR | Node tests | Remaining size allowances |
+| --- | --- | ---: | ---: |
+| A | [#106](https://github.com/jedmund/jedmund-svelte/pull/106) | 69 | 49 |
+| B | [#107](https://github.com/jedmund/jedmund-svelte/pull/107) | 79 | 45 |
+| C | [#108](https://github.com/jedmund/jedmund-svelte/pull/108) | 93 | 41 |
+| D | [#109](https://github.com/jedmund/jedmund-svelte/pull/109) | 98 | 39 |
+| E | [#110](https://github.com/jedmund/jedmund-svelte/pull/110) | 103 | 32 |
+| F | [#111](https://github.com/jedmund/jedmund-svelte/pull/111) | 109 | 31 |
+| G | [#112](https://github.com/jedmund/jedmund-svelte/pull/112) | 111 | 21 |
+| H | [#113](https://github.com/jedmund/jedmund-svelte/pull/113) | 122 | 9 |
+
+The stack starts above audit/deletion PR #105. Each PR explicitly names its parent.
+No PR is merged or deployed. After merging a parent, retarget its child to current
+main and rerun the required checks; green stacked checks do not replace that step.
+
+Final unused-file audit: `pnpm lint:unused` has zero findings. Production-only
+`pnpm audit:unused` reports only `src/lib/editor/schema-contract.ts`, the documented
+verification-only entry; its exit 1 is expected. No new broad ignore or size exclusion
+was added. `git diff --check` and explicit Markdown formatting pass.
+
+Final artifact browser checks (Chromium, desktop and 390px narrow viewport) pass:
+
+- Media selection across filters, cancel/reopen, metadata save/reopen, keyboard
+  removal, callback failure, single-album selection and shared upload modal reset.
+- Duplicate filenames, partial upload retention and failed-only retry; partial audit
+  deletion retains failed selections; regeneration displays partial results/errors.
+- Real synthetic album creation transitions to edit mode, preserves edits made while
+  the request is held, and persists them on the next save and reload.
+- Tag/Typeahead keyboard selection, manual syndication-link rejection/retry, inline
+  composition publishing, nested modal focus/Tab/Escape and scroll restoration.
+- Albums, photos/layout modes/arrows, Garden summary/thoughts, work, audio mute/play,
+  slideshow/lightbox, and narrow public layouts, with no uncaught page errors.
+- Diagnostic search native Enter, closed Enter inactivity, close/reopen reset,
+  restored focus, cache key/pattern actions and expanded album information.
+  Production client artifacts contain no diagnostic component, subscription owner,
+  cache/search endpoint strings or diagnostic UI labels.
+
+Browser checks wait for Svelte/editor hydration before typing and for Storybook's
+initial animation audit before canceling animations. Early harness runs exposed those
+fixture timing issues; final checks use the live hydrated controls. No browser runner
+was added to dependencies or CI. Live Cloudinary/music provider writes are mocked;
+provider transport/cache contracts are covered by Node tests. Existing browser-data,
+Sass/font and bundle-size notices remain; dependency modernization is separate.
+
+Content/schema validation uses the existing synthetic fixture corpus: structural,
+rendering, media-reference and undo checks all pass. No persisted schema or extension
+registry changed, and no private corpus data was exported.
+
+
+## Final audit follow-up
+
+Editor smoke verified live formatting and undo/redo, then exposed a below-limit
+`BasePane.svelte` issue: editor node views consume bubbling Escape events. Its
+listener now handles Escape during capture and defers to a newer nested modal;
+responsive bounds keep the insertion pane inside a narrow viewport. Parent editor
+and publishing ownership remain unchanged. The follow-up also records this final
+ledger and stack validation; all nine retained ceilings remain unchanged.
+
+The final follow-up passes type checking, aggregate lint, all 122 Node tests (zero
+skips), six editor fixtures, production build and Storybook build. Production editor
+smoke covers selected-range formatting, undo/redo, saved content, editor recreation,
+gallery cancellation and URL controls. Nested-pane smoke verifies Escape closes the
+pane while preserving its composer, defers to a later modal, and fits at 390px.
+Synthetic browser records are removed after verification; no permanent browser-test
+dependency or CI browser suite was introduced.

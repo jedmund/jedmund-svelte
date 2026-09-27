@@ -2,11 +2,11 @@
 
 Reviewed September 24, 2026. Priorities agreed September 26, 2026.
 
-The main opportunity is to finish adopting existing shared patterns and make development checks trustworthy. The first cleanup PR restores green type checking and linting. The remaining opportunities are follow-up work.
+This document preserves the original review and proposed scopes. Current dispositions, the completed A–H responsibility refactors, remaining cohesive size exceptions, PR dependencies, and validation are recorded in the [codebase health ledger](codebase-health.md). Database migration repair and dependency modernization remain separate work.
 
 ## First PR: green type checking and linting (implemented)
 
-The review found 191 Svelte check errors and 32 warnings, plus 89 ESLint errors and six warnings, using the installed dependencies. The existing [type-check gate](../scripts/check-edra-types.ts) permits a baseline of 86 historical errors.
+The review found 191 Svelte check errors and 32 warnings, plus 89 ESLint errors and six warnings, using the installed dependencies. At review time, the former type-check gate permitted a baseline of 86 historical errors; that gate has since been retired.
 
 Proposed scope:
 
