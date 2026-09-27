@@ -15,7 +15,7 @@ interface GardenItemUpdateBody {
 	imageUrl?: string
 	url?: string
 	sourceId?: string
-	metadata?: Record<string, unknown> | null | null
+	metadata?: Record<string, unknown> | null
 	summary?: string | null
 	date?: string | null
 	note?: unknown

@@ -59,6 +59,14 @@ Optional environment variables:
 - `npm run lint` - Check formatting and linting
 - `npm run format` - Auto-format code with prettier
 
+## Validation
+
+Use the pinned pnpm version and run `pnpm check`, `pnpm lint`, `pnpm test`,
+`pnpm build`, and `pnpm build-storybook` before merging. `pnpm lint:eslint` and
+`pnpm lint:format` run independently; `pnpm lint` reports both even if one fails.
+See [the validation guide](docs/validation.md) for environment requirements,
+vendored-source policy, and the remaining non-failing warnings.
+
 ## Database Management
 
 ### Quick Start

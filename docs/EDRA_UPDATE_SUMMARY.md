@@ -36,8 +36,9 @@ production clone, across `Post.content`, `Project.caseStudyContent`,
 - Synthetic renderer snapshots cover nodes absent from production. Database
   integration tests cover dump/restore, existing-target rejection, corrupt gzip,
   failed dumps, transactional SQL failure and credential redaction.
-- `pnpm check:edra` permits only the 86 recorded pre-existing diagnostics from
-  `1113f9b7ef703978244cdf0583ed79752c49eeaf`; new errors and editor-owned errors fail.
+- The migration originally permitted 86 recorded pre-existing type diagnostics.
+  The type/lint cleanup removes that allowance: `pnpm check:edra` now aliases
+  the full `pnpm check`, and CI requires zero errors. See [Validation](./validation.md).
 - Production build passes with a valid local `REDIS_URL`.
 
 Browser verification is intentionally excluded by request. Pointer interaction,
