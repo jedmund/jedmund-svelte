@@ -45,7 +45,8 @@ export default [
 		}
 	},
 	{
-		ignores: ['build/', '.svelte-kit/', 'dist/']
+		// Edra is a pinned upstream snapshot; application-owned editor code stays linted.
+		ignores: ['.pnpm-store/', 'build/', '.svelte-kit/', 'dist/', 'storybook-static/', 'artifacts/', 'src/lib/components/edra/']
 	},
 	...storybook.configs['flat/recommended']
 ]
