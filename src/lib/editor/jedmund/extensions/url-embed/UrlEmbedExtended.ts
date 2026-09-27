@@ -1,9 +1,10 @@
+import type { NodeViewProps } from '@tiptap/core'
 import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
 import type { Component } from 'svelte'
 import { UrlEmbed } from './UrlEmbed.js'
 
 export const UrlEmbedExtended = (
-	component: Component<any>,
+	component: Component<NodeViewProps>,
 	onShowDropdown?: (pos: number, url: string) => void
 ) =>
 	UrlEmbed.configure({ onShowDropdown }).extend({

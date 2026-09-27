@@ -195,7 +195,6 @@
 </form>
 
 <style lang="scss">
-
 	.projects-list {
 		display: flex;
 		flex-direction: column;

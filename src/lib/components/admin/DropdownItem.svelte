@@ -47,7 +47,6 @@
 </button>
 
 <style lang="scss">
-
 	.dropdown-item {
 		width: 100%;
 		padding: $unit-2x $unit-3x;

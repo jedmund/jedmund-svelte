@@ -3,7 +3,7 @@ import Image, { type ImageOptions } from '@tiptap/extension-image'
 import type { Component } from 'svelte'
 import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
 
-export const ImageExtended = (component: Component<any>): Node<ImageOptions, unknown> => {
+export const ImageExtended = (component: Component<NodeViewProps>): Node<ImageOptions, unknown> => {
 	return Image.extend({
 		addAttributes() {
 			return {

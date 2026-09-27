@@ -29,7 +29,9 @@ declare module '@tiptap/core' {
 	}
 }
 
-export const ImagePlaceholder = (component: Component<any>): Node<ImagePlaceholderOptions> =>
+export const ImagePlaceholder = (
+	component: Component<NodeViewProps>
+): Node<ImagePlaceholderOptions> =>
 	Node.create<ImagePlaceholderOptions>({
 		name: 'image-placeholder',
 		addOptions() {

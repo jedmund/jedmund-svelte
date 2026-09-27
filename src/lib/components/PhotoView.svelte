@@ -22,7 +22,6 @@
 </div>
 
 <style lang="scss">
-
 	.photo-view {
 		display: flex;
 		justify-content: center;

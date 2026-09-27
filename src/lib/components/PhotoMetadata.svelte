@@ -147,7 +147,6 @@
 </div>
 
 <style lang="scss">
-
 	.photo-metadata {
 		background: $gray-100;
 		border: 1px solid $gray-90;

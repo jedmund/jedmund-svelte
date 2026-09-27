@@ -277,7 +277,6 @@
 </div>
 
 <style lang="scss">
-
 	.tag-input-wrapper {
 		display: block;
 		width: 100%;

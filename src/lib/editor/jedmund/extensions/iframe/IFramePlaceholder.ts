@@ -17,7 +17,7 @@ declare module '@tiptap/core' {
 	}
 }
 
-export const IFramePlaceholder = (content: Component<any>) =>
+export const IFramePlaceholder = (content: Component<NodeViewProps>) =>
 	Node.create<IFramePlaceholderOptions>({
 		name: 'iframe-placeholder',
 		addOptions() {

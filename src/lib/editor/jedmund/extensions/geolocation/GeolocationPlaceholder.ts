@@ -18,7 +18,7 @@ declare module '@tiptap/core' {
 }
 
 export const GeolocationPlaceholder = (
-	component: Component<any>
+	component: Component<NodeViewProps>
 ): Node<GeolocationPlaceholderOptions> =>
 	Node.create<GeolocationPlaceholderOptions>({
 		name: 'geolocation-placeholder',

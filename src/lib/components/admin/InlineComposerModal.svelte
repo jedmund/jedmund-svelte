@@ -625,7 +625,6 @@
 {/if}
 
 <style lang="scss">
-
 	.composer {
 		padding: 0;
 		max-width: 600px;

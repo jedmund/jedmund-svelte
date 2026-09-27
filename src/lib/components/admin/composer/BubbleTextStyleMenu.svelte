@@ -99,7 +99,6 @@
 {/if}
 
 <style lang="scss">
-
 	.bubble-text-style-menu {
 		position: absolute;
 		top: 100%;

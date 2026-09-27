@@ -139,7 +139,6 @@
 {/if}
 
 <style lang="scss">
-
 	.bubble-color-picker {
 		position: absolute;
 		top: 100%;

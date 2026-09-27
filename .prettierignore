@@ -6,3 +6,15 @@ yarn.lock
 # Docs and markdown
 *.md
 docs/
+
+# Pinned upstream source (see its UPSTREAM.md); still type-checked and tested.
+src/lib/components/edra/
+
+# Generated output
+.svelte-kit/
+build/
+dist/
+storybook-static/
+artifacts/
+
+.pnpm-store/

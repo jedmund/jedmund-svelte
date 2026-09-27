@@ -52,6 +52,16 @@ jobs:
           sudo apt-get install -y postgresql-client-16
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - run: pnpm install --frozen-lockfile
+        id: dependencies
+      - name: Type checking
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm check
+      - name: ESLint
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm lint:eslint
+      - name: Formatting
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm lint:format
       # The historical migrations assume an existing schema; synthetic CI starts empty.
       - run: pnpm exec prisma db push --skip-generate
       - run: pnpm exec tsx scripts/seed-edra-ci.ts
@@ -60,5 +70,5 @@ jobs:
         run: |
           pnpm edra:corpus --output artifacts/edra-corpus/ci
           pnpm exec tsx scripts/verify-edra-schema.ts --corpus artifacts/edra-corpus/ci/documents.json --persist
-      - run: pnpm check:edra
       - run: pnpm build
+      - run: pnpm build-storybook

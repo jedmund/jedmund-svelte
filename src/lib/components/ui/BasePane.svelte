@@ -126,7 +126,6 @@
 {/if}
 
 <style lang="scss">
-
 	.base-pane {
 		position: fixed;
 		background: $white;

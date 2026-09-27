@@ -3,7 +3,7 @@ import type { Component } from 'svelte'
 import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
 import IFrame from './IFrame.js'
 
-export const IFrameExtended = (content: Component<any>) =>
+export const IFrameExtended = (content: Component<NodeViewProps>) =>
 	IFrame.extend({
 		addAttributes() {
 			return {

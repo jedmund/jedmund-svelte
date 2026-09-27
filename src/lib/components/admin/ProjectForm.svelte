@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte'
 	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import type { BeforeNavigate } from '@sveltejs/kit'
 	import { api } from '$lib/admin/api'
@@ -21,16 +22,19 @@
 
 	let { project: initialProject = null, mode: initialMode }: Props = $props()
 
+	// Capture the starting record once; later saves must not reset unsaved fields.
+	const seed = untrack(() => ({ project: initialProject, mode: initialMode }))
+
 	// Local state so we can transition create → edit in place after first save.
-	let project = $state(initialProject)
-	let mode = $state<'create' | 'edit'>(initialMode)
+	let project = $state(seed.project)
+	let mode = $state<'create' | 'edit'>(seed.mode)
 
 	// Form store - centralized state management
-	const formStore = createProjectFormStore(project)
+	const formStore = createProjectFormStore(seed.project)
 
 	// UI state
-	let isLoading = $state(mode === 'edit')
-	let hasLoaded = $state(mode === 'create')
+	let isLoading = $state(seed.mode === 'edit')
+	let hasLoaded = $state(seed.mode === 'create')
 	let isSaving = $state(false)
 	let activeTab = $state('metadata')
 	let showUnsavedChangesModal = $state(false)

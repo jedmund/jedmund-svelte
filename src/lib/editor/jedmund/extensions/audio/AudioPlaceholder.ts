@@ -29,7 +29,9 @@ declare module '@tiptap/core' {
 	}
 }
 
-export const AudioPlaceholder = (component: Component<any>): Node<AudioPlaceholderOptions> =>
+export const AudioPlaceholder = (
+	component: Component<NodeViewProps>
+): Node<AudioPlaceholderOptions> =>
 	Node.create<AudioPlaceholderOptions>({
 		name: 'audio-placeholder',
 		addOptions() {

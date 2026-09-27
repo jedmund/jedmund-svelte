@@ -217,7 +217,7 @@
 
 <AdminPage>
 	{#snippet header()}
-	<header>
+		<header>
 			<div class="header-left">
 				<button class="btn-icon" onclick={() => goto('/admin/media')}>
 					<ChevronLeft />

@@ -85,9 +85,8 @@
 	)
 
 	const photoJsonLdScript = $derived(
-		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
 		photoJsonLd
-			? `<script type="application/ld+json">${JSON.stringify(photoJsonLd)}<\/script>`
+			? `<script type="application/ld+json">${JSON.stringify(photoJsonLd)}\u003c/script>`
 			: null
 	)
 

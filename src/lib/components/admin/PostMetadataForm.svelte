@@ -57,6 +57,7 @@
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			isPhotography: false,
+			isLinkCardImage: false,
 			exifData: null,
 			photoCaption: null,
 			photoTitle: null,
@@ -70,7 +71,7 @@
 			videoCodec: null,
 			audioCodec: null,
 			bitrate: null
-		} as Media
+		}
 	}
 
 	// Initialize featuredImageMedia from URL

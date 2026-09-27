@@ -10,7 +10,6 @@ import {
 	databaseExists,
 	identifier,
 	loadEnvironment,
-	pg,
 	redact,
 	requireLocal,
 	restore,

@@ -8,7 +8,7 @@ import {
 import { formatBytes } from '$lib/utils/format'
 import { isCloudinaryConfigured } from '$lib/server/cloudinary'
 
-export const GET: RequestHandler = async (event) => {
+export const GET: RequestHandler = async () => {
 	try {
 		if (!(await isCloudinaryConfigured())) {
 			return json({ error: 'Cloudinary is not configured' }, { status: 503 })

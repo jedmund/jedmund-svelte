@@ -187,7 +187,6 @@
 </div>
 
 <style lang="scss">
-
 	.metadata-popover {
 		background: white;
 		border: 1px solid $gray-80;

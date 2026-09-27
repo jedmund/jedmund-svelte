@@ -10,9 +10,9 @@
 		"start": "node build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:edra": "node --import tsx scripts/check-edra-types.ts",
+		"check:edra": "pnpm check",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --check . && eslint .",
+		"lint": "node --import tsx scripts/lint.ts",
 		"format": "prettier --write .",
 		"test": "svelte-kit sync && node --import tsx --test tests/*.test.ts && node --import tsx scripts/verify-edra-schema.ts",
 		"edra:corpus": "node --import tsx scripts/edra-corpus.ts",
@@ -31,7 +31,9 @@
 		"db:backups": "./scripts/list-backups.sh",
 		"setup:local": "./scripts/setup-local.sh",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"lint:eslint": "eslint .",
+		"lint:format": "prettier --check ."
 	},
 	"devDependencies": {
 		"@musicorum/lastfm": "github:jedmund/lastfm",

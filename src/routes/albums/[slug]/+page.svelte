@@ -142,9 +142,8 @@
 	const galleryJsonLd = $derived(album ? generateAlbumJsonLd(album, pageUrl) : null)
 
 	const galleryJsonLdScript = $derived(
-		// eslint-disable-next-line no-useless-escape -- Escape required for Svelte parser
 		galleryJsonLd
-			? `<script type="application/ld+json">${JSON.stringify(galleryJsonLd)}<\/script>`
+			? `<script type="application/ld+json">${JSON.stringify(galleryJsonLd)}\u003c/script>`
 			: null
 	)
 </script>

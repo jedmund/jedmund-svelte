@@ -112,7 +112,7 @@ export default {
 }
 
 // Template function to wrap Album in a container
-const Template = (args) => ({
+const Template = (/** @type {import('svelte').ComponentProps<typeof Album>} */ args) => ({
 	Component: Album,
 	props: args
 })
@@ -123,7 +123,7 @@ export const Default = {
 	},
 	render: Template,
 	decorators: [
-		(story) => ({
+		(/** @type {Parameters<import('@storybook/sveltekit').Decorator>[0]} */ story) => ({
 			Component: story,
 			target: document.createElement('div'),
 			props: {

@@ -55,7 +55,6 @@
 </BasePane>
 
 <style lang="scss">
-
 	.pane-header {
 		display: flex;
 		align-items: center;

@@ -1,4 +1,13 @@
 <script lang="ts" module>
+	import type { Component, ComponentProps } from 'svelte'
+	import TagInput from './TagInput.svelte'
+
+	type MetadataTag = NonNullable<ComponentProps<typeof TagInput>['tags']>[number]
+	type CustomMetadataComponent = Component<
+		{ data: Record<string, unknown> },
+		Record<string, never>,
+		'data'
+	>
 	export interface MetadataField {
 		type:
 			| 'input'
@@ -15,7 +24,7 @@
 		placeholder?: string
 		rows?: number
 		helpText?: string
-		component?: object // For custom components
+		component?: CustomMetadataComponent
 		props?: Record<string, unknown> // Additional props for custom components
 	}
 
@@ -35,7 +44,6 @@
 	import Input from './Input.svelte'
 	import Textarea from './Textarea.svelte'
 	import Button from './Button.svelte'
-	import TagInput from './TagInput.svelte'
 
 	type Props = {
 		config: MetadataConfig
@@ -118,6 +126,54 @@
 		popoverElement.style.zIndex = '1200'
 	}
 
+	// Typed accessors keep two-way bindings without treating arbitrary metadata as input values.
+	function fieldBinding<Value>(key: string, read: () => Value) {
+		return {
+			get value() {
+				return read()
+			},
+			set value(value: Value) {
+				data[key] = value
+			}
+		}
+	}
+
+	function inputValue(key: string): string | number | string[] {
+		const value = data[key]
+		if (typeof value === 'string' || typeof value === 'number') return value
+		if (Array.isArray(value) && value.every((entry) => typeof entry === 'string')) return value
+		return ''
+	}
+
+	const emptyTags: MetadataTag[] = []
+
+	function isMetadataTag(tag: unknown): tag is MetadataTag {
+		return (
+			tag !== null &&
+			typeof tag === 'object' &&
+			'id' in tag &&
+			typeof tag.id === 'number' &&
+			'name' in tag &&
+			typeof tag.name === 'string' &&
+			'displayName' in tag &&
+			typeof tag.displayName === 'string' &&
+			'slug' in tag &&
+			typeof tag.slug === 'string'
+		)
+	}
+
+	function tagValues(key: string): MetadataTag[] {
+		const value = data[key]
+		return Array.isArray(value) && value.every(isMetadataTag) ? value : emptyTags
+	}
+
+	function formatTimestamp(value: unknown): string {
+		if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number')
+			return 'Never'
+		const date = new Date(value)
+		return Number.isNaN(date.getTime()) ? 'Never' : date.toLocaleString()
+	}
+
 	function handleFieldUpdate(key: string, value: unknown) {
 		data[key] = value
 		onUpdate(key, value)
@@ -178,38 +234,42 @@
 
 		{#each config.fields as field}
 			{#if field.type === 'input'}
+				{@const binding = fieldBinding(field.key, () => inputValue(field.key))}
 				<Input
 					label={field.label}
-					bind:value={data[field.key]}
+					bind:value={binding.value}
+					onchange={() => handleFieldUpdate(field.key, data[field.key])}
 					placeholder={field.placeholder}
 					helpText={field.helpText}
-					onchange={() => handleFieldUpdate(field.key, data[field.key])}
 				/>
 			{:else if field.type === 'textarea'}
+				{@const binding = fieldBinding(field.key, () => inputValue(field.key))}
 				<Textarea
 					label={field.label}
-					bind:value={data[field.key]}
+					bind:value={binding.value}
+					onchange={() => handleFieldUpdate(field.key, data[field.key])}
 					rows={field.rows || 3}
 					placeholder={field.placeholder}
 					helpText={field.helpText}
-					onchange={() => handleFieldUpdate(field.key, data[field.key])}
 				/>
 			{:else if field.type === 'date'}
+				{@const binding = fieldBinding(field.key, () => inputValue(field.key))}
 				<Input
 					type="date"
 					label={field.label}
-					bind:value={data[field.key]}
-					helpText={field.helpText}
+					bind:value={binding.value}
 					onchange={() => handleFieldUpdate(field.key, data[field.key])}
+					helpText={field.helpText}
 				/>
 			{:else if field.type === 'toggle'}
+				{@const binding = fieldBinding(field.key, () => data[field.key] === true)}
 				<div class="toggle-wrapper">
 					<label class="toggle-label">
 						<input
 							type="checkbox"
-							bind:checked={data[field.key]}
-							class="toggle-input"
+							bind:checked={binding.value}
 							onchange={() => handleFieldUpdate(field.key, data[field.key])}
+							class="toggle-input"
 						/>
 						<span class="toggle-slider"></span>
 						<div class="toggle-content">
@@ -221,20 +281,21 @@
 					</label>
 				</div>
 			{:else if field.type === 'tags'}
+				{@const binding = fieldBinding(field.key, () => tagValues(field.key))}
 				<div class="tags-section">
 					<span class="field-label">{field.label}</span>
 					<TagInput
-						bind:tags={data[field.key]}
+						bind:tags={binding.value}
 						placeholder={field.placeholder || 'Add tags...'}
 						maxTags={10}
 					/>
 				</div>
 			{:else if field.type === 'metadata'}
 				<div class="metadata">
-					<p>Created: {new Date(data.createdAt).toLocaleString()}</p>
-					<p>Updated: {new Date(data.updatedAt).toLocaleString()}</p>
+					<p>Created: {formatTimestamp(data.createdAt)}</p>
+					<p>Updated: {formatTimestamp(data.updatedAt)}</p>
 					{#if data.publishedAt}
-						<p>Published: {new Date(data.publishedAt).toLocaleString()}</p>
+						<p>Published: {formatTimestamp(data.publishedAt)}</p>
 					{/if}
 					{#if data.heartCount != null}
 						<p>Hearts: {data.heartCount}</p>
@@ -269,7 +330,6 @@
 </div>
 
 <style lang="scss">
-
 	.metadata-popover {
 		background: white;
 		border: 1px solid $gray-80;
@@ -326,7 +386,6 @@
 		flex-direction: column;
 		gap: $unit;
 	}
-
 
 	.metadata {
 		font-size: 0.75rem;

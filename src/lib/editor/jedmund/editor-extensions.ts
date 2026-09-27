@@ -1,3 +1,4 @@
+import type { NodeViewProps } from '@tiptap/core'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { all, createLowlight } from 'lowlight'
 import type { Extensions, EditorOptions, Content } from '@tiptap/core'
@@ -45,7 +46,7 @@ const lowlight = createLowlight(all)
 export interface EditorExtensionOptions {
 	showSlashCommands?: boolean
 	onShowUrlConvertDropdown?: (pos: number, url: string) => void
-	imagePlaceholderComponent?: Component<any>
+	imagePlaceholderComponent?: Component<NodeViewProps>
 }
 
 export function getEditorExtensions(options: EditorExtensionOptions = {}): Extensions {

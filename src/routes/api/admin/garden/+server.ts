@@ -1,3 +1,4 @@
+import { nullableJsonInput } from '$lib/server/json-input'
 import type { RequestHandler } from './$types'
 import { prisma, createSlug, ensureUniqueCategorySlug } from '$lib/server/database'
 import { jsonResponse, errorResponse, parseRequestBody } from '$lib/server/api-utils'
@@ -13,7 +14,7 @@ interface GardenItemCreateBody {
 	imageUrl?: string
 	url?: string
 	sourceId?: string
-	metadata?: Record<string, unknown>
+	metadata?: Record<string, unknown> | null
 	summary?: string
 	date?: string
 	note?: unknown
@@ -78,10 +79,10 @@ export const POST: RequestHandler = async (event) => {
 				sourceImageUrl,
 				url: body.url || null,
 				sourceId: body.sourceId || null,
-				metadata: body.metadata !== undefined ? (body.metadata as Record<string, unknown>) : null,
+				metadata: nullableJsonInput(body.metadata),
 				summary: body.summary || null,
 				date: body.date ? new Date(body.date) : null,
-				note: body.note !== undefined ? (body.note as unknown) : null,
+				note: nullableJsonInput(body.note),
 				rating: body.rating != null ? Math.min(5, Math.max(1, body.rating)) : null,
 				isCurrent: body.isCurrent ?? false,
 				isFavorite: body.isFavorite ?? false,

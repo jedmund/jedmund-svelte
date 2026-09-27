@@ -87,7 +87,6 @@
 </div>
 
 <style lang="scss">
-
 	.dropdown-menu-portal {
 		font-family: inherit;
 	}

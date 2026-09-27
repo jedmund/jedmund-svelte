@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte'
 	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import type { BeforeNavigate } from '@sveltejs/kit'
 	import { api } from '$lib/admin/api'
@@ -34,35 +35,40 @@
 
 	let { item: initialItem = null, mode: initialMode }: Props = $props()
 
+	// Capture the starting record once; later saves must not reset unsaved fields.
+	const seed = untrack(() => ({ item: initialItem, mode: initialMode }))
+
 	// Local state so we can transition create → edit in place after first save.
-	let item = $state(initialItem)
-	let mode = $state<'create' | 'edit'>(initialMode)
+	let item = $state(seed.item)
+	let mode = $state<'create' | 'edit'>(seed.mode)
 
 	// Form state
-	let category = $state<GardenCategory>((item?.category as GardenCategory) ?? 'books')
-	let title = $state(item?.title ?? '')
-	let slug = $state(item?.slug ?? '')
-	let creator = $state(item?.creator ?? '')
-	let imageUrl = $state(item?.imageUrl ?? '')
-	let url = $state(item?.url ?? '')
-	let sourceId = $state(item?.sourceId ?? '')
+	let category = $state<GardenCategory>((seed.item?.category as GardenCategory) ?? 'books')
+	let title = $state(seed.item?.title ?? '')
+	let slug = $state(seed.item?.slug ?? '')
+	let creator = $state(seed.item?.creator ?? '')
+	let imageUrl = $state(seed.item?.imageUrl ?? '')
+	let url = $state(seed.item?.url ?? '')
+	let sourceId = $state(seed.item?.sourceId ?? '')
 	let metadata = $state<Record<string, unknown> | null>(
-		(item?.metadata as Record<string, unknown>) ?? null
+		(seed.item?.metadata as Record<string, unknown>) ?? null
 	)
-	let summary = $state(item?.summary ?? '')
-	let date = $state(item?.date ? new Date(item.date).toISOString().slice(0, 10) : '')
-	let rating = $state<number | null>(item?.rating ?? null)
-	let isCurrent = $state(item?.isCurrent ?? false)
-	let isFavorite = $state(item?.isFavorite ?? false)
-	let showInUniverse = $state(item?.showInUniverse ?? false)
-	let status = $state<'draft' | 'published'>((item?.status as 'draft' | 'published') ?? 'draft')
+	let summary = $state(seed.item?.summary ?? '')
+	let date = $state(seed.item?.date ? new Date(seed.item.date).toISOString().slice(0, 10) : '')
+	let rating = $state<number | null>(seed.item?.rating ?? null)
+	let isCurrent = $state(seed.item?.isCurrent ?? false)
+	let isFavorite = $state(seed.item?.isFavorite ?? false)
+	let showInUniverse = $state(seed.item?.showInUniverse ?? false)
+	let status = $state<'draft' | 'published'>(
+		(seed.item?.status as 'draft' | 'published') ?? 'draft'
+	)
 	let note = $state<JSONContent>(
-		(item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
+		(seed.item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
 	)
 
 	// Selection state: 'empty' = show typeahead, 'selected' = show card, 'changing' = typeahead with pre-filled title
 	let selectionState = $state<'empty' | 'selected' | 'changing'>(
-		mode === 'edit' && item?.title ? 'selected' : 'empty'
+		seed.mode === 'edit' && seed.item?.title ? 'selected' : 'empty'
 	)
 
 	// Year for display in the selection card (not stored separately, derived from metadata or item)
@@ -77,7 +83,7 @@
 	let showUnsavedChangesModal = $state(false)
 	let showDeleteConfirmation = $state(false)
 	let pendingNavigation = $state<BeforeNavigate | null>(null)
-	let autoSlug = $state(mode === 'create')
+	let autoSlug = $state(seed.mode === 'create')
 	let allowNavigation = $state(false)
 
 	const viewUrl = $derived(

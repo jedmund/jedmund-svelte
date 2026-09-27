@@ -192,7 +192,6 @@
 </div>
 
 <style lang="scss">
-
 	// Wrapper styles
 	.input-wrapper {
 		display: inline-block;

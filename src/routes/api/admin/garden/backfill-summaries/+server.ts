@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
-import { jsonResponse, errorResponse } from '$lib/server/api-utils'
+import { jsonResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import redis from '../../../redis-client'
 

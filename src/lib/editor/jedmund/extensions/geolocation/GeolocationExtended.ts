@@ -6,7 +6,9 @@ export interface GeolocationExtendedOptions {
 	HTMLAttributes: Record<string, unknown>
 }
 
-export const GeolocationExtended = (component: Component<any>): Node<GeolocationExtendedOptions> =>
+export const GeolocationExtended = (
+	component: Component<NodeViewProps>
+): Node<GeolocationExtendedOptions> =>
 	Node.create<GeolocationExtendedOptions>({
 		name: 'geolocation',
 		addOptions() {

@@ -1,3 +1,4 @@
+import { nullableJsonInput } from '$lib/server/json-input'
 import type { RequestHandler } from './$types'
 import { prisma, createSlug, ensureUniqueCategorySlug } from '$lib/server/database'
 import { jsonResponse, errorResponse, parseRequestBody } from '$lib/server/api-utils'
@@ -126,13 +127,10 @@ export const PUT: RequestHandler = async (event) => {
 				sourceImageUrl,
 				url: body.url !== undefined ? body.url || null : existing.url,
 				sourceId: body.sourceId !== undefined ? body.sourceId || null : existing.sourceId,
-				metadata:
-					body.metadata !== undefined
-						? (body.metadata as Record<string, unknown>)
-						: existing.metadata,
+				metadata: nullableJsonInput(body.metadata),
 				summary: body.summary !== undefined ? body.summary || null : existing.summary,
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
-				note: body.note !== undefined ? (body.note as unknown) : existing.note,
+				note: nullableJsonInput(body.note),
 				rating:
 					body.rating !== undefined
 						? body.rating != null

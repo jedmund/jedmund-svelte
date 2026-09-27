@@ -411,7 +411,6 @@
 />
 
 <style lang="scss">
-
 	.tags-list {
 		display: flex;
 		flex-direction: column;

@@ -14,7 +14,6 @@
 </div>
 
 <style lang="scss">
-
 	.dropdown-menu {
 		position: absolute;
 		top: calc(100% + $unit-half);

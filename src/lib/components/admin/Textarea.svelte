@@ -119,7 +119,6 @@
 </div>
 
 <style lang="scss">
-
 	// Wrapper styles
 	.textarea-wrapper {
 		display: inline-block;

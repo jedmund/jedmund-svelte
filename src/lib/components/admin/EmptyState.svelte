@@ -27,7 +27,6 @@
 </div>
 
 <style lang="scss">
-
 	.empty-state {
 		text-align: center;
 		padding: $unit-8x $unit-4x;
