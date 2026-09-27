@@ -8,14 +8,20 @@
 			"content": [
 				{
 					"type": "orderedList",
-					"attrs": { "start": 7, "type": "A", "tight": true },
+					"attrs": {
+						"start": 7,
+						"type": "A",
+						"tight": true
+					},
 					"content": [
 						{
 							"type": "listItem",
 							"content": [
 								{
 									"type": "paragraph",
-									"attrs": { "class": "legacy-paragraph" },
+									"attrs": {
+										"class": "legacy-paragraph"
+									},
 									"content": [
 										{
 											"type": "text",
@@ -23,7 +29,10 @@
 											"marks": [
 												{
 													"type": "link",
-													"attrs": { "href": "https://example.com", "class": "legacy-link" }
+													"attrs": {
+														"href": "https://example.com",
+														"class": "legacy-link"
+													}
 												}
 											]
 										}
@@ -46,12 +55,68 @@
 				{
 					"type": "paragraph",
 					"content": [
-						{ "type": "text", "text": "Before " },
-						{ "type": "inlineMath", "attrs": { "latex": "x^2" } },
-						{ "type": "text", "text": " after" }
+						{
+							"type": "text",
+							"text": "Before "
+						},
+						{
+							"type": "inlineMath",
+							"attrs": {
+								"latex": "x^2"
+							}
+						},
+						{
+							"type": "text",
+							"text": " after"
+						}
 					]
 				},
-				{ "type": "blockMath", "attrs": { "latex": "y = x^2" } }
+				{
+					"type": "blockMath",
+					"attrs": {
+						"latex": "y = x^2"
+					}
+				}
+			]
+		}
+	},
+	{
+		"source": "fixture",
+		"id": "legacy-formatting",
+		"field": "content",
+		"content": {
+			"type": "doc",
+			"content": [
+				{
+					"type": "paragraph",
+					"attrs": {
+						"textAlign": "right"
+					},
+					"content": [
+						{
+							"type": "text",
+							"text": "Preserved formatting",
+							"marks": [
+								{
+									"type": "textStyle",
+									"attrs": {
+										"color": "#ff0000",
+										"fontSize": "24px"
+									}
+								},
+								{
+									"type": "highlight",
+									"attrs": {
+										"color": "#00ff00"
+									}
+								},
+								{
+									"type": "underline"
+								}
+							]
+						}
+					]
+				}
 			]
 		}
 	}

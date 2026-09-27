@@ -72,8 +72,8 @@ export class ComposerMediaHandler {
 					type: 'image',
 					attrs: {
 						src: media.url,
-						alt: media.filename || '',
-						title: media.description || '',
+						alt: media.description || '',
+						title: '',
 						width: displayWidth,
 						height: media.height,
 						align: 'center',
@@ -119,7 +119,7 @@ export class ComposerMediaHandler {
 				type: 'video',
 				attrs: {
 					src: media.url,
-					title: media.description || media.filename || '',
+					title: '',
 					mediaId: media.id.toString()
 				}
 			})
@@ -133,8 +133,8 @@ export class ComposerMediaHandler {
 					type: 'image',
 					attrs: {
 						src: media.url,
-						alt: media.filename || '',
-						title: media.description || '',
+						alt: media.description || '',
+						title: '',
 						width: displayWidth,
 						height: media.height,
 						align: 'center',

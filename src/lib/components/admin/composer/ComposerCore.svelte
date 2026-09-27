@@ -26,7 +26,6 @@
 	import {
 		getCurrentTextStyle,
 		getFilteredCommands,
-		getColorCommands,
 		excludedCommands,
 		getDefaultPlaceholder,
 		getDefaultMinHeight,
@@ -84,7 +83,6 @@
 
 	// Command configuration
 	const filteredCommands = getFilteredCommands(variant, features)
-	const colorCommands = getColorCommands()
 	const currentTextStyle = $derived(editor ? getCurrentTextStyle(editor) : 'Paragraph')
 
 	// Dropdown states
@@ -256,7 +254,6 @@
 			{variant}
 			{currentTextStyle}
 			{filteredCommands}
-			{colorCommands}
 			{excludedCommands}
 			showMediaLibrary={!!features.mediaLibrary}
 			onTextStyleDropdownToggle={() => {

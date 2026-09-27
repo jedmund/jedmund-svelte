@@ -81,5 +81,106 @@ test('sanitizes hostile HTML and URLs in persisted content', () => {
 			{ type: 'image', attrs: { src: 'javascript:alert(1)', alt: '" onerror="alert(1)' } }
 		]
 	})
-	assert.doesNotMatch(html, /<script|href="javascript:|src="javascript:|<img[^>]*\sonerror=/i)
+	assert.doesNotMatch(html, /<script|href="javascript:|src="javascript:|<img[^>]*\sonerror=["']/i)
+})
+
+test('renders gallery layouts, captions and album links without interpreting caption markup', () => {
+	const html = renderEdraContent(
+		{
+			type: 'doc',
+			content: [
+				{
+					type: 'gallery',
+					attrs: {
+						layout: 'masonry',
+						columns: 1,
+						images: [
+							{ id: 44, url: '/photo.jpg', alt: 'A "quoted" view', title: '<b>A caption</b>' }
+						]
+					}
+				}
+			]
+		},
+		{ albumSlug: 'example' }
+	)
+	assert.match(html, /data-layout="masonry" data-columns="1"/)
+	assert.match(html, /href="\/photos\/example\/44"/)
+	assert.match(html, /<figcaption>&lt;b&gt;A caption&lt;\/b&gt;<\/figcaption>/)
+	const legacy = renderEdraContent({
+		type: 'doc',
+		content: [{ type: 'gallery', attrs: { layout: 'carousel', columns: 5, images: [] } }]
+	})
+	assert.match(legacy, /data-layout="carousel" data-columns="5"/)
+	const invalid = renderEdraContent({
+		type: 'doc',
+		content: [
+			{ type: 'gallery', attrs: { layout: 'bad" onclick="alert(1)', columns: 2.7, images: [] } }
+		]
+	})
+	assert.match(invalid, /data-layout="grid" data-columns="2"/)
+})
+
+test('renders a constrained OSM embed and keeps the readable location link', () => {
+	const html = renderEdraContent({
+		type: 'doc',
+		content: [
+			{
+				type: 'geolocation',
+				attrs: {
+					latitude: 37.7,
+					longitude: -122.4,
+					title: 'A <place>',
+					description: 'Description',
+					zoom: 15
+				}
+			}
+		]
+	})
+	assert.match(html, /<iframe src="https:\/\/www.openstreetmap.org\/export\/embed.html\?bbox=/)
+	assert.match(html, /title="A <place>" loading="lazy"/)
+	assert.match(html, /<strong>A &lt;place&gt;<\/strong><span>Description<\/span>/)
+	assert.equal(
+		renderEdraContent({
+			type: 'doc',
+			content: [{ type: 'geolocation', attrs: { latitude: 100, longitude: 0 } }]
+		}),
+		''
+	)
+})
+
+test('renders merged table cells and supported inline marks', () => {
+	const html = renderEdraContent({
+		type: 'doc',
+		content: [
+			{
+				type: 'table',
+				content: [
+					{
+						type: 'tableRow',
+						content: [
+							{
+								type: 'tableCell',
+								attrs: { colspan: 2, rowspan: 3 },
+								content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Cell' }] }]
+							}
+						]
+					}
+				]
+			},
+			{
+				type: 'paragraph',
+				content: [
+					{
+						type: 'text',
+						text: 'Marked',
+						marks: [{ type: 'underline' }, { type: 'highlight' }, { type: 'superscript' }]
+					},
+					{ type: 'text', text: 'Sub', marks: [{ type: 'subscript' }] }
+				]
+			}
+		]
+	})
+	assert.match(html, /<td colspan="2" rowspan="3">/)
+	assert.match(html, /<sup><mark><u>Marked<\/u><\/mark><\/sup>/)
+	assert.match(html, /<sub>Sub<\/sub>/)
 })

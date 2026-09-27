@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { LocationAttributes } from '../../extensions/geolocation/GeolocationExtended.js'
 	import type { Editor } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 	import MediaIcon from '$icons/media.svg?component'
@@ -16,10 +17,22 @@
 		onClose: () => void
 		deleteNode?: () => void
 		albumId?: number
+		initialLocation?: LocationAttributes
+		onLocationSelect?: (location: LocationAttributes) => void
 		initialUrl?: string
 	}
 
-	let { editor, position, contentType, onClose, deleteNode, albumId, initialUrl }: Props = $props()
+	let {
+		editor,
+		position,
+		contentType,
+		onClose,
+		deleteNode,
+		albumId,
+		initialUrl,
+		initialLocation,
+		onLocationSelect
+	}: Props = $props()
 
 	type ContentType = 'image' | 'video' | 'audio' | 'gallery' | 'location'
 	type ActionType = 'upload' | 'embed' | 'gallery' | 'search'
@@ -40,12 +53,12 @@
 	let isOpen = $state(true)
 
 	// Location form fields
-	let locationTitle = $state('')
-	let locationDescription = $state('')
-	let locationLat = $state('')
-	let locationLng = $state('')
-	let locationMarkerColor = $state('#ef4444')
-	let locationZoom = $state(15)
+	let locationTitle = $state(initialLocation?.title ?? '')
+	let locationDescription = $state(initialLocation?.description ?? '')
+	let locationLat = $state<string | number>(initialLocation?.latitude ?? '')
+	let locationLng = $state<string | number>(initialLocation?.longitude ?? '')
+	let locationMarkerColor = $state(initialLocation?.markerColor ?? '#ef4444')
+	let locationZoom = $state(initialLocation?.zoom ?? 15)
 
 	const availableActions = $derived.by(() => {
 		switch (contentType) {
@@ -161,24 +174,14 @@
 				// For location, try to extract coordinates from Google Maps URL
 				const coords = extractCoordinatesFromUrl(embedUrl)
 				if (coords) {
-					editor
-						.chain()
-						.focus()
-						.insertContent({
-							type: 'geolocation',
-							attrs: {
-								latitude: coords.lat,
-								longitude: coords.lng,
-								title: 'Location',
-								description: ''
-							}
-						})
-						.run()
+					locationLat = coords.lat
+					locationLng = coords.lng
+					handleLocationInsert()
+					return
 				} else {
 					alert('Please enter a valid Google Maps URL')
 					return
 				}
-				break
 			}
 		}
 
@@ -233,7 +236,7 @@
 							attrs: {
 								src: media.url,
 								alt: media.description || '',
-								title: media.description || '',
+								title: '',
 								width: displayWidth,
 								height: media.height,
 								align: 'center',
@@ -265,7 +268,7 @@
 				id: m.id,
 				url: m.url,
 				alt: m.description || '',
-				title: m.description || ''
+				title: ''
 			}))
 
 			editor.chain().focus().setGallery({ images: galleryImages }).run()
@@ -297,31 +300,32 @@
 	}
 
 	function handleLocationInsert() {
-		const lat = parseFloat(locationLat)
-		const lng = parseFloat(locationLng)
-
-		if (isNaN(lat) || isNaN(lng)) {
+		const lat = Number(locationLat)
+		const lng = Number(locationLng)
+		if (
+			locationLat === '' ||
+			locationLng === '' ||
+			!Number.isFinite(lat) ||
+			!Number.isFinite(lng) ||
+			Math.abs(lat) > 90 ||
+			Math.abs(lng) > 180
+		) {
 			alert('Please enter valid coordinates')
 			return
 		}
-
-		editor
-			.chain()
-			.focus()
-			.insertContent({
-				type: 'geolocation',
-				attrs: {
-					latitude: lat,
-					longitude: lng,
-					title: locationTitle || undefined,
-					description: locationDescription || undefined,
-					markerColor: locationMarkerColor,
-					zoom: locationZoom
-				}
-			})
-			.run()
-
-		deleteNode?.()
+		const location: LocationAttributes = {
+			latitude: lat,
+			longitude: lng,
+			title: locationTitle,
+			description: locationDescription,
+			markerColor: locationMarkerColor,
+			zoom: locationZoom
+		}
+		if (onLocationSelect) onLocationSelect(location)
+		else {
+			editor.chain().focus().insertContent({ type: 'geolocation', attrs: location }).run()
+			deleteNode?.()
+		}
 		onClose()
 	}
 
@@ -352,6 +356,7 @@
 			{#each availableActions as action}
 				{@const Icon = action.icon}
 				<button
+					type="button"
 					class="action-tab"
 					class:active={selectedAction === action.type}
 					onclick={() => (selectedAction = action.type)}
@@ -366,7 +371,7 @@
 	<div class="pane-content">
 		{#if selectedAction === 'upload'}
 			<div class="upload-section">
-				<button class="upload-btn" onclick={handleUpload} disabled={isUploading}>
+				<button type="button" class="upload-btn" onclick={handleUpload} disabled={isUploading}>
 					<Upload size={48} />
 					<span>Click to upload {contentType}</span>
 					<span class="upload-hint">or drag and drop</span>
@@ -390,11 +395,13 @@
 					class="embed-input"
 					onkeydown={handleKeydown}
 				/>
-				<button class="embed-btn" onclick={handleEmbed} disabled={!embedUrl.trim()}> Embed </button>
+				<button type="button" class="embed-btn" onclick={handleEmbed} disabled={!embedUrl.trim()}>
+					Embed
+				</button>
 			</div>
 		{:else if selectedAction === 'gallery'}
 			<div class="gallery-section">
-				<button class="gallery-btn" onclick={handleGallerySelect}>
+				<button type="button" class="gallery-btn" onclick={handleGallerySelect}>
 					<Images size={48} />
 					<span>Choose from media library</span>
 				</button>
@@ -465,11 +472,12 @@
 				</div>
 
 				<button
+					type="button"
 					class="submit-btn"
 					onclick={handleLocationInsert}
-					disabled={!locationLat || !locationLng}
+					disabled={locationLat === '' || locationLng === ''}
 				>
-					Insert Location
+					{onLocationSelect ? 'Update Location' : 'Insert Location'}
 				</button>
 			</div>
 		{/if}

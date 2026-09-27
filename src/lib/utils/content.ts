@@ -235,8 +235,8 @@ function renderTiptapContent(
 
 			case 'image': {
 				const src = (node.attrs?.src || '') as string
-				const alt = (node.attrs?.alt || '') as string
-				const title = (node.attrs?.title || '') as string
+				const alt = escapeHtml(String(node.attrs?.alt || ''))
+				const title = escapeHtml(String(node.attrs?.title || ''))
 				const width = node.attrs?.width
 				const height = node.attrs?.height
 				const widthAttr = width ? ` width="${width}"` : ''
@@ -376,9 +376,13 @@ function renderTiptapContent(
 				const images = Array.isArray(node.attrs?.images)
 					? (node.attrs.images as Array<Record<string, unknown>>)
 					: []
-				const layout = escapeHtml(String(node.attrs?.layout ?? 'grid'))
+				const layout = ['grid', 'masonry', 'carousel'].includes(String(node.attrs?.layout))
+					? String(node.attrs?.layout)
+					: 'grid'
 				const columns = Number(node.attrs?.columns ?? 3)
-				const safeColumns = Number.isFinite(columns) ? Math.min(6, Math.max(1, columns)) : 3
+				const safeColumns = Number.isFinite(columns)
+					? Math.min(6, Math.max(1, Math.floor(columns)))
+					: 3
 				const items = images
 					.map((image) => {
 						const id = image.id === undefined || image.id === null ? null : String(image.id)
@@ -386,11 +390,12 @@ function renderTiptapContent(
 						const alt = escapeHtml(String(image.alt ?? ''))
 						const title = escapeHtml(String(image.title ?? ''))
 						const imageHtml = `<img src="${src}" alt="${alt}"${title ? ` title="${title}"` : ''} loading="lazy" />`
-						if (!id) return `<figure class="edra-gallery-item">${imageHtml}</figure>`
+						const caption = title ? `<figcaption>${title}</figcaption>` : ''
+						if (!id) return `<figure class="edra-gallery-item">${imageHtml}${caption}</figure>`
 						const photoUrl = options.albumSlug
 							? `/photos/${escapeHtml(options.albumSlug)}/${escapeHtml(id)}`
 							: `/photos/${escapeHtml(id)}`
-						return `<figure class="edra-gallery-item"><a href="${photoUrl}" class="photo-link">${imageHtml}</a></figure>`
+						return `<figure class="edra-gallery-item"><a href="${photoUrl}" class="photo-link">${imageHtml}</a>${caption}</figure>`
 					})
 					.join('')
 				return `<div class="edra-gallery-container" data-layout="${layout}" data-columns="${safeColumns}"><div class="edra-gallery-grid ${layout}">${items}</div></div>`
@@ -399,13 +404,27 @@ function renderTiptapContent(
 			case 'geolocation': {
 				const latitude = Number(node.attrs?.latitude)
 				const longitude = Number(node.attrs?.longitude)
-				if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return ''
+				if (
+					!Number.isFinite(latitude) ||
+					!Number.isFinite(longitude) ||
+					Math.abs(latitude) > 90 ||
+					Math.abs(longitude) > 180
+				)
+					return ''
 				const zoom = Number(node.attrs?.zoom ?? 15)
 				const safeZoom = Number.isFinite(zoom) ? Math.min(19, Math.max(1, zoom)) : 15
 				const title = escapeHtml(String(node.attrs?.title ?? 'Location'))
 				const description = escapeHtml(String(node.attrs?.description ?? ''))
 				const mapUrl = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=${safeZoom}/${latitude}/${longitude}`
-				return `<figure class="geolocation-rendered" data-latitude="${latitude}" data-longitude="${longitude}" data-zoom="${safeZoom}"><a href="${mapUrl}" target="_blank" rel="noopener noreferrer"><strong>${title}</strong>${description ? `<span>${description}</span>` : ''}</a></figure>`
+				const span = 180 / 2 ** (safeZoom - 1)
+				const bbox = [
+					Math.max(-180, longitude - span),
+					Math.max(-90, latitude - span / 2),
+					Math.min(180, longitude + span),
+					Math.min(90, latitude + span / 2)
+				].join(',')
+				const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude},${longitude}`
+				return `<figure class="geolocation-rendered" data-latitude="${latitude}" data-longitude="${longitude}" data-zoom="${safeZoom}"><iframe src="${escapeHtml(embedUrl)}" title="${title || 'Location'}" loading="lazy"></iframe><a href="${mapUrl}" target="_blank" rel="noopener noreferrer"><strong>${title}</strong>${description ? `<span>${description}</span>` : ''}</a></figure>`
 			}
 
 			case 'iframe': {

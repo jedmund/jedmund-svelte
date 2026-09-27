@@ -72,6 +72,7 @@ export const getBaseEditorExtensions = (): Extensions => [
 			return ''
 		}
 	}),
+	// Retain legacy formatting schema so opening old documents is lossless.
 	Color,
 	Subscript,
 	Superscript,
@@ -79,7 +80,9 @@ export const getBaseEditorExtensions = (): Extensions => [
 	ColorHighlighter,
 	TextStyle,
 	FontSize,
-	TextAlign.configure({ types: ['heading', 'paragraph'] }),
+	TextAlign.extend({ addKeyboardShortcuts: () => ({}) }).configure({
+		types: ['heading', 'paragraph']
+	}),
 	TaskList,
 	TaskItem.configure({ nested: true }),
 	SearchAndReplace,
