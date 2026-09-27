@@ -11,12 +11,13 @@ version is 3.28.0 throughout the dependency graph.
 - `pnpm check:edra`: compatibility alias for the full check. There is no historical error allowance.
 - `pnpm lint:eslint`: ESLint for application-owned sources, scripts, tests, and stories.
 - `pnpm lint:format`: Prettier check using the existing formatting configuration.
-- `pnpm lint`: runs both lint checks, reports both outputs, and fails if either fails.
+- `pnpm lint:structure`: production file-size limits and shrinking allowances.
+- `pnpm lint`: runs all three lint checks, reports every output, and fails if any fails.
 - `pnpm test`: unit and integration tests followed by synthetic editor schema verification.
 - `pnpm build`: production application build.
 - `pnpm build-storybook`: component documentation build.
 
-CI reports type checking, ESLint, and formatting separately, even if another quality
+CI reports type checking, ESLint, formatting, and file size separately, even if another quality
 step fails. It also runs the tests, synthetic database corpus round-trip, and both builds.
 
 ## Scope of checks
@@ -29,6 +30,31 @@ under `src/lib/editor/jedmund/` and the composer wrappers receives all checks.
 Generated build output, corpus artifacts, and the local pnpm store are excluded from
 lint/format checks. Existing Markdown and lockfile formatting exclusions remain.
 Do not add source exclusions or diagnostic baselines to hide new errors.
+
+## File-size gate
+
+Svelte production files may contain at most 300 physical lines; JavaScript,
+TypeScript (including `.svelte.ts`), CSS, and SCSS may contain at most 500. Blank
+lines and comments count. A final newline does not add an extra line.
+
+The gate inventories tracked and untracked, non-ignored files under `src/`.
+It excludes vendored Edra, `src/stories/`, `.stories.*`, `.test.*`, `.spec.*`,
+`.testSupport.*`, and the `fixtures`, `__fixtures__`, `__tests__`, and `testing`
+directories. Generated SvelteKit/build output, tooling, and database migrations
+live outside `src/`. Application-owned editor files and API routes named `test`
+remain checked. Do not place production code in excluded locations.
+
+`quality-baseline.json` records exact ceilings for existing oversized files.
+After an extraction, lower the affected ceiling to the new physical line count,
+or remove it if the file now meets its normal limit or was deleted. Do not
+regenerate the inventory to accept regressions. New or increased allowances fail.
+
+Locally, comparison defaults to `origin/main`; run `git fetch origin` first.
+For an explicit dependency branch, use
+`QUALITY_BASE_REF=origin/<branch> pnpm lint:structure`. CI compares against the
+PR base SHA or the previous push SHA, with `origin/main` for a branch's initial
+push. Missing references fail with a fetch/override hint. On initial adoption,
+allowances may only cover files already oversized at the comparison commit.
 
 ## Database and build environment
 

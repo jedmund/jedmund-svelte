@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path'
 const require = createRequire(import.meta.url)
 let failed = false
 
-// Report both checks even when the first fails. Use the installed versions on every platform.
+// Report all checks even when the first fails. Use the installed versions on every platform.
 for (const [name, entry, args] of [
 	['eslint', 'bin/eslint.js', ['.']],
 	['prettier', 'bin/prettier.cjs', ['--check', '.']]
@@ -18,4 +18,10 @@ for (const [name, entry, args] of [
 	if (result.error) console.error(result.error)
 	failed ||= result.status !== 0
 }
+console.log('\nstructure')
+const structure = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/check-structure.ts'], {
+	stdio: 'inherit'
+})
+if (structure.error) console.error(structure.error)
+failed ||= structure.status !== 0
 process.exitCode = failed ? 1 : 0

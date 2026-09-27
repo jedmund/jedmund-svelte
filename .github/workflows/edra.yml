@@ -39,6 +39,8 @@ jobs:
       GIANTBOMB_API_KEY: synthetic-ci-only
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 10.15.1
@@ -62,6 +64,15 @@ jobs:
       - name: Formatting
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm lint:format
+      - name: File size
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        env:
+          QUALITY_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$QUALITY_BASE_REF" ] || [ "$QUALITY_BASE_REF" = "0000000000000000000000000000000000000000" ]; then
+            export QUALITY_BASE_REF=origin/main
+          fi
+          pnpm lint:structure
       # The historical migrations assume an existing schema; synthetic CI starts empty.
       - run: pnpm exec prisma db push --skip-generate
       - run: pnpm exec tsx scripts/seed-edra-ci.ts

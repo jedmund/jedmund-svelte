@@ -33,7 +33,8 @@
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
 		"lint:eslint": "eslint .",
-		"lint:format": "prettier --check ."
+		"lint:format": "prettier --check .",
+		"lint:structure": "node --import tsx scripts/check-structure.ts"
 	},
 	"devDependencies": {
 		"@musicorum/lastfm": "github:jedmund/lastfm",
