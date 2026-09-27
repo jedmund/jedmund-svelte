@@ -159,52 +159,6 @@ export const commands: Record<string, EdraCommandGroup> = {
 			}
 		]
 	},
-	alignment: {
-		name: 'Alignment',
-		label: 'Alignment',
-		commands: [
-			{
-				iconName: 'TextAlignStart',
-				name: 'alignLeft',
-				label: 'Align Left',
-				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+L`],
-				action: (editor) => {
-					editor.chain().focus().setTextAlign('left').run()
-				},
-				isActive: (editor) => editor.isActive({ textAlign: 'left' })
-			},
-			{
-				iconName: 'TextAlignCenter',
-				name: 'alignCenter',
-				label: 'Align Center',
-				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+E`],
-				action: (editor) => {
-					editor.chain().focus().setTextAlign('center').run()
-				},
-				isActive: (editor) => editor.isActive({ textAlign: 'center' })
-			},
-			{
-				iconName: 'TextAlignEnd',
-				name: 'alignRight',
-				label: 'Align Right',
-				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+R`],
-				action: (editor) => {
-					editor.chain().focus().setTextAlign('right').run()
-				},
-				isActive: (editor) => editor.isActive({ textAlign: 'right' })
-			},
-			{
-				iconName: 'TextAlignJustify',
-				name: 'alignJustify',
-				label: 'Align Justify',
-				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+J`],
-				action: (editor) => {
-					editor.chain().focus().setTextAlign('justify').run()
-				},
-				isActive: (editor) => editor.isActive({ textAlign: 'justify' })
-			}
-		]
-	},
 	lists: {
 		name: 'Lists',
 		label: 'Lists',
@@ -294,30 +248,6 @@ export const commands: Record<string, EdraCommandGroup> = {
 			}
 		]
 	},
-	colors: {
-		name: 'Colors',
-		label: 'Colors and Highlights',
-		commands: [
-			{
-				iconName: 'PenLine',
-				name: 'color',
-				label: 'Color',
-				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+C`],
-				action: (editor) => {
-					editor.chain().focus().unsetColor().run()
-				}
-			},
-			{
-				iconName: 'Highlighter',
-				name: 'highlight',
-				label: 'Highlight',
-				shortCuts: [`${isMac ? 'Cmd' : 'Ctrl'}+Shift+H`],
-				action: (editor) => {
-					editor.chain().focus().toggleHighlight().run()
-				}
-			}
-		]
-	},
 	table: {
 		name: 'Table',
 		label: 'Table',
@@ -330,32 +260,6 @@ export const commands: Record<string, EdraCommandGroup> = {
 				action: (editor) => {
 					if (editor.isActive('table')) editor.chain().focus().deleteTable().run()
 					else editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: false }).run()
-				}
-			}
-		]
-	},
-	fonts: {
-		name: 'fonts',
-		label: 'Fonts',
-		commands: [
-			{
-				iconName: 'Plus',
-				name: 'font increment',
-				label: 'Increase Font Size',
-				action: (editor) => {
-					let currentFontSize = parseInt(editor.getAttributes('textStyle').fontSize ?? '16px')
-					currentFontSize++
-					editor.chain().focus().setFontSize(`${currentFontSize}px`).run()
-				}
-			},
-			{
-				iconName: 'Minus',
-				name: 'font decrement',
-				label: 'Decrease Font Size',
-				action: (editor) => {
-					let currentFontSize = parseInt(editor.getAttributes('textStyle').fontSize ?? '16px')
-					currentFontSize--
-					editor.chain().focus().setFontSize(`${currentFontSize}px`).run()
 				}
 			}
 		]

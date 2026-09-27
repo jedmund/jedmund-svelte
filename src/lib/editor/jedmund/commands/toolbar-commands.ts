@@ -1,7 +1,3 @@
-import AlignCenter from '@lucide/svelte/icons/align-center'
-import AlighJustify from '@lucide/svelte/icons/align-justify'
-import AlignLeft from '@lucide/svelte/icons/align-left'
-import AlignRight from '@lucide/svelte/icons/align-right'
 import Audio from '@lucide/svelte/icons/audio-lines'
 import Bold from '@lucide/svelte/icons/bold'
 import Code from '@lucide/svelte/icons/code'
@@ -314,72 +310,6 @@ const commands: Record<string, EdraToolBarCommands[]> = {
 			isActive: (editor) => {
 				return editor.isActive('subscript')
 			}
-		}
-	],
-	alignment: [
-		{
-			icon: AlignLeft,
-			name: 'align-left',
-			tooltip: strings.command.alignLeft,
-			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}L`,
-			onClick: (editor) => {
-				editor.chain().focus().toggleTextAlign('left').run()
-			},
-			turnInto: (editor, node, pos) => {
-				editor.chain().setNodeSelection(pos).toggleTextAlign('left').run()
-			},
-			clickable: (editor) => {
-				return editor.can().toggleTextAlign('left')
-			},
-			isActive: (editor) => editor.isActive({ textAlign: 'left' })
-		},
-		{
-			icon: AlignCenter,
-			name: 'align-center',
-			tooltip: strings.command.alignCenter,
-			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}E`,
-			onClick: (editor) => {
-				editor.chain().focus().toggleTextAlign('center').run()
-			},
-			turnInto: (editor, node, pos) => {
-				editor.chain().setNodeSelection(pos).toggleTextAlign('center').run()
-			},
-			clickable: (editor) => {
-				return editor.can().toggleTextAlign('center')
-			},
-			isActive: (editor) => editor.isActive({ textAlign: 'center' })
-		},
-		{
-			icon: AlignRight,
-			name: 'align-right',
-			tooltip: strings.command.alignRight,
-			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}R`,
-			onClick: (editor) => {
-				editor.chain().focus().toggleTextAlign('right').run()
-			},
-			turnInto: (editor, node, pos) => {
-				editor.chain().setNodeSelection(pos).toggleTextAlign('right').run()
-			},
-			clickable: (editor) => {
-				return editor.can().toggleTextAlign('right')
-			},
-			isActive: (editor) => editor.isActive({ textAlign: 'right' })
-		},
-		{
-			icon: AlighJustify,
-			name: 'align-justify',
-			tooltip: strings.command.alignJustify,
-			shortCut: `${isMac ? '⌘⇧' : 'Ctrl+Shift+'}J`,
-			onClick: (editor) => {
-				editor.chain().focus().toggleTextAlign('justify').run()
-			},
-			turnInto: (editor, node, pos) => {
-				editor.chain().setNodeSelection(pos).toggleTextAlign('justify').run()
-			},
-			clickable: (editor) => {
-				return editor.can().toggleTextAlign('justify')
-			},
-			isActive: (editor) => editor.isActive({ textAlign: 'justify' })
 		}
 	],
 	lists: [

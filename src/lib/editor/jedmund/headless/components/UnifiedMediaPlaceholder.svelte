@@ -56,7 +56,7 @@
 						attrs: {
 							src: selectedMedia.url,
 							alt: selectedMedia.description || '',
-							title: selectedMedia.description || '',
+							title: '',
 							mediaId: selectedMedia.id?.toString()
 						}
 					},
@@ -108,7 +108,7 @@
 							attrs: {
 								src: media.url,
 								alt: media.altText || media.description || '',
-								title: media.description || '',
+								title: '',
 								mediaId: media.id?.toString()
 							}
 						},

@@ -2,19 +2,16 @@
 	import { onDestroy, onMount, type Snippet } from 'svelte'
 	import { NodeViewWrapper } from '$lib/components/edra/tiptap/index.js'
 	import type { NodeViewProps } from '@tiptap/core'
-	import tippy, { type Instance } from 'tippy.js'
-	import 'tippy.js/dist/tippy.css'
+	import NodeToolbar from './NodeToolbar.svelte'
 	import strings from '../../strings.js'
 
-	import AlignCenter from '@lucide/svelte/icons/align-center'
-	import AlignLeft from '@lucide/svelte/icons/align-left'
-	import AlignRight from '@lucide/svelte/icons/align-right'
 	import CopyIcon from '@lucide/svelte/icons/copy'
 	import Fullscreen from '@lucide/svelte/icons/fullscreen'
 	import Trash from '@lucide/svelte/icons/trash'
 	import Captions from '@lucide/svelte/icons/captions'
+	import Text from '@lucide/svelte/icons/text'
 
-	import { duplicateContent } from '../../utils.js'
+	import { duplicateNode } from '../../node-actions.js'
 
 	interface MediaExtendedProps extends NodeViewProps {
 		children: Snippet<[]>
@@ -26,6 +23,7 @@
 		editor,
 		selected,
 		deleteNode,
+		getPos,
 		updateAttributes,
 		children,
 		mediaRef = $bindable()
@@ -44,64 +42,16 @@
 
 	let nodeRef = $state<HTMLElement>()
 	let groupRef = $state<HTMLElement>()
-	let toolbarRef = $state<HTMLElement>()
-	let tippyInstance: Instance | undefined
 
 	let resizing = $state(false)
 	let resizingInitialWidthPercent = $state(0)
 	let resizingInitialMouseX = $state(0)
 	let resizingPosition = $state<'left' | 'right'>('left')
 
-	let caption: string | null = $state(node.attrs.title)
-
-	function commitCaption() {
-		if (caption?.trim() === '') caption = null
-		updateAttributes({ title: caption })
-	}
-
+	let captionVisible = $state(Boolean(node.attrs.title))
+	let altVisible = $state(false)
 	$effect(() => {
-		if (!groupRef || !toolbarRef || !editor?.isEditable) {
-			tippyInstance?.destroy()
-			tippyInstance = undefined
-			return
-		}
-
-		tippyInstance = tippy(groupRef, {
-			content: toolbarRef,
-			interactive: true,
-			trigger: 'mouseenter',
-			placement: 'top-end',
-			appendTo: () => document.body,
-			arrow: false,
-			theme: 'media-toolbar',
-			delay: [100, 300],
-			offset: [0, 8],
-			interactiveBorder: 20,
-			zIndex: 200,
-			popperOptions: {
-				modifiers: [
-					{
-						name: 'preventOverflow',
-						options: { boundary: 'viewport', padding: 8 }
-					},
-					{
-						name: 'flip',
-						options: {
-							fallbackPlacements: ['bottom-end', 'top-start', 'bottom-start']
-						}
-					}
-				]
-			}
-		})
-
-		return () => {
-			tippyInstance?.destroy()
-			tippyInstance = undefined
-		}
-	})
-
-	$effect(() => {
-		if (selected && tippyInstance) tippyInstance.show()
+		if (node.attrs.title) captionVisible = true
 	})
 
 	function handleResizingPosition(e: MouseEvent, position: 'left' | 'right') {
@@ -176,7 +126,7 @@
 
 	onMount(() => {
 		// Attach id to nodeRef
-		nodeRef = document.getElementById('resizable-container-media') as HTMLDivElement
+		nodeRef = groupRef?.parentElement ?? undefined
 
 		// Mouse events
 		window.addEventListener('mousemove', resize)
@@ -195,15 +145,33 @@
 </script>
 
 <NodeViewWrapper
-	id="resizable-container-media"
 	style={`width: ${mediaWidth}`}
-	class={`edra-media-container ${selected ? 'selected' : ''} align-${node.attrs.align}`}
+	class={`edra-media-container ${selected ? 'selected' : ''} align-center`}
 >
 	<div bind:this={groupRef} class={`edra-media-group ${resizing ? 'resizing' : ''}`}>
 		{@render children()}
 
-		{#if caption !== null}
-			<input bind:value={caption} type="text" class="edra-media-caption" onblur={commitCaption} />
+		{#if captionVisible}
+			<input
+				value={node.attrs.title ?? ''}
+				type="text"
+				class="edra-media-caption"
+				aria-label="Caption"
+				placeholder="Add a caption"
+				readonly={!editor.isEditable}
+				oninput={(event) => updateAttributes({ title: event.currentTarget.value || null })}
+			/>
+		{/if}
+		{#if altVisible && node.type.name === 'image'}
+			<input
+				value={node.attrs.alt ?? ''}
+				type="text"
+				class="edra-media-caption"
+				aria-label="Alt text"
+				placeholder="Describe this image"
+				readonly={!editor.isEditable}
+				oninput={(event) => updateAttributes({ alt: event.currentTarget.value })}
+			/>
 		{/if}
 
 		{#if editor?.isEditable}
@@ -237,51 +205,43 @@
 				<div class="edra-media-resize-indicator"></div>
 			</div>
 
-			<div bind:this={toolbarRef} class="edra-media-toolbar">
+			<NodeToolbar anchor={groupRef} {selected}>
 				<button
-					class={`edra-toolbar-button ${node.attrs.align === 'left' ? 'active' : ''}`}
-					onclick={() => updateAttributes({ align: 'left' })}
-					title={strings.extension.media.alignLeft}
+					type="button"
+					class="edra-toolbar-button"
+					class:active={captionVisible}
+					aria-pressed={captionVisible}
+					onclick={() => (captionVisible = !captionVisible)}
+					title="Caption"><Captions size={16} /></button
 				>
-					<AlignLeft size={16} strokeWidth={2} />
-				</button>
+				{#if node.type.name === 'image'}
+					<button
+						type="button"
+						class="edra-toolbar-button"
+						class:active={altVisible}
+						aria-pressed={altVisible}
+						onclick={() => (altVisible = !altVisible)}
+						title="Alt text"><Text size={16} /></button
+					>
+				{/if}
+				<div class="edra-toolbar-divider"></div>
+
 				<button
-					class={`edra-toolbar-button ${node.attrs.align === 'center' ? 'active' : ''}`}
-					onclick={() => updateAttributes({ align: 'center' })}
-					title={strings.extension.media.alignCenter}
-				>
-					<AlignCenter size={16} strokeWidth={2} />
-				</button>
-				<button
-					class={`edra-toolbar-button ${node.attrs.align === 'right' ? 'active' : ''}`}
-					onclick={() => updateAttributes({ align: 'right' })}
-					title={strings.extension.media.alignRight}
-				>
-					<AlignRight size={16} strokeWidth={2} />
-				</button>
-				<button
+					type="button"
 					class="edra-toolbar-button"
 					onclick={() => {
-						if (caption === null || caption.trim() === '') caption = 'Caption'
-					}}
-					title={strings.extension.media.caption}
-				>
-					<Captions size={16} strokeWidth={2} />
-				</button>
-				<button
-					class="edra-toolbar-button"
-					onclick={() => {
-						duplicateContent(editor, node)
+						duplicateNode(editor, node, getPos)
 					}}
 					title={strings.extension.media.duplicate}
 				>
 					<CopyIcon size={16} strokeWidth={2} />
 				</button>
 				<button
+					type="button"
 					class="edra-toolbar-button"
 					onclick={() => {
 						updateAttributes({
-							width: 'fit-content'
+							width: '100%'
 						})
 					}}
 					title={strings.extension.media.fullscreen}
@@ -289,6 +249,7 @@
 					<Fullscreen size={16} strokeWidth={2} />
 				</button>
 				<button
+					type="button"
 					class="edra-toolbar-button edra-destructive"
 					onclick={() => {
 						deleteNode()
@@ -297,7 +258,7 @@
 				>
 					<Trash size={16} strokeWidth={2} />
 				</button>
-			</div>
+			</NodeToolbar>
 		{/if}
 	</div>
 </NodeViewWrapper>

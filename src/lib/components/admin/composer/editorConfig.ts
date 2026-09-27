@@ -112,11 +112,6 @@ export function getMediaCommands(features: ComposerFeatures): EdraCommand[] {
 	return mediaCommands
 }
 
-// Get color commands
-export function getColorCommands(): EdraCommand[] {
-	return commands.colors?.commands || []
-}
-
 // Get commands for bubble menu (uses toolbar commands for proper icon/tooltip support)
 export function getBubbleMenuCommands(): EdraToolBarCommands[] {
 	const textFormattingCommands = toolbarCommands['text-formatting'] || []
@@ -125,7 +120,7 @@ export function getBubbleMenuCommands(): EdraToolBarCommands[] {
 	// editor.can() checks evaluate as false at mount time and never update.
 	// The bubble menu's shouldShow already gates visibility on valid selections.
 	return textFormattingCommands
-		.filter((cmd) => ['bold', 'italic', 'strikethrough', 'link'].includes(cmd.name))
+		.filter((cmd) => ['bold', 'italic', 'underline', 'strikethrough', 'link'].includes(cmd.name))
 		.map(({ clickable: _clickable, ...rest }) => rest)
 }
 

@@ -26,8 +26,8 @@
 	--code-color: rgb(255, 68, 0);
 	--code-bg: rgba(128, 128, 128, 0.3);
 	--code-border: rgba(128, 128, 128, 0.4);
-	--table-border: rgba(128, 128, 128, 0.3);
-	--table-bg-selected: rgba(128, 128, 128, 0.1);
+	--table-border: var(--content-table-border);
+	--table-bg-selected: var(--content-table-header);
 	--table-bg-hover: rgba(128, 128, 128, 0.2);
 	--task-completed-color: rgba(128, 128, 128, 0.7);
 	--code-wrapper-bg: rgba(128, 128, 128, 0.05);
@@ -316,4 +316,21 @@ input.invalid {
 	border: 1px solid var(--edra-border-color);
 	border-radius: var(--edra-button-border-radius);
 	padding: 0.2rem 0.5rem;
+}
+
+.edra-toolbar-divider {
+	width: 1px;
+	height: 20px;
+	background: var(--edra-border-color);
+	margin: 0 4px;
+	flex-shrink: 0;
+}
+.edra-media-toolbar {
+	flex-wrap: wrap;
+}
+.edra-media-container,
+.edra-media-group,
+.edra-media-group > img,
+.edra-media-group > video {
+	border-radius: var(--corner-radius);
 }

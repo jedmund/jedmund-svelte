@@ -4,8 +4,6 @@
 	import type { EdraToolbarProps, ShouldShowProps } from '../../types.js'
 
 	import { isTextSelection } from '@tiptap/core'
-	import FontSize from '../components/toolbar/FontSize.svelte'
-	import QuickColors from '../components/toolbar/QuickColors.svelte'
 	import ToolBarIcon from '../components/ToolBarIcon.svelte'
 
 	const {
@@ -91,6 +89,4 @@
 			<ToolBarIcon {editor} {command} />
 		{/each}
 	{/each}
-	<FontSize {editor} />
-	<QuickColors {editor} />
 </BubbleMenu>

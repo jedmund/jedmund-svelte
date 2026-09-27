@@ -2,6 +2,15 @@ import { Node, mergeAttributes, type NodeViewProps } from '@tiptap/core'
 import type { Component } from 'svelte'
 import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
 
+export interface LocationAttributes {
+	latitude: number
+	longitude: number
+	title: string
+	description: string
+	markerColor: string
+	zoom: number
+}
+
 export interface GeolocationExtendedOptions {
 	HTMLAttributes: Record<string, unknown>
 }

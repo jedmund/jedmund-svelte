@@ -1,16 +1,15 @@
 <script lang="ts">
+	import Highlighter from '@lucide/svelte/icons/highlighter'
 	import type { Editor } from '@tiptap/core'
 	import ToolBarIcon from '$lib/editor/jedmund/headless/components/ToolBarIcon.svelte'
 	import type { ComposerVariant } from './types'
 	import type { FilteredCommands } from './editorConfig'
-	import type { EdraCommand } from '$lib/editor/jedmund/commands/types'
 
 	interface Props {
 		editor: Editor
 		variant: ComposerVariant
 		currentTextStyle: string
 		filteredCommands: FilteredCommands
-		colorCommands: EdraCommand[]
 		excludedCommands: string[]
 		showMediaLibrary: boolean
 		onTextStyleDropdownToggle: () => void
@@ -21,7 +20,6 @@
 		editor,
 		currentTextStyle,
 		filteredCommands,
-		colorCommands,
 		excludedCommands,
 		showMediaLibrary,
 		onTextStyleDropdownToggle,
@@ -109,41 +107,14 @@
 				<span class="separator"></span>
 			{/if}
 
-			{#if colorCommands.length > 0}
-				<ToolBarIcon
-					command={colorCommands[0]}
-					{editor}
-					style={`color: ${editor.getAttributes('textStyle').color};`}
-					onclick={() => {
-						const color = editor.getAttributes('textStyle').color
-						const hasColor = editor.isActive('textStyle', { color })
-						if (hasColor) {
-							editor.chain().focus().unsetColor().run()
-						} else {
-							const color = prompt('Enter the color of the text:')
-							if (color !== null) {
-								editor.chain().focus().setColor(color).run()
-							}
-						}
-					}}
-				/>
-				<ToolBarIcon
-					command={colorCommands[1]}
-					{editor}
-					style={`background-color: ${editor.getAttributes('highlight').color};`}
-					onclick={() => {
-						const hasHightlight = editor.isActive('highlight')
-						if (hasHightlight) {
-							editor.chain().focus().unsetHighlight().run()
-						} else {
-							const color = prompt('Enter the color of the highlight:')
-							if (color !== null) {
-								editor.chain().focus().setHighlight({ color }).run()
-							}
-						}
-					}}
-				/>
-			{/if}
+			<button
+				type="button"
+				class="edra-command-button"
+				title="Highlight"
+				aria-pressed={editor.isActive('highlight')}
+				onclick={() => editor.chain().focus().toggleHighlight().run()}
+				><Highlighter size={16} /></button
+			>
 		</div>
 	</div>
 </div>
