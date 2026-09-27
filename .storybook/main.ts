@@ -23,11 +23,7 @@ const config: StorybookConfig = {
 			css: {
 				preprocessorOptions: {
 					scss: {
-						additionalData: `
-              @import './src/assets/styles/variables.scss';
-              @import './src/assets/styles/fonts.scss';
-              @import './src/assets/styles/themes.scss';
-            `,
+						additionalData: `@use 'sass:color';\n@use 'sass:math';\n@use '$styles/imports.scss' as *;`,
 						api: 'modern-compiler'
 					}
 				}

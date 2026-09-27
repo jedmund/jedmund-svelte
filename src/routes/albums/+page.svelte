@@ -5,7 +5,6 @@
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import type { PageData } from './$types'
-	import type { ColorPalette } from '$lib/types/photos'
 
 	interface Album {
 		id: number

@@ -1,5 +1,8 @@
-<script>
+<script module>
+	import { defineMeta } from '@storybook/addon-svelte-csf'
 	import Album from './Album.svelte'
+
+	const { Story } = defineMeta({ title: 'Music/Album Simple', component: Album })
 
 	const album = {
 		name: 'In Rainbows',
@@ -38,9 +41,11 @@
 	}
 </script>
 
+<Story name="Default" asChild>
 <div style="width: 200px; padding: 20px; background: #f5f5f5;">
 	<Album {album} />
 </div>
+</Story>
 
 <style>
 	div {

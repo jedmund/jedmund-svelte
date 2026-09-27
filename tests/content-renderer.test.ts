@@ -78,7 +78,7 @@ test('sanitizes hostile HTML and URLs in persisted content', () => {
 					}
 				]
 			},
-			{ type: 'image', attrs: { src: 'javascript:alert(1)', alt: '\" onerror=\"alert(1)' } }
+			{ type: 'image', attrs: { src: 'javascript:alert(1)', alt: '" onerror="alert(1)' } }
 		]
 	})
 	assert.doesNotMatch(html, /<script|href="javascript:|src="javascript:|<img[^>]*\sonerror=/i)
