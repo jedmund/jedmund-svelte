@@ -3,7 +3,7 @@
 	import BackButton from '$components/BackButton.svelte'
 	import DynamicPostContent from '$components/DynamicPostContent.svelte'
 	import SocialReplies from '$components/SocialReplies.svelte'
-	import { getContentExcerpt } from '$lib/utils/content'
+	import { getContentExcerpt } from '$lib/utils/content/excerpts'
 	import { generateMetaTags, generateArticleJsonLd } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import type { PageData } from './$types'

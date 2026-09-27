@@ -1,4 +1,9 @@
 <script lang="ts">
+	import UrlEmbedPreview from './UrlEmbedPreview.svelte'
+	import YouTubeEmbed from './YouTubeEmbed.svelte'
+	import { onDestroy } from 'svelte'
+	import { createEmbedMetadataSession, type MetadataStatus } from './embed-metadata'
+	import { loadEmbedMetadata } from './embed-requests'
 	import type { NodeViewProps } from '@tiptap/core'
 	import { NodeViewWrapper } from '$lib/components/edra/tiptap/index.js'
 	import MoreHorizontal from '@lucide/svelte/icons/more-horizontal'
@@ -6,14 +11,33 @@
 
 	const { editor, node, deleteNode, getPos, selected }: NodeViewProps = $props()
 
-	type FetchStatus = 'idle' | 'loading' | 'error'
-
 	let showActions = $state(false)
 	let showContextMenu = $state(false)
 	let contextMenuPosition = $state({ x: 0, y: 0 })
-	let status = $state<FetchStatus>('idle')
+	let status = $state<MetadataStatus>('idle')
 	let lastFetchedUrl: string | null = null
-	let fetchGeneration = 0
+	const metadataSession = createEmbedMetadataSession({
+		load: loadEmbedMetadata,
+		status: (next) => {
+			status = next
+		},
+		apply: (url, metadata) => {
+			if (node.attrs.url !== url || editor.isDestroyed) return
+			const pos = getPos()
+			if (typeof pos !== 'number') return
+			editor.view.dispatch(
+				editor.state.tr.setNodeMarkup(pos, undefined, {
+					...node.attrs,
+					title: metadata.title,
+					description: metadata.description,
+					image: metadata.image,
+					favicon: metadata.favicon,
+					siteName: metadata.siteName
+				})
+			)
+		}
+	})
+	onDestroy(() => metadataSession.dispose())
 
 	// Check if this is a YouTube URL
 	const isYouTube = $derived(/(?:youtube\.com|youtu\.be)/.test(node.attrs.url || ''))
@@ -28,75 +52,8 @@
 		refreshMetadata()
 	})
 
-	// Extract video ID from YouTube URL
-	const getYouTubeVideoId = (url: string): string | null => {
-		const patterns = [
-			/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-			/youtube\.com\/watch\?.*v=([^&\n?#]+)/
-		]
-
-		for (const pattern of patterns) {
-			const match = url.match(pattern)
-			if (match && match[1]) {
-				return match[1]
-			}
-		}
-		return null
-	}
-
-	const getDomain = (url: string) => {
-		try {
-			const urlObj = new URL(url)
-			return urlObj.hostname.replace('www.', '')
-		} catch {
-			return ''
-		}
-	}
-
-	const decodeHtmlEntities = (text: string) => {
-		if (!text) return ''
-		const textarea = document.createElement('textarea')
-		textarea.innerHTML = text
-		return textarea.value
-	}
-
-	async function refreshMetadata() {
-		const requestUrl = node.attrs.url
-		if (!requestUrl) return
-
-		const generation = ++fetchGeneration
-		status = 'loading'
-		try {
-			const response = await fetch(
-				`/api/og-metadata?url=${encodeURIComponent(requestUrl)}&refresh=true`
-			)
-			if (!response.ok) {
-				throw new Error('Failed to fetch metadata')
-			}
-
-			const metadata = await response.json()
-
-			// Ignore the response if the node's url changed or a newer fetch was started.
-			if (generation !== fetchGeneration || node.attrs.url !== requestUrl) return
-
-			const pos = getPos()
-			if (typeof pos === 'number') {
-				const tr = editor.state.tr.setNodeMarkup(pos, undefined, {
-					...node.attrs,
-					title: metadata.title,
-					description: metadata.description,
-					image: metadata.image,
-					favicon: metadata.favicon,
-					siteName: metadata.siteName
-				})
-				editor.view.dispatch(tr)
-			}
-			status = 'idle'
-		} catch (err) {
-			if (generation !== fetchGeneration) return
-			console.error('Error refreshing metadata:', err)
-			status = 'error'
-		}
+	function refreshMetadata() {
+		return metadataSession.refresh(node.attrs.url)
 	}
 
 	function retryFetch(event: MouseEvent) {
@@ -181,52 +138,16 @@
 	data-drag-handle
 >
 	{#if isYouTube}
-		{@const videoId = getYouTubeVideoId(node.attrs.url || '')}
-		<div
-			class="edra-youtube-embed-card"
-			onmouseenter={() => (showActions = true)}
-			onmouseleave={() => (showActions = false)}
-			onkeydown={handleKeydown}
-			oncontextmenu={handleContextMenu}
-			tabindex="0"
-			role="button"
-		>
-			{#if showActions && editor.isEditable}
-				<div class="edra-youtube-embed-actions">
-					<button
-						onclick={(e) => {
-							e.stopPropagation()
-							const rect = e.currentTarget.getBoundingClientRect()
-							contextMenuPosition = {
-								x: rect.left,
-								y: rect.bottom + 4
-							}
-							showContextMenu = true
-						}}
-						class="edra-youtube-embed-action-button"
-						title="More options"
-					>
-						<MoreHorizontal />
-					</button>
-				</div>
-			{/if}
-
-			{#if videoId}
-				<div class="edra-youtube-embed-player">
-					<iframe
-						src="https://www.youtube.com/embed/{videoId}"
-						frameborder="0"
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-						allowfullscreen
-						title="YouTube video player"
-					></iframe>
-				</div>
-			{:else}
-				<div class="edra-youtube-embed-error">
-					<p>Invalid YouTube URL</p>
-				</div>
-			{/if}
-		</div>
+		<YouTubeEmbed
+			url={node.attrs.url || ''}
+			editable={editor.isEditable}
+			{handleKeydown}
+			{handleContextMenu}
+			onmenu={(position) => {
+				contextMenuPosition = position
+				showContextMenu = true
+			}}
+		/>
 	{:else}
 		<div
 			class="edra-url-embed-card"
@@ -257,46 +178,7 @@
 				</div>
 			{/if}
 
-			<button class="edra-url-embed-content" onclick={openLink}>
-				{#if node.attrs.image}
-					<div class="edra-url-embed-image">
-						<img src={node.attrs.image} alt={node.attrs.title || 'Link preview'} />
-					</div>
-				{:else if status === 'loading'}
-					<div class="edra-url-embed-image edra-url-embed-image-skeleton" aria-hidden="true"></div>
-				{/if}
-				<div class="edra-url-embed-text">
-					<div class="edra-url-embed-meta">
-						{#if node.attrs.favicon}
-							<img src={node.attrs.favicon} alt="" class="edra-url-embed-favicon" />
-						{/if}
-						<span class="edra-url-embed-domain"
-							>{node.attrs.siteName
-								? decodeHtmlEntities(node.attrs.siteName)
-								: getDomain(node.attrs.url)}</span
-						>
-						{#if status === 'loading' && !node.attrs.title}
-							<span class="edra-url-embed-status">Fetching preview…</span>
-						{:else if status === 'error' && !node.attrs.title}
-							<span
-								class="edra-url-embed-retry"
-								role="button"
-								tabindex="0"
-								onclick={retryFetch}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') retryFetch(e as unknown as MouseEvent)
-								}}>Couldn't load preview — Retry</span
-							>
-						{/if}
-					</div>
-					{#if node.attrs.title}
-						<h3 class="edra-url-embed-title">{decodeHtmlEntities(node.attrs.title)}</h3>
-					{/if}
-					{#if node.attrs.description}
-						<p class="edra-url-embed-description">{decodeHtmlEntities(node.attrs.description)}</p>
-					{/if}
-				</div>
-			</button>
+			<UrlEmbedPreview attributes={node.attrs} {status} {openLink} {retryFetch} />
 		</div>
 	{/if}
 </NodeViewWrapper>
@@ -383,228 +265,6 @@
 		:global(svg) {
 			width: $unit-2x;
 			height: $unit-2x;
-		}
-	}
-
-	.edra-url-embed-content {
-		display: flex;
-		width: 100%;
-		background: $gray-95;
-		border-radius: $corner-radius;
-		overflow: hidden;
-		border: $unit-1px solid $gray-85;
-		padding: 0;
-		text-align: left;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		/* Reset button styles that might be inherited */
-		font-family: inherit;
-		font-size: inherit;
-		line-height: inherit;
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		appearance: none;
-
-		&:hover {
-			border-color: $gray-60;
-			transform: translateY(-$unit-1px);
-			box-shadow: 0 $unit-2px $unit rgba(0, 0, 0, 0.1);
-		}
-
-		&:focus {
-			outline: none;
-		}
-	}
-
-	.edra-url-embed-image {
-		flex-shrink: 0;
-		width: $unit-20x + $unit;
-		height: $unit-18x + $unit-6px;
-		overflow: hidden;
-		background: $gray-80;
-
-		img {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-		}
-	}
-
-	.edra-url-embed-image-skeleton {
-		background: linear-gradient(90deg, $gray-85 0%, $gray-90 50%, $gray-85 100%);
-		background-size: 200% 100%;
-		animation: edra-url-embed-shimmer 1.2s ease-in-out infinite;
-	}
-
-	@keyframes edra-url-embed-shimmer {
-		0% {
-			background-position: 200% 0;
-		}
-		100% {
-			background-position: -200% 0;
-		}
-	}
-
-	.edra-url-embed-status {
-		font-style: italic;
-		color: $gray-50;
-	}
-
-	.edra-url-embed-retry {
-		color: $primary-color;
-		cursor: pointer;
-		text-decoration: underline;
-
-		&:hover {
-			text-decoration: none;
-		}
-	}
-
-	.edra-url-embed-text {
-		flex: 1;
-		padding: $unit-2x;
-		display: flex;
-		flex-direction: column;
-		gap: $unit;
-		min-width: 0;
-	}
-
-	.edra-url-embed-meta {
-		display: flex;
-		align-items: center;
-		gap: $unit;
-		font-size: $font-size-extra-small;
-		color: $gray-40;
-	}
-
-	.edra-url-embed-favicon {
-		width: $unit-2x;
-		height: $unit-2x;
-		flex-shrink: 0;
-	}
-
-	.edra-url-embed-domain {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.edra-url-embed-title {
-		margin: 0;
-		font-size: $font-size;
-		font-weight: 600;
-		color: $gray-10;
-		line-height: 1.3;
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		overflow: hidden;
-	}
-
-	.edra-url-embed-description {
-		margin: 0;
-		font-size: $font-size-small;
-		color: $gray-30;
-		line-height: 1.4;
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		overflow: hidden;
-	}
-
-	/* YouTube embed styles */
-	.edra-youtube-embed-card {
-		position: relative;
-		width: 100%;
-		max-width: 800px;
-	}
-
-	.edra-youtube-embed-actions {
-		position: absolute;
-		top: $unit;
-		right: $unit;
-		display: flex;
-		gap: $unit-half;
-		background: white;
-		padding: $unit-half;
-		border-radius: $corner-radius-sm;
-		box-shadow: 0 $unit-2px $unit rgba(0, 0, 0, 0.15);
-		z-index: 10;
-	}
-
-	.edra-youtube-embed-action-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: $unit-4x;
-		height: $unit-4x;
-		padding: 0;
-		background: transparent;
-		border: none;
-		border-radius: $corner-radius-xs;
-		cursor: pointer;
-		transition: all 0.2s;
-		color: $gray-40;
-
-		&:hover {
-			background: $gray-95;
-			color: $gray-20;
-		}
-
-		:global(svg) {
-			width: $unit-2x;
-			height: $unit-2x;
-		}
-	}
-
-	.edra-youtube-embed-player {
-		position: relative;
-		padding-bottom: 56.25%; // 16:9 aspect ratio
-		height: 0;
-		overflow: hidden;
-		background: $gray-95;
-		border-radius: $corner-radius;
-		border: $unit-1px solid $gray-85;
-
-		iframe {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			border: none;
-			border-radius: $corner-radius;
-		}
-	}
-
-	.edra-youtube-embed-error {
-		padding: $unit-6x;
-		text-align: center;
-		background: $gray-95;
-		border: $unit-1px solid $gray-85;
-		border-radius: $corner-radius;
-		color: $gray-40;
-	}
-
-	:global(.edra-url-embed-wrapper.selected) {
-		.edra-youtube-embed-player,
-		.edra-youtube-embed-error {
-			border-color: $primary-color;
-			box-shadow: 0 0 0 $unit-3px rgba($primary-color, 0.1);
-		}
-	}
-
-	/* Mobile styles */
-	@media (max-width: 640px) {
-		.edra-url-embed-content {
-			flex-direction: column;
-		}
-
-		.edra-url-embed-image {
-			width: 100%;
-			height: $unit-20x + $unit;
 		}
 	}
 </style>

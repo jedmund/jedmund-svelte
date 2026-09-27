@@ -2,11 +2,8 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import type { CorpusDocument } from '../src/lib/editor/schema-contract.ts'
-import {
-	getContentExcerpt,
-	renderEdraContent,
-	renderInlineExcerpt
-} from '../src/lib/utils/content.ts'
+import { getContentExcerpt, renderInlineExcerpt } from '../src/lib/utils/content/excerpts.ts'
+import { renderEdraContent } from '../src/lib/utils/content.ts'
 
 const fixtureUrl = new URL('./fixtures/edra-documents.json', import.meta.url)
 const documents = JSON.parse(readFileSync(fixtureUrl, 'utf8')) as CorpusDocument[]

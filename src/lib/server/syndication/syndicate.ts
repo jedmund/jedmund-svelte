@@ -1,7 +1,7 @@
 import { prisma } from '$lib/server/database'
 import { postToBluesky } from '../bluesky/post'
 import { postToMastodon } from '../mastodon/post'
-import { getContentExcerpt } from '$lib/utils/content'
+import { getContentExcerpt } from '$lib/utils/content/excerpts'
 import { extractUrlEmbedsFromContent } from '$lib/utils/syndication'
 import { logger } from '../logger'
 import { getConfig } from '../config'

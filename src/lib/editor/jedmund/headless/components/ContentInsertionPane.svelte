@@ -1,13 +1,19 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte'
+	import {
+		createInsertionController,
+		type ContentType,
+		type ActionType
+	} from './insertion-controller.svelte'
+	import InsertionLocationForm from './InsertionLocationForm.svelte'
+	import InsertionEmbedForm from './InsertionEmbedForm.svelte'
 	import type { LocationAttributes } from '../../extensions/geolocation/GeolocationExtended.js'
 	import type { Editor } from '@tiptap/core'
-	import type { Media } from '@prisma/client'
 	import MediaIcon from '$icons/media.svg?component'
 	import Upload from '@lucide/svelte/icons/upload'
 	import Link from '@lucide/svelte/icons/link'
 	import Images from '@lucide/svelte/icons/images'
 	import Search from '@lucide/svelte/icons/search'
-	import { mediaSelectionStore } from '$lib/stores/media-selection'
 	import Pane from '$components/ui/Pane.svelte'
 
 	interface Props {
@@ -34,32 +40,17 @@
 		onLocationSelect
 	}: Props = $props()
 
-	type ContentType = 'image' | 'video' | 'audio' | 'gallery' | 'location'
-	type ActionType = 'upload' | 'embed' | 'gallery' | 'search'
-
-	// Set default action based on content type
-	function getDefaultAction(): ActionType {
-		if (initialUrl) return 'embed'
-		if (contentType === 'location') return 'search'
-		if (contentType === 'gallery') return 'gallery'
-		if (contentType === 'image') return 'gallery'
-		return 'upload'
-	}
-
-	let selectedAction = $state<ActionType>(getDefaultAction())
-	let embedUrl = $state(initialUrl ?? '')
-	let isUploading = $state(false)
-	let fileInput: HTMLInputElement
-	let isOpen = $state(true)
-
-	// Location form fields
-	let locationTitle = $state(initialLocation?.title ?? '')
-	let locationDescription = $state(initialLocation?.description ?? '')
-	let locationLat = $state<string | number>(initialLocation?.latitude ?? '')
-	let locationLng = $state<string | number>(initialLocation?.longitude ?? '')
-	let locationMarkerColor = $state(initialLocation?.markerColor ?? '#ef4444')
-	let locationZoom = $state(initialLocation?.zoom ?? 15)
-
+	const controller = createInsertionController({
+		editor,
+		contentType,
+		onClose,
+		deleteNode,
+		albumId,
+		initialUrl,
+		initialLocation,
+		onLocationSelect
+	})
+	onDestroy(() => controller.dispose())
 	const availableActions = $derived.by(() => {
 		switch (contentType) {
 			case 'image':
@@ -86,270 +77,17 @@
 				return []
 		}
 	})
-
-	function handleUpload() {
-		if (!fileInput) return
-
-		// Set accept attribute based on type
-		switch (contentType) {
-			case 'image':
-				fileInput.accept = 'image/*'
-				break
-			case 'video':
-				fileInput.accept = 'video/*'
-				break
-			case 'audio':
-				fileInput.accept = 'audio/*'
-				break
-		}
-
-		fileInput.click()
-	}
-
-	async function handleFileUpload(event: Event) {
-		const input = event.target as HTMLInputElement
-		const files = input.files
-		if (!files || files.length === 0) return
-
-		isUploading = true
-
-		try {
-			const file = files[0]
-			const formData = new FormData()
-			formData.append('file', file)
-			formData.append('type', contentType)
-
-			if (albumId) {
-				formData.append('albumId', albumId.toString())
-			}
-
-			const response = await fetch('/api/media/upload', {
-				method: 'POST',
-				body: formData,
-				credentials: 'same-origin'
-			})
-
-			if (response.ok) {
-				const media = await response.json()
-				insertContent(media)
-			} else {
-				console.error('Failed to upload file:', response.status)
-				alert('Failed to upload file. Please try again.')
-			}
-		} catch (error) {
-			console.error('Error uploading file:', error)
-			alert('Failed to upload file. Please try again.')
-		} finally {
-			isUploading = false
-			input.value = ''
-		}
-	}
-
-	function handleEmbed() {
-		if (!embedUrl.trim()) return
-
-		switch (contentType) {
-			case 'image':
-				editor
-					.chain()
-					.focus()
-					.insertContent([
-						{
-							type: 'image',
-							attrs: { src: embedUrl }
-						},
-						{
-							type: 'paragraph'
-						}
-					])
-					.run()
-				break
-			case 'video':
-				editor.chain().focus().setVideo({ src: embedUrl }).run()
-				break
-			case 'audio':
-				editor.chain().focus().setAudio({ src: embedUrl }).run()
-				break
-			case 'location': {
-				// For location, try to extract coordinates from Google Maps URL
-				const coords = extractCoordinatesFromUrl(embedUrl)
-				if (coords) {
-					locationLat = coords.lat
-					locationLng = coords.lng
-					handleLocationInsert()
-					return
-				} else {
-					alert('Please enter a valid Google Maps URL')
-					return
-				}
-			}
-		}
-
-		deleteNode?.()
-		onClose()
-	}
-
-	function handleGallerySelect() {
-		const fileType = contentType === 'gallery' ? 'image' : contentType
-		const mode = contentType === 'gallery' ? 'multiple' : 'single'
-		// Map fileType to what the store accepts (audio -> all)
-		const storeFileType: 'image' | 'video' | 'all' | undefined =
-			fileType === 'audio'
-				? 'all'
-				: fileType === 'image' || fileType === 'video'
-					? fileType
-					: undefined
-
-		// Close the pane first to prevent z-index issues
-		handlePaneClose()
-
-		// Open the media modal after a short delay to ensure pane is closed
-		setTimeout(() => {
-			mediaSelectionStore.open({
-				mode,
-				fileType: storeFileType,
-				albumId,
-				onSelect: (media: Media | Media[]) => {
-					if (contentType === 'gallery') {
-						insertGallery(media as Media[])
-					} else {
-						insertContent(media as Media)
-					}
-				},
-				onClose: () => {
-					mediaSelectionStore.close()
-				}
-			})
-		}, 150)
-	}
-
-	function insertContent(media: Media) {
-		switch (contentType) {
-			case 'image': {
-				const displayWidth = media.width && media.width > 600 ? 600 : media.width
-				editor
-					.chain()
-					.focus()
-					.insertContent([
-						{
-							type: 'image',
-							attrs: {
-								src: media.url,
-								alt: media.description || '',
-								title: '',
-								width: displayWidth,
-								height: media.height,
-								align: 'center',
-								mediaId: media.id?.toString()
-							}
-						},
-						{
-							type: 'paragraph'
-						}
-					])
-					.run()
-				break
-			}
-			case 'video':
-				editor.chain().focus().setVideo({ src: media.url }).run()
-				break
-			case 'audio':
-				editor.chain().focus().setAudio({ src: media.url }).run()
-				break
-		}
-
-		deleteNode?.()
-		onClose()
-	}
-
-	function insertGallery(mediaArray: Media[]) {
-		if (mediaArray.length > 0) {
-			const galleryImages = mediaArray.map((m) => ({
-				id: m.id,
-				url: m.url,
-				alt: m.description || '',
-				title: ''
-			}))
-
-			editor.chain().focus().setGallery({ images: galleryImages }).run()
-		}
-
-		deleteNode?.()
-		onClose()
-	}
-
-	function extractCoordinatesFromUrl(url: string): { lat: number; lng: number } | null {
-		// Extract from Google Maps URL patterns
-		const patterns = [
-			/@(-?\d+\.\d+),(-?\d+\.\d+)/, // @lat,lng format
-			/ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng format
-			/q=(-?\d+\.\d+),(-?\d+\.\d+)/ // q=lat,lng format
-		]
-
-		for (const pattern of patterns) {
-			const match = url.match(pattern)
-			if (match) {
-				return {
-					lat: parseFloat(match[1]),
-					lng: parseFloat(match[2])
-				}
-			}
-		}
-
-		return null
-	}
-
-	function handleLocationInsert() {
-		const lat = Number(locationLat)
-		const lng = Number(locationLng)
-		if (
-			locationLat === '' ||
-			locationLng === '' ||
-			!Number.isFinite(lat) ||
-			!Number.isFinite(lng) ||
-			Math.abs(lat) > 90 ||
-			Math.abs(lng) > 180
-		) {
-			alert('Please enter valid coordinates')
-			return
-		}
-		const location: LocationAttributes = {
-			latitude: lat,
-			longitude: lng,
-			title: locationTitle,
-			description: locationDescription,
-			markerColor: locationMarkerColor,
-			zoom: locationZoom
-		}
-		if (onLocationSelect) onLocationSelect(location)
-		else {
-			editor.chain().focus().insertContent({ type: 'geolocation', attrs: location }).run()
-			deleteNode?.()
-		}
-		onClose()
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter' && embedUrl.trim()) {
-			handleEmbed()
-		}
-	}
-
-	function handlePaneClose() {
-		isOpen = false
-		onClose()
-	}
 </script>
 
 <Pane
-	bind:isOpen
+	bind:isOpen={controller.isOpen}
 	{position}
 	showCloseButton={false}
 	closeOnBackdrop={true}
 	closeOnEscape={true}
 	maxWidth="400px"
 	maxHeight="auto"
-	onClose={handlePaneClose}
+	onClose={controller.handlePaneClose}
 >
 	{#if availableActions.length > 1}
 		<div class="action-selector">
@@ -358,8 +96,8 @@
 				<button
 					type="button"
 					class="action-tab"
-					class:active={selectedAction === action.type}
-					onclick={() => (selectedAction = action.type)}
+					class:active={controller.selectedAction === action.type}
+					onclick={() => (controller.selectedAction = action.type)}
 				>
 					<Icon size={16} />
 					<span>{action.label}</span>
@@ -369,120 +107,47 @@
 	{/if}
 
 	<div class="pane-content">
-		{#if selectedAction === 'upload'}
+		{#if controller.selectedAction === 'upload'}
 			<div class="upload-section">
-				<button type="button" class="upload-btn" onclick={handleUpload} disabled={isUploading}>
+				<button
+					type="button"
+					class="upload-btn"
+					onclick={controller.handleUpload}
+					disabled={controller.isUploading}
+				>
 					<Upload size={48} />
 					<span>Click to upload {contentType}</span>
 					<span class="upload-hint">or drag and drop</span>
 				</button>
 			</div>
-		{:else if selectedAction === 'embed'}
-			<div class="embed-section">
-				{#if contentType === 'location'}
-					<p class="section-description">Paste a Google Maps link to embed a location</p>
-				{:else}
-					<p class="section-description">
-						Paste a URL to embed {contentType === 'image' ? 'an' : 'a'}
-						{contentType}
-					</p>
-				{/if}
-				<input
-					bind:value={embedUrl}
-					placeholder={contentType === 'location'
-						? 'https://maps.google.com/...'
-						: `https://example.com/${contentType}.${contentType === 'image' ? 'jpg' : contentType === 'video' ? 'mp4' : 'mp3'}`}
-					class="embed-input"
-					onkeydown={handleKeydown}
-				/>
-				<button type="button" class="embed-btn" onclick={handleEmbed} disabled={!embedUrl.trim()}>
-					Embed
-				</button>
-			</div>
-		{:else if selectedAction === 'gallery'}
+		{:else if controller.selectedAction === 'embed'}
+			<InsertionEmbedForm
+				{contentType}
+				bind:embedUrl={controller.embedUrl}
+				handleEmbed={controller.handleEmbed}
+				handleKeydown={controller.handleKeydown}
+			/>
+		{:else if controller.selectedAction === 'gallery'}
 			<div class="gallery-section">
-				<button type="button" class="gallery-btn" onclick={handleGallerySelect}>
+				<button type="button" class="gallery-btn" onclick={controller.handleGallerySelect}>
 					<Images size={48} />
 					<span>Choose from media library</span>
 				</button>
 			</div>
-		{:else if selectedAction === 'search' && contentType === 'location'}
-			<div class="location-form">
-				<div class="form-group">
-					<label for="location-title" class="form-label">Title (optional)</label>
-					<input
-						id="location-title"
-						bind:value={locationTitle}
-						placeholder="Location name"
-						class="form-input"
-					/>
-				</div>
-
-				<div class="form-group">
-					<label for="location-description" class="form-label">Description (optional)</label>
-					<textarea
-						id="location-description"
-						bind:value={locationDescription}
-						placeholder="About this location"
-						class="form-textarea"
-						rows="2"
-					></textarea>
-				</div>
-
-				<div class="coordinates-group">
-					<div class="form-group">
-						<label for="location-lat" class="form-label"
-							>Latitude <span class="required">*</span></label
-						>
-						<input
-							id="location-lat"
-							bind:value={locationLat}
-							placeholder="37.7749"
-							type="number"
-							step="0.000001"
-							class="form-input"
-							required
-						/>
-					</div>
-					<div class="form-group">
-						<label for="location-lng" class="form-label"
-							>Longitude <span class="required">*</span></label
-						>
-						<input
-							id="location-lng"
-							bind:value={locationLng}
-							placeholder="-122.4194"
-							type="number"
-							step="0.000001"
-							class="form-input"
-							required
-						/>
-					</div>
-				</div>
-
-				<div class="location-options">
-					<label class="option-label">
-						Marker Color
-						<input type="color" bind:value={locationMarkerColor} class="color-input" />
-					</label>
-					<label class="option-label">
-						Zoom Level: {locationZoom}
-						<input type="range" bind:value={locationZoom} min="1" max="20" class="zoom-input" />
-					</label>
-				</div>
-
-				<button
-					type="button"
-					class="submit-btn"
-					onclick={handleLocationInsert}
-					disabled={locationLat === '' || locationLng === ''}
-				>
-					{onLocationSelect ? 'Update Location' : 'Insert Location'}
-				</button>
-			</div>
+		{:else if controller.selectedAction === 'search' && contentType === 'location'}
+			<InsertionLocationForm
+				bind:locationTitle={controller.locationTitle}
+				bind:locationDescription={controller.locationDescription}
+				bind:locationLat={controller.locationLat}
+				bind:locationLng={controller.locationLng}
+				bind:locationMarkerColor={controller.locationMarkerColor}
+				bind:locationZoom={controller.locationZoom}
+				onLocationSelect={!!onLocationSelect}
+				handleLocationInsert={controller.handleLocationInsert}
+			/>
 		{/if}
 
-		{#if isUploading}
+		{#if controller.isUploading}
 			<div class="uploading-overlay">
 				<div class="spinner"></div>
 				<span>Uploading...</span>
@@ -492,7 +157,12 @@
 </Pane>
 
 <!-- Hidden file input -->
-<input bind:this={fileInput} type="file" onchange={handleFileUpload} style="display: none;" />
+<input
+	bind:this={controller.fileInput}
+	type="file"
+	onchange={controller.handleFileUpload}
+	style="display: none;"
+/>
 
 <style lang="scss">
 	.action-selector {
@@ -581,56 +251,6 @@
 		color: $gray-60;
 	}
 
-	.embed-section {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-2x;
-	}
-
-	.section-description {
-		margin: 0;
-		color: $gray-40;
-		font-size: $font-size-small;
-	}
-
-	.embed-input {
-		flex: 1;
-		padding: $unit $unit-2x;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-sm;
-		font-size: $font-size-small;
-		background: $white;
-
-		&:focus {
-			outline: none;
-			border-color: $primary-color;
-		}
-	}
-
-	.embed-btn {
-		display: flex;
-		align-items: center;
-		gap: $unit-half;
-		padding: $unit $unit-2x;
-		border: none;
-		border-radius: $corner-radius-sm;
-		background: $primary-color;
-		color: $white;
-		font-size: $font-size-small;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s ease;
-
-		&:hover:not(:disabled) {
-			background: color.adjust($primary-color, $lightness: -10%);
-		}
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
-	}
-
 	.uploading-overlay {
 		position: absolute;
 		top: 0;
@@ -663,103 +283,5 @@
 		100% {
 			transform: rotate(360deg);
 		}
-	}
-
-	.location-form {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-2x;
-	}
-
-	.form-group {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-	}
-
-	.form-label {
-		font-size: $font-size-extra-small;
-		font-weight: 500;
-		color: $gray-30;
-	}
-
-	.form-input,
-	.form-textarea {
-		padding: $unit $unit-2x;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-sm;
-		font-size: $font-size-small;
-		background: $white;
-		font-family: inherit;
-
-		&:focus {
-			outline: none;
-			border-color: $primary-color;
-		}
-	}
-
-	.form-textarea {
-		resize: vertical;
-		min-height: 60px;
-	}
-
-	.coordinates-group {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: $unit-2x;
-	}
-
-	.location-options {
-		display: flex;
-		gap: $unit-3x;
-		align-items: center;
-	}
-
-	.option-label {
-		display: flex;
-		align-items: center;
-		gap: $unit;
-		font-size: $font-size-extra-small;
-		font-weight: 500;
-		color: $gray-30;
-	}
-
-	.color-input {
-		width: 36px;
-		height: 24px;
-		padding: 0;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-sm;
-		cursor: pointer;
-	}
-
-	.zoom-input {
-		width: 100px;
-	}
-
-	.submit-btn {
-		width: 100%;
-		padding: $unit-2x;
-		background: $primary-color;
-		color: $white;
-		border: none;
-		border-radius: $corner-radius-sm;
-		font-size: $font-size-small;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s ease;
-
-		&:hover:not(:disabled) {
-			background: color.adjust($primary-color, $lightness: -10%);
-		}
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
-	}
-
-	.required {
-		color: $red-60;
 	}
 </style>

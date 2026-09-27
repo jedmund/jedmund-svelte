@@ -43,13 +43,17 @@ export async function renderCorpus(root: string, documents: CorpusDocument[]): P
 	})
 	try {
 		const renderer = await server.ssrLoadModule('/src/lib/utils/content.ts')
+		// Baselines predating the split define excerpts in content.ts.
+		const excerpts = existsSync(resolve(root, 'src/lib/utils/content/excerpts.ts'))
+			? await server.ssrLoadModule('/src/lib/utils/content/excerpts.ts')
+			: renderer
 		const rss = await server.ssrLoadModule('/src/lib/server/rss/helpers.ts')
 		return documents.map((d) => ({
 			key: `${d.source}#${d.id}.${d.field}`,
 			html: renderer.renderEdraContent(d.content),
 			albumHtml: renderer.renderEdraContent(d.content, { albumSlug: 'test-album' }),
-			inlineExcerpt: renderer.renderInlineExcerpt(d.content),
-			excerpt: renderer.getContentExcerpt(d.content),
+			inlineExcerpt: excerpts.renderInlineExcerpt(d.content),
+			excerpt: excerpts.getContentExcerpt(d.content),
 			rss: rss.convertContentToHTML(d.content)
 		}))
 	} finally {

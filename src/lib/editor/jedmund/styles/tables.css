@@ -1,0 +1,317 @@
+/* Table Styling */
+.tiptap,
+.ProseMirror {
+	/* New CSS variables for easy theming */
+	--table-border-size: 1px;
+	--table-selected-border-size: 2px;
+	--table-resize-handle-thickness: 2px;
+	--table-hover-transition: 200ms ease-in-out;
+	--table-focus-ring: 2px;
+}
+/* Full-width table, with a gutter carved out via negative margin so the
+   hover grip handles (top -0.9rem / left -0.9rem) still have room to render */
+.ProseMirror .tableWrapper {
+	padding: 1.25rem 0 0 1rem;
+	margin: 0.5rem 0 0.5rem -1rem;
+	overflow-x: auto;
+}
+
+/* Matches the published table look (.tableWrapper table): outer border with
+   rounded corners, inner dividers only. border-collapse: separate is what
+   lets the radius actually render. */
+.ProseMirror table {
+	box-sizing: border-box;
+	width: 100%;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: var(--table-border-size) solid var(--table-border);
+	border-radius: var(--corner-radius);
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+	position: relative;
+	min-width: 100px;
+	padding: 0.5rem 1rem;
+	vertical-align: top;
+	text-align: left;
+	border-right: var(--table-border-size) solid var(--table-border);
+	border-bottom: var(--table-border-size) solid var(--table-border);
+}
+
+.ProseMirror table td:last-child,
+.ProseMirror table th:last-child {
+	border-right: 0;
+}
+
+.ProseMirror table tr:last-child td,
+.ProseMirror table tr:last-child th {
+	border-bottom: 0;
+}
+
+/* Round the corner cells so their backgrounds don't poke past the radius */
+.ProseMirror table tr:first-child th:first-child,
+.ProseMirror table tr:first-child td:first-child {
+	border-top-left-radius: calc(var(--corner-radius) - 1px);
+}
+
+.ProseMirror table tr:first-child th:last-child,
+.ProseMirror table tr:first-child td:last-child {
+	border-top-right-radius: calc(var(--corner-radius) - 1px);
+}
+
+.ProseMirror table tr:last-child td:first-child,
+.ProseMirror table tr:last-child th:first-child {
+	border-bottom-left-radius: calc(var(--corner-radius) - 1px);
+}
+
+.ProseMirror table tr:last-child td:last-child,
+.ProseMirror table tr:last-child th:last-child {
+	border-bottom-right-radius: calc(var(--corner-radius) - 1px);
+}
+
+.ProseMirror table td:first-of-type:not(a),
+.ProseMirror table th:first-of-type:not(a) {
+	margin-top: 0;
+}
+
+.ProseMirror table td p,
+.ProseMirror table th p {
+	margin: 0;
+}
+
+.ProseMirror table td p + p,
+.ProseMirror table th p + p {
+	margin-top: 0.75rem;
+}
+
+.ProseMirror table th {
+	font-weight: bold;
+	background-color: var(--table-bg-selected);
+}
+
+.ProseMirror table .column-resize-handle {
+	position: absolute;
+	top: 0;
+	right: -2px;
+	bottom: -2px;
+	width: 2px;
+	cursor: col-resize;
+	background-color: var(--primary);
+}
+
+.ProseMirror table .selectedCell {
+	/* Stronger visual, avoids collapse issues */
+	z-index: 1;
+	/* Stronger visual, avoids collapse issues */
+	outline: 1px solid var(--primary);
+	background-color: var(--table-bg-selected);
+}
+
+.ProseMirror .tableWrapper .grip-column,
+.ProseMirror .tableWrapper .grip-row {
+	position: absolute;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	cursor: pointer;
+	background-color: var(--table-bg-selected);
+	opacity: 0;
+	transition: opacity 150ms ease-in-out;
+}
+
+.ProseMirror table .grip-column {
+	top: -0.9rem;
+	left: 0;
+	width: 100%;
+	height: 0.8rem;
+	margin-left: -1px;
+	border: 0.25px solid var(--table-border);
+	border-radius: 1rem;
+}
+
+.ProseMirror table .grip-column::before,
+.ProseMirror table .grip-column.selected::before {
+	width: 0.625rem;
+	content: '';
+}
+
+.ProseMirror table .grip-column:hover {
+	background-color: var(--table-bg-hover);
+}
+
+.ProseMirror table .grip-column::before {
+	border-bottom: 2px dotted var(--border-color-hover);
+}
+
+.ProseMirror table .grip-column.selected {
+	background-color: var(--table-bg-hover);
+	border-color: var(--table-border);
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.ProseMirror table .grip-row {
+	top: 0;
+	left: -0.9rem;
+	width: 0.8rem;
+	height: calc(100%);
+	margin-top: -1px;
+	border: 0.5px solid var(--table-border);
+	border-radius: 1rem;
+}
+
+.ProseMirror table .grip-row::before {
+	height: 0.625rem;
+	content: '';
+	border-left: 2px dotted var(--border-color-hover);
+}
+
+.ProseMirror table .grip-row:hover {
+	background-color: var(--table-bg-hover);
+}
+
+.ProseMirror table .grip-row.selected {
+	background-color: var(--table-bg-hover);
+	border-color: var(--table-border);
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Cell grip — appears on cell hover or when selected */
+/* .ProseMirror table .grip-cell {
+	position: absolute;
+	right: -0.125rem;
+	translate: 0 calc(50% - 0.25rem);
+	width: 0.5rem;
+	height: 1rem;
+	border-radius: 2px;
+	background-color: var(--color-primary);
+	opacity: 0;
+	transition: all 200ms ease-in-out;
+} */
+
+.ProseMirror table td:hover .grip-cell,
+.ProseMirror table th:hover .grip-cell,
+.ProseMirror table .grip-cell.selected {
+	opacity: 1;
+}
+
+/* Dynamic visibility classes for row/column grips */
+.ProseMirror .tableWrapper .grip-row.show-row-grip,
+.ProseMirror .tableWrapper .grip-column.show-col-grip {
+	pointer-events: auto;
+	opacity: 1;
+}
+
+/* Edge add buttons (Notion-like) */
+.ProseMirror .add-column-btn,
+.ProseMirror .add-row-btn {
+	position: absolute;
+	z-index: 20;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--foreground);
+	cursor: pointer;
+	background-color: var(--muted);
+	border: var(--table-border-size) solid var(--table-border);
+	border-radius: 0.5rem;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	opacity: 0;
+	transform: scale(0.95);
+	transition:
+		opacity var(--table-hover-transition),
+		transform var(--table-hover-transition),
+		background-color var(--table-hover-transition);
+}
+
+/* Only show add buttons when flagged by wrapper classes */
+.ProseMirror .tableWrapper.last-column-hover .add-column-btn,
+.ProseMirror .tableWrapper.last-row-hover .add-row-btn {
+	opacity: 1;
+	transform: scale(1);
+}
+
+.ProseMirror .add-column-btn:hover,
+.ProseMirror .add-row-btn:hover {
+	background-color: var(--table-bg-hover);
+	opacity: 0.95;
+}
+
+/* Positioning: column button flush right, full height. Row button flush bottom, full width */
+.ProseMirror .add-column-btn {
+	top: 0;
+	right: -0.85rem;
+	width: 0.75rem;
+	height: 100%;
+}
+
+.ProseMirror .add-row-btn {
+	bottom: -0.9rem;
+	left: 0;
+	width: 100%;
+	height: 0.75rem;
+}
+
+/* Improve button hit areas via padding for better accessibility */
+.ProseMirror .add-column-btn {
+	padding: 0.25rem 0.125rem;
+}
+.ProseMirror .add-row-btn {
+	padding: 0.125rem 0.25rem;
+}
+
+/* Focus states for accessibility */
+.ProseMirror .add-column-btn:focus-visible,
+.ProseMirror .add-row-btn:focus-visible {
+	outline: var(--table-focus-ring) solid var(--primary);
+	outline-offset: 2px;
+}
+
+.tiptap .search-result {
+	color: black;
+	background-color: var(--search-result-bg);
+}
+
+.tiptap .search-result-current {
+	color: black;
+	background-color: var(--search-result-current-bg);
+}
+
+.code-wrapper {
+	position: relative;
+	width: 100%;
+	height: fit-content;
+	padding: 1.5rem;
+	margin: 1rem 0 !important;
+	background-color: var(--codeblock-bg);
+	border-radius: 0.5rem;
+}
+
+.code-wrapper-tile {
+	position: absolute;
+	top: 2px;
+	right: 0;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: end;
+	width: 100%;
+	padding: 0 0.25rem;
+	opacity: 0;
+	transition: opacity 300ms ease-in-out;
+}
+
+.code-wrapper:hover .code-wrapper-tile {
+	opacity: 1;
+}
+
+.tiptap iframe {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	border: 0;
+	border-radius: var(--corner-radius);
+}
