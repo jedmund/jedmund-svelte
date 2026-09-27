@@ -1,12 +1,8 @@
 <script lang="ts">
-	import { untrack } from 'svelte'
-	import { goto, beforeNavigate, replaceState } from '$app/navigation'
-	import type { BeforeNavigate } from '@sveltejs/kit'
-	import { api } from '$lib/admin/api'
 	import AdminPage from './AdminPage.svelte'
-	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
+	import FormPageHeader from '$lib/components/admin/forms/FormPageHeader.svelte'
 	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
-	import Composer from './composer'
+	import Composer from './composer/ComposerCore.svelte'
 	import Typeahead from './Typeahead.svelte'
 	import GardenSelectionCard from './GardenSelectionCard.svelte'
 	import Input from './Input.svelte'
@@ -15,580 +11,132 @@
 	import StatusDropdown from './StatusDropdown.svelte'
 	import DeleteConfirmationModal from './DeleteConfirmationModal.svelte'
 	import Switch from './Switch.svelte'
-	import { useAutoSave } from './forms/useAutoSave.svelte'
-	import { toast } from '$lib/stores/toast'
-	import {
-		SEARCH_CONFIGS,
-		createSearchFn,
-		getCreatorLabel,
-		getExternalUrl
-	} from '$lib/constants/garden'
-	import type { GardenCategory } from '$lib/constants/garden'
-	import type { TypeaheadSelection } from '$lib/types/garden'
 	import type { GardenItem } from '@prisma/client'
-	import type { JSONContent } from '@tiptap/core'
-
+	import { untrack } from 'svelte'
+	import { createGardenForm } from '$lib/components/admin/forms/createGardenForm.svelte'
 	interface Props {
 		item?: GardenItem | null
 		mode: 'create' | 'edit'
 	}
 
 	let { item: initialItem = null, mode: initialMode }: Props = $props()
-
-	// Capture the starting record once; later saves must not reset unsaved fields.
-	const seed = untrack(() => ({ item: initialItem, mode: initialMode }))
-
-	// Local state so we can transition create → edit in place after first save.
-	let item = $state(seed.item)
-	let mode = $state<'create' | 'edit'>(seed.mode)
-
-	// Form state
-	let category = $state<GardenCategory>((seed.item?.category as GardenCategory) ?? 'books')
-	let title = $state(seed.item?.title ?? '')
-	let slug = $state(seed.item?.slug ?? '')
-	let creator = $state(seed.item?.creator ?? '')
-	let imageUrl = $state(seed.item?.imageUrl ?? '')
-	let url = $state(seed.item?.url ?? '')
-	let sourceId = $state(seed.item?.sourceId ?? '')
-	let metadata = $state<Record<string, unknown> | null>(
-		(seed.item?.metadata as Record<string, unknown>) ?? null
-	)
-	let summary = $state(seed.item?.summary ?? '')
-	let date = $state(seed.item?.date ? new Date(seed.item.date).toISOString().slice(0, 10) : '')
-	let rating = $state<number | null>(seed.item?.rating ?? null)
-	let isCurrent = $state(seed.item?.isCurrent ?? false)
-	let isFavorite = $state(seed.item?.isFavorite ?? false)
-	let showInUniverse = $state(seed.item?.showInUniverse ?? false)
-	let status = $state<'draft' | 'published'>(
-		(seed.item?.status as 'draft' | 'published') ?? 'draft'
-	)
-	let note = $state<JSONContent>(
-		(seed.item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
-	)
-
-	// Selection state: 'empty' = show typeahead, 'selected' = show card, 'changing' = typeahead with pre-filled title
-	let selectionState = $state<'empty' | 'selected' | 'changing'>(
-		seed.mode === 'edit' && seed.item?.title ? 'selected' : 'empty'
-	)
-
-	// Year for display in the selection card (not stored separately, derived from metadata or item)
-	let selectedYear = $state<string | null>(null)
-
-	// Component refs
-	let typeaheadRef: ReturnType<typeof import('./Typeahead.svelte').default> | undefined = $state()
-
-	// UI state
-	let isSaving = $state(false)
-	let activeTab = $state('details')
-	let showUnsavedChangesModal = $state(false)
-	let showDeleteConfirmation = $state(false)
-	let pendingNavigation = $state<BeforeNavigate | null>(null)
-	let autoSlug = $state(seed.mode === 'create')
-	let allowNavigation = $state(false)
-
-	const viewUrl = $derived(
-		status === 'published' && slug ? `/garden/${category}/${slug}` : undefined
-	)
-
-	const isSearchable = $derived(!!SEARCH_CONFIGS[category])
-
-	// Snapshot dirty tracking — same pattern as PostForm. The $derived recomputes only when one of the
-	// referenced fields changes, and crucially does NOT write any reactive state, so it can't form a
-	// feedback loop with the auto-save effect that reads it.
-	function snapshot(): string {
-		return JSON.stringify([
-			category,
-			title,
-			slug,
-			creator,
-			imageUrl,
-			url,
-			sourceId,
-			metadata,
-			summary,
-			date,
-			rating,
-			isCurrent,
-			isFavorite,
-			showInUniverse,
-			status,
-			note
-		])
-	}
-
-	let savedSnapshot = $state<string>(snapshot())
-	let isDirty = $derived(snapshot() !== savedSnapshot)
-
-	// Auto-save runs only for drafts and only after the title is non-empty (the server requires a title,
-	// and we don't want autosave to fire prematurely on an otherwise blank form).
-	const autoSave = useAutoSave({
-		enabled: () => status === 'draft' && title.trim() !== '',
-		isDirty: () => isDirty,
-		save: () => handleSave(status, { silent: true })
-	})
-
-	const autoSaveLabel = $derived.by(() => {
-		switch (autoSave.state) {
-			case 'saving':
-				return 'Saving…'
-			case 'unsaved':
-				return 'Unsaved'
-			case 'failed':
-				return 'Save failed'
-			case 'conflict':
-				return 'Conflict — reload'
-			case 'saved':
-			case 'idle':
-			default:
-				return 'Saved'
-		}
-	})
-
-	const creatorLabel = $derived(getCreatorLabel(category))
-
-	const searchFn = $derived.by(() => {
-		const config = SEARCH_CONFIGS[category]
-		return config ? createSearchFn(config) : null
-	})
-
-	const searchPlaceholder = $derived.by(() => {
-		const config = SEARCH_CONFIGS[category]
-		return config?.placeholder ?? 'Enter title'
-	})
-
-	const searchEmptyText = $derived.by(() => {
-		const config = SEARCH_CONFIGS[category]
-		return config?.emptyText ?? 'No results found'
-	})
-
-	function handleSearchSelect(selection: TypeaheadSelection) {
-		title = selection.result.name
-		if (selection.result.creator) {
-			creator = selection.result.creator
-		}
-		if (selection.result.image) {
-			imageUrl = selection.result.image
-		}
-		sourceId = selection.result.sourceId ?? ''
-		metadata = selection.result.metadata ?? null
-		summary = selection.result.summary ?? ''
-		selectedYear = selection.result.year ?? null
-
-		// Generate URL from sourceId
-		if (sourceId) {
-			const externalUrl = getExternalUrl(category, sourceId)
-			if (externalUrl) {
-				url = externalUrl
-			}
-		}
-
-		if (autoSlug) {
-			slug = generateSlug(selection.result.name)
-		}
-
-		selectionState = 'selected'
-	}
-
-	function handleChangeSelection() {
-		selectionState = 'changing'
-		// Wait for typeahead to render, then focus and search
-		requestAnimationFrame(() => {
-			typeaheadRef?.focusAndSearch()
-		})
-	}
-
-	function handleCategoryChange(newCategory: GardenCategory) {
-		category = newCategory
-
-		// Clear search-derived data but preserve user-typed title
-		creator = ''
-		imageUrl = ''
-		url = ''
-		sourceId = ''
-		metadata = null
-		summary = ''
-		selectedYear = null
-		if (autoSlug) {
-			slug = generateSlug(title)
-		}
-
-		selectionState = 'empty'
-	}
-
-	const tabOptions = [
-		{ value: 'details', label: 'Details' },
-		{ value: 'thoughts', label: 'Thoughts' }
-	]
-
-	// Auto-generate slug from title
-	function generateSlug(value: string): string {
-		return value
-			.toLowerCase()
-			.trim()
-			.replace(/[^\w\s-]/g, '')
-			.replace(/[\s_-]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-	}
-
-	function handleTitleInput() {
-		if (autoSlug) {
-			slug = generateSlug(title)
-		}
-	}
-
-	// Cmd+S keyboard shortcut. For drafts: flush the auto-save debounce. For published: trigger save directly.
-	$effect(() => {
-		function handleKeydown(e: KeyboardEvent) {
-			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-				e.preventDefault()
-				if (status === 'draft') {
-					autoSave.flush().catch(() => {})
-				} else {
-					handleSave(status)
-				}
-			}
-		}
-		document.addEventListener('keydown', handleKeydown)
-		return () => document.removeEventListener('keydown', handleKeydown)
-	})
-
-	// Flush pending auto-save when the window loses focus (matches Notion's behavior).
-	$effect(() => {
-		function handleBlur() {
-			if (status === 'draft') autoSave.flush().catch(() => {})
-		}
-		window.addEventListener('blur', handleBlur)
-		return () => window.removeEventListener('blur', handleBlur)
-	})
-
-	// Browser warning for page unloads
-	$effect(() => {
-		function handleBeforeUnload(e: BeforeUnloadEvent) {
-			if (isDirty) {
-				e.preventDefault()
-				e.returnValue = ''
-			}
-		}
-		window.addEventListener('beforeunload', handleBeforeUnload)
-		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-	})
-
-	// Navigation guard
-	beforeNavigate((navigation) => {
-		if (allowNavigation) {
-			allowNavigation = false
-			return
-		}
-		if (!isDirty || navigation.type === 'leave' || !navigation.to) return
-
-		const targetUrl = navigation.to.url.pathname
-
-		// Drafts with content: try to flush auto-save silently, then continue. If the flush fails, fall
-		// back to the unsaved-changes modal so we never drop edits silently. If autosave isn't enabled
-		// yet (e.g. empty title), don't fall through to its silent path — the form is still dirty in
-		// other fields and we'd drop those edits.
-		const draftCanAutoSave =
-			status === 'draft' && title.trim() !== '' && autoSave.state !== 'conflict'
-		if (draftCanAutoSave) {
-			navigation.cancel()
-			autoSave.flush().then(
-				() => {
-					allowNavigation = true
-					goto(targetUrl)
-				},
-				() => {
-					pendingNavigation = navigation
-					showUnsavedChangesModal = true
-				}
-			)
-			return
-		}
-
-		// Published / conflict: keep the existing unsaved-changes prompt.
-		pendingNavigation = navigation
-		navigation.cancel()
-		showUnsavedChangesModal = true
-	})
-
-	async function handleSave(newStatus?: string, { silent = false } = {}) {
-		const saveStatus = (newStatus as 'draft' | 'published') || status
-
-		if (!title.trim()) {
-			if (!silent) toast.error('Title is required')
-			return
-		}
-
-		// Build the snapshot that represents what we're about to submit (not what's currently in the
-		// form, which may diverge from saveStatus if the user clicked Publish on a draft). Don't apply
-		// `status = saveStatus` locally yet — if the request fails we'd be left showing a status the
-		// server hasn't actually accepted.
-		const submittingSnapshot = JSON.stringify([
-			category,
-			title,
-			slug,
-			creator,
-			imageUrl,
-			url,
-			sourceId,
-			metadata,
-			summary,
-			date,
-			rating,
-			isCurrent,
-			isFavorite,
-			showInUniverse,
-			saveStatus,
-			note
-		])
-
-		isSaving = true
-		const loadingToastId = silent
-			? null
-			: toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} item...`)
-
-		try {
-			const payload = {
-				category,
-				title: title.trim(),
-				slug: slug.trim() || undefined,
-				creator: creator.trim() || undefined,
-				imageUrl: imageUrl.trim() || undefined,
-				url: url.trim() || undefined,
-				sourceId: sourceId.trim() || undefined,
-				metadata: metadata ?? undefined,
-				summary: summary.trim() || undefined,
-				date: date || undefined,
-				rating,
-				isCurrent,
-				isFavorite,
-				showInUniverse,
-				status: saveStatus,
-				note: note && note.content && note.content.length > 0 ? note : null,
-				updatedAt: mode === 'edit' ? item?.updatedAt : undefined
-			}
-
-			let savedItem: GardenItem
-			if (mode === 'edit') {
-				savedItem = (await api.put(`/api/admin/garden/${item?.id}`, payload)) as GardenItem
-			} else {
-				savedItem = (await api.post('/api/admin/garden', payload)) as GardenItem
-			}
-
-			if (loadingToastId) {
-				toast.dismiss(loadingToastId)
-				toast.success(`Item ${mode === 'edit' ? 'saved' : 'created'}!`)
-			}
-
-			item = savedItem
-			// Adopt the server-canonicalized slug only on first save (where we may have submitted an
-			// auto-generated slug). On edit we never sync slug back — the server doesn't mutate it, and
-			// syncing would clobber an in-flight slug edit.
-			if (mode === 'create') {
-				if (slug !== savedItem.slug) slug = savedItem.slug
-			}
-			sourceId = savedItem.sourceId ?? ''
-			metadata = (savedItem.metadata as Record<string, unknown>) ?? null
-			autoSlug = false
-			// Sync status only on success — if the publish failed above we'd be lying to the dropdown.
-			status = saveStatus
-
-			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
-			// snapshot, so isDirty stays true and the next debounce flushes them.
-			savedSnapshot = submittingSnapshot
-
-			if (mode === 'create') {
-				mode = 'edit'
-				replaceState(`/admin/garden/${savedItem.id}/edit`, {})
-			}
-		} catch (err) {
-			if (loadingToastId) toast.dismiss(loadingToastId)
-			const errStatus =
-				err && typeof err === 'object' && 'status' in err
-					? (err as { status: number }).status
-					: undefined
-			if (errStatus !== 409 && !silent) {
-				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} item`)
-			}
-			console.error(err)
-			// Only re-throw on the silent (autosave) path — useAutoSave needs the rejection to
-			// transition its state machine to 'failed' / 'conflict'. Manual save call sites have
-			// already had the error surfaced via toast/console; rethrowing them produces unhandled
-			// promise rejections at the fire-and-forget call sites (Cmd+S, form onsubmit, etc).
-			if (silent) throw err
-		} finally {
-			isSaving = false
-		}
-	}
-
-	async function handleCopyPreviewLink() {
-		if (!slug) return
-		try {
-			const res = await api.post<{ url: string }>('/api/preview/generate', {
-				contentType: 'garden',
-				slug: `${category}/${slug}`
-			})
-			if (res?.url) {
-				const fullUrl = `${window.location.origin}${res.url}`
-				await navigator.clipboard.writeText(fullUrl)
-				toast.success('Preview link copied!')
-			}
-		} catch {
-			toast.error('Failed to generate preview link')
-		}
-	}
-
-	function openDeleteConfirmation() {
-		showDeleteConfirmation = true
-	}
-
-	async function handleDelete() {
-		try {
-			await api.delete(`/api/admin/garden/${item?.id}`)
-			allowNavigation = true
-			goto('/admin/garden')
-		} catch {
-			toast.error('Failed to delete item')
-		}
-	}
-
-	function handleContinueEditing() {
-		showUnsavedChangesModal = false
-		pendingNavigation = null
-	}
-
-	function handleLeaveWithoutSaving() {
-		showUnsavedChangesModal = false
-		const nav = pendingNavigation
-		pendingNavigation = null
-		// Mark current state as saved so we don't re-trigger the modal on the next navigation.
-		savedSnapshot = snapshot()
-		if (nav?.to) {
-			allowNavigation = true
-			goto(nav.to.url.pathname)
-		}
-	}
+	const form = untrack(() => createGardenForm({ item: initialItem, mode: initialMode }))
 </script>
 
 <AdminPage>
 	{#snippet header()}
-		<header>
-			<div class="header-left">
-				<h1 class="form-title">{title || 'New item'}</h1>
-			</div>
-			<div class="header-center">
-				<AdminSegmentedControl
-					options={tabOptions}
-					value={activeTab}
-					onChange={(value) => (activeTab = value)}
-				/>
-			</div>
-			<div class="header-actions">
+		<FormPageHeader
+			title={form.title || 'New item'}
+			tabs={form.tabOptions}
+			bind:activeTab={form.activeTab}
+		>
+			{#snippet actions()}
 				<StatusDropdown
-					{status}
+					status={form.status}
 					onSave={(target) => {
-						if (status === 'draft' && target !== 'draft' && isDirty) {
-							autoSave.flush().then(
-								() => handleSave(target),
+						if (form.status === 'draft' && target !== 'draft' && form.isDirty) {
+							form.autoSave.flush().then(
+								() => form.handleSave(target),
 								() => {
-									/* autoSave already surfaced the failure via its trigger label */
+									/* form.autoSave already surfaced the failure via its trigger label */
 								}
 							)
 						} else {
-							handleSave(target)
+							form.handleSave(target)
 						}
 					}}
-					disabled={isSaving}
-					isLoading={isSaving}
-					triggerText={status === 'draft' ? autoSaveLabel : undefined}
-					{viewUrl}
-					onDelete={mode === 'edit' ? openDeleteConfirmation : undefined}
-					onCopyPreviewLink={slug ? handleCopyPreviewLink : undefined}
+					disabled={form.isSaving}
+					isLoading={form.isSaving}
+					triggerText={form.status === 'draft' ? form.autoSaveLabel : undefined}
+					viewUrl={form.viewUrl}
+					onDelete={form.mode === 'edit' ? form.openDeleteConfirmation : undefined}
+					onCopyPreviewLink={form.slug ? form.handleCopyPreviewLink : undefined}
 				/>
-			</div>
-		</header>
+			{/snippet}
+		</FormPageHeader>
 	{/snippet}
 
 	<div class="admin-container">
 		<div class="tab-panels">
 			<!-- Details Panel -->
-			<div class="panel content-wrapper" class:active={activeTab === 'details'}>
+			<div class="panel content-wrapper" class:active={form.activeTab === 'details'}>
 				<div class="form-content">
 					<form
 						onsubmit={(e) => {
 							e.preventDefault()
-							handleSave(status)
+							form.handleSave(form.status)
 						}}
 					>
-						{#if isSearchable}
-							{#if selectionState === 'selected'}
+						{#if form.isSearchable}
+							{#if form.selectionState === 'selected'}
 								<GardenSelectionCard
-									{title}
-									{creator}
-									year={selectedYear}
-									{imageUrl}
-									onChange={handleChangeSelection}
+									title={form.title}
+									creator={form.creator}
+									year={form.selectedYear}
+									imageUrl={form.imageUrl}
+									onChange={form.handleChangeSelection}
 								/>
 							{:else}
 								<Typeahead
-									bind:this={typeaheadRef}
-									bind:value={title}
-									{category}
-									onCategoryChange={handleCategoryChange}
-									search={searchFn}
-									onSelect={handleSearchSelect}
-									oninput={handleTitleInput}
-									placeholder={searchPlaceholder}
-									emptyText={searchEmptyText}
+									bind:this={form.typeaheadRef}
+									bind:value={form.title}
+									category={form.category}
+									onCategoryChange={form.handleCategoryChange}
+									search={form.searchFn}
+									onSelect={form.handleSearchSelect}
+									oninput={form.handleTitleInput}
+									placeholder={form.searchPlaceholder}
+									emptyText={form.searchEmptyText}
 								/>
 							{/if}
 						{:else}
 							<Typeahead
-								bind:value={title}
-								{category}
-								onCategoryChange={handleCategoryChange}
+								bind:value={form.title}
+								category={form.category}
+								onCategoryChange={form.handleCategoryChange}
 								search={null}
-								oninput={handleTitleInput}
+								oninput={form.handleTitleInput}
 								placeholder="Enter title"
 							/>
 
 							<Input
-								label={creatorLabel}
-								bind:value={creator}
-								placeholder="Enter {creatorLabel.toLowerCase()}"
+								label={form.creatorLabel}
+								bind:value={form.creator}
+								placeholder="Enter {form.creatorLabel.toLowerCase()}"
 							/>
 
 							<Input
 								label="Image URL"
 								type="url"
-								bind:value={imageUrl}
+								bind:value={form.imageUrl}
 								placeholder="https://example.com/cover.jpg"
 							/>
 
-							{#if imageUrl}
+							{#if form.imageUrl}
 								<div class="image-preview">
-									<img src={imageUrl} alt="Preview" />
+									<img src={form.imageUrl} alt="Preview" />
 								</div>
 							{/if}
 						{/if}
 
-						<StarRating bind:value={rating} />
+						<StarRating bind:value={form.rating} />
 
 						<Textarea
 							label="Summary"
-							bind:value={summary}
+							bind:value={form.summary}
 							placeholder="Brief description from the source"
 							rows={3}
 							autoResize
 						/>
 
-						<Input label="Date completed (optional)" type="date" bind:value={date} />
+						<Input label="Date completed (optional)" type="date" bind:value={form.date} />
 
 						<div class="switch-field">
 							<div class="switch-info">
 								<span class="switch-label">Currently enjoying</span>
 								<span class="switch-description">Mark as something you're into right now</span>
 							</div>
-							<Switch bind:checked={isCurrent} />
+							<Switch bind:checked={form.isCurrent} />
 						</div>
 
 						<div class="switch-field">
@@ -596,7 +144,7 @@
 								<span class="switch-label">All-time favorite</span>
 								<span class="switch-description">This one's a banger</span>
 							</div>
-							<Switch bind:checked={isFavorite} />
+							<Switch bind:checked={form.isFavorite} />
 						</div>
 
 						<div class="switch-field">
@@ -606,16 +154,16 @@
 									>Include this Garden post in the jedmund.com Everything feed</span
 								>
 							</div>
-							<Switch bind:checked={showInUniverse} />
+							<Switch bind:checked={form.showInUniverse} />
 						</div>
 					</form>
 				</div>
 			</div>
 
 			<!-- Thoughts Panel -->
-			<div class="panel panel-thoughts" class:active={activeTab === 'thoughts'}>
+			<div class="panel panel-thoughts" class:active={form.activeTab === 'thoughts'}>
 				<Composer
-					bind:data={note}
+					bind:data={form.note}
 					placeholder="Write about what you like about this..."
 					minHeight={500}
 					autofocus={false}
@@ -627,56 +175,18 @@
 </AdminPage>
 
 <UnsavedChangesModal
-	isOpen={showUnsavedChangesModal}
-	onContinueEditing={handleContinueEditing}
-	onLeave={handleLeaveWithoutSaving}
+	isOpen={form.lifecycle.showUnsavedChangesModal}
+	onContinueEditing={form.lifecycle.handleContinueEditing}
+	onLeave={form.lifecycle.handleLeaveWithoutSaving}
 />
 
 <DeleteConfirmationModal
-	bind:isOpen={showDeleteConfirmation}
+	bind:isOpen={form.showDeleteConfirmation}
 	message="Are you sure you want to delete this item? This cannot be undone."
-	onConfirm={handleDelete}
+	onConfirm={form.handleDelete}
 />
 
 <style lang="scss">
-	header {
-		display: grid;
-		grid-template-columns: 250px 1fr 250px;
-		align-items: center;
-		width: 100%;
-		gap: $unit-2x;
-
-		.header-left {
-			width: 250px;
-			display: flex;
-			align-items: center;
-			gap: $unit-2x;
-		}
-
-		.header-center {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
-
-		.header-actions {
-			width: 250px;
-			display: flex;
-			justify-content: flex-end;
-			gap: $unit-2x;
-		}
-	}
-
-	.form-title {
-		margin: 0;
-		font-size: 1rem;
-		font-weight: 500;
-		color: $gray-20;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
 	.admin-container {
 		width: 100%;
 		margin: 0 auto;
