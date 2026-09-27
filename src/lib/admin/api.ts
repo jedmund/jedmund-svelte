@@ -1,69 +1,13 @@
 import { goto } from '$app/navigation'
+import { sendRequest, type RequestOptions } from '$lib/api/http'
+export { ApiError, getErrorMessage, getFieldErrors } from '$lib/api/http'
+export type { RequestOptions, HttpMethod } from '$lib/api/http'
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-
-export interface RequestOptions<TBody = unknown> {
-	method?: HttpMethod
-	body?: TBody
-	signal?: AbortSignal
-	headers?: Record<string, string>
-}
-
-export interface ApiError extends Error {
-	status: number
-	details?: unknown
-}
-
-function getAuthHeader() {
-	return {}
-}
-
-async function handleResponse(res: Response) {
-	if (res.status === 401) {
-		// Redirect to login for unauthorized requests
-		try {
-			goto('/admin/login')
-		} catch {
-			// Ignore navigation errors (e.g., if already on login page)
-		}
-	}
-
-	const contentType = res.headers.get('content-type') || ''
-	const isJson = contentType.includes('application/json')
-	const data = isJson ? await res.json().catch(() => undefined) : undefined
-
-	if (!res.ok) {
-		const err: ApiError = Object.assign(new Error('Request failed'), {
-			status: res.status,
-			details: data
-		})
-		throw err
-	}
-	return data
-}
-
-export async function request<TResponse = unknown, TBody = unknown>(
+export function request<TResponse = unknown, TBody = unknown>(
 	url: string,
 	opts: RequestOptions<TBody> = {}
 ): Promise<TResponse> {
-	const { method = 'GET', body, signal, headers } = opts
-
-	const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
-	const mergedHeaders: Record<string, string> = {
-		...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-		...getAuthHeader(),
-		...(headers || {})
-	}
-
-	const res = await fetch(url, {
-		method,
-		headers: mergedHeaders,
-		body: body ? (isFormData ? (body as FormData) : JSON.stringify(body)) : undefined,
-		signal,
-		credentials: 'same-origin'
-	})
-
-	return handleResponse(res) as Promise<TResponse>
+	return sendRequest<TResponse, TBody>(url, opts, { onUnauthorized: () => goto('/admin/login') })
 }
 
 export const api = {

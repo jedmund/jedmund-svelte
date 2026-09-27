@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores'
 	import GardenItemForm from '$lib/components/admin/GardenItemForm.svelte'
-	import { api } from '$lib/admin/api'
+	import { api, getErrorMessage } from '$lib/admin/api'
 	import type { GardenItem } from '@prisma/client'
 
 	let item = $state<GardenItem | null>(null)
@@ -16,7 +16,7 @@
 			const data = await api.get<GardenItem>(`/api/admin/garden/${itemId}`)
 			item = data
 		} catch (err) {
-			error = 'Failed to load item'
+			error = getErrorMessage(err, 'Failed to load item')
 			console.error(err)
 		} finally {
 			isLoading = false

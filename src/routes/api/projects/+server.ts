@@ -1,13 +1,15 @@
+import { readValidatedBody } from '$lib/api/validation'
+import { createProjectSchema, validatePublishing } from '$lib/schemas/cms'
+import { nullableJsonInput } from '$lib/server/json-input'
+import { PaginationError } from '$lib/server/pagination'
 import type { RequestHandler } from './$types'
-import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
 import {
 	jsonResponse,
 	errorResponse,
 	getPaginationParams,
 	getPaginationMeta,
-	checkAdminAuth,
-	parseRequestBody
+	checkAdminAuth
 } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { getUnlockedProjectIds } from '$lib/server/admin/session'
@@ -18,31 +20,6 @@ import {
 	extractMediaIds,
 	type MediaUsageReference
 } from '$lib/server/media-usage.js'
-
-// Type for project creation request body
-interface ProjectCreateBody {
-	title: string
-	subtitle?: string
-	description?: string
-	year: number
-	client?: string
-	role?: string
-	featuredImage?: string
-	logoUrl?: string
-	gallery?: Prisma.JsonValue
-	externalUrl?: string
-	caseStudyContent?: Prisma.JsonValue
-	backgroundColor?: string
-	highlightColor?: string
-	projectType?: string
-	displayOrder?: number
-	status?: string
-	password?: string | null
-	slug?: string
-	showFeaturedImageInHeader?: boolean
-	showBackgroundColorInHeader?: boolean
-	showLogoInHeader?: boolean
-}
 
 // GET /api/projects - List all projects
 export const GET: RequestHandler = async (event) => {
@@ -71,6 +48,7 @@ export const GET: RequestHandler = async (event) => {
 			pagination: getPaginationMeta(total, page, limit)
 		})
 	} catch (error) {
+		if (error instanceof PaginationError) return error.response()
 		logger.error('Failed to retrieve projects', error as Error)
 		return errorResponse('Failed to retrieve projects', 500)
 	}
@@ -84,19 +62,21 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const body = await parseRequestBody<ProjectCreateBody>(event.request)
-		if (!body) {
-			return errorResponse('Invalid request body', 400)
-		}
-
-		// Validate required fields
-		if (!body.title || !body.year) {
-			return errorResponse('Title and year are required', 400)
-		}
+		const parsed = await readValidatedBody(event.request, createProjectSchema)
+		if (!parsed.success) return parsed.response
+		const body = parsed.data
 
 		// Generate slug
 		const baseSlug = body.slug || createSlug(body.title)
 		const slug = await ensureUniqueSlug(baseSlug, 'project')
+
+		const invalid = validatePublishing('project', {
+			...body,
+			slug,
+			status: body.status ?? 'draft',
+			projectType: body.projectType ?? 'work'
+		})
+		if (invalid) return invalid
 
 		// Create project
 		const project = await prisma.project.create({
@@ -110,9 +90,9 @@ export const POST: RequestHandler = async (event) => {
 				role: body.role,
 				featuredImage: body.featuredImage,
 				logoUrl: body.logoUrl,
-				gallery: (body.gallery || []) as Prisma.InputJsonValue,
+				gallery: nullableJsonInput(body.gallery ?? []),
 				externalUrl: body.externalUrl,
-				caseStudyContent: (body.caseStudyContent ?? undefined) as Prisma.InputJsonValue | undefined,
+				caseStudyContent: nullableJsonInput(body.caseStudyContent),
 				backgroundColor: body.backgroundColor,
 				highlightColor: body.highlightColor,
 				projectType: body.projectType || 'work',

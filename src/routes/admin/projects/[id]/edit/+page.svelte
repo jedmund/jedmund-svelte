@@ -3,7 +3,7 @@
 	import { page } from '$app/stores'
 	import ProjectForm from '$lib/components/admin/ProjectForm.svelte'
 	import type { Project } from '$lib/types/project'
-	import { api } from '$lib/admin/api'
+	import { api, getErrorMessage } from '$lib/admin/api'
 
 	let project = $state<Project | null>(null)
 	let isLoading = $state(true)
@@ -20,7 +20,7 @@
 			const data = await api.get<Project>(`/api/projects/${projectId}`)
 			project = data
 		} catch (err) {
-			error = 'Failed to load project'
+			error = getErrorMessage(err, 'Failed to load project')
 			console.error(err)
 		} finally {
 			isLoading = false

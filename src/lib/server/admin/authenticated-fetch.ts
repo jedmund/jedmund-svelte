@@ -1,3 +1,4 @@
+import { decodeApiError, getErrorMessage } from '$lib/api/http'
 import { error, redirect } from '@sveltejs/kit'
 import type { RequestEvent } from '@sveltejs/kit'
 import { getSessionUser, setSessionCookie } from '$lib/server/admin/session'
@@ -30,26 +31,12 @@ export async function adminFetch(
 	}
 
 	if (!response.ok) {
-		let detail: string | undefined
-		try {
-			const json = await response.clone().json()
-			if (typeof json === 'object' && json !== null && 'error' in json) {
-				const err = (json as { error: unknown }).error
-				if (typeof err === 'string') detail = err
-				else if (err && typeof err === 'object' && 'message' in err) {
-					const msg = (err as { message: unknown }).message
-					if (typeof msg === 'string') detail = msg
-				}
-			}
-		} catch {
-			try {
-				detail = await response.clone().text()
-			} catch {
-				detail = undefined
-			}
-		}
-
-		throw error(response.status, detail || 'Admin request failed')
+		const body: unknown = await response
+			.clone()
+			.json()
+			.catch(() => undefined)
+		const failure = decodeApiError(response.status, body)
+		throw error(response.status, getErrorMessage(failure))
 	}
 
 	return response

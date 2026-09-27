@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { api, request, getErrorMessage, getFieldErrors } from '$lib/admin/api'
 	import { untrack } from 'svelte'
 	import { replaceState } from '$app/navigation'
 	import { z } from 'zod'
+	import { createAlbumSchema } from '$lib/schemas/cms'
+	import ErrorMessage from './ErrorMessage.svelte'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import Button from './Button.svelte'
@@ -29,22 +32,19 @@
 	let album = $state(seed.album)
 	let mode = $state<'create' | 'edit'>(seed.mode)
 
-	// Album schema for validation
-	const albumSchema = z.object({
-		title: z.string().min(1, 'Title is required'),
-		slug: z
-			.string()
-			.min(1, 'Slug is required')
-			.regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
-		location: z.string().optional(),
-		year: z.string().optional()
+	const albumSchema = createAlbumSchema.pick({
+		title: true,
+		slug: true,
+		location: true,
+		date: true
 	})
 
 	// State
 	let isLoading = $state(seed.mode === 'edit')
 	let hasLoaded = $state(seed.mode === 'create')
 	let isSaving = $state(false)
-	let _validationErrors = $state<Record<string, string>>({})
+	let validationErrors = $state<Record<string, string>>({})
+	let saveError = $state('')
 	let showBulkAlbumModal = $state(false)
 	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,13 +139,10 @@
 		if (!album) return
 
 		try {
-			const response = await fetch(`/api/albums/${album.id}`, {
-				credentials: 'same-origin'
-			})
-			if (response.ok) {
-				const data = await response.json()
-				albumMedia = data.media || []
-			}
+			const data = await api.get<Album & { media: Array<{ media: Media; displayOrder: number }> }>(
+				`/api/albums/${album.id}`
+			)
+			albumMedia = data.media || []
 		} catch (err) {
 			console.error('Failed to load album media:', err)
 		}
@@ -157,9 +154,9 @@
 				title: formData.title,
 				slug: formData.slug,
 				location: formData.location || undefined,
-				year: formData.year || undefined
+				date: formData.year || undefined
 			})
-			_validationErrors = {}
+			validationErrors = {}
 			return true
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -169,7 +166,7 @@
 						errors[e.path[0].toString()] = e.message
 					}
 				})
-				_validationErrors = errors
+				validationErrors = errors
 			}
 			return false
 		}
@@ -181,7 +178,9 @@
 			return
 		}
 
+		const submittingSnapshot = JSON.stringify(formData)
 		isSaving = true
+		saveError = ''
 		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} album...`)
 
 		try {
@@ -200,23 +199,7 @@
 			const url = mode === 'edit' ? `/api/albums/${album?.id}` : '/api/albums'
 			const method = mode === 'edit' ? 'PUT' : 'POST'
 
-			const response = await fetch(url, {
-				method,
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(payload),
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(
-					errorData.error?.message || `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
-				)
-			}
-
-			const savedAlbum = await response.json()
+			const savedAlbum = await request<Album>(url, { method, body: payload })
 
 			toast.dismiss(loadingToastId)
 
@@ -224,18 +207,10 @@
 			if (mode === 'create' && pendingMediaIds.length > 0) {
 				const photoToastId = toast.loading('Adding selected photos to album...')
 				try {
-					const photoResponse = await fetch(`/api/albums/${savedAlbum.id}/media`, {
+					await request(`/api/albums/${savedAlbum.id}/media`, {
 						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({ mediaIds: pendingMediaIds }),
-						credentials: 'same-origin'
+						body: { mediaIds: pendingMediaIds }
 					})
-
-					if (!photoResponse.ok) {
-						throw new Error('Failed to add photos to album')
-					}
 
 					toast.dismiss(photoToastId)
 					toast.success(
@@ -254,7 +229,7 @@
 
 			const wasCreate = mode === 'create'
 			album = savedAlbum
-			populateFormData(savedAlbum)
+			if (JSON.stringify(formData) === submittingSnapshot) populateFormData(savedAlbum)
 			if (wasCreate) {
 				mode = 'edit'
 				pendingMediaIds = []
@@ -262,12 +237,10 @@
 				await loadAlbumMedia()
 			}
 		} catch (err) {
+			saveError = getErrorMessage(err)
+			validationErrors = getFieldErrors(err)
 			toast.dismiss(loadingToastId)
-			toast.error(
-				err instanceof Error
-					? err.message
-					: `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
-			)
+			toast.error(saveError)
 			console.error(err)
 		} finally {
 			isSaving = false
@@ -292,6 +265,10 @@
 </script>
 
 <AdminPage>
+	{#if saveError}<ErrorMessage message={saveError} />{/if}
+	{#if Object.keys(validationErrors).length}<ErrorMessage
+			message={Object.values(validationErrors).join('; ')}
+		/>{/if}
 	{#snippet header()}
 		<header>
 			<div class="header-left">
@@ -323,6 +300,7 @@
 					<div class="form-section">
 						<Input
 							label="Title"
+							error={validationErrors.title}
 							size="jumbo"
 							bind:value={formData.title}
 							placeholder="Album title"
@@ -331,23 +309,25 @@
 
 						<Input
 							label="Slug"
+							error={validationErrors.slug}
 							bind:value={formData.slug}
 							placeholder="url-friendly-name"
 							required
-							disabled={mode === 'edit'}
 						/>
 
 						<div class="form-grid">
 							<Input
 								label="Location"
+								error={validationErrors.location}
 								bind:value={formData.location}
 								placeholder="e.g. Tokyo, Japan"
 							/>
 							<Input
 								label="Year"
+								error={validationErrors.date}
 								type="text"
 								bind:value={formData.year}
-								placeholder="e.g. 2023 or 2023-2025"
+								placeholder="e.g. 2023"
 							/>
 						</div>
 
@@ -381,7 +361,7 @@
 						<SyndicationStatus
 							contentType="album"
 							contentId={album.id}
-							contentStatus={formData.status}
+							contentStatus={album.status}
 						/>
 					{/if}
 

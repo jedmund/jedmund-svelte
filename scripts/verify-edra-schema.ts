@@ -44,6 +44,7 @@ const server = await createServer({
 	resolve: {
 		alias: {
 			'$app/environment': resolve('scripts/sveltekit-environment.ts'),
+			'$app/navigation': resolve('scripts/sveltekit-navigation.ts'),
 			$components: resolve('src/lib/components'),
 			$icons: resolve('src/assets/icons'),
 			$lib: resolve('src/lib'),

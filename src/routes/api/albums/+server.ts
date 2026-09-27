@@ -1,3 +1,7 @@
+import { readValidatedBody } from '$lib/api/validation'
+import { createAlbumSchema, validatePublishing } from '$lib/schemas/cms'
+import { nullableJsonInput } from '$lib/server/json-input'
+import { PaginationError } from '$lib/server/pagination'
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import {
@@ -25,6 +29,7 @@ export const GET: RequestHandler = async (event) => {
 			pagination: getOffsetPaginationMeta(total, limit, offset)
 		})
 	} catch (error) {
+		if (error instanceof PaginationError) return error.response()
 		logger.error('Failed to fetch albums', error as Error)
 		return errorResponse('Failed to fetch albums', 500)
 	}
@@ -37,11 +42,12 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const body = await event.request.json()
+		const parsed = await readValidatedBody(event.request, createAlbumSchema)
+		if (!parsed.success) return parsed.response
+		const body = parsed.data
 
-		if (!body.title || !body.slug) {
-			return errorResponse('Title and slug are required', 400)
-		}
+		const invalid = validatePublishing('album', { ...body, status: body.status ?? 'draft' })
+		if (invalid) return invalid
 
 		const album = await prisma.album.create({
 			data: {
@@ -52,7 +58,7 @@ export const POST: RequestHandler = async (event) => {
 				location: body.location || null,
 				showInUniverse: body.showInUniverse ?? false,
 				status: body.status || 'draft',
-				content: body.content || null,
+				content: nullableJsonInput(body.content ?? null),
 				publishedAt: body.status === 'published' ? new Date() : null
 			}
 		})

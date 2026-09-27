@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { api, getErrorMessage } from '$lib/admin/api'
 	import { goto } from '$app/navigation'
 	import Modal from './Modal.svelte'
 	import Composer from './composer'
@@ -8,6 +9,7 @@
 	import Textarea from './Textarea.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import MediaDetailsModal from './MediaDetailsModal.svelte'
+	import { toast } from '$lib/stores/toast'
 	import type { JSONContent } from '@tiptap/core'
 	import type { Media } from '@prisma/client'
 
@@ -209,28 +211,13 @@
 		}
 
 		try {
-			const response = await fetch('/api/posts', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(postData),
-				credentials: 'same-origin'
-			})
-
-			if (response.ok) {
-				resetComposer()
-				if (closeOnSave) {
-					isOpen = false
-				}
-				onsaved?.(new CustomEvent('saved'))
-				if (postType === 'essay') {
-					goto('/admin/posts')
-				}
-			} else {
-				console.error('Failed to save post')
-			}
+			await api.post('/api/posts', postData)
+			resetComposer()
+			if (closeOnSave) isOpen = false
+			onsaved?.(new CustomEvent('saved'))
+			if (postType === 'essay') goto('/admin/posts')
 		} catch (error) {
+			toast.error(getErrorMessage(error, 'Failed to save post'))
 			console.error('Error saving post:', error)
 		}
 	}

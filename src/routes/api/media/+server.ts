@@ -1,3 +1,4 @@
+import { PaginationError } from '$lib/server/pagination'
 import type { RequestHandler } from './$types'
 import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
@@ -212,6 +213,7 @@ export const GET: RequestHandler = async (event) => {
 			pagination
 		})
 	} catch (error) {
+		if (error instanceof PaginationError) return error.response()
 		logger.error('Failed to retrieve media', error as Error)
 		return errorResponse('Failed to retrieve media', 500)
 	}

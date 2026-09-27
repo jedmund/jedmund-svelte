@@ -64,9 +64,12 @@ export function createProjectFormStore(initialProject?: Project | null) {
 		setFields(data: Partial<ProjectFormData>) {
 			fields = { ...fields, ...data }
 		},
+		setValidationErrors(errors: Record<string, string>) {
+			validationErrors = errors
+		},
 
-		validate(): boolean {
-			const result = projectSchema.safeParse(fields)
+		validate(overrides: Partial<ProjectFormData> = {}): boolean {
+			const result = projectSchema.safeParse({ ...fields, ...overrides })
 			if (!result.success) {
 				const flattened = result.error.flatten()
 				validationErrors = Object.fromEntries(

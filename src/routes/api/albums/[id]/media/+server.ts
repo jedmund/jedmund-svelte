@@ -1,3 +1,5 @@
+import { readValidatedBody, parseId } from '$lib/api/validation'
+import { albumMediaSchema } from '$lib/schemas/cms'
 import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
@@ -11,13 +13,11 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const albumId = parseInt(event.params.id)
-		const body = await event.request.json()
-		const { mediaIds } = body
-
-		if (!Array.isArray(mediaIds) || mediaIds.length === 0) {
-			return errorResponse('Media IDs are required', 400)
-		}
+		const albumId = parseId(event.params.id)
+		if (albumId === null) return errorResponse('Invalid album ID', 400)
+		const parsed = await readValidatedBody(event.request, albumMediaSchema)
+		if (!parsed.success) return parsed.response
+		const { mediaIds } = parsed.data
 
 		// Check if album exists
 		const album = await prisma.album.findUnique({
@@ -73,13 +73,11 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	try {
-		const albumId = parseInt(event.params.id)
-		const body = await event.request.json()
-		const { mediaIds } = body
-
-		if (!Array.isArray(mediaIds) || mediaIds.length === 0) {
-			return errorResponse('Media IDs are required', 400)
-		}
+		const albumId = parseId(event.params.id)
+		if (albumId === null) return errorResponse('Invalid album ID', 400)
+		const parsed = await readValidatedBody(event.request, albumMediaSchema)
+		if (!parsed.success) return parsed.response
+		const { mediaIds } = parsed.data
 
 		// Check if album exists
 		const album = await prisma.album.findUnique({

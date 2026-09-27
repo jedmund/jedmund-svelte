@@ -1,3 +1,6 @@
+import { readValidatedBody, parseId } from '$lib/api/validation'
+import { updatePostSchema, validatePublishing } from '$lib/schemas/cms'
+import { nullableJsonInput } from '$lib/server/json-input'
 import type { RequestHandler } from './$types'
 import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
@@ -18,8 +21,8 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	try {
-		const id = parseInt(event.params.id)
-		if (isNaN(id)) {
+		const id = parseId(event.params.id)
+		if (id === null) {
 			return errorResponse('Invalid post ID', 400)
 		}
 
@@ -59,16 +62,17 @@ export const PUT: RequestHandler = async (event) => {
 	}
 
 	try {
-		const id = parseInt(event.params.id)
-		if (isNaN(id)) {
+		const id = parseId(event.params.id)
+		if (id === null) {
 			return errorResponse('Invalid post ID', 400)
 		}
 
-		const data = await event.request.json()
+		const parsed = await readValidatedBody(event.request, updatePostSchema)
+		if (!parsed.success) return parsed.response
+		const data = parsed.data
 
 		const existing = await prisma.post.findUnique({
-			where: { id },
-			select: { updatedAt: true, status: true, publishedAt: true }
+			where: { id }
 		})
 		if (!existing) return errorResponse('Post not found', 404)
 
@@ -79,10 +83,19 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
+		const invalid = validatePublishing('post', {
+			...existing,
+			...data,
+			postType: data.type ?? existing.postType,
+			attachments: data.attachedPhotos === undefined ? existing.attachments : data.attachedPhotos
+		})
+		if (invalid) return invalid
+		let publishedAt = existing.publishedAt
+
 		if (data.status === 'published' && existing.status !== 'published') {
-			data.publishedAt = new Date()
+			publishedAt = new Date()
 		} else if (data.status === 'draft' && existing.status === 'published') {
-			data.publishedAt = null
+			publishedAt = null
 		}
 
 		const featuredImageId = data.featuredImage
@@ -113,16 +126,21 @@ export const PUT: RequestHandler = async (event) => {
 					slug: data.slug,
 					postType: data.type,
 					status: data.status,
-					content: data.content,
-					excerpt: data.excerpt ?? undefined,
-					syndicationText: data.syndicationText ?? undefined,
+					content: nullableJsonInput(data.content),
+					excerpt: data.excerpt,
+					syndicationText: data.syndicationText,
 					featuredImage: featuredImageId,
 					syndicateBluesky: data.syndicateBluesky ?? undefined,
 					syndicateMastodon: data.syndicateMastodon ?? undefined,
 					appendLink: data.appendLink ?? undefined,
-					attachments:
-						data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
-					publishedAt: data.publishedAt,
+					attachments: nullableJsonInput(
+						data.attachedPhotos === undefined
+							? undefined
+							: data.attachedPhotos?.length
+								? data.attachedPhotos
+								: null
+					),
+					publishedAt,
 					...tagUpdate
 				}
 			})
@@ -186,12 +204,14 @@ export const PATCH: RequestHandler = async (event) => {
 	}
 
 	try {
-		const id = parseInt(event.params.id)
-		if (isNaN(id)) {
+		const id = parseId(event.params.id)
+		if (id === null) {
 			return errorResponse('Invalid post ID', 400)
 		}
 
-		const data = await event.request.json()
+		const parsed = await readValidatedBody(event.request, updatePostSchema)
+		if (!parsed.success) return parsed.response
+		const data = parsed.data
 
 		const existing = await prisma.post.findUnique({ where: { id } })
 		if (!existing) return errorResponse('Post not found', 404)
@@ -201,6 +221,14 @@ export const PATCH: RequestHandler = async (event) => {
 				return errorResponse('Conflict: post has changed', 409)
 			}
 		}
+
+		const invalid = validatePublishing('post', {
+			...existing,
+			...data,
+			postType: data.type ?? existing.postType,
+			attachments: data.attachedPhotos === undefined ? existing.attachments : data.attachedPhotos
+		})
+		if (invalid) return invalid
 
 		const updateData: Prisma.PostUpdateInput = {}
 
@@ -217,13 +245,22 @@ export const PATCH: RequestHandler = async (event) => {
 		if (data.type !== undefined) updateData.postType = data.type
 		if (data.content !== undefined) {
 			await enrichUrlEmbeds(data.content)
-			updateData.content = data.content
+			updateData.content = nullableJsonInput(data.content)
 		}
 		if (data.featuredImage !== undefined) updateData.featuredImage = data.featuredImage
 		if (data.attachedPhotos !== undefined)
-			updateData.attachments =
-				data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null
-		if (data.tags !== undefined) updateData.tags = data.tags
+			updateData.attachments = nullableJsonInput(
+				data.attachedPhotos === undefined
+					? undefined
+					: data.attachedPhotos?.length
+						? data.attachedPhotos
+						: null
+			)
+		if (data.tagIds !== undefined)
+			updateData.tags = {
+				deleteMany: {},
+				create: data.tagIds.map((tagId) => ({ tag: { connect: { id: tagId } } }))
+			}
 		if (data.excerpt !== undefined) updateData.excerpt = data.excerpt
 		if (data.syndicationText !== undefined) updateData.syndicationText = data.syndicationText
 		if (data.syndicateBluesky !== undefined) updateData.syndicateBluesky = data.syndicateBluesky
@@ -256,8 +293,8 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	try {
-		const id = parseInt(event.params.id)
-		if (isNaN(id)) {
+		const id = parseId(event.params.id)
+		if (id === null) {
 			return errorResponse('Invalid post ID', 400)
 		}
 

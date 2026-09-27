@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import { onMount } from 'svelte'
-	import { api } from '$lib/admin/api'
+	import { api, getErrorMessage } from '$lib/admin/api'
 	import LoadingSpinner from '$lib/components/admin/LoadingSpinner.svelte'
 	import PostForm from '$lib/components/admin/forms/PostForm.svelte'
 	import type { ApiPost } from '$lib/components/admin/forms/post-types'
@@ -28,8 +28,8 @@
 			} else {
 				loadError = 'Post not found'
 			}
-		} catch {
-			loadError = 'Network error occurred while loading post'
+		} catch (error) {
+			loadError = getErrorMessage(error, 'Failed to load post')
 		} finally {
 			loading = false
 		}

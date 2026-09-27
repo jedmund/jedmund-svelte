@@ -2,7 +2,8 @@
 	import { untrack } from 'svelte'
 	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import type { BeforeNavigate } from '@sveltejs/kit'
-	import { api } from '$lib/admin/api'
+	import { api, getErrorMessage } from '$lib/admin/api'
+	import ErrorMessage from './ErrorMessage.svelte'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
@@ -27,6 +28,8 @@
 	import type { TypeaheadSelection } from '$lib/types/garden'
 	import type { GardenItem } from '@prisma/client'
 	import type { JSONContent } from '@tiptap/core'
+
+	let saveError = $state('')
 
 	interface Props {
 		item?: GardenItem | null
@@ -124,6 +127,7 @@
 	const autoSave = useAutoSave({
 		enabled: () => status === 'draft' && title.trim() !== '',
 		isDirty: () => isDirty,
+		revision: snapshot,
 		save: () => handleSave(status, { silent: true })
 	})
 
@@ -314,7 +318,9 @@
 		const saveStatus = (newStatus as 'draft' | 'published') || status
 
 		if (!title.trim()) {
-			if (!silent) toast.error('Title is required')
+			saveError = 'Title is required'
+			if (!silent) toast.error(saveError)
+			if (silent) throw new Error(saveError)
 			return
 		}
 
@@ -341,6 +347,7 @@
 			note
 		])
 
+		saveError = ''
 		isSaving = true
 		const loadingToastId = silent
 			? null
@@ -369,9 +376,9 @@
 
 			let savedItem: GardenItem
 			if (mode === 'edit') {
-				savedItem = (await api.put(`/api/admin/garden/${item?.id}`, payload)) as GardenItem
+				savedItem = await api.put<GardenItem>(`/api/admin/garden/${item?.id}`, payload)
 			} else {
-				savedItem = (await api.post('/api/admin/garden', payload)) as GardenItem
+				savedItem = await api.post<GardenItem>('/api/admin/garden', payload)
 			}
 
 			if (loadingToastId) {
@@ -401,13 +408,14 @@
 				replaceState(`/admin/garden/${savedItem.id}/edit`, {})
 			}
 		} catch (err) {
+			saveError = getErrorMessage(err)
 			if (loadingToastId) toast.dismiss(loadingToastId)
 			const errStatus =
 				err && typeof err === 'object' && 'status' in err
 					? (err as { status: number }).status
 					: undefined
 			if (errStatus !== 409 && !silent) {
-				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} item`)
+				toast.error(saveError)
 			}
 			console.error(err)
 			// Only re-throw on the silent (autosave) path — useAutoSave needs the rejection to
@@ -446,8 +454,8 @@
 			await api.delete(`/api/admin/garden/${item?.id}`)
 			allowNavigation = true
 			goto('/admin/garden')
-		} catch {
-			toast.error('Failed to delete item')
+		} catch (error) {
+			toast.error(getErrorMessage(error, 'Failed to delete item'))
 		}
 	}
 
@@ -470,6 +478,7 @@
 </script>
 
 <AdminPage>
+	{#if saveError}<ErrorMessage message={saveError} />{/if}
 	{#snippet header()}
 		<header>
 			<div class="header-left">

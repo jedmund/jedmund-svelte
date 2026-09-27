@@ -12,7 +12,7 @@ import { codeForStatus } from '$lib/server/error-codes'
  *                   body is always { error: { code, message, details? } }
  *
  * Form actions (`actions` in +page.server.ts):
- *   • success:      throw redirect(303, path)  — never return a body alongside
+ *   • success:      return action data, or throw redirect(303, path)
  *   • error:        return fail(status, { message })
  *
  * Never mix shapes: form actions don't emit `errorResponse`, API routes don't
@@ -36,18 +36,8 @@ export function errorResponse(message: string, status = 400, details?: unknown):
 	return jsonResponse(body, status)
 }
 
-// Pagination helper
-export interface PaginationParams {
-	page: number
-	limit: number
-}
-
-export function getPaginationParams(url: URL): PaginationParams {
-	const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'))
-	const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20')))
-
-	return { page, limit }
-}
+export { getPaginationParams, getOffsetPaginationParams, PaginationError } from './pagination'
+export type { PaginationParams, OffsetPaginationParams } from './pagination'
 
 export function getPaginationMeta(total: number, page: number, limit: number) {
 	const totalPages = Math.ceil(total / limit)
@@ -60,25 +50,6 @@ export function getPaginationMeta(total: number, page: number, limit: number) {
 		hasNext: page < totalPages,
 		hasPrev: page > 1
 	}
-}
-
-// Offset-based pagination (used by albums, photos)
-export interface OffsetPaginationParams {
-	limit: number
-	offset: number
-}
-
-export function getOffsetPaginationParams(
-	url: URL,
-	defaults: { limit?: number; maxLimit?: number } = {}
-): OffsetPaginationParams {
-	const { limit: defaultLimit = 50, maxLimit = 100 } = defaults
-	const limit = Math.min(
-		maxLimit,
-		Math.max(1, parseInt(url.searchParams.get('limit') || String(defaultLimit)))
-	)
-	const offset = Math.max(0, parseInt(url.searchParams.get('offset') || '0'))
-	return { limit, offset }
 }
 
 export function getOffsetPaginationMeta(total: number, limit: number, offset: number) {

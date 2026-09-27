@@ -61,6 +61,9 @@ Optional environment variables:
 
 ## Validation
 
+See [API conventions](docs/api-conventions.md) for shared clients, request validation,
+publishing requirements, and pagination behavior.
+
 Use the pinned pnpm version and run `pnpm check`, `pnpm lint`, `pnpm test`,
 `pnpm build`, and `pnpm build-storybook` before merging. `pnpm lint:eslint` and
 `pnpm lint:format` run independently; `pnpm lint` reports both even if one fails.

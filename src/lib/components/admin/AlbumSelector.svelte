@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { api, request, getErrorMessage } from '$lib/admin/api'
 	import { onMount } from 'svelte'
 	import Button from './Button.svelte'
 	import Input from './Input.svelte'
@@ -73,20 +74,12 @@
 		try {
 			isLoading = true
 
-			const response = await fetch('/api/albums', {
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				throw new Error('Failed to load albums')
-			}
-
-			const data = await response.json()
+			const data = await api.get<{ albums: Album[] }>('/api/albums')
 			albums = data.albums || []
 			filteredAlbums = albums
 		} catch (err) {
 			console.error('Failed to load albums:', err)
-			error = 'Failed to load albums'
+			error = getErrorMessage(err, 'Failed to load albums')
 		} finally {
 			isLoading = false
 		}
@@ -108,26 +101,11 @@
 			isSaving = true
 			error = ''
 
-			const response = await fetch('/api/albums', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					title: newAlbumTitle.trim(),
-					slug: newAlbumSlug.trim(),
-					isPhotography: true,
-					status: 'draft'
-				}),
-				credentials: 'same-origin'
+			const newAlbum = await api.post<Album>('/api/albums', {
+				title: newAlbumTitle.trim(),
+				slug: newAlbumSlug.trim(),
+				status: 'draft'
 			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(errorData.error?.message || 'Failed to create album')
-			}
-
-			const newAlbum = await response.json()
 
 			// Add to albums list and select it
 			albums = [newAlbum, ...albums]
@@ -140,7 +118,7 @@
 			newAlbumSlug = ''
 			searchQuery = ''
 		} catch (err) {
-			error = err instanceof Error ? err.message : 'Failed to create album'
+			error = getErrorMessage(err, 'Failed to create album')
 		} finally {
 			isSaving = false
 		}
@@ -160,34 +138,18 @@
 
 			// Add to new albums
 			for (const albumId of albumsToAdd) {
-				const response = await fetch(`/api/albums/${albumId}/media`, {
+				await request(`/api/albums/${albumId}/media`, {
 					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({ mediaIds: [mediaId] }),
-					credentials: 'same-origin'
+					body: { mediaIds: [mediaId] }
 				})
-
-				if (!response.ok) {
-					throw new Error('Failed to add to album')
-				}
 			}
 
 			// Remove from albums
 			for (const albumId of albumsToRemove) {
-				const response = await fetch(`/api/albums/${albumId}/media`, {
+				await request(`/api/albums/${albumId}/media`, {
 					method: 'DELETE',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({ mediaIds: [mediaId] }),
-					credentials: 'same-origin'
+					body: { mediaIds: [mediaId] }
 				})
-
-				if (!response.ok) {
-					throw new Error('Failed to remove from album')
-				}
 			}
 
 			// Get updated album list
@@ -196,7 +158,7 @@
 			onClose?.()
 		} catch (err) {
 			console.error('Failed to update albums:', err)
-			error = 'Failed to update albums'
+			error = getErrorMessage(err, 'Failed to update albums')
 		} finally {
 			isSaving = false
 		}
