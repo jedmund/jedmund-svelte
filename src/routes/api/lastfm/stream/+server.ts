@@ -1,6 +1,6 @@
 import { LastClient } from '@musicorum/lastfm'
 import type { RequestHandler } from './$types'
-import { SimpleLastfmStreamManager } from '$lib/utils/simpleLastfmStreamManager'
+import { SimpleLastfmStreamManager } from '$lib/server/music/simpleLastfmStreamManager'
 import { logger } from '$lib/server/logger'
 import { getConfig } from '$lib/server/config'
 

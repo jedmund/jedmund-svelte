@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types'
-import redis from '../../../redis-client'
+import redis from '$lib/server/redis-client'
 import { dev } from '$app/environment'
 
 export const GET: RequestHandler = async (event) => {

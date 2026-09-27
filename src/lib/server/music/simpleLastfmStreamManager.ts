@@ -2,7 +2,7 @@ import type { Album } from '$lib/types/lastfm'
 import type { LastClient } from '@musicorum/lastfm'
 import { SimpleNowPlayingDetector } from './simpleNowPlayingDetector'
 import { AlbumEnricher } from './albumEnricher'
-import { trackToAlbum } from './lastfmTransformers'
+import { trackToAlbum } from '$lib/utils/lastfmTransformers'
 import { logger } from '$lib/server/logger'
 
 // Type for recent tracks response

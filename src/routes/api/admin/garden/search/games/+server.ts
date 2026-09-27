@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import redis from '../../../../redis-client'
+import redis from '$lib/server/redis-client'
 
 import type { RequestHandler } from './$types'
 import { jsonResponse, errorResponse } from '$lib/server/api-utils'

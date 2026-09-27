@@ -1,7 +1,7 @@
 <script lang="ts">
 	import UniverseCard from './UniverseCard.svelte'
 	import Slideshow from './Slideshow.svelte'
-	import type { UniverseItem } from '../../routes/api/universe/+server'
+	import type { UniverseItem } from '$lib/types/universe'
 
 	let { album }: { album: UniverseItem } = $props()
 

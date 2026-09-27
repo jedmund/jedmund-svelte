@@ -1,9 +1,21 @@
+import { transformAlbumData } from '$lib/server/apple-music-normalization'
 import type { Album } from '$lib/types/lastfm'
 import type { LastClient } from '@musicorum/lastfm'
-import { findAlbum, transformAlbumData } from '$lib/server/apple-music-client'
-import { transformImages, mergeAppleMusicData } from './lastfmTransformers'
-import redis from '../../routes/api/redis-client'
+import { findAlbum } from '$lib/server/apple-music-client'
+import { transformImages, mergeAppleMusicData } from '$lib/utils/lastfmTransformers'
+import redis from '$lib/server/redis-client'
 import { logger } from '$lib/server/logger'
+
+import { createAppleAlbumCache } from './album-cache'
+
+const getAppleAlbum = createAppleAlbumCache({
+	get: (key) => redis.get(key),
+	set: (key, value, ttl) => redis.set(key, value, 'EX', ttl),
+	load: async (artist, album) => {
+		const found = await findAlbum(artist, album)
+		return found ? transformAlbumData(found) : null
+	}
+})
 
 // Type for cached recent tracks data
 interface RecentTracksData {
@@ -21,7 +33,6 @@ export class AlbumEnricher {
 	private client: LastClient
 	private cacheTTL = {
 		albumInfo: 3600, // 1 hour for album info
-		appleMusicData: 86400, // 24 hours for Apple Music data
 		recentTracks: 30 // 30 seconds for recent tracks
 	}
 
@@ -74,30 +85,8 @@ export class AlbumEnricher {
 	 */
 	async enrichWithAppleMusic(album: Album): Promise<Album> {
 		try {
-			const cacheKey = `apple:album:${album.artist.name}:${album.name}`
-			const cached = await redis.get(cacheKey)
-
-			if (cached) {
-				const cachedData = JSON.parse(cached)
-				return mergeAppleMusicData(album, cachedData)
-			}
-
-			// Search Apple Music
-			const appleMusicAlbum = await findAlbum(album.artist.name, album.name)
-
-			if (appleMusicAlbum) {
-				const transformedData = await transformAlbumData(appleMusicAlbum)
-
-				// Cache the result
-				await redis.set(
-					cacheKey,
-					JSON.stringify(transformedData),
-					'EX',
-					this.cacheTTL.appleMusicData
-				)
-
-				return mergeAppleMusicData(album, transformedData)
-			}
+			const data = await getAppleAlbum(album.artist.name, album.name)
+			if (data) return mergeAppleMusicData(album, data)
 		} catch (error) {
 			logger.error(
 				`Failed to fetch Apple Music data for "${album.name}" by "${album.artist.name}":`,
@@ -132,21 +121,8 @@ export class AlbumEnricher {
 		artistName: string,
 		albumName: string
 	): Promise<Album['appleMusicData'] | null> {
-		const cacheKey = `apple:album:${artistName}:${albumName}`
-		const cached = await redis.get(cacheKey)
-
-		if (cached) {
-			return JSON.parse(cached)
-		}
-
 		try {
-			const appleMusicAlbum = await findAlbum(artistName, albumName)
-			if (!appleMusicAlbum) return null
-
-			const transformedData = await transformAlbumData(appleMusicAlbum)
-			await redis.set(cacheKey, JSON.stringify(transformedData), 'EX', this.cacheTTL.appleMusicData)
-
-			return transformedData
+			return await getAppleAlbum(artistName, albumName)
 		} catch (error) {
 			logger.error(
 				`Error fetching Apple Music data for ${albumName}:`,
