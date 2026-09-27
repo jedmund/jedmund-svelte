@@ -13,6 +13,7 @@
 			| 'tel'
 			| 'date'
 			| 'time'
+			| 'datetime-local'
 			| 'color'
 		label?: string
 		error?: string

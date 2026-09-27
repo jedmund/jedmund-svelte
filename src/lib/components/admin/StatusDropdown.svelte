@@ -39,10 +39,23 @@
 	let isDropdownOpen = $state(false)
 
 	const DEFAULTS: Record<string, { primary: string; alt: AltAction[] }> = {
-		draft: { primary: 'Save draft', alt: [{ label: 'Publish', target: 'published' }] },
+		draft: {
+			primary: 'Save draft',
+			alt: [
+				{ label: 'Publish', target: 'published' },
+				{ label: 'Schedule', target: 'scheduled' }
+			]
+		},
 		published: {
 			primary: 'Save changes',
 			alt: [{ label: 'Move to draft', target: 'draft' }]
+		},
+		scheduled: {
+			primary: 'Save schedule',
+			alt: [
+				{ label: 'Publish now', target: 'published' },
+				{ label: 'Move to draft', target: 'draft' }
+			]
 		}
 	}
 
@@ -51,7 +64,9 @@
 	const resolvedAltActions = $derived(altActions ?? defaults.alt)
 
 	const showViewInDropdown = $derived(!!viewUrl && status === 'published')
-	const showPreviewLink = $derived(!!onCopyPreviewLink && status === 'draft')
+	const showPreviewLink = $derived(
+		!!onCopyPreviewLink && (status === 'draft' || status === 'scheduled')
+	)
 	const hasDropdownContent = $derived(
 		resolvedAltActions.length > 0 || showViewInDropdown || showPreviewLink || !!onDelete
 	)

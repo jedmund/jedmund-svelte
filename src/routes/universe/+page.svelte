@@ -43,7 +43,19 @@
 			<p>{data.error}</p>
 		</div>
 	{:else}
-		<UniverseFeed items={data.universeItems || []} />
+		{#if data.activeTags}
+			<div class="tag-filter-strip">
+				<span>Filtering by <strong>{data.activeTags}</strong></span>
+				<a href="/universe">Clear</a>
+			</div>
+		{/if}
+		{#key data.activeTags}
+			<UniverseFeed
+				items={data.universeItems || []}
+				pagination={data.pagination}
+				tags={data.activeTags}
+			/>
+		{/key}
 	{/if}
 </div>
 
@@ -52,6 +64,24 @@
 		max-width: 784px;
 		margin: 0 auto;
 		padding: 0;
+	}
+
+	.tag-filter-strip {
+		display: flex;
+		align-items: center;
+		gap: $unit-2x;
+		padding: $unit-2x;
+		color: $gray-30;
+		font-size: 0.925rem;
+
+		a {
+			color: $gray-40;
+			text-decoration: underline;
+
+			&:hover {
+				color: $gray-20;
+			}
+		}
 	}
 
 	.error-message {

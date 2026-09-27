@@ -40,7 +40,8 @@ export const GET: RequestHandler = async (event) => {
 		// Get published photography albums
 		const albums = await prisma.album.findMany({
 			where: {
-				status: 'published'
+				status: 'published',
+				NOT: { publishedAt: { gt: new Date() } }
 			},
 			include: {
 				media: {
@@ -64,7 +65,8 @@ export const GET: RequestHandler = async (event) => {
 		const standalonePhotos = await prisma.photo.findMany({
 			where: {
 				status: 'published',
-				showInPhotos: true
+				showInPhotos: true,
+				NOT: { publishedAt: { gt: new Date() } }
 			},
 			orderBy: { publishedAt: 'desc' },
 			take: 25

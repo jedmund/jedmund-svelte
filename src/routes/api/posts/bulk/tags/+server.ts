@@ -82,8 +82,7 @@ export const POST: RequestHandler = async (event) => {
 			{
 				error: {
 					code: 'BULK_OPERATION_FAILED',
-					message: 'Failed to update tags',
-					details: error instanceof Error ? error.message : 'Unknown error'
+					message: 'Failed to update tags'
 				}
 			},
 			{ status: 500 }

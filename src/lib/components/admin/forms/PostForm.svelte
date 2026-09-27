@@ -10,9 +10,13 @@
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
+	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
+	import type { ApiError } from '$lib/admin/api'
 	import type { JSONContent } from '@tiptap/core'
 	import type { ApiPost, PostFormTag as Tag } from './post-types'
 	import { useAutoSave } from './useAutoSave.svelte'
+
+	type PostStatus = 'draft' | 'published' | 'scheduled'
 
 	// Legacy blocks format (pre-Tiptap) — still in some old posts.
 	interface BlockContent {
@@ -42,9 +46,8 @@
 	let postType = $state<'post' | 'essay'>(
 		(initialPost?.postType as 'post' | 'essay') || initialPostType
 	)
-	let status = $state<'draft' | 'published'>(
-		(initialPost?.status as 'draft' | 'published') || 'draft'
-	)
+	let status = $state<PostStatus>((initialPost?.status as PostStatus) || 'draft')
+	let publishedAt = $state<string | null>(initialPost?.publishedAt ?? null)
 	let slug = $state(initialPost?.slug ?? '')
 	let slugManuallySet = $state(initialPost !== null)
 	let excerpt = $state(initialPost?.excerpt ?? '')
@@ -61,6 +64,7 @@
 	let tags = $state<Tag[]>(initialPost?.tags?.map((pt) => pt.tag) ?? [])
 
 	let saving = $state(false)
+	let saveError = $state('')
 	let activeTab = $state('content')
 	let heartCount = $state<number | undefined>()
 	let showDeleteConfirmation = $state(false)
@@ -76,6 +80,7 @@
 			title,
 			postType,
 			status,
+			publishedAt,
 			slug,
 			excerpt,
 			syndicationText,
@@ -354,9 +359,11 @@
 	})
 
 	async function handleSave(target: string) {
-		const targetStatus = (target as 'draft' | 'published') || status
+		const targetStatus = (target as PostStatus) || status
 		saving = true
+		saveError = ''
 
+		const previousStatus = status
 		// Apply the status transition first so the submitting snapshot reflects what we're about to send.
 		status = targetStatus
 
@@ -369,6 +376,7 @@
 			slug: slug || `post-${Date.now()}`,
 			type: postType,
 			status: targetStatus,
+			publishedAt,
 			content: config?.showContent ? content : null,
 			excerpt: postType === 'essay' ? excerpt : undefined,
 			syndicationText: syndicationText || null,
@@ -384,6 +392,7 @@
 				const created = await api.post<ApiPost>('/api/posts', postData)
 				id = created.id
 				updatedAt = created.updatedAt
+				publishedAt = created.publishedAt
 				// Adopt the server-canonicalized slug (we may have submitted a generated `post-${Date.now()}`).
 				if (slug !== created.slug) slug = created.slug
 				slugManuallySet = true
@@ -395,15 +404,25 @@
 				})
 				if (saved) {
 					updatedAt = saved.updatedAt
+					// Server stamps/normalizes the publish time on transitions
+					publishedAt = saved.publishedAt
 					// Don't sync slug back — server doesn't mutate slug, and syncing would clobber
 					// a slug edit the user may have made during the in-flight save.
 					slugManuallySet = true
 				}
 			}
 			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
-			// snapshot, so isDirty stays true and the next debounce flushes them.
-			savedSnapshot = submittingSnapshot
+			// snapshot, so isDirty stays true and the next debounce flushes them. The server may have
+			// stamped publishedAt (index 3) on a transition — adopt its value so that sync alone
+			// doesn't read as dirty.
+			const submitted = JSON.parse(submittingSnapshot)
+			submitted[3] = publishedAt
+			savedSnapshot = JSON.stringify(submitted)
 		} catch (error) {
+			// Roll back a rejected status transition (e.g. scheduling without a future date)
+			status = previousStatus
+			const details = (error as ApiError)?.details as { error?: { message?: string } } | undefined
+			saveError = details?.error?.message || 'Failed to save post'
 			console.error('Failed to save post:', error)
 			throw error
 		} finally {
@@ -501,6 +520,9 @@
 	{/snippet}
 
 	<div class="admin-container">
+		{#if saveError}
+			<ErrorMessage message={saveError} dismissible onDismiss={() => (saveError = '')} />
+		{/if}
 		<div class="tab-panels">
 			<div class="panel panel-content" class:active={activeTab === 'content'}>
 				<div class="main-content">
@@ -526,10 +548,10 @@
 					bind:excerpt
 					bind:featuredImage
 					bind:tags
+					bind:publishedAt
 					{heartCount}
 					createdAt={initialPost?.createdAt ?? new Date().toISOString()}
 					updatedAt={initialPost?.updatedAt ?? new Date().toISOString()}
-					publishedAt={initialPost?.publishedAt ?? null}
 					onSlugEdit={() => (slugManuallySet = true)}
 				/>
 			</div>

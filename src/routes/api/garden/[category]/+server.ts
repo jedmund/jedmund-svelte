@@ -16,7 +16,11 @@ export const GET: RequestHandler = async (event) => {
 	const sort = event.url.searchParams.get('sort') || 'display-order'
 	const bangers = event.url.searchParams.get('bangers') === 'true'
 
-	const where: Prisma.GardenItemWhereInput = { category, status: 'published' }
+	const where: Prisma.GardenItemWhereInput = {
+		category,
+		status: 'published',
+		NOT: { publishedAt: { gt: new Date() } }
+	}
 	if (bangers) {
 		where.isFavorite = true
 	}

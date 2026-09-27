@@ -35,7 +35,10 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Only return published items unless valid preview token
-		if (!isPreview && item.status !== 'published') {
+		if (
+			!isPreview &&
+			(item.status !== 'published' || (item.publishedAt && item.publishedAt > new Date()))
+		) {
 			return errorResponse('Item not found', 404)
 		}
 

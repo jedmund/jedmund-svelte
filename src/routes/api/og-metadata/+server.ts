@@ -1,10 +1,13 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import { scrapeOgMetadata, type OgMetadata } from '$lib/server/og-metadata'
+import { checkAdminAuth } from '$lib/server/api-utils'
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async (event) => {
+	const { url } = event
 	const targetUrl = url.searchParams.get('url')
-	const forceRefresh = url.searchParams.get('refresh') === 'true'
+	// Cache-busting is admin-only so anonymous callers can't hammer upstream sites
+	const forceRefresh = url.searchParams.get('refresh') === 'true' && checkAdminAuth(event)
 
 	if (!targetUrl) {
 		return json({ error: 'URL parameter is required' }, { status: 400 })
@@ -38,30 +41,4 @@ function toProxyUrl(src: string | null): string | null {
 	if (!src) return src
 	if (src.startsWith('/')) return src
 	return `/api/og-image-proxy?url=${encodeURIComponent(src)}`
-}
-
-export const POST: RequestHandler = async ({ request }) => {
-	const { url: targetUrl } = await request.json()
-
-	if (!targetUrl) {
-		return json({ success: 0 }, { status: 400 })
-	}
-
-	try {
-		const metadata = await scrapeOgMetadata(targetUrl)
-		return json({
-			success: 1,
-			link: targetUrl,
-			meta: {
-				title: metadata.title || '',
-				description: metadata.description || '',
-				image: {
-					url: metadata.image || ''
-				}
-			}
-		})
-	} catch (error) {
-		console.error('Error fetching OpenGraph data:', error)
-		return json({ success: 0 }, { status: 500 })
-	}
 }

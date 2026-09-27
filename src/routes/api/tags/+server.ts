@@ -3,7 +3,7 @@ import { json } from '@sveltejs/kit'
 import redis from '../redis-client'
 import { checkAdminAuth, errorResponse } from '$lib/server/api-utils'
 import { safeKey } from '$lib/server/cache-keys'
-import { createTag, listTags } from '$lib/server/tags/operations'
+import { createTag, listTags, TagValidationError } from '$lib/server/tags/operations'
 import { createTagSchema } from '$lib/server/tags/schemas'
 
 /**
@@ -87,8 +87,8 @@ export const POST: RequestHandler = async (event) => {
 
 		return json({ tag }, { status: 201 })
 	} catch (error) {
-		// Check for specific errors
-		if (error instanceof Error) {
+		// Only validation errors carry messages safe to echo to the client
+		if (error instanceof TagValidationError) {
 			if (error.message.includes('already exists')) {
 				return json(
 					{
@@ -115,7 +115,6 @@ export const POST: RequestHandler = async (event) => {
 				)
 			}
 
-			// Validation errors
 			return json(
 				{
 					error: {

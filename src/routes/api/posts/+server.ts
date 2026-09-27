@@ -116,6 +116,12 @@ export const POST: RequestHandler = async (event) => {
 
 		if (data.status === 'published') {
 			data.publishedAt = new Date()
+		} else if (data.status === 'scheduled') {
+			const scheduledFor = data.publishedAt ? new Date(data.publishedAt) : null
+			if (!scheduledFor || isNaN(scheduledFor.getTime()) || scheduledFor <= new Date()) {
+				return errorResponse('Scheduled posts need a publish date in the future', 400)
+			}
+			data.publishedAt = scheduledFor
 		}
 
 		let featuredImageId = data.featuredImage

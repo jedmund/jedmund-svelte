@@ -8,7 +8,10 @@ export interface GardenFilters {
 }
 
 export async function getPublishedGardenItems(filters: GardenFilters = {}) {
-	const where: Prisma.GardenItemWhereInput = { status: 'published' }
+	const where: Prisma.GardenItemWhereInput = {
+		status: 'published',
+		NOT: { publishedAt: { gt: new Date() } }
+	}
 	if (filters.category) where.category = filters.category
 	if (filters.current) where.isCurrent = true
 	if (filters.favorites) where.isFavorite = true

@@ -1,6 +1,12 @@
 import type { Handle } from '@sveltejs/kit'
+import { building } from '$app/environment'
 import '$lib/server/env'
 import { getSessionUser } from '$lib/server/admin/session'
+import { startScheduler } from '$lib/server/scheduler'
+
+if (!building) {
+	startScheduler()
+}
 
 // --- Rate limiter ---
 interface RateLimitConfig {

@@ -25,7 +25,7 @@ export type PhotoMedia = Prisma.MediaGetPayload<{ select: typeof PHOTO_MEDIA_SEL
 
 export async function getPhotographyMedia() {
 	return prisma.media.findMany({
-		where: { isPhotography: true },
+		where: { isPhotography: true, NOT: { photoPublishedAt: { gt: new Date() } } },
 		select: PHOTO_MEDIA_SELECT,
 		orderBy: [{ photoPublishedAt: 'desc' }, { createdAt: 'desc' }]
 	})

@@ -9,6 +9,12 @@ import { generateSlug, validateTagName } from './validation'
 import type { CreateTagInput, UpdateTagInput } from './schemas'
 
 /**
+ * Validation failures whose messages are safe to echo to API clients.
+ * Anything else (Prisma errors etc.) should surface as a generic message.
+ */
+export class TagValidationError extends Error {}
+
+/**
  * Generate a unique slug, handling conflicts by appending a counter
  */
 export async function generateUniqueSlug(name: string): Promise<string> {
@@ -36,7 +42,7 @@ export async function createTag(input: CreateTagInput) {
 	// Validate tag name
 	const validation = validateTagName(name)
 	if (!validation.valid) {
-		throw new Error(validation.error)
+		throw new TagValidationError(validation.error)
 	}
 
 	const normalized = name.toLowerCase().trim()
@@ -47,7 +53,7 @@ export async function createTag(input: CreateTagInput) {
 	})
 
 	if (existing) {
-		throw new Error('A tag with this name already exists')
+		throw new TagValidationError('A tag with this name already exists')
 	}
 
 	// Generate unique slug
@@ -76,7 +82,7 @@ export async function updateTag(tagId: number, input: UpdateTagInput) {
 	if (input.name) {
 		const validation = validateTagName(input.name)
 		if (!validation.valid) {
-			throw new Error(validation.error)
+			throw new TagValidationError(validation.error)
 		}
 
 		const normalized = input.name.toLowerCase().trim()
@@ -90,7 +96,7 @@ export async function updateTag(tagId: number, input: UpdateTagInput) {
 		})
 
 		if (existing) {
-			throw new Error('A tag with this name already exists')
+			throw new TagValidationError('A tag with this name already exists')
 		}
 
 		const slug = await generateUniqueSlug(input.name)

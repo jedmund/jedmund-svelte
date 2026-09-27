@@ -1,8 +1,13 @@
 import type { PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async ({ fetch, url }) => {
+	const tags = url.searchParams.get('tags') || ''
+
 	try {
-		const response = await fetch('/api/universe?limit=20')
+		const params = new URLSearchParams({ limit: '20' })
+		if (tags) params.set('tags', tags)
+
+		const response = await fetch(`/api/universe?${params}`)
 		if (!response.ok) {
 			throw new Error('Failed to fetch universe feed')
 		}
@@ -10,13 +15,15 @@ export const load: PageServerLoad = async ({ fetch }) => {
 		const data = await response.json()
 		return {
 			universeItems: data.items || [],
-			pagination: data.pagination || null
+			pagination: data.pagination || null,
+			activeTags: tags
 		}
 	} catch (error) {
 		console.error('Error loading universe feed:', error)
 		return {
 			universeItems: [],
 			pagination: null,
+			activeTags: tags,
 			error: 'Failed to load universe feed'
 		}
 	}

@@ -22,14 +22,6 @@
 		const unsubscribe = musicStream.nowPlaying.subscribe((nowPlaying) => {
 			currentlyPlayingAlbum = nowPlaying?.album || null
 			isPlayingMusic = !!nowPlaying
-
-			// Debug logging
-			console.log('🎧 Header now playing update:', {
-				hasNowPlaying: !!nowPlaying,
-				album: nowPlaying?.album.name,
-				artist: nowPlaying?.album.artist.name,
-				track: nowPlaying?.track
-			})
 		})
 
 		return unsubscribe
@@ -79,14 +71,7 @@
 			href="/about"
 			class="header-link"
 			aria-label="@jedmund"
-			onmouseenter={() => {
-				isHoveringAvatar = true
-				console.log('Header: Hovering avatar, showing now playing?', {
-					isHoveringAvatar: true,
-					isPlayingMusic,
-					currentlyPlayingAlbum: currentlyPlayingAlbum?.name
-				})
-			}}
+			onmouseenter={() => (isHoveringAvatar = true)}
 			onmouseleave={() => (isHoveringAvatar = false)}
 		>
 			<Avatar />

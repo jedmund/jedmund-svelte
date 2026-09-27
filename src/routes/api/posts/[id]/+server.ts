@@ -79,9 +79,32 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
-		if (data.status === 'published' && existing.status !== 'published') {
-			data.publishedAt = new Date()
-		} else if (data.status === 'draft' && existing.status === 'published') {
+		// Coerce client-supplied publishedAt instead of trusting it raw
+		if (data.publishedAt !== undefined && data.publishedAt !== null) {
+			const parsed = new Date(data.publishedAt)
+			if (isNaN(parsed.getTime())) {
+				return errorResponse('Invalid publishedAt date', 400)
+			}
+			data.publishedAt = parsed
+		}
+
+		const nextStatus = data.status ?? existing.status
+		if (nextStatus === 'scheduled') {
+			const scheduledFor = data.publishedAt ?? existing.publishedAt
+			if (!scheduledFor || scheduledFor <= new Date()) {
+				return errorResponse('Scheduled posts need a publish date in the future', 400)
+			}
+			data.publishedAt = scheduledFor
+		} else if (nextStatus === 'published') {
+			if (data.status === 'published' && existing.status !== 'published') {
+				// Fresh publish (incl. "publish now" on a scheduled post): stamp now
+				// unless an explicit past date was chosen
+				data.publishedAt =
+					data.publishedAt && data.publishedAt <= new Date() ? data.publishedAt : new Date()
+			} else if (data.publishedAt && data.publishedAt > new Date()) {
+				return errorResponse('Use the scheduled status to publish in the future', 400)
+			}
+		} else if (data.status === 'draft' && existing.status !== 'draft') {
 			data.publishedAt = null
 		}
 
@@ -204,13 +227,48 @@ export const PATCH: RequestHandler = async (event) => {
 
 		const updateData: Prisma.PostUpdateInput = {}
 
+		// Coerce client-supplied publishedAt instead of trusting it raw
+		let publishedAtInput: Date | null | undefined
+		if (data.publishedAt !== undefined) {
+			if (data.publishedAt === null) {
+				publishedAtInput = null
+			} else {
+				const parsed = new Date(data.publishedAt)
+				if (isNaN(parsed.getTime())) {
+					return errorResponse('Invalid publishedAt date', 400)
+				}
+				publishedAtInput = parsed
+			}
+		}
+
 		if (data.status !== undefined) {
 			updateData.status = data.status
-			if (data.status === 'published' && existing.status !== 'published') {
-				updateData.publishedAt = new Date()
-			} else if (data.status === 'draft' && existing.status === 'published') {
+			if (data.status === 'scheduled') {
+				const scheduledFor = publishedAtInput ?? existing.publishedAt
+				if (!scheduledFor || scheduledFor <= new Date()) {
+					return errorResponse('Scheduled posts need a publish date in the future', 400)
+				}
+				updateData.publishedAt = scheduledFor
+			} else if (data.status === 'published') {
+				if (existing.status !== 'published') {
+					// Fresh publish (incl. "publish now" on a scheduled post): stamp now
+					// unless an explicit past date was chosen
+					updateData.publishedAt =
+						publishedAtInput && publishedAtInput <= new Date() ? publishedAtInput : new Date()
+				} else if (publishedAtInput !== undefined) {
+					if (publishedAtInput && publishedAtInput > new Date()) {
+						return errorResponse('Use the scheduled status to publish in the future', 400)
+					}
+					updateData.publishedAt = publishedAtInput
+				}
+			} else if (data.status === 'draft' && existing.status !== 'draft') {
 				updateData.publishedAt = null
 			}
+		} else if (publishedAtInput !== undefined) {
+			if (existing.status === 'published' && publishedAtInput && publishedAtInput > new Date()) {
+				return errorResponse('Use the scheduled status to publish in the future', 400)
+			}
+			updateData.publishedAt = publishedAtInput
 		}
 		if (data.title !== undefined) updateData.title = data.title
 		if (data.slug !== undefined) updateData.slug = data.slug
