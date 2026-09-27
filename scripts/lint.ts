@@ -8,10 +8,12 @@ let failed = false
 // Report all checks even when the first fails. Use the installed versions on every platform.
 for (const [name, entry, args] of [
 	['eslint', 'bin/eslint.js', ['.']],
-	['prettier', 'bin/prettier.cjs', ['--check', '.']]
+	['prettier', 'bin/prettier.cjs', ['--check', '.']],
+	['knip', '../bin/knip.js', ['--include', 'files']]
 ] as const) {
 	console.log(`\n${name}`)
-	const binary = join(dirname(require.resolve(`${name}/package.json`)), entry)
+	const modulePath = name === 'knip' ? 'knip' : `${name}/package.json`
+	const binary = join(dirname(require.resolve(modulePath)), entry)
 	const result = spawnSync(process.execPath, [binary, ...args], {
 		stdio: 'inherit'
 	})

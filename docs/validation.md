@@ -12,12 +12,14 @@ version is 3.28.0 throughout the dependency graph.
 - `pnpm lint:eslint`: ESLint for application-owned sources, scripts, tests, and stories.
 - `pnpm lint:format`: Prettier check using the existing formatting configuration.
 - `pnpm lint:structure`: production file-size limits and shrinking allowances.
-- `pnpm lint`: runs all three lint checks, reports every output, and fails if any fails.
+- `pnpm lint:unused`: Knip comprehensive file-only gate; retained exceptions are documented in [the health ledger](codebase-health.md).
+- `pnpm audit:unused`: production file report for review, including expected verification/story-only findings; not the blocking gate.
+- `pnpm lint`: runs all four lint checks, reports every output, and fails if any fails.
 - `pnpm test`: unit and integration tests followed by synthetic editor schema verification.
 - `pnpm build`: production application build.
 - `pnpm build-storybook`: component documentation build.
 
-CI reports type checking, ESLint, formatting, and file size separately, even if another quality
+CI reports type checking, ESLint, formatting, unused files, and file size separately, even if another quality
 step fails. It also runs the tests, synthetic database corpus round-trip, and both builds.
 
 ## Scope of checks

@@ -64,6 +64,9 @@ jobs:
       - name: Formatting
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm lint:format
+      - name: Unused files
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm lint:unused
       - name: File size
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         env:

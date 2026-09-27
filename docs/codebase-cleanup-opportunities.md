@@ -38,6 +38,9 @@ Keep larger component refactors, migration repairs, and unrelated behavior chang
 
 Storybook validation also repaired an unregistered Album story and outdated Sass import paths. Broader setup, API, and component cleanup remain follow-up work.
 
+The [codebase health ledger](codebase-health.md) tracks the current unused-file audit,
+all 56 starting size allowances, and the ordered responsibility-cleanup waves.
+
 ## Follow-up opportunities
 
 ### 1. Make fresh setup reliable

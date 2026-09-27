@@ -1,0 +1,41 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"entry": [
+		"src/routes/**/+*.{ts,js,svelte}!",
+		"src/hooks*.{ts,js}!",
+		"scripts/*.{ts,js}",
+		"tests/**/*.test.ts",
+		"src/**/*.stories.{js,ts,svelte}",
+		".storybook/*.{js,ts}",
+		"src/**/*.mdx"
+	],
+	"project": [
+		"src/**/*.{ts,js,svelte}!",
+		"!src/**/*.stories.{js,ts,svelte}!",
+		"!src/stories/**!",
+		"scripts/**/*.{ts,js}",
+		"tests/**/*.ts",
+		"*.{js,ts}",
+		".storybook/*.{js,ts}",
+		"src/**/*.stories.{js,ts,svelte}",
+		"src/stories/**",
+		"src/**/*.mdx"
+	],
+	"ignore": ["src/lib/components/edra/**", "src/lib/components/admin/SelectField.svelte"],
+	"paths": {
+		"$lib/*": ["src/lib/*"],
+		"$components/*": ["src/lib/components/*"],
+		"$utils/*": ["src/lib/utils/*"],
+		"$icons/*": ["src/assets/icons/*"],
+		"$illos/*": ["src/assets/illos/*"],
+		"$styles/*": ["src/assets/styles/*"]
+	},
+	"sveltekit": true,
+	"storybook": {
+		"entry": [
+			".storybook/{main,preview}.{js,ts}",
+			"src/**/*.stories.{js,ts,svelte}",
+			"src/**/*.mdx"
+		]
+	}
+}
