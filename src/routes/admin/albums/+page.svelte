@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { createCollectionSession } from '$lib/admin/collection'
+	import { loadAlbums as fetchAlbums, publishAlbum, deleteAlbum } from '$lib/admin/album-requests'
+	import { filterAlbums } from '$lib/admin/album-filter'
 	import { goto } from '$app/navigation'
-	import { onMount } from 'svelte'
+	import { onMount, onDestroy } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
@@ -10,32 +13,7 @@
 	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
-	interface Photo {
-		id: number
-		url: string
-		thumbnailUrl: string | null
-		caption: string | null
-	}
-
-	interface Album {
-		id: number
-		slug: string
-		title: string
-		description: string | null
-		date: string | null
-		location: string | null
-		coverPhotoId: number | null
-		status: string
-		showInUniverse: boolean
-		publishedAt: string | null
-		createdAt: string
-		updatedAt: string
-		photos: Photo[]
-		content?: unknown
-		_count: {
-			media: number
-		}
-	}
+	import type { Album } from '$lib/admin/album-types'
 
 	// State
 	let albums = $state<Album[]>([])
@@ -82,89 +60,19 @@
 		}
 	}
 
+	const collection = createCollectionSession<Album>((next, loading, message) => {
+		albums = next
+		isLoading = loading
+		error = message
+		applyFilterAndSort()
+	})
+	onDestroy(() => collection.dispose())
 	async function loadAlbums() {
-		try {
-			const response = await fetch('/api/albums', {
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to load albums')
-			}
-
-			const data = await response.json()
-			albums = data.albums || []
-
-			// Apply initial filter and sort
-			applyFilterAndSort()
-		} catch (err) {
-			error = 'Failed to load albums'
-			console.error(err)
-		} finally {
-			isLoading = false
-		}
+		await collection.load(fetchAlbums)
 	}
 
 	function applyFilterAndSort() {
-		let filtered = [...albums]
-
-		// Apply filter
-		if (statusFilter === 'published') {
-			filtered = filtered.filter((album) => album.status === 'published')
-		} else if (statusFilter === 'draft') {
-			filtered = filtered.filter((album) => album.status === 'draft')
-		}
-
-		// Apply sorting
-		switch (sortBy) {
-			case 'oldest':
-				filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-				break
-			case 'title-asc':
-				filtered.sort((a, b) => a.title.localeCompare(b.title))
-				break
-			case 'title-desc':
-				filtered.sort((a, b) => b.title.localeCompare(a.title))
-				break
-			case 'date-desc':
-				filtered.sort((a, b) => {
-					if (!a.date && !b.date) return 0
-					if (!a.date) return 1
-					if (!b.date) return -1
-					return new Date(b.date).getTime() - new Date(a.date).getTime()
-				})
-				break
-			case 'date-asc':
-				filtered.sort((a, b) => {
-					if (!a.date && !b.date) return 0
-					if (!a.date) return 1
-					if (!b.date) return -1
-					return new Date(a.date).getTime() - new Date(b.date).getTime()
-				})
-				break
-			case 'status-published':
-				filtered.sort((a, b) => {
-					if (a.status === b.status) return 0
-					return a.status === 'published' ? -1 : 1
-				})
-				break
-			case 'status-draft':
-				filtered.sort((a, b) => {
-					if (a.status === b.status) return 0
-					return a.status === 'draft' ? -1 : 1
-				})
-				break
-			case 'newest':
-			default:
-				filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-				break
-		}
-
-		filteredAlbums = filtered
+		filteredAlbums = filterAlbums(albums, statusFilter, sortBy)
 	}
 
 	function handleToggleDropdown(event: CustomEvent<{ albumId: number; event: MouseEvent }>) {
@@ -180,28 +88,16 @@
 	async function handleTogglePublish(event: CustomEvent<{ album: Album; event: MouseEvent }>) {
 		event.detail.event.stopPropagation()
 		activeDropdown = null
-
 		const album = event.detail.album
-
 		try {
-			const newStatus = album.status === 'published' ? 'draft' : 'published'
-
-			const response = await fetch(`/api/albums/${album.id}`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ status: newStatus }),
-				credentials: 'same-origin'
-			})
-
-			if (response.ok) {
+			if (
+				await collection.mutate(album.id, (signal) =>
+					publishAlbum(album.id, album.status === 'published' ? 'draft' : 'published', signal)
+				)
+			)
 				await loadAlbums()
-			} else if (response.status === 401) {
-				goto('/admin/login')
-			}
-		} catch (err) {
-			console.error('Failed to update album status:', err)
+		} catch (failure) {
+			error = failure instanceof Error ? failure.message : 'Failed to update album status'
 		}
 	}
 
@@ -213,28 +109,18 @@
 	}
 
 	async function confirmDelete() {
-		if (!albumToDelete) return
-
+		const album = albumToDelete
+		if (!album) return
 		try {
-			const response = await fetch(`/api/albums/${albumToDelete.id}`, {
-				method: 'DELETE',
-				credentials: 'same-origin'
-			})
-
-			if (response.ok) {
+			if (await collection.mutate(album.id, (signal) => deleteAlbum(album.id, signal))) {
 				await loadAlbums()
-			} else if (response.status === 401) {
-				goto('/admin/login')
-			} else {
-				const errorData = await response.json()
-				error = errorData.error?.message || 'Failed to delete album'
+				if (albumToDelete?.id === album.id) {
+					showDeleteModal = false
+					albumToDelete = null
+				}
 			}
-		} catch (err) {
-			console.error('Failed to delete album:', err)
-			error = 'Failed to delete album. Please try again.'
-		} finally {
-			showDeleteModal = false
-			albumToDelete = null
+		} catch (failure) {
+			error = failure instanceof Error ? failure.message : 'Failed to delete album'
 		}
 	}
 

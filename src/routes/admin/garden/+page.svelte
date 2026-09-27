@@ -1,19 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { onMount } from 'svelte'
+	import { onMount, onDestroy } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminHeader from '$lib/components/admin/AdminHeader.svelte'
 	import AdminFilters from '$lib/components/admin/AdminFilters.svelte'
-	import AdminByline from '$lib/components/admin/AdminByline.svelte'
+	import GardenListItem from '$lib/components/admin/GardenListItem.svelte'
 	import DeleteConfirmationModal from '$lib/components/admin/DeleteConfirmationModal.svelte'
 	import EmptyState from '$lib/components/admin/EmptyState.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 	import { createListFilters, commonSorts } from '$lib/admin/listFilters.svelte'
-	import { api } from '$lib/admin/api'
+	import { createCollectionSession } from '$lib/admin/collection'
+	import { loadGardenItems, deleteGardenItem } from '$lib/admin/garden-requests'
 	import { toast } from '$lib/stores/toast'
-	import { getCategoryLabel, GARDEN_CATEGORIES } from '$lib/constants/garden'
-	import { clickOutside } from '$lib/actions/clickOutside'
+	import { GARDEN_CATEGORIES } from '$lib/constants/garden'
 	import type { GardenItem } from '@prisma/client'
 
 	let items = $state<GardenItem[]>([])
@@ -85,44 +85,15 @@
 		return result
 	})
 
-	onMount(async () => {
-		await loadItems()
+	const collection = createCollectionSession<GardenItem>((next, loading, error) => {
+		items = next
+		isLoading = loading
+		if (error) toast.error(error)
 	})
-
-	async function loadItems() {
-		try {
-			const data = await api.get<{ items: GardenItem[] }>('/api/admin/garden')
-			items = data.items
-		} catch (err) {
-			toast.error('Failed to load garden items')
-			console.error(err)
-		} finally {
-			isLoading = false
-		}
-	}
-
-	function formatRelativeTime(dateString: string): string {
-		const date = new Date(dateString)
-		const now = new Date()
-		const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-		if (diffInSeconds < 60) return 'just now'
-
-		const minutes = Math.floor(diffInSeconds / 60)
-		if (diffInSeconds < 3600) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-
-		const hours = Math.floor(diffInSeconds / 3600)
-		if (diffInSeconds < 86400) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
-
-		const days = Math.floor(diffInSeconds / 86400)
-		if (diffInSeconds < 2592000) return `${days} ${days === 1 ? 'day' : 'days'} ago`
-
-		const months = Math.floor(diffInSeconds / 2592000)
-		if (diffInSeconds < 31536000) return `${months} ${months === 1 ? 'month' : 'months'} ago`
-
-		const years = Math.floor(diffInSeconds / 31536000)
-		return `${years} ${years === 1 ? 'year' : 'years'} ago`
-	}
+	onMount(() => {
+		void collection.load(loadGardenItems)
+	})
+	onDestroy(() => collection.dispose())
 
 	function handleEdit(item: GardenItem) {
 		goto(`/admin/garden/${item.id}/edit`)
@@ -134,37 +105,25 @@
 	}
 
 	async function confirmDelete() {
-		if (!itemToDelete) return
-
+		const item = itemToDelete
+		if (!item) return
 		try {
-			await api.delete(`/api/admin/garden/${itemToDelete.id}`)
-			items = items.filter((i) => i.id !== itemToDelete!.id)
-			toast.success('Item deleted')
-		} catch (err) {
-			toast.error('Failed to delete item')
-			console.error(err)
-		} finally {
-			showDeleteModal = false
-			itemToDelete = null
+			if (await collection.mutate(item.id, (signal) => deleteGardenItem(item.id, signal))) {
+				await collection.load(loadGardenItems)
+				toast.success('Item deleted')
+				if (itemToDelete?.id === item.id) {
+					showDeleteModal = false
+					itemToDelete = null
+				}
+			}
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to delete item')
 		}
 	}
 
 	function cancelDelete() {
 		showDeleteModal = false
 		itemToDelete = null
-	}
-
-	function toggleDropdown(event: MouseEvent, itemId: number) {
-		event.stopPropagation()
-		openDropdownId = openDropdownId === itemId ? null : itemId
-	}
-
-	function buildByline(item: GardenItem): string[] {
-		const sections: string[] = [getCategoryLabel(item.category)]
-		if (item.isCurrent) sections.push('Current')
-		if (item.isFavorite) sections.push('Favorite')
-		sections.push(formatRelativeTime(item.createdAt as unknown as string))
-		return sections
 	}
 </script>
 
@@ -223,79 +182,17 @@
 	{:else}
 		<div class="items-list">
 			{#each filteredItems as item (item.id)}
-				<div
-					class="item-row"
-					role="button"
-					tabindex="0"
-					onclick={() => handleEdit(item)}
-					onkeydown={(e) => e.key === 'Enter' && handleEdit(item)}
-				>
-					<div class="item-thumbnail">
-						{#if item.imageUrl}
-							<img src={item.imageUrl} alt={item.title} />
-						{:else}
-							<div class="placeholder-icon">
-								{getCategoryLabel(item.category).charAt(0)}
-							</div>
-						{/if}
-					</div>
-
-					<div class="item-info">
-						<h3 class="item-title">{item.title}</h3>
-						<AdminByline sections={buildByline(item)} />
-					</div>
-
-					<div
-						class="dropdown-container"
-						use:clickOutside={{ enabled: openDropdownId === item.id }}
-						onclickoutside={() => (openDropdownId = null)}
-					>
-						<button
-							class="action-button"
-							type="button"
-							onclick={(e) => toggleDropdown(e, item.id)}
-							aria-label="Item actions"
-						>
-							<svg
-								width="20"
-								height="20"
-								viewBox="0 0 20 20"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<circle cx="10" cy="4" r="1.5" fill="currentColor" />
-								<circle cx="10" cy="10" r="1.5" fill="currentColor" />
-								<circle cx="10" cy="16" r="1.5" fill="currentColor" />
-							</svg>
-						</button>
-
-						{#if openDropdownId === item.id}
-							<div class="dropdown-menu">
-								<button
-									class="dropdown-item"
-									type="button"
-									onclick={() => {
-										openDropdownId = null
-										handleEdit(item)
-									}}
-								>
-									Edit
-								</button>
-								<div class="dropdown-divider"></div>
-								<button
-									class="dropdown-item danger"
-									type="button"
-									onclick={() => {
-										openDropdownId = null
-										handleDelete(item)
-									}}
-								>
-									Delete
-								</button>
-							</div>
-						{/if}
-					</div>
-				</div>
+				<GardenListItem
+					{item}
+					open={openDropdownId === item.id}
+					onedit={handleEdit}
+					ondelete={handleDelete}
+					ontoggle={(event) => {
+						event.stopPropagation()
+						openDropdownId = openDropdownId === item.id ? null : item.id
+					}}
+					onclose={() => (openDropdownId = null)}
+				/>
 			{/each}
 		</div>
 	{/if}
@@ -315,136 +212,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit-2x;
-	}
-
-	.item-row {
-		display: flex;
-		align-items: center;
-		gap: $unit-2x;
-		padding: $unit-2x;
-		background: white;
-		border-radius: $unit-2x;
-		cursor: pointer;
-		transition: all 0.2s ease;
-
-		&:hover {
-			background-color: $gray-95;
-
-			.item-thumbnail {
-				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-			}
-		}
-	}
-
-	.item-thumbnail {
-		flex-shrink: 0;
-		width: 60px;
-		border-radius: $unit;
-		overflow: hidden;
-		background-color: $gray-95;
-		transition: box-shadow 0.2s ease;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		img {
-			width: 100%;
-			height: auto;
-			display: block;
-		}
-
-		.placeholder-icon {
-			width: 60px;
-			height: 60px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 1.25rem;
-			font-weight: 600;
-			color: $gray-50;
-		}
-	}
-
-	.item-info {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-		min-width: 0;
-	}
-
-	.item-title {
-		font-size: 1rem;
-		font-weight: 600;
-		color: $gray-10;
-		margin: 0;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.dropdown-container {
-		position: relative;
-		flex-shrink: 0;
-	}
-
-	.action-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		height: 36px;
-		padding: 0;
-		background: transparent;
-		border: none;
-		border-radius: $unit;
-		cursor: pointer;
-		color: $gray-30;
-		transition: all 0.2s ease;
-
-		&:hover {
-			background-color: rgba(0, 0, 0, 0.05);
-		}
-	}
-
-	.dropdown-menu {
-		position: absolute;
-		top: 100%;
-		right: 0;
-		margin-top: $unit-half;
-		background: white;
-		border: 1px solid $gray-85;
-		border-radius: $unit;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-		overflow: hidden;
-		min-width: 180px;
-		z-index: 10;
-	}
-
-	.dropdown-item {
-		width: 100%;
-		padding: $unit-2x $unit-3x;
-		background: none;
-		border: none;
-		text-align: left;
-		font-size: 0.875rem;
-		color: $gray-20;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-
-		&:hover {
-			background-color: $gray-95;
-		}
-
-		&.danger {
-			color: $red-60;
-		}
-	}
-
-	.dropdown-divider {
-		height: 1px;
-		background-color: $gray-80;
-		margin: $unit-half 0;
 	}
 
 	.loading {

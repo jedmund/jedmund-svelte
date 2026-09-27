@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate } from '$lib/admin/list-formatting'
 	import { onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
 	import Checkbox from './Checkbox.svelte'
@@ -41,27 +42,6 @@
 		event.stopPropagation()
 		ondelete?.(tag.id)
 		isDropdownOpen = false
-	}
-
-	function formatDate(dateString: string): string {
-		const date = new Date(dateString)
-		const now = new Date()
-		const diffTime = now.getTime() - date.getTime()
-		const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-		if (diffDays === 0) {
-			return 'today'
-		} else if (diffDays === 1) {
-			return 'yesterday'
-		} else if (diffDays < 7) {
-			return `${diffDays} days ago`
-		} else {
-			return date.toLocaleDateString('en-US', {
-				month: 'short',
-				day: 'numeric',
-				year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-			})
-		}
 	}
 
 	onMount(() => {
