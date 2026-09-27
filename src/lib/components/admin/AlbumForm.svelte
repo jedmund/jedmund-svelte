@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto, replaceState } from '$app/navigation'
+	import { untrack } from 'svelte'
+	import { replaceState } from '$app/navigation'
 	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
@@ -21,9 +22,12 @@
 
 	let { album: initialAlbum = null, mode: initialMode }: Props = $props()
 
+	// Capture the starting record once; later saves must not reset unsaved fields.
+	const seed = untrack(() => ({ album: initialAlbum, mode: initialMode }))
+
 	// Local state so we can transition create → edit in place after first save.
-	let album = $state(initialAlbum)
-	let mode = $state<'create' | 'edit'>(initialMode)
+	let album = $state(seed.album)
+	let mode = $state<'create' | 'edit'>(seed.mode)
 
 	// Album schema for validation
 	const albumSchema = z.object({
@@ -37,8 +41,8 @@
 	})
 
 	// State
-	let isLoading = $state(mode === 'edit')
-	let hasLoaded = $state(mode === 'create')
+	let isLoading = $state(seed.mode === 'edit')
+	let hasLoaded = $state(seed.mode === 'create')
 	let isSaving = $state(false)
 	let _validationErrors = $state<Record<string, string>>({})
 	let showBulkAlbumModal = $state(false)
