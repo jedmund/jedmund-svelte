@@ -151,31 +151,45 @@
 		})
 	)
 
-	// Snapshot to preserve scroll position
+	// Snapshot to preserve scroll position AND the photos loaded via infinite
+	// scroll — without them the restored page is only one server page tall and
+	// window.scrollTo clamps back to the top (most visible on mobile).
 	export const snapshot: Snapshot<{
 		scrollY: number
 		horizontalScroll: number | undefined
+		photos: Photo[]
+		offset: number
 	}> = {
 		capture: () => {
-			if (!browser) return { scrollY: 0, horizontalScroll: undefined }
+			if (!browser) return { scrollY: 0, horizontalScroll: undefined, photos: [], offset: 0 }
 
 			return {
 				scrollY: window.scrollY,
-				horizontalScroll: document.querySelector('.horizontal-scroll')?.scrollLeft
+				horizontalScroll: document.querySelector('.horizontal-scroll')?.scrollLeft,
+				photos: allPhotos,
+				offset: currentOffset
 			}
 		},
-		restore: (data) => {
+		restore: (snap) => {
 			if (!browser) return
+
+			// Re-hydrate everything loaded beyond the initial server page first,
+			// so the document is tall enough for the scroll restore below
+			if (snap.photos?.length > allPhotos.length) {
+				allPhotos = snap.photos
+				currentOffset = snap.offset
+				loadedPhotoIds = new Set(snap.photos.map((photo) => photo.id))
+			}
 
 			// Small delay to ensure content is rendered
 			setTimeout(() => {
-				if (data.scrollY) {
-					window.scrollTo(0, data.scrollY)
+				if (snap.scrollY) {
+					window.scrollTo(0, snap.scrollY)
 				}
-				if (data.horizontalScroll !== undefined) {
+				if (snap.horizontalScroll !== undefined) {
 					const element = document.querySelector('.horizontal-scroll')
 					if (element) {
-						element.scrollLeft = data.horizontalScroll
+						element.scrollLeft = snap.horizontalScroll
 					}
 				}
 			}, 10)
