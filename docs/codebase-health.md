@@ -3,7 +3,8 @@
 Started September 27, 2026, against `origin/main` at `2c56f37`.
 
 This ledger tracks the cleanup program, not a declaration that the codebase is
-already healthy. Health-1 is the audit/deletion change on `refactor/codebase-health`.
+already healthy. Health-1 is [PR #105](https://github.com/jedmund/jedmund-svelte/pull/105), the
+audit/deletion change on `refactor/codebase-health`.
 Waves A–H are pending, in the order agreed in the implementation plan. PR numbers
 will be recorded when opened; no wave is considered merged based on this ledger.
 
