@@ -21,6 +21,9 @@ Personal portfolio website built with SvelteKit featuring a content management s
 
 ## Development
 
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for file-size limits, component ownership,
+styling conventions, and validation expectations.
+
 Install dependencies:
 
 ```bash
