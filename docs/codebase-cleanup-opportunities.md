@@ -72,6 +72,15 @@ At review time, GalleryUploader was 1,037 lines, ImageUploader 816, and GardenIt
 
 Benefit: smaller changes, fewer duplicated fixes, and easier reasoning about form state.
 
+First implementation: retire the unreferenced `GalleryUploader`, `GalleryManager`,
+`ProjectGalleryForm`, and `ProjectImagesForm` components (1,918 lines). The active
+project branding form uses `ImageUploader`; it now composes focused drop-zone,
+preview, and description components with independently tested upload/metadata
+sessions. Upload failure/teardown releases timers, same-file selection can retry,
+and serialized description saves preserve in-flight edits and reject stale responses.
+All resulting production components meet the normal file-size limits. Remaining
+large forms and shared autosave presentation remain follow-up work.
+
 ### 4. Clarify server ownership and remove obsolete implementations
 
 Redis lives in `src/routes/api/redis-client.ts`, so server utilities import infrastructure from the routes directory. The older Last.fm stream manager/detector pair appeared unreferenced while the “simple” implementations were active.

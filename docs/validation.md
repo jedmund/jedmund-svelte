@@ -101,3 +101,25 @@ media attachment, and metadata text/date/toggle/tag bindings. The unused generic
 metadata component was mounted through a temporary harness removed after testing.
 No production data or credentials were used. These were smoke checks, not a new
 permanent browser test suite.
+
+## Admin uploader cleanup verification (September 27, 2026)
+
+The file-size gate starts with 59 exact allowances. Removing the unused gallery
+components and extracting ImageUploader reduces that to 56. ImageUploader is
+225 lines; its private Svelte components are 56–177 lines. Tests, request helpers,
+and state controllers have separate ownership rather than moving styles solely
+to satisfy a line count.
+
+Full type checking passes with zero errors and the same seven CSS warnings.
+All three lint checks pass. All 56 tests pass with the synthetic database enabled
+(no skips), including five size-gate tests and twelve uploader regression tests.
+Six editor fixtures verify successfully; application and Storybook builds pass.
+
+Chromium smoke checks against built Storybook cover standard/compact empty and
+populated states, upload progress, failed replacement, and keyboard-visible
+preview controls. Synthetic application checks cover real local logo/featured-image
+uploads, same-file retry, serialized description saves, edits during requests,
+clearing descriptions, retained drafts after failures, keyboard file selection,
+library selection, and project save/reload/removal. External browser requests were
+blocked. Desktop and narrow-screen rendering were inspected. These remain focused
+smoke checks rather than a new permanent browser runner.

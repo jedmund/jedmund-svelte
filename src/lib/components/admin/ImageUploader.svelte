@@ -1,27 +1,32 @@
 <script lang="ts">
+	import { onDestroy, untrack } from 'svelte'
 	import type { Media } from '@prisma/client'
 	import Button from './Button.svelte'
-	import Textarea from './Textarea.svelte'
-	import SmartImage from '../SmartImage.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
-	import RefreshIcon from '$icons/refresh.svg?component'
+	import ImageDropZone from './image-uploader/ImageDropZone.svelte'
+	import ImagePreview from './image-uploader/ImagePreview.svelte'
+	import ImageDescription from './image-uploader/ImageDescription.svelte'
+	import { createUploadSession, type UploadState } from './image-uploader/upload-session'
+	import {
+		createDescriptionSession,
+		type DescriptionState
+	} from './image-uploader/description-session'
 
 	interface Props {
 		label: string
 		value?: Media | null
 		onUpload: (media: Media) => void
 		onRemove?: () => void
-		aspectRatio?: string // e.g., "16:9", "1:1"
+		aspectRatio?: string
 		required?: boolean
 		error?: string
-		allowAltText?: boolean // @deprecated - Now using description field for alt text
-		maxFileSize?: number // MB limit
+		allowAltText?: boolean // Deprecated compatibility prop; description supplies alt text.
+		maxFileSize?: number
 		placeholder?: string
 		helpText?: string
-		showBrowseLibrary?: boolean // Show secondary "Browse Library" button
-		compact?: boolean // Use compact layout with smaller preview and side-by-side alt text
+		showBrowseLibrary?: boolean
+		compact?: boolean
 	}
-
 	let {
 		label,
 		value = $bindable(),
@@ -37,493 +42,140 @@
 		compact = false
 	}: Props = $props()
 
-	// State
-	let isUploading = $state(false)
-	let uploadProgress = $state(0)
-	let uploadError = $state<string | null>(null)
-	let isDragOver = $state(false)
-	let fileInputElement: HTMLInputElement
-	// Removed altText - using only description field
-	let descriptionValue = $state(value?.description || '')
+	let uploadState = $state<UploadState>({ status: 'idle', progress: 0, error: null })
+	let descriptionState = $state<DescriptionState>({ saving: false, error: null })
+	let descriptionValue = $state(untrack(() => value?.description || ''))
 	let isMediaLibraryOpen = $state(false)
-
-	// Computed properties
-	const hasValue = $derived(!!value)
-	const aspectRatioStyle = $derived.by(() => {
-		if (!aspectRatio) return ''
-		const [w, h] = aspectRatio.split(':').map(Number)
-		const ratio = (h / w) * 100
-		return `aspect-ratio: ${w}/${h}; padding-bottom: ${ratio}%;`
+	let fileInput: HTMLInputElement
+	const busy = $derived(uploadState.status === 'uploading')
+	const upload = createUploadSession({
+		onState: (state) => {
+			uploadState = state
+		},
+		onComplete: selectMedia
+	})
+	const description = createDescriptionSession({
+		onState: (state) => {
+			descriptionState = state
+		},
+		onSaved: (update) => {
+			if (value?.id === update.id) value = { ...value, ...update }
+		}
+	})
+	let mediaKey: string | undefined
+	$effect(() => {
+		const key = value ? `${value.id}:${value.url}` : ''
+		if (key === mediaKey) return
+		mediaKey = key
+		untrack(() => {
+			upload.cancel()
+			description.select(value?.id ?? null)
+			descriptionValue = value?.description || ''
+		})
+	})
+	onDestroy(() => {
+		upload.dispose()
+		description.dispose()
 	})
 
-	// File validation
-	function validateFile(file: File): string | null {
-		// Check file type
-		if (!file.type.startsWith('image/')) {
-			return 'Please select an image file'
-		}
-
-		// Check file size
-		const sizeMB = file.size / 1024 / 1024
-		if (sizeMB > maxFileSize) {
-			return `File size must be less than ${maxFileSize}MB`
-		}
-
-		return null
-	}
-
-	// Upload file to server
-	async function uploadFile(file: File): Promise<Media> {
-		const formData = new FormData()
-		formData.append('file', file)
-
-		// Removed altText upload - description is handled separately
-
-		if (descriptionValue.trim()) {
-			formData.append('description', descriptionValue.trim())
-		}
-
-		const response = await fetch('/api/media/upload', {
-			method: 'POST',
-			body: formData,
-			credentials: 'same-origin'
-		})
-
-		if (!response.ok) {
-			const errorData = await response.json()
-			throw new Error(errorData.error?.message || 'Upload failed')
-		}
-
-		return await response.json()
-	}
-
-	// Handle file selection/drop
-	async function handleFiles(files: FileList) {
-		if (files.length === 0) return
-
-		const file = files[0]
-		const validationError = validateFile(file)
-
-		if (validationError) {
-			uploadError = validationError
-			return
-		}
-
-		uploadError = null
-		isUploading = true
-		uploadProgress = 0
-
-		try {
-			// Simulate progress for user feedback
-			const progressInterval = setInterval(() => {
-				if (uploadProgress < 90) {
-					uploadProgress += Math.random() * 10
-				}
-			}, 100)
-
-			const uploadedMedia = await uploadFile(file)
-
-			clearInterval(progressInterval)
-			uploadProgress = 100
-
-			// Brief delay to show completion
-			setTimeout(() => {
-				value = uploadedMedia
-				// altText removed - using description only
-				descriptionValue = uploadedMedia.description || ''
-				onUpload(uploadedMedia)
-				isUploading = false
-				uploadProgress = 0
-			}, 500)
-		} catch (err) {
-			isUploading = false
-			uploadProgress = 0
-			uploadError = err instanceof Error ? err.message : 'Upload failed'
-		}
-	}
-
-	// Drag and drop handlers
-	function handleDragOver(event: DragEvent) {
-		event.preventDefault()
-		isDragOver = true
-	}
-
-	function handleDragLeave(event: DragEvent) {
-		event.preventDefault()
-		isDragOver = false
-	}
-
-	function handleDrop(event: DragEvent) {
-		event.preventDefault()
-		isDragOver = false
-
-		const files = event.dataTransfer?.files
-		if (files) {
-			handleFiles(files)
-		}
-	}
-
-	// Click to browse handler
-	function handleBrowseClick() {
-		fileInputElement?.click()
-	}
-
-	function handleFileInputChange(event: Event) {
-		const target = event.target as HTMLInputElement
-		if (target.files) {
-			handleFiles(target.files)
-		}
-	}
-
-	// Remove uploaded image
-	function handleRemove() {
-		value = null
-		// altText removed
-		descriptionValue = ''
-		uploadError = null
-		onRemove?.()
-	}
-
-	// Removed handleAltTextChange - using only description
-
-	async function handleDescriptionChange() {
-		if (!value) return
-
-		try {
-			const response = await fetch(`/api/media/${value.id}/metadata`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					description: descriptionValue.trim() || null
-				}),
-				credentials: 'same-origin'
-			})
-
-			if (response.ok) {
-				const updatedData = await response.json()
-				value = { ...value, description: updatedData.description, updatedAt: updatedData.updatedAt }
-			}
-		} catch (error) {
-			console.error('Failed to update description:', error)
-		}
-	}
-
-	// Browse library handler
-	function handleBrowseLibrary() {
-		isMediaLibraryOpen = true
-	}
-
-	function handleMediaSelect(selectedMedia: Media | Media[]) {
-		// Since this is single mode, selectedMedia will be a single Media object
-		const media = selectedMedia as Media
+	function selectMedia(media: Media) {
 		value = media
-		// altText removed - using description only
 		descriptionValue = media.description || ''
 		onUpload(media)
 	}
-
-	function handleMediaLibraryClose() {
-		isMediaLibraryOpen = false
+	function browse() {
+		if (!busy) fileInput?.click()
+	}
+	function startUpload(file: File) {
+		return upload.start(file, maxFileSize, descriptionValue)
+	}
+	function fileChanged(event: Event) {
+		const input = event.target as HTMLInputElement
+		const file = input.files?.[0]
+		input.value = ''
+		if (file) startUpload(file)
+	}
+	function remove() {
+		upload.cancel()
+		uploadState = { status: 'idle', progress: 0, error: null }
+		value = null
+		descriptionValue = ''
+		onRemove?.()
 	}
 </script>
 
 <div class="image-uploader" class:compact>
-	<!-- Label -->
 	<div class="uploader-label">
-		{label}
-		{#if required}
-			<span class="required">*</span>
-		{/if}
+		{label}{#if required}<span class="required">*</span>{/if}
 	</div>
-
-	{#if helpText}
-		<p class="help-text">{helpText}</p>
-	{/if}
-
-	<!-- Upload Area or Preview -->
-	<div class="upload-container">
-		{#if hasValue && !isUploading}
-			{#if compact}
-				<!-- Compact Layout: Image and metadata side-by-side -->
-				<div class="compact-preview">
-					<div class="compact-image">
-						<SmartImage
-							media={value!}
-							alt={value?.description || value?.filename || 'Uploaded image'}
-							containerWidth={100}
-							loading="eager"
-							{aspectRatio}
-							class="preview-image"
-						/>
-
-						<!-- Overlay with actions -->
-						<div class="preview-overlay">
-							<div class="preview-actions">
-								<Button variant="overlay" buttonSize="small" onclick={handleBrowseClick}>
-									{#snippet icon()}<RefreshIcon width="12" height="12" />{/snippet}
-								</Button>
-
-								<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
-									{#snippet icon()}<svg
-											width="12"
-											height="12"
-											viewBox="0 0 24 24"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<polyline
-												points="3,6 5,6 21,6"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-											/>
-											<path
-												d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-											/>
-										</svg>{/snippet}
-								</Button>
-							</div>
-						</div>
-					</div>
-
-					<div class="compact-info">
-						<!-- Description Input in compact mode -->
-						<div class="compact-metadata">
-							<Textarea
-								label="Description"
-								bind:value={descriptionValue}
-								placeholder="Describe this image for accessibility and SEO"
-								rows={2}
-								size="small"
-								onblur={handleDescriptionChange}
-							/>
-						</div>
-					</div>
-				</div>
-			{:else}
-				<!-- Standard Layout: Image preview -->
-				<div class="image-preview" style={aspectRatioStyle}>
-					<SmartImage
-						media={value!}
-						alt={value?.description || value?.filename || 'Uploaded image'}
-						containerWidth={800}
-						loading="eager"
-						{aspectRatio}
-						class="preview-image"
-					/>
-
-					<!-- Overlay with actions -->
-					<div class="preview-overlay">
-						<div class="preview-actions">
-							<Button variant="overlay" buttonSize="small" onclick={handleBrowseClick}>
-								{#snippet icon()}<RefreshIcon width="16" height="16" />{/snippet}
-								Replace
-							</Button>
-
-							<Button variant="overlay" buttonSize="small" onclick={handleRemove}>
-								{#snippet icon()}<svg
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										xmlns="http://www.w3.org/2000/svg"
-									>
-										<polyline
-											points="3,6 5,6 21,6"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										/>
-										<path
-											d="M19 6V20A2 2 0 0 1 17 22H7A2 2 0 0 1 5 20V6M8 6V4A2 2 0 0 1 10 2H14A2 2 0 0 1 16 4V6"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										/>
-									</svg>{/snippet}
-								Remove
-							</Button>
-						</div>
-					</div>
-				</div>
-
-				<!-- File Info -->
-				<div class="file-info">
-					<p class="filename">{value?.originalName || value?.filename}</p>
-					<p class="file-meta">
-						{Math.round((value?.size || 0) / 1024)} KB
-						{#if value?.width && value?.height}
-							• {value.width}×{value.height}
-						{/if}
-					</p>
-				</div>
-			{/if}
-		{:else}
-			<!-- Upload Drop Zone -->
-			<div
-				class="drop-zone"
-				class:drag-over={isDragOver}
-				class:uploading={isUploading}
-				class:has-error={!!uploadError}
-				style={aspectRatioStyle}
-				role="button"
-				aria-label="Upload image drop zone"
-				tabindex="0"
-				ondragover={handleDragOver}
-				ondragleave={handleDragLeave}
-				ondrop={handleDrop}
-				onclick={handleBrowseClick}
-				onkeydown={(e) => e.key === 'Enter' && handleBrowseClick()}
-			>
-				{#if isUploading}
-					<!-- Upload Progress -->
-					<div class="upload-progress">
-						<svg class="upload-spinner" width="24" height="24" viewBox="0 0 24 24">
-							<circle
-								cx="12"
-								cy="12"
-								r="10"
-								stroke="currentColor"
-								stroke-width="2"
-								fill="none"
-								stroke-dasharray="60"
-								stroke-dashoffset="60"
-								stroke-linecap="round"
-							>
-								<animateTransform
-									attributeName="transform"
-									type="rotate"
-									from="0 12 12"
-									to="360 12 12"
-									dur="1s"
-									repeatCount="indefinite"
-								/>
-							</circle>
-						</svg>
-						<p class="upload-text">Uploading... {Math.round(uploadProgress)}%</p>
-						<div class="progress-bar">
-							<div class="progress-fill" style="width: {uploadProgress}%"></div>
-						</div>
-					</div>
-				{:else}
-					<!-- Upload Prompt -->
-					<div class="upload-prompt">
-						<svg
-							class="upload-icon"
-							width="48"
-							height="48"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<polyline
-								points="14,2 14,8 20,8"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<line
-								x1="16"
-								y1="13"
-								x2="8"
-								y2="13"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-							/>
-							<line
-								x1="16"
-								y1="17"
-								x2="8"
-								y2="17"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-							/>
-							<polyline
-								points="10,9 9,9 8,9"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-						<p class="upload-main-text">{placeholder}</p>
-						<p class="upload-sub-text">
-							Supports JPG, PNG, GIF up to {maxFileSize}MB
-						</p>
-					</div>
-				{/if}
-			</div>
-		{/if}
-	</div>
-
-	<!-- Action Buttons -->
-	{#if !hasValue && !isUploading}
-		<div class="action-buttons">
-			<Button variant="primary" onclick={handleBrowseClick}>Choose File</Button>
-
-			{#if showBrowseLibrary}
-				<Button variant="ghost" onclick={handleBrowseLibrary}>Browse Library</Button>
-			{/if}
-		</div>
-	{/if}
-
-	<!-- Description Input (only in standard mode, compact mode has it inline) -->
-	{#if hasValue && !compact}
-		<div class="metadata-section">
-			<Textarea
-				label="Description"
+	{#if helpText}<p class="help-text">{helpText}</p>{/if}
+	{#if value && !busy}
+		<ImagePreview media={value} {compact} {aspectRatio} onReplace={browse} onRemove={remove}>
+			<ImageDescription
 				bind:value={descriptionValue}
-				placeholder="Describe this image for accessibility and SEO"
-				helpText="This description will be used for alt text and can also serve as a caption."
-				rows={3}
-				onblur={handleDescriptionChange}
+				{compact}
+				saving={descriptionState.saving}
+				error={descriptionState.error}
+				onSave={() => description.save(descriptionValue)}
 			/>
+		</ImagePreview>
+	{:else}
+		<ImageDropZone
+			{label}
+			{placeholder}
+			{maxFileSize}
+			{aspectRatio}
+			{busy}
+			progress={uploadState.progress}
+			hasError={!!uploadState.error}
+			onBrowse={browse}
+			onFile={startUpload}
+		/>
+	{/if}
+	{#if !value && !busy}
+		<div class="action-buttons">
+			<Button type="button" variant="primary" onclick={browse}>Choose File</Button>
+			{#if showBrowseLibrary}
+				<Button
+					type="button"
+					variant="ghost"
+					onclick={() => {
+						isMediaLibraryOpen = true
+					}}>Browse Library</Button
+				>
+			{/if}
 		</div>
 	{/if}
-
-	<!-- Error Message -->
-	{#if error || uploadError}
-		<p class="error-message">{error || uploadError}</p>
-	{/if}
-
-	<!-- Hidden File Input -->
+	{#if error || uploadState.error}<p class="error-message" role="alert">
+			{error || uploadState.error}
+		</p>{/if}
 	<input
-		bind:this={fileInputElement}
+		bind:this={fileInput}
 		type="file"
 		accept="image/*"
-		style="display: none;"
-		onchange={handleFileInputChange}
+		aria-label={label || 'Image file'}
+		hidden
+		disabled={busy}
+		onchange={fileChanged}
 	/>
 </div>
 
-<!-- Media Library Modal -->
 <UnifiedMediaModal
 	bind:isOpen={isMediaLibraryOpen}
 	mode="single"
 	fileType="image"
 	title="Select Image"
 	confirmText="Select Image"
-	onSelect={handleMediaSelect}
-	onClose={handleMediaLibraryClose}
+	onSelect={(selected) => {
+		const media = Array.isArray(selected) ? selected[0] : selected
+		if (!busy && media) {
+			uploadState = { status: 'idle', progress: 0, error: null }
+			selectMedia(media)
+		}
+	}}
+	onClose={() => {
+		isMediaLibraryOpen = false
+	}}
 />
 
 <style lang="scss">
@@ -531,197 +183,30 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit-2x;
-
 		&.compact {
 			gap: $unit;
 		}
 	}
-
 	.uploader-label {
 		font-size: 0.875rem;
 		font-weight: 500;
 		color: $gray-20;
-
-		.required {
-			color: $red-60;
-			margin-left: $unit-half;
-		}
 	}
-
+	.required {
+		color: $red-60;
+		margin-left: $unit-half;
+	}
 	.help-text {
 		margin: 0;
 		font-size: 0.8rem;
 		color: $gray-40;
 		line-height: 1.4;
 	}
-
-	.upload-container {
-		position: relative;
-	}
-
-	// Drop Zone Styles
-	.drop-zone {
-		border: 2px dashed $gray-80;
-		border-radius: $card-corner-radius;
-		background-color: $gray-97;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		min-height: 200px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		position: relative;
-		overflow: hidden;
-
-		&:hover {
-			border-color: $blue-60;
-			background-color: rgba($blue-60, 0.02);
-		}
-
-		&.drag-over {
-			border-color: $blue-60;
-			background-color: rgba($blue-60, 0.05);
-			border-style: solid;
-		}
-
-		&.uploading {
-			cursor: default;
-			border-color: $blue-60;
-		}
-
-		&.has-error {
-			border-color: $red-60;
-			background-color: rgba($red-60, 0.02);
-		}
-	}
-
-	.upload-prompt {
-		text-align: center;
-		padding: $unit-4x;
-
-		.upload-icon {
-			color: $gray-50;
-			margin-bottom: $unit-2x;
-		}
-
-		.upload-main-text {
-			margin: 0 0 $unit 0;
-			font-size: 0.875rem;
-			color: $gray-30;
-			font-weight: 500;
-		}
-
-		.upload-sub-text {
-			margin: 0;
-			font-size: 0.75rem;
-			color: $gray-50;
-		}
-	}
-
-	.upload-progress {
-		text-align: center;
-		padding: $unit-4x;
-
-		.upload-spinner {
-			color: $blue-60;
-			margin-bottom: $unit-2x;
-		}
-
-		.upload-text {
-			margin: 0 0 $unit-2x 0;
-			font-size: 0.875rem;
-			color: $gray-30;
-			font-weight: 500;
-		}
-
-		.progress-bar {
-			width: 200px;
-			height: 4px;
-			background-color: $gray-90;
-			border-radius: 2px;
-			overflow: hidden;
-			margin: 0 auto;
-
-			.progress-fill {
-				height: 100%;
-				background-color: $blue-60;
-				transition: width 0.3s ease;
-			}
-		}
-	}
-
-	// Image Preview Styles
-	.image-preview {
-		position: relative;
-		border-radius: $card-corner-radius;
-		overflow: hidden;
-		background-color: $gray-95;
-		min-height: 200px;
-
-		:global(.preview-image) {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			display: block;
-		}
-
-		.preview-overlay {
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(0, 0, 0, 0.5);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			opacity: 0;
-			transition: opacity 0.2s ease;
-		}
-
-		&:hover .preview-overlay {
-			opacity: 1;
-		}
-
-		.preview-actions {
-			display: flex;
-			gap: $unit;
-		}
-	}
-
-	.file-info {
-		margin-top: $unit-2x;
-
-		.filename {
-			margin: 0 0 $unit-half 0;
-			font-size: 0.875rem;
-			font-weight: 500;
-			color: $gray-10;
-		}
-
-		.file-meta {
-			margin: 0;
-			font-size: 0.75rem;
-			color: $gray-40;
-		}
-	}
-
 	.action-buttons {
 		display: flex;
 		gap: $unit-2x;
 		align-items: center;
 	}
-
-	.metadata-section {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-2x;
-		padding: $unit-3x;
-		background-color: $gray-97;
-		border-radius: $card-corner-radius;
-		border: 1px solid $gray-90;
-	}
-
 	.error-message {
 		margin: 0;
 		font-size: 0.75rem;
@@ -731,86 +216,10 @@
 		border-radius: $card-corner-radius;
 		border: 1px solid rgba($red-60, 0.2);
 	}
-
-	// Compact layout styles
-	.compact-preview {
-		display: flex;
-		gap: $unit-3x;
-		align-items: flex-start;
-	}
-
-	.compact-image {
-		position: relative;
-		width: 100px;
-		height: 100px;
-		flex-shrink: 0;
-		border-radius: $card-corner-radius;
-		overflow: hidden;
-		background-color: $gray-95;
-		border: 1px solid $gray-90;
-
-		:global(.preview-image) {
-			width: 100%;
-			height: 100%;
-			object-fit: contain;
-			display: block;
-			padding: $unit-3x;
-			box-sizing: border-box;
-		}
-
-		.preview-overlay {
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(0, 0, 0, 0.7);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			opacity: 0;
-			transition: opacity 0.2s ease;
-		}
-
-		&:hover .preview-overlay {
-			opacity: 1;
-		}
-
-		.preview-actions {
-			display: flex;
-			gap: $unit-half;
-		}
-	}
-
-	.compact-info {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-
-		.compact-metadata {
-			display: flex;
-			flex-direction: column;
-			gap: $unit-2x;
-		}
-	}
-
-	// Responsive adjustments
 	@media (max-width: 640px) {
-		.upload-prompt {
-			padding: $unit-3x;
-
-			.upload-main-text {
-				font-size: 0.8rem;
-			}
-		}
-
 		.action-buttons {
 			flex-direction: column;
 			align-items: stretch;
-		}
-
-		.preview-actions {
-			flex-direction: column;
 		}
 	}
 </style>

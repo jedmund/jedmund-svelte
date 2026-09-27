@@ -1,5 +1,11 @@
 import ImageUploader from '$lib/components/admin/ImageUploader.svelte'
 
+const previewUrl =
+	'data:image/svg+xml,' +
+	encodeURIComponent(
+		'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#0066cc"/><text x="110" y="155" fill="white">Sample image</text></svg>'
+	)
+
 // Mock Media object for testing
 const mockMedia = {
 	id: 1,
@@ -9,8 +15,8 @@ const mockMedia = {
 	size: 1024000,
 	width: 1920,
 	height: 1080,
-	url: 'https://via.placeholder.com/400x300/0066cc/ffffff?text=Sample+Image',
-	thumbnailUrl: 'https://via.placeholder.com/400x300/0066cc/ffffff?text=Sample+Image',
+	url: previewUrl,
+	thumbnailUrl: previewUrl,
 	altText: 'A beautiful sample image',
 	description: 'This is a sample image for testing purposes',
 	createdAt: new Date(),
@@ -21,6 +27,7 @@ export default {
 	title: 'Admin/Form Components/ImageUploader',
 	component: ImageUploader,
 	tags: ['autodocs'],
+	args: { onUpload: () => {} },
 	argTypes: {
 		aspectRatio: {
 			control: { type: 'select' },
@@ -126,13 +133,13 @@ export const WithHelpText = {
 	}
 }
 
-// Without alt text
-export const WithoutAltText = {
+// The legacy flag remains accepted; descriptions are always available.
+export const LegacyAltTextFlag = {
 	args: {
 		label: 'Decorative Image',
 		allowAltText: false,
 		placeholder: 'Upload a decorative image',
-		helpText: 'This image is purely decorative and does not need alt text.'
+		helpText: 'The legacy allowAltText flag does not hide the description field.'
 	}
 }
 
@@ -166,4 +173,53 @@ export const Playground = {
 		maxFileSize: 10,
 		showBrowseLibrary: false
 	}
+}
+
+export const CompactEmpty = { args: { ...Empty.args, compact: true } }
+export const CompactWithImage = { args: { ...WithImage.args, compact: true } }
+
+/** @param {'loading' | 'error'} state */
+function mockUpload(state) {
+	return () => {
+		const originalFetch = globalThis.fetch
+		globalThis.fetch = async (input, options) => {
+			if (input !== '/api/media/upload') return originalFetch(input, options)
+			if (state === 'error')
+				return Response.json({ error: { message: 'Upload service unavailable' } }, { status: 503 })
+			return new Promise((_resolve, reject) => {
+				options?.signal?.addEventListener(
+					'abort',
+					() => reject(new DOMException('Aborted', 'AbortError')),
+					{ once: true }
+				)
+			})
+		}
+		return () => {
+			globalThis.fetch = originalFetch
+		}
+	}
+}
+
+/** @param {{ canvasElement: HTMLElement }} context */
+async function selectSample({ canvasElement }) {
+	const input = canvasElement.querySelector('input[type="file"]')
+	if (!(input instanceof HTMLInputElement)) throw new Error('Missing uploader file input')
+	const transfer = new DataTransfer()
+	transfer.items.add(new File(['<svg/>'], 'sample.svg', { type: 'image/svg+xml' }))
+	input.files = transfer.files
+	input.dispatchEvent(new Event('change', { bubbles: true }))
+}
+
+export const Uploading = {
+	args: Empty.args,
+	tags: ['!autodocs'],
+	beforeEach: mockUpload('loading'),
+	play: selectSample
+}
+
+export const FailedReplacement = {
+	args: WithImage.args,
+	tags: ['!autodocs'],
+	beforeEach: mockUpload('error'),
+	play: selectSample
 }
