@@ -4,6 +4,7 @@
 	import { onMount, setContext } from 'svelte'
 	import { initiateEditor, getEditorExtensions } from '$lib/editor/jedmund/editor-extensions.js'
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle'
+	import ComposerControls from './ComposerControls.svelte'
 	import ComposerLinkBubble from './ComposerLinkBubble.svelte'
 	import TableRowMenu from '$lib/editor/jedmund/headless/menus/TableRow.svelte'
 	import TableColMenu from '$lib/editor/jedmund/headless/menus/TableCol.svelte'
@@ -14,19 +15,12 @@
 	import type { Media } from '@prisma/client'
 
 	// Import new components
-	import ComposerToolbar from './ComposerToolbar.svelte'
-	import TextStyleDropdown from './TextStyleDropdown.svelte'
-	import MediaInsertDropdown from './MediaInsertDropdown.svelte'
 	import ComposerLinkManager from './ComposerLinkManager.svelte'
 	import ComposerBubbleMenu from './ComposerBubbleMenu.svelte'
 	import { ComposerMediaHandler } from './ComposerMediaHandler.svelte'
 	import { useComposerEvents } from './useComposerEvents.svelte'
-	import { useDropdown } from './useDropdown.svelte'
 	import type { ComposerProps } from './types'
 	import {
-		getCurrentTextStyle,
-		getFilteredCommands,
-		excludedCommands,
 		getDefaultPlaceholder,
 		getDefaultMinHeight,
 		shouldShowToolbar,
@@ -72,42 +66,11 @@
 	let isLoading = $state(true)
 	const mediaSelectionState = $derived($mediaSelectionStore)
 
-	// Toolbar component ref
-	let toolbarRef = $state<ComposerToolbar>()
-
 	// Link manager ref
 	let linkManagerRef = $state<ComposerLinkManager>()
 
 	// Media handler
 	let mediaHandler = $state<ComposerMediaHandler>()
-
-	// Command configuration
-	const filteredCommands = getFilteredCommands(variant, features)
-	const currentTextStyle = $derived(editor ? getCurrentTextStyle(editor) : 'Paragraph')
-
-	// Dropdown states
-	let showTextStyleDropdown = $state(false)
-	let showMediaDropdown = $state(false)
-
-	// Text style dropdown
-	const textStyleDropdown = $derived.by(() => {
-		return useDropdown({
-			triggerRef: toolbarRef?.getDropdownRefs()?.textStyle,
-			isOpen: showTextStyleDropdown,
-			onClose: () => (showTextStyleDropdown = false),
-			portalClass: 'dropdown-menu-portal'
-		})
-	})
-
-	// Media dropdown
-	const mediaDropdown = $derived.by(() => {
-		return useDropdown({
-			triggerRef: toolbarRef?.getDropdownRefs()?.media,
-			isOpen: showMediaDropdown,
-			onClose: () => (showMediaDropdown = false),
-			portalClass: 'media-dropdown-portal'
-		})
-	})
 
 	// Event handlers
 	const eventHandlers = useComposerEvents({
@@ -216,6 +179,8 @@
 		newEditor.storage.imageModal = { placeholderPos: undefined }
 
 		return () => {
+			mediaHandler?.dispose()
+			eventHandlers.dispose()
 			newEditor.destroy()
 		}
 	})
@@ -248,22 +213,12 @@
 
 <div class={`composer composer--${variant} ${className}`}>
 	{#if showToolbar && editor && !isLoading && features.toolbar !== false}
-		<ComposerToolbar
-			bind:this={toolbarRef}
+		<ComposerControls
 			{editor}
 			{variant}
-			{currentTextStyle}
-			{filteredCommands}
-			{excludedCommands}
-			showMediaLibrary={!!features.mediaLibrary}
-			onTextStyleDropdownToggle={() => {
-				showTextStyleDropdown = !showTextStyleDropdown
-				textStyleDropdown?.toggle()
-			}}
-			onMediaDropdownToggle={() => {
-				showMediaDropdown = !showMediaDropdown
-				mediaDropdown?.toggle()
-			}}
+			{features}
+			{albumId}
+			onOpenMediaLibrary={handleOpenMediaLibrary}
 		/>
 	{/if}
 
@@ -300,28 +255,6 @@
 		<DragHandle {editor} />
 	{/if}
 </div>
-
-<!-- Text Style Dropdown -->
-{#if showTextStyleDropdown && editor}
-	<TextStyleDropdown
-		{editor}
-		position={textStyleDropdown?.position() || { top: 0, left: 0 }}
-		{features}
-		onDismiss={() => (showTextStyleDropdown = false)}
-	/>
-{/if}
-
-<!-- Media Insert Dropdown -->
-{#if showMediaDropdown && editor && features.mediaLibrary}
-	<MediaInsertDropdown
-		{editor}
-		position={mediaDropdown?.position() || { top: 0, left: 0 }}
-		{features}
-		{albumId}
-		onDismiss={() => (showMediaDropdown = false)}
-		onOpenMediaLibrary={handleOpenMediaLibrary}
-	/>
-{/if}
 
 <!-- Global Media Selection Modal -->
 {#if mediaSelectionState.isOpen}
