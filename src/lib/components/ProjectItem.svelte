@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { createCardTilt } from '$lib/public/card-tilt.svelte'
+	import { createSvgLogo } from '$lib/public/svg-logo.svelte'
 	import { goto } from '$app/navigation'
 
 	interface Props {
@@ -37,77 +38,11 @@
 		)
 	)
 
-	// 3D tilt effect
-	let cardElement: HTMLDivElement | undefined = $state.raw()
-	let logoElement: HTMLElement | undefined = $state.raw()
-	let isHovering = $state(false)
-	let transform = $state('')
-	let svgContent = $state('')
-
-	// Logo gravity effect
-	let logoTransform = $state('')
-
-	onMount(() => {
-		// Load SVG content
-		if (logoUrl) {
-			fetch(logoUrl)
-				.then(async (response) => {
-					if (response.ok) {
-						const text = await response.text()
-						const parser = new DOMParser()
-						const doc = parser.parseFromString(text, 'image/svg+xml')
-						const svgElement = doc.querySelector('svg')
-						if (svgElement) {
-							svgElement.removeAttribute('width')
-							svgElement.removeAttribute('height')
-							svgContent = svgElement.outerHTML
-						}
-					}
-				})
-				.catch((error) => {
-					console.error('Failed to load SVG:', error)
-				})
-		}
-	})
-
-	function handleMouseMove(e: MouseEvent) {
-		if (!cardElement || !isHovering) return
-
-		const rect = cardElement.getBoundingClientRect()
-		const x = e.clientX - rect.left
-		const y = e.clientY - rect.top
-
-		const centerX = rect.width / 2
-		const centerY = rect.height / 2
-
-		// 3D tilt for card
-		const rotateX = ((y - centerY) / centerY) * -4
-		const rotateY = ((x - centerX) / centerX) * 4
-		transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.014, 1.014, 1.014)`
-
-		// Gravity-based logo animation
-		// Logo slides in the same direction as the tilt
-		// When tilting down (mouse at bottom), logo slides down
-		// When tilting up (mouse at top), logo slides up
-		const logoX = -rotateY * 1.25 // Same direction as tilt
-		const logoY = rotateX * 1.25 // Same direction as tilt
-
-		logoTransform = `translate(${logoX}px, ${logoY}px)`
-	}
-
-	function handleMouseEnter() {
-		isHovering = true
-	}
-
-	function handleMouseLeave() {
-		isHovering = false
-		transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
-		logoTransform = 'translate(0, 0)'
-	}
-
+	const tilt = createCardTilt(4, 1.014)
+	const logo = createSvgLogo(() => logoUrl)
 	function handleClick() {
 		if (isClickable) {
-			goto(`/work/${slug}`)
+			goto(`/work/${slug}`).catch((error) => console.error('Project navigation failed:', error))
 		}
 	}
 </script>
@@ -117,28 +52,27 @@
 	class:clickable={isClickable}
 	class:list-only={isListOnly}
 	class:password-protected={isPasswordProtected}
-	bind:this={cardElement}
+	bind:this={tilt.element}
 	onclick={handleClick}
 	onkeydown={(e) => e.key === 'Enter' && handleClick()}
-	onmousemove={isClickable ? handleMouseMove : undefined}
-	onmouseenter={isClickable ? handleMouseEnter : undefined}
-	onmouseleave={isClickable ? handleMouseLeave : undefined}
-	style="transform: {transform};"
+	onmousemove={isClickable ? tilt.move : undefined}
+	onmouseenter={isClickable ? tilt.enter : undefined}
+	onmouseleave={isClickable ? tilt.leave : undefined}
+	style="transform: {tilt.transform};"
 	role={isClickable ? 'button' : undefined}
 	{...isClickable ? { tabindex: 0 } : {}}
 >
 	<div class="project-logo" style="background-color: {backgroundColor}">
-		{#if svgContent}
-			<div bind:this={logoElement} class="logo-svg" style="transform: {logoTransform}">
-				{@html svgContent}
+		{#if logo.content}
+			<div class="logo-svg" style="transform: {tilt.logoTransform}">
+				{@html logo.content}
 			</div>
 		{:else if logoUrl}
 			<img
 				src={logoUrl}
 				alt="{name} logo"
 				class="logo-image"
-				bind:this={logoElement}
-				style="transform: {logoTransform}"
+				style="transform: {tilt.logoTransform}"
 			/>
 		{/if}
 	</div>

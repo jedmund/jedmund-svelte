@@ -1,21 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { createSocialReplies } from '$lib/public/social-replies.svelte'
+	import type { SocialReply } from '$lib/public/social-replies'
 	import Page from '$components/Page.svelte'
-
-	interface SocialReply {
-		id: string
-		platform: 'bluesky' | 'mastodon'
-		author: {
-			name: string
-			handle: string
-			avatarUrl: string
-			profileUrl: string
-		}
-		content: string
-		createdAt: string
-		url: string
-		replies?: SocialReply[]
-	}
 
 	interface SocialRepliesProps {
 		contentType: string
@@ -25,81 +11,9 @@
 
 	let { contentType, contentId, debug = false }: SocialRepliesProps = $props()
 
-	const mockReplies: SocialReply[] = [
-		{
-			id: 'mock-bsky-1',
-			platform: 'bluesky',
-			author: {
-				name: 'Alice Park',
-				handle: '@alice.bsky.social',
-				avatarUrl: '',
-				profileUrl: '#'
-			},
-			content:
-				"This is really cool! Love what you're doing with the audio player — the waveform visualization is a nice touch.",
-			createdAt: new Date(Date.now() - 1000 * 60 * 23).toISOString(),
-			url: '#',
-			replies: [
-				{
-					id: 'mock-bsky-2',
-					platform: 'bluesky',
-					author: {
-						name: 'Carol Chen',
-						handle: '@carol.bsky.social',
-						avatarUrl: '',
-						profileUrl: '#'
-					},
-					content:
-						'Agreed! The waveform is such a nice detail. Would love to know what library was used.',
-					createdAt: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
-					url: '#'
-				}
-			]
-		},
-		{
-			id: 'mock-mastodon-1',
-			platform: 'mastodon',
-			author: {
-				name: 'Ben Torres',
-				handle: '@ben@mastodon.social',
-				avatarUrl: '',
-				profileUrl: '#'
-			},
-			content:
-				"Great write-up. I've been thinking about POSSE for my own site — this is a solid reference implementation.",
-			createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-			url: '#'
-		}
-	]
-
-	let replies = $state<SocialReply[]>([])
-	let loading = $state(true)
-
-	onMount(() => {
-		if (debug) {
-			replies = mockReplies
-			loading = false
-		} else {
-			fetchReplies()
-		}
-	})
-
-	async function fetchReplies() {
-		try {
-			const res = await fetch(
-				`/api/syndication/replies?contentType=${contentType}&contentId=${contentId}`
-			)
-			if (res.ok) {
-				const data = await res.json()
-				replies = data.replies
-			}
-		} catch {
-			// Silently fail
-		} finally {
-			loading = false
-		}
-	}
-
+	const response = createSocialReplies(() => ({ contentType, contentId, debug }))
+	const replies = $derived(response.replies)
+	const loading = $derived(response.loading)
 	function formatTime(dateStr: string): string {
 		const date = new Date(dateStr)
 		const now = new Date()

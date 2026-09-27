@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import { extractWaveformData, generateDefaultWaveform } from '$lib/utils/waveform'
+	import AudioVolumeButton from './public/AudioVolumeButton.svelte'
+	import { onDestroy } from 'svelte'
+	import { createAudioPlayer } from '$lib/public/audio-player.svelte'
 
 	interface Props {
 		src: string
@@ -10,19 +11,6 @@
 	}
 
 	let { src, waveformData = null, onWaveformComputed }: Props = $props()
-
-	// Audio state
-	let audioEl: HTMLAudioElement | undefined = $state()
-	let playing = $state(false)
-	let currentTime = $state(0)
-	let duration = $state(0)
-	let volume = $state(1)
-	let muted = $state(false)
-	let previousVolume = $state(1)
-	let scrubbing = $state(false)
-
-	// Waveform data
-	let bars = $state<number[]>(waveformData ?? generateDefaultWaveform())
 
 	// Container ref for responsive bar count
 	let containerEl: HTMLDivElement | undefined = $state()
@@ -37,141 +25,25 @@
 	// Computed waveform width (all inputs are constants)
 	const waveformWidth = BAR_COUNT * (BAR_WIDTH + BAR_GAP) - BAR_GAP
 
-	// Progress fraction
-	const progress = $derived(duration > 0 ? currentTime / duration : 0)
-
-	// Format time as m:ss
-	function formatTime(seconds: number): string {
-		if (!isFinite(seconds) || seconds < 0) return '0:00'
-		const m = Math.floor(seconds / 60)
-		const s = Math.floor(seconds % 60)
-		return `${m}:${s.toString().padStart(2, '0')}`
-	}
-
-	// Displayed timestamp
-	const timestamp = $derived(playing ? formatTime(currentTime) : formatTime(duration))
-
 	// White pill width
 	// 8px left pad + 32px play + 4px gap + 32px timestamp + 8px gap + waveform + 8px right pad
 	const PILL_WIDTH = 8 + 32 + 4 + 32 + 8 + waveformWidth + 8
 
-	// Play/pause
-	function togglePlay() {
-		if (!audioEl) return
-
-		if (playing) {
-			audioEl.pause()
-		} else {
-			// Pause all other audio players on the page
-			document.querySelectorAll('audio').forEach((el) => {
-				if (el !== audioEl) el.pause()
-			})
-			audioEl.play()
-		}
-	}
-
-	// Volume toggle (mute/unmute)
-	function toggleMute() {
-		if (!audioEl) return
-
-		if (muted) {
-			muted = false
-			volume = previousVolume || 1
-			audioEl.volume = volume
-			audioEl.muted = false
-		} else {
-			previousVolume = volume
-			muted = true
-			audioEl.volume = 0
-			audioEl.muted = true
-		}
-	}
-
-	// Waveform scrubbing
-	function handleWaveformPointerDown(e: PointerEvent) {
-		scrubbing = true
-		seekFromPointer(e)
-		;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-	}
-
-	function handleWaveformPointerMove(e: PointerEvent) {
-		if (!scrubbing) return
-		seekFromPointer(e)
-	}
-
-	function handleWaveformPointerUp() {
-		scrubbing = false
-	}
-
-	function seekFromPointer(e: PointerEvent) {
-		if (!audioEl) return
-		const svg = e.currentTarget as SVGSVGElement
-		const rect = svg.getBoundingClientRect()
-		const x = e.clientX - rect.left
-		const fraction = Math.max(0, Math.min(1, x / rect.width))
-		audioEl.currentTime = fraction * duration
-	}
-
-	// Audio event handlers
-	function onTimeUpdate() {
-		if (audioEl) currentTime = audioEl.currentTime
-	}
-
-	function onLoadedMetadata() {
-		if (audioEl) duration = audioEl.duration
-	}
-
-	function onDurationChange() {
-		if (audioEl) duration = audioEl.duration
-	}
-
-	function onPlay() {
-		playing = true
-	}
-
-	function onPause() {
-		playing = false
-	}
-
-	function onEnded() {
-		playing = false
-		currentTime = 0
-	}
-
-	// Compute waveform on mount if not provided
-	onMount(() => {
-		if (!waveformData && src) {
-			extractWaveformData(src, BAR_COUNT)
-				.then((data) => {
-					bars = data
-					onWaveformComputed?.(data)
-				})
-				.catch(() => {
-					// Keep the default waveform on error
-				})
-		}
-	})
-
-	// Volume icon arc count: 0 when muted, 1-3 based on volume
-	const volumeArcs = $derived.by(() => {
-		if (muted || volume === 0) return 0
-		if (volume < 0.33) return 1
-		if (volume < 0.66) return 2
-		return 3
-	})
+	const audio = createAudioPlayer(() => ({ src, waveformData, onWaveformComputed }))
+	onDestroy(() => audio.dispose())
 </script>
 
 <div class="audio-player" bind:this={containerEl}>
 	<audio
-		bind:this={audioEl}
+		bind:this={audio.audioEl}
 		{src}
 		preload="metadata"
-		ontimeupdate={onTimeUpdate}
-		onloadedmetadata={onLoadedMetadata}
-		ondurationchange={onDurationChange}
-		onplay={onPlay}
-		onpause={onPause}
-		onended={onEnded}
+		ontimeupdate={audio.onTimeUpdate}
+		onloadedmetadata={audio.onLoadedMetadata}
+		ondurationchange={audio.onDurationChange}
+		onplay={audio.onPlay}
+		onpause={audio.onPause}
+		onended={audio.onEnded}
 	></audio>
 
 	<div class="outer-pill">
@@ -181,8 +53,12 @@
 		<!-- Content layer -->
 		<div class="content-layer">
 			<!-- Play/Pause button -->
-			<button class="play-button" onclick={togglePlay} aria-label={playing ? 'Pause' : 'Play'}>
-				{#if playing}
+			<button
+				class="play-button"
+				onclick={audio.togglePlay}
+				aria-label={audio.playing ? 'Pause' : 'Play'}
+			>
+				{#if audio.playing}
 					<!-- Pause icon: two red bars -->
 					<svg width="12" height="14" viewBox="0 0 12 14" fill="none">
 						<rect x="0" y="1" width="4" height="12" rx="1" fill="var(--audio-accent)" />
@@ -200,7 +76,7 @@
 			</button>
 
 			<!-- Timestamp -->
-			<span class="timestamp">{timestamp}</span>
+			<span class="timestamp">{audio.timestamp}</span>
 
 			<!-- Waveform -->
 			<div class="waveform-container">
@@ -209,16 +85,16 @@
 					width={waveformWidth}
 					height={BAR_MAX_HEIGHT}
 					viewBox="0 0 {waveformWidth} {BAR_MAX_HEIGHT}"
-					onpointerdown={handleWaveformPointerDown}
-					onpointermove={handleWaveformPointerMove}
-					onpointerup={handleWaveformPointerUp}
+					onpointerdown={audio.handleWaveformPointerDown}
+					onpointermove={audio.handleWaveformPointerMove}
+					onpointerup={audio.handleWaveformPointerUp}
 				>
-					{#each bars as barValue, i}
+					{#each audio.bars as barValue, i}
 						{@const barHeight = Math.max(BAR_MIN_HEIGHT, barValue * BAR_MAX_HEIGHT)}
 						{@const x = i * (BAR_WIDTH + BAR_GAP)}
 						{@const y = (BAR_MAX_HEIGHT - barHeight) / 2}
 						{@const barProgress = (i + 0.5) / BAR_COUNT}
-						{@const isPlayed = barProgress <= progress}
+						{@const isPlayed = barProgress <= audio.progress}
 						<rect
 							{x}
 							{y}
@@ -226,77 +102,17 @@
 							height={barHeight}
 							rx="1.5"
 							class="bar"
-							class:played={isPlayed && playing}
-							class:unplayed={!isPlayed && playing}
-							class:paused={!playing && !scrubbing}
-							class:scrub-played={isPlayed && scrubbing && !playing}
-							class:scrub-unplayed={!isPlayed && scrubbing && !playing}
+							class:played={isPlayed && audio.playing}
+							class:unplayed={!isPlayed && audio.playing}
+							class:paused={!audio.playing && !audio.scrubbing}
+							class:scrub-played={isPlayed && audio.scrubbing && !audio.playing}
+							class:scrub-unplayed={!isPlayed && audio.scrubbing && !audio.playing}
 						/>
 					{/each}
 				</svg>
 			</div>
 
-			<!-- Volume button -->
-			<button class="volume-button" onclick={toggleMute} aria-label={muted ? 'Unmute' : 'Mute'}>
-				<svg width="20" height="18" viewBox="0 0 20 18" fill="none">
-					<!-- Speaker body -->
-					<path
-						d="M2 6.5H5L9 2.5V15.5L5 11.5H2C1.4 11.5 1 11.1 1 10.5V7.5C1 6.9 1.4 6.5 2 6.5Z"
-						fill="var(--volume-color)"
-					/>
-
-					{#if muted || volume === 0}
-						<!-- X mark for muted -->
-						<line
-							x1="13"
-							y1="6"
-							x2="18"
-							y2="12"
-							stroke="var(--volume-color)"
-							stroke-width="1.5"
-							stroke-linecap="round"
-						/>
-						<line
-							x1="18"
-							y1="6"
-							x2="13"
-							y2="12"
-							stroke="var(--volume-color)"
-							stroke-width="1.5"
-							stroke-linecap="round"
-						/>
-					{:else}
-						<!-- Volume arcs -->
-						{#if volumeArcs >= 1}
-							<path
-								d="M12 7.5C12.8 8.3 12.8 9.7 12 10.5"
-								stroke="var(--volume-color)"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								fill="none"
-							/>
-						{/if}
-						{#if volumeArcs >= 2}
-							<path
-								d="M14 5.5C15.7 7.2 15.7 10.8 14 12.5"
-								stroke="var(--volume-color)"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								fill="none"
-							/>
-						{/if}
-						{#if volumeArcs >= 3}
-							<path
-								d="M16 3.5C18.5 6 18.5 12 16 14.5"
-								stroke="var(--volume-color)"
-								stroke-width="1.5"
-								stroke-linecap="round"
-								fill="none"
-							/>
-						{/if}
-					{/if}
-				</svg>
-			</button>
+			<AudioVolumeButton muted={audio.muted} volume={audio.volume} ontoggle={audio.toggleMute} />
 		</div>
 	</div>
 </div>
@@ -406,26 +222,6 @@
 
 		&.scrub-unplayed {
 			fill: var(--audio-accent-light);
-		}
-	}
-
-	.volume-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 32px;
-		height: 32px;
-		border: none;
-		background: none;
-		cursor: pointer;
-		padding: 0;
-		flex-shrink: 0;
-		border-radius: 50%;
-		transition: background $transition-fast ease;
-		margin-left: $unit-half;
-
-		&:hover {
-			background: rgba(0, 0, 0, 0.05);
 		}
 	}
 </style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { observeUltrawideZoom } from '$lib/public/ultrawide-zoom'
 	import Zoom from 'svelte-medium-image-zoom'
 	import 'svelte-medium-image-zoom/dist/styles.css'
 	import { onMount } from 'svelte'
@@ -45,113 +46,13 @@
 		}
 	}
 
-	// Update scroll indicators based on scroll position
-	function updateScrollIndicators(modal: HTMLElement) {
-		const isAtStart = modal.scrollLeft <= 0
-		const isAtEnd = modal.scrollLeft >= modal.scrollWidth - modal.clientWidth - 1
-
-		if (isAtStart) {
-			modal.setAttribute('data-at-start', '')
-		} else {
-			modal.removeAttribute('data-at-start')
-		}
-
-		if (isAtEnd) {
-			modal.setAttribute('data-at-end', '')
-		} else {
-			modal.removeAttribute('data-at-end')
-		}
-	}
-
-	// Enhance zoom behavior for ultrawide images
-	function enhanceZoomForUltrawide() {
-		if (!isUltrawide) return
-
-		console.log('Setting up ultrawide zoom enhancement')
-
-		// Wait for zoom to be activated
-		const observer = new MutationObserver((mutations) => {
-			mutations.forEach((mutation) => {
-				if (mutation.type === 'childList') {
-					// Check for zoom overlay - try multiple selectors
-					const zoomOverlay =
-						document.querySelector('[data-smiz-overlay]') ||
-						document.querySelector('.medium-image-zoom-overlay') ||
-						document.querySelector('[data-rmiz-modal-overlay]')
-					const zoomedImage = (document.querySelector('[data-smiz-modal] img') ||
-						document.querySelector('.medium-image-zoom-image') ||
-						document.querySelector('[data-rmiz-modal-img]')) as HTMLElement | null
-
-					console.log('Checking for zoom elements:', {
-						zoomOverlay: !!zoomOverlay,
-						zoomedImage: !!zoomedImage,
-						allDivs: document.querySelectorAll('div').length,
-						bodyChildren: document.body.children.length
-					})
-
-					// Also check for any new elements with specific classes
-					const allNewElements = mutation.addedNodes
-					allNewElements.forEach((node) => {
-						if (node.nodeType === 1) {
-							// Element node
-							const element = node as HTMLElement
-							console.log(
-								'New element added:',
-								element.tagName,
-								element.className,
-								element.getAttribute('data-rmiz-modal-overlay')
-							)
-						}
-					})
-
-					if (zoomOverlay && zoomedImage) {
-						console.log('Zoom activated, applying ultrawide enhancements')
-						// Add custom class for ultrawide handling
-						zoomOverlay.classList.add('ultrawide-zoom')
-
-						// Make the zoomed image scrollable horizontally
-						const modal = zoomedImage.closest('[data-smiz-modal]') as HTMLElement
-						if (modal) {
-							modal.style.overflow = 'auto'
-							modal.style.maxHeight = '90vh'
-
-							// Adjust image height to fill more vertical space for ultrawide
-							zoomedImage.style.maxHeight = '85vh'
-							zoomedImage.style.height = 'auto'
-							zoomedImage.style.width = 'auto'
-							zoomedImage.style.maxWidth = 'none'
-
-							// Center the scroll position initially
-							setTimeout(() => {
-								const scrollLeft = (modal.scrollWidth - modal.clientWidth) / 2
-								modal.scrollLeft = scrollLeft
-								updateScrollIndicators(modal)
-							}, 50)
-
-							// Add scroll listener to update indicators
-							modal.addEventListener('scroll', () => updateScrollIndicators(modal))
-						}
-					}
-				}
-			})
-		})
-
-		observer.observe(document.body, {
-			childList: true,
-			subtree: true
-		})
-
-		// Clean up observer when component unmounts
-		return () => observer.disconnect()
-	}
-
 	$effect(() => {
 		checkIfUltrawide()
 	})
 
 	$effect(() => {
 		if (isUltrawide && imageLoaded && !isMobile) {
-			const cleanup = enhanceZoomForUltrawide()
+			const cleanup = observeUltrawideZoom()
 			return cleanup
 		}
 	})

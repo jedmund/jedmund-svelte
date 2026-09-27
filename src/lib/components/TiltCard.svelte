@@ -1,44 +1,18 @@
 <script lang="ts">
+	import { createCardTilt } from '$lib/public/card-tilt.svelte'
 	import type { Snippet } from 'svelte'
 	let { children }: { children?: Snippet } = $props()
-	let cardElement: HTMLDivElement
-	let isHovering = $state(false)
-	let transform = $state('')
-
-	function handleMouseMove(e: MouseEvent) {
-		if (!cardElement || !isHovering) return
-
-		const rect = cardElement.getBoundingClientRect()
-		const x = e.clientX - rect.left
-		const y = e.clientY - rect.top
-
-		const centerX = rect.width / 2
-		const centerY = rect.height / 2
-
-		const rotateX = ((y - centerY) / centerY) * -5 // -4 to 4 degrees
-		const rotateY = ((x - centerX) / centerX) * 5 // -4 to 4 degrees
-
-		transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.014, 1.014, 1.014)`
-	}
-
-	function handleMouseEnter() {
-		isHovering = true
-	}
-
-	function handleMouseLeave() {
-		isHovering = false
-		transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
-	}
+	const tilt = createCardTilt(5, 1.014)
 </script>
 
 <div
 	class="tilt-card"
-	bind:this={cardElement}
+	bind:this={tilt.element}
 	role="presentation"
-	onmousemove={handleMouseMove}
-	onmouseenter={handleMouseEnter}
-	onmouseleave={handleMouseLeave}
-	style="transform: {transform};"
+	onmousemove={tilt.move}
+	onmouseenter={tilt.enter}
+	onmouseleave={tilt.leave}
+	style="transform: {tilt.transform};"
 >
 	{#if children}{@render children()}{/if}
 </div>

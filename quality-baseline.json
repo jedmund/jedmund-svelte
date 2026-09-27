@@ -1,13 +1,5 @@
 {
 	"fileSizes": {
-		"src/lib/components/AppleMusicSearchModal.svelte": 444,
-		"src/lib/components/AudioPlayer.svelte": 431,
-		"src/lib/components/DebugPanel.svelte": 1129,
-		"src/lib/components/LabCard.svelte": 340,
-		"src/lib/components/PhotoViewEnhanced.svelte": 302,
-		"src/lib/components/ProjectItem.svelte": 317,
-		"src/lib/components/Slideshow.svelte": 364,
-		"src/lib/components/SocialReplies.svelte": 320,
 		"src/lib/components/admin/Button.svelte": 421,
 		"src/lib/components/admin/FilePreviewList.svelte": 313,
 		"src/lib/components/admin/FileUploadZone.svelte": 314,
@@ -16,10 +8,6 @@
 		"src/lib/components/admin/MediaGrid.svelte": 343,
 		"src/lib/components/admin/TagInput.svelte": 312,
 		"src/lib/components/admin/composer/ComposerBubbleMenu.svelte": 332,
-		"src/lib/components/admin/composer/ComposerCore.svelte": 346,
-		"src/routes/albums/+page.svelte": 481,
-		"src/routes/photos/+page.svelte": 443,
-		"src/routes/photos/[id]/+page.svelte": 679,
-		"src/routes/work/[slug]/+page.svelte": 314
+		"src/lib/components/admin/composer/ComposerCore.svelte": 346
 	}
 }
