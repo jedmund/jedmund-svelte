@@ -1,130 +1,90 @@
 <script lang="ts">
+	import { untrack } from 'svelte'
 	import Modal from './Modal.svelte'
 	import Button from './Button.svelte'
 	import FileUploadZone from './FileUploadZone.svelte'
 	import FilePreviewList from './FilePreviewList.svelte'
+	import { createUploadCompletion } from '$lib/admin/media/upload-completion'
+	import { createUploadQueue, emptyUploadQueue } from '$lib/admin/media/upload-queue'
 
-	interface Props {
+	let {
+		isOpen = $bindable(),
+		onClose,
+		onUploadComplete
+	}: {
 		isOpen: boolean
 		onClose: () => void
-		onUploadComplete: () => void
-	}
-
-	let { isOpen = $bindable(), onClose, onUploadComplete }: Props = $props()
-
-	let files = $state<File[]>([])
-	let dragActive = $state(false)
-	let isUploading = $state(false)
-	let uploadProgress = $state<Record<string, number>>({})
-	let uploadErrors = $state<string[]>([])
-	let successCount = $state(0)
-
-	// Reset state when modal opens/closes
+		onUploadComplete: () => void | Promise<void>
+	} = $props()
+	let uploadState = $state.raw(emptyUploadQueue())
+	let queue: ReturnType<typeof createUploadQueue> | undefined
+	const completion = createUploadCompletion()
+	const files = $derived(uploadState.entries.map((entry) => entry.file))
+	const isUploading = $derived(uploadState.running)
+	const uploadErrors = $derived(uploadState.errors)
+	const successCount = $derived(
+		uploadState.entries.filter((entry) => entry.status === 'complete').length
+	)
 	$effect(() => {
-		if (!isOpen) {
-			files = []
-			dragActive = false
-			isUploading = false
-			uploadProgress = {}
-			uploadErrors = []
-			successCount = 0
+		if (!isOpen) return
+		const session = createUploadQueue({ onChange: (value) => (uploadState = value) })
+		untrack(() => {
+			uploadState = emptyUploadQueue()
+			queue = session
+		})
+		return () => {
+			session.dispose()
+			completion.cancel()
+			queue = undefined
 		}
 	})
-
-	function handleFilesAdded(newFiles: File[]) {
-		addFiles(newFiles)
+	function handleFilesAdded(files: File[]) {
+		completion.cancel()
+		queue?.add(files)
 	}
-
-	function addFiles(newFiles: File[]) {
-		// Filter for supported file types (images and videos)
-		const supportedFiles = newFiles.filter(
-			(file) => file.type.startsWith('image/') || file.type.startsWith('video/')
-		)
-
-		if (supportedFiles.length !== newFiles.length) {
-			uploadErrors = [
-				...uploadErrors,
-				`${newFiles.length - supportedFiles.length} unsupported files were skipped`
-			]
-		}
-
-		files = [...files, ...supportedFiles]
+	function removeFile(file: File) {
+		completion.cancel()
+		queue?.remove(file)
 	}
-
-	function removeFile(id: string | number) {
-		// For files, the id is the filename
-		const fileToRemove = files.find((f) => f.name === id)
-		if (fileToRemove) {
-			files = files.filter((f) => f.name !== id)
-			// Clear any related upload progress
-			if (uploadProgress[fileToRemove.name]) {
-				const { [fileToRemove.name]: _, ...rest } = uploadProgress
-				uploadProgress = rest
-			}
-		}
-	}
-
-	async function uploadFiles() {
-		if (files.length === 0) return
-
-		isUploading = true
-		uploadErrors = []
-		successCount = 0
-		uploadProgress = {}
-
-		// Upload files individually to show progress
-		for (const file of files) {
-			try {
-				const formData = new FormData()
-				formData.append('file', file)
-
-				const response = await fetch('/api/media/upload', {
-					method: 'POST',
-					body: formData,
-					credentials: 'same-origin'
-				})
-
-				if (!response.ok) {
-					const error = await response.json()
-					uploadErrors = [
-						...uploadErrors,
-						`${file.name}: ${error.error?.message || 'Upload failed'}`
-					]
-				} else {
-					successCount++
-					uploadProgress = { ...uploadProgress, [file.name]: 100 }
-				}
-			} catch {
-				uploadErrors = [...uploadErrors, `${file.name}: Network error`]
-			}
-		}
-
-		isUploading = false
-
-		// If all uploads succeeded, close modal and refresh media list
-		if (successCount === files.length && uploadErrors.length === 0) {
-			setTimeout(() => {
-				onUploadComplete()
-				onClose()
-			}, 1500)
-		}
-	}
-
 	function clearAll() {
-		files = []
-		uploadProgress = {}
-		uploadErrors = []
-		successCount = 0
+		completion.cancel()
+		queue?.clear()
 	}
-
 	function handleClose() {
-		if (!isUploading) {
-			onClose()
+		completion.cancel()
+		isOpen = false
+		onClose()
+	}
+	async function uploadFiles() {
+		const session = queue
+		if (!session) return
+		completion.cancel()
+		if (await session.run()) {
+			if (queue !== session) return
+			completion.schedule(
+				onUploadComplete,
+				() => {
+					if (queue === session) handleClose()
+				},
+				() => {
+					if (queue === session)
+						uploadState = {
+							...uploadState,
+							errors: ['Uploads saved, but the library could not refresh. Close and reload.']
+						}
+				}
+			)
 		}
 	}
 </script>
 
-<Modal bind:isOpen on:close={handleClose} size="large">
+<Modal
+	bind:isOpen
+	onClose={handleClose}
+	size="large"
+	closeOnBackdrop={!isUploading}
+	closeOnEscape={!isUploading}
+>
 	<div class="upload-modal-content">
 		<div class="modal-header">
 			<h2>Upload Media</h2>
@@ -134,8 +94,12 @@
 			{#if files.length > 0}
 				<FilePreviewList
 					{files}
-					onRemove={removeFile}
-					{uploadProgress}
+					onRemoveFile={removeFile}
+					progressFor={(file) =>
+						uploadState.entries.find((entry) => entry.file === file)?.status === 'complete'
+							? 100
+							: 0}
+					{uploadErrors}
 					{isUploading}
 					variant="upload"
 				/>
@@ -148,7 +112,6 @@
 				multiple={true}
 				compact={files.length > 0}
 				disabled={isUploading}
-				{dragActive}
 			/>
 
 			<!-- Upload Results -->
@@ -180,13 +143,13 @@
 				variant="primary"
 				buttonSize="medium"
 				onclick={uploadFiles}
-				disabled={isUploading || files.length === 0}
+				disabled={isUploading || files.length === successCount}
 				loading={isUploading}
 			>
 				{isUploading
 					? 'Uploading...'
 					: files.length > 0
-						? `Upload ${files.length} file${files.length !== 1 ? 's' : ''}`
+						? `Upload ${files.length - successCount} file${files.length - successCount !== 1 ? 's' : ''}`
 						: 'Upload files'}
 			</Button>
 		</div>
