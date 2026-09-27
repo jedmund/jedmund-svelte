@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Button from './Button.svelte'
+	import ImagePickerMetadata from './media/ImagePickerMetadata.svelte'
+	import ImagePickerActions from './media/ImagePickerActions.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import type { Media } from '@prisma/client'
 
@@ -39,14 +41,6 @@
 		showModal = true
 	}
 
-	function formatFileSize(bytes: number): string {
-		if (bytes === 0) return '0 B'
-		const k = 1024
-		const sizes = ['B', 'KB', 'MB', 'GB']
-		const i = Math.floor(Math.log(bytes) / Math.log(k))
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-	}
-
 	// Computed properties
 	const hasImage = $derived(value !== null && value !== undefined)
 	const selectedIds = $derived(hasImage ? [value!.id] : [])
@@ -79,7 +73,16 @@
 		role="button"
 		tabindex="0"
 		onclick={openModal}
-		onkeydown={(e) => e.key === 'Enter' && openModal()}
+		onkeydown={(e) => {
+			if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+				e.preventDefault()
+				openModal()
+			}
+		}}
+		onfocusin={() => (isHovering = true)}
+		onfocusout={(e) => {
+			if (!e.currentTarget.contains(e.relatedTarget as Node | null)) isHovering = false
+		}}
 		onmouseenter={() => (isHovering = true)}
 		onmouseleave={() => (isHovering = false)}
 	>
@@ -89,53 +92,7 @@
 
 			<!-- Hover Overlay -->
 			{#if isHovering}
-				<div class="image-overlay">
-					<div class="overlay-actions">
-						<Button variant="primary" onclick={openModal}>
-							{#snippet icon()}<svg
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/>
-									<path
-										d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/>
-								</svg>{/snippet}
-							Change
-						</Button>
-						<Button variant="ghost" onclick={handleClear}>
-							{#snippet icon()}<svg
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/>
-								</svg>{/snippet}
-							Remove
-						</Button>
-					</div>
-				</div>
+				<ImagePickerActions onChange={openModal} onClear={handleClear} />
 			{/if}
 		{:else}
 			<!-- Empty State -->
@@ -185,22 +142,7 @@
 
 	<!-- Image Details -->
 	{#if hasImage && value}
-		<div class="image-details">
-			<div class="detail-row">
-				<span class="detail-label">Filename:</span>
-				<span class="detail-value">{value.filename}</span>
-			</div>
-			<div class="detail-row">
-				<span class="detail-label">Size:</span>
-				<span class="detail-value">{formatFileSize(value.size)}</span>
-			</div>
-			{#if showDimensions && value.width && value.height}
-				<div class="detail-row">
-					<span class="detail-label">Dimensions:</span>
-					<span class="detail-value">{value.width} × {value.height} px</span>
-				</div>
-			{/if}
-		</div>
+		<ImagePickerMetadata media={value} {showDimensions} />
 	{/if}
 
 	<!-- Error Message -->
@@ -286,32 +228,6 @@
 		display: block;
 	}
 
-	.image-overlay {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.6);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		opacity: 0;
-		transition: opacity 0.2s ease;
-		animation: fadeIn 0.2s ease forwards;
-	}
-
-	@keyframes fadeIn {
-		to {
-			opacity: 1;
-		}
-	}
-
-	.overlay-actions {
-		display: flex;
-		gap: $unit-2x;
-	}
-
 	.empty-state {
 		display: flex;
 		flex-direction: column;
@@ -336,33 +252,6 @@
 		margin-bottom: $unit;
 	}
 
-	.image-details {
-		padding: $unit-2x;
-		background-color: $gray-95;
-		border-radius: $card-corner-radius;
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-	}
-
-	.detail-row {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.875rem;
-	}
-
-	.detail-label {
-		font-weight: 500;
-		color: $gray-30;
-	}
-
-	.detail-value {
-		color: $gray-10;
-		text-align: right;
-		word-break: break-all;
-	}
-
 	.error-message {
 		margin: 0;
 		font-size: 0.75rem;
@@ -379,21 +268,6 @@
 		.empty-icon svg {
 			width: 32px;
 			height: 32px;
-		}
-
-		.overlay-actions {
-			flex-direction: column;
-			gap: $unit;
-		}
-
-		.detail-row {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: $unit-half;
-		}
-
-		.detail-value {
-			text-align: left;
 		}
 	}
 </style>

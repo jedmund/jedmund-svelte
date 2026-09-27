@@ -4,12 +4,13 @@
 	import Button from './Button.svelte'
 	import CloseButton from '../icons/CloseButton.svelte'
 	import LoadingSpinner from './LoadingSpinner.svelte'
+	import { changeAlbumMembership } from '$lib/admin/media/requests'
 
 	interface Props {
 		isOpen: boolean
 		selectedMediaIds: number[]
 		onClose?: () => void
-		onSave?: () => void
+		onSave?: () => void | Promise<void>
 	}
 
 	let { isOpen = $bindable(), selectedMediaIds = [], onClose, onSave }: Props = $props()
@@ -18,46 +19,46 @@
 	let selectedAlbumId = $state<number | null>(null)
 	let isSaving = $state(false)
 	let error = $state('')
+	let savedTarget = ''
+	let request: AbortController | undefined
 
 	// Reset state when modal opens
 	$effect(() => {
 		if (isOpen) {
+			savedTarget = ''
 			selectedAlbumId = null
 			error = ''
+			isSaving = false
 		}
+		return () => request?.abort()
 	})
 
 	async function handleSave() {
-		if (!selectedAlbumId || selectedMediaIds.length === 0) return
+		if (!selectedAlbumId || selectedMediaIds.length === 0 || isSaving) return
+		const active = (request = new AbortController())
 
 		try {
 			isSaving = true
 			error = ''
 
-			const response = await fetch(`/api/albums/${selectedAlbumId}/media`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ mediaIds: selectedMediaIds }),
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				throw new Error('Failed to add media to album')
+			const target = JSON.stringify([selectedAlbumId, [...selectedMediaIds].sort((a, b) => a - b)])
+			if (savedTarget !== target) {
+				await changeAlbumMembership(selectedAlbumId, [...selectedMediaIds], true, active.signal)
+				if (active.signal.aborted) return
+				savedTarget = target
 			}
-
-			handleClose()
-			onSave?.()
+			await onSave?.()
+			if (!active.signal.aborted) handleClose()
 		} catch (err) {
-			console.error('Failed to update album:', err)
+			if (active.signal.aborted) return
 			error = err instanceof Error ? err.message : 'Failed to update album'
 		} finally {
-			isSaving = false
+			if (!active.signal.aborted) isSaving = false
 		}
 	}
 
 	function handleClose() {
+		request?.abort()
 		selectedAlbumId = null
 		error = ''
 		isOpen = false

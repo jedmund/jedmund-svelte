@@ -3,12 +3,12 @@ import type { Media } from '@prisma/client'
 /**
  * Format file size in human-readable format
  */
-export function formatFileSize(bytes: number): string {
-	if (bytes === 0) return '0 Bytes'
+export function formatFileSize(bytes: number, precision = 2, byteLabel = 'Bytes'): string {
+	if (bytes === 0) return `0 ${byteLabel}`
 	const k = 1024
-	const sizes = ['Bytes', 'KB', 'MB', 'GB']
+	const sizes = [byteLabel, 'KB', 'MB', 'GB']
 	const i = Math.floor(Math.log(bytes) / Math.log(k))
-	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(precision)) + ' ' + sizes[i]
 }
 
 /**

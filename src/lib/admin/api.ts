@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation'
+import { responseData } from './response'
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -9,37 +10,15 @@ export interface RequestOptions<TBody = unknown> {
 	headers?: Record<string, string>
 }
 
-export interface ApiError extends Error {
-	status: number
-	details?: unknown
-}
-
-function getAuthHeader() {
-	return {}
-}
-
 async function handleResponse(res: Response) {
 	if (res.status === 401) {
-		// Redirect to login for unauthorized requests
 		try {
-			goto('/admin/login')
+			await goto('/admin/login')
 		} catch {
-			// Ignore navigation errors (e.g., if already on login page)
+			// Preserve the HTTP error even if navigation fails or is unavailable during SSR.
 		}
 	}
-
-	const contentType = res.headers.get('content-type') || ''
-	const isJson = contentType.includes('application/json')
-	const data = isJson ? await res.json().catch(() => undefined) : undefined
-
-	if (!res.ok) {
-		const err: ApiError = Object.assign(new Error('Request failed'), {
-			status: res.status,
-			details: data
-		})
-		throw err
-	}
-	return data
+	return responseData(res)
 }
 
 export async function request<TResponse = unknown, TBody = unknown>(
@@ -51,7 +30,6 @@ export async function request<TResponse = unknown, TBody = unknown>(
 	const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
 	const mergedHeaders: Record<string, string> = {
 		...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-		...getAuthHeader(),
 		...(headers || {})
 	}
 

@@ -11,7 +11,7 @@
 	import UnsavedChangesModal from '$lib/components/admin/UnsavedChangesModal.svelte'
 	import StatusDropdown from '$lib/components/admin/StatusDropdown.svelte'
 	import ErrorMessage from '$lib/components/admin/ErrorMessage.svelte'
-	import type { ApiError } from '$lib/admin/api'
+	import type { ApiError } from '$lib/admin/response'
 	import type { JSONContent } from '@tiptap/core'
 	import type { ApiPost, PostFormTag as Tag } from './post-types'
 	import { useAutoSave } from './useAutoSave.svelte'
