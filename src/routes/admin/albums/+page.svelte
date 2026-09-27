@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { api, getErrorMessage } from '$lib/admin/api'
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
@@ -83,26 +84,15 @@
 	}
 
 	async function loadAlbums() {
+		error = ''
 		try {
-			const response = await fetch('/api/albums', {
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to load albums')
-			}
-
-			const data = await response.json()
+			const data = await api.get<{ albums: Album[] }>('/api/albums')
 			albums = data.albums || []
 
 			// Apply initial filter and sort
 			applyFilterAndSort()
 		} catch (err) {
-			error = 'Failed to load albums'
+			error = getErrorMessage(err, 'Failed to load albums')
 			console.error(err)
 		} finally {
 			isLoading = false
@@ -186,22 +176,11 @@
 		try {
 			const newStatus = album.status === 'published' ? 'draft' : 'published'
 
-			const response = await fetch(`/api/albums/${album.id}`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ status: newStatus }),
-				credentials: 'same-origin'
-			})
-
-			if (response.ok) {
-				await loadAlbums()
-			} else if (response.status === 401) {
-				goto('/admin/login')
-			}
+			await api.put(`/api/albums/${album.id}`, { status: newStatus })
+			await loadAlbums()
 		} catch (err) {
-			console.error('Failed to update album status:', err)
+			error = getErrorMessage(err, 'Failed to update album status')
+			console.error(err)
 		}
 	}
 
@@ -216,22 +195,11 @@
 		if (!albumToDelete) return
 
 		try {
-			const response = await fetch(`/api/albums/${albumToDelete.id}`, {
-				method: 'DELETE',
-				credentials: 'same-origin'
-			})
-
-			if (response.ok) {
-				await loadAlbums()
-			} else if (response.status === 401) {
-				goto('/admin/login')
-			} else {
-				const errorData = await response.json()
-				error = errorData.error?.message || 'Failed to delete album'
-			}
+			await api.delete(`/api/albums/${albumToDelete.id}`)
+			await loadAlbums()
 		} catch (err) {
 			console.error('Failed to delete album:', err)
-			error = 'Failed to delete album. Please try again.'
+			error = getErrorMessage(err, 'Failed to delete album')
 		} finally {
 			showDeleteModal = false
 			albumToDelete = null

@@ -1,4 +1,4 @@
-import { fail } from '@sveltejs/kit'
+import { fail, isHttpError } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 import { adminFetch, adminFetchJson } from '$lib/server/admin/authenticated-fetch'
 import type { AdminProject } from '$lib/types/admin'
@@ -55,16 +55,22 @@ export const actions = {
 			return fail(400, { message: 'Invalid toggle request' })
 		}
 
-		await adminFetch(event, `/api/projects/${id}`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				status,
-				updatedAt
+		try {
+			await adminFetch(event, `/api/projects/${id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					status,
+					updatedAt
+				})
 			})
-		})
+		} catch (error) {
+			if (isHttpError(error) && error.status >= 400 && error.status < 500)
+				return fail(error.status, { message: error.body.message })
+			throw error
+		}
 
 		return { success: true }
 	},
@@ -76,9 +82,15 @@ export const actions = {
 			return fail(400, { message: 'Invalid project id' })
 		}
 
-		await adminFetch(event, `/api/projects/${id}`, {
-			method: 'DELETE'
-		})
+		try {
+			await adminFetch(event, `/api/projects/${id}`, {
+				method: 'DELETE'
+			})
+		} catch (error) {
+			if (isHttpError(error) && error.status >= 400 && error.status < 500)
+				return fail(error.status, { message: error.body.message })
+			throw error
+		}
 
 		return { success: true }
 	}

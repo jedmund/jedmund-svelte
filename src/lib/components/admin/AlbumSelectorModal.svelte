@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { request, getErrorMessage } from '$lib/admin/api'
 	import Modal from './Modal.svelte'
 	import AlbumSelector from './AlbumSelector.svelte'
 	import Button from './Button.svelte'
@@ -34,24 +35,16 @@
 			isSaving = true
 			error = ''
 
-			const response = await fetch(`/api/albums/${selectedAlbumId}/media`, {
+			await request(`/api/albums/${selectedAlbumId}/media`, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ mediaIds: selectedMediaIds }),
-				credentials: 'same-origin'
+				body: { mediaIds: selectedMediaIds }
 			})
-
-			if (!response.ok) {
-				throw new Error('Failed to add media to album')
-			}
 
 			handleClose()
 			onSave?.()
 		} catch (err) {
 			console.error('Failed to update album:', err)
-			error = err instanceof Error ? err.message : 'Failed to update album'
+			error = getErrorMessage(err, 'Failed to update album')
 		} finally {
 			isSaving = false
 		}

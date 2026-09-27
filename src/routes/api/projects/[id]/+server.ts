@@ -1,12 +1,10 @@
+import { readValidatedBody, parseId } from '$lib/api/validation'
+import { updateProjectSchema, validatePublishing } from '$lib/schemas/cms'
+import { nullableJsonInput } from '$lib/server/json-input'
 import type { RequestHandler } from './$types'
 import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
-import {
-	jsonResponse,
-	errorResponse,
-	checkAdminAuth,
-	parseRequestBody
-} from '$lib/server/api-utils'
+import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { getUnlockedProjectIds } from '$lib/server/admin/session'
 import { logger } from '$lib/server/logger'
 import { syndicateContent } from '$lib/server/syndication/syndicate'
@@ -18,36 +16,10 @@ import {
 	type MediaUsageReference
 } from '$lib/server/media-usage.js'
 
-// Type for project update request body (partial of ProjectCreateBody)
-interface ProjectUpdateBody {
-	title?: string
-	subtitle?: string
-	description?: string
-	year?: number
-	client?: string
-	role?: string
-	featuredImage?: string
-	logoUrl?: string
-	gallery?: Prisma.JsonValue
-	externalUrl?: string
-	caseStudyContent?: Prisma.JsonValue
-	backgroundColor?: string
-	highlightColor?: string
-	projectType?: string
-	displayOrder?: number
-	status?: string
-	password?: string | null
-	slug?: string
-	showFeaturedImageInHeader?: boolean
-	showBackgroundColorInHeader?: boolean
-	showLogoInHeader?: boolean
-	updatedAt?: string
-}
-
 // GET /api/projects/[id] - Get a single project
 export const GET: RequestHandler = async (event) => {
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid project ID', 400)
 	}
 
@@ -105,16 +77,15 @@ export const PUT: RequestHandler = async (event) => {
 		return errorResponse('Unauthorized', 401)
 	}
 
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid project ID', 400)
 	}
 
 	try {
-		const body = await parseRequestBody<ProjectUpdateBody>(event.request)
-		if (!body) {
-			return errorResponse('Invalid request body', 400)
-		}
+		const parsed = await readValidatedBody(event.request, updateProjectSchema)
+		if (!parsed.success) return parsed.response
+		const body = parsed.data
 
 		// Check if project exists
 		const existing = await prisma.project.findUnique({
@@ -139,6 +110,9 @@ export const PUT: RequestHandler = async (event) => {
 			}
 		}
 
+		const invalid = validatePublishing('project', { ...existing, ...body, slug })
+		if (invalid) return invalid
+
 		// Update project
 		const project = await prisma.project.update({
 			where: { id },
@@ -153,15 +127,9 @@ export const PUT: RequestHandler = async (event) => {
 				featuredImage:
 					body.featuredImage !== undefined ? body.featuredImage : existing.featuredImage,
 				logoUrl: body.logoUrl !== undefined ? body.logoUrl : existing.logoUrl,
-				gallery:
-					((body.gallery !== undefined
-						? body.gallery
-						: existing.gallery) as Prisma.InputJsonValue) ?? undefined,
+				gallery: nullableJsonInput(body.gallery),
 				externalUrl: body.externalUrl !== undefined ? body.externalUrl : existing.externalUrl,
-				caseStudyContent:
-					((body.caseStudyContent !== undefined
-						? body.caseStudyContent
-						: existing.caseStudyContent) as Prisma.InputJsonValue) ?? undefined,
+				caseStudyContent: nullableJsonInput(body.caseStudyContent),
 				backgroundColor:
 					body.backgroundColor !== undefined ? body.backgroundColor : existing.backgroundColor,
 				highlightColor:
@@ -269,16 +237,15 @@ export const PATCH: RequestHandler = async (event) => {
 		return errorResponse('Unauthorized', 401)
 	}
 
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid project ID', 400)
 	}
 
 	try {
-		const body = await parseRequestBody<ProjectUpdateBody>(event.request)
-		if (!body) {
-			return errorResponse('Invalid request body', 400)
-		}
+		const parsed = await readValidatedBody(event.request, updateProjectSchema)
+		if (!parsed.success) return parsed.response
+		const body = parsed.data
 
 		// Check if project exists
 		const existing = await prisma.project.findUnique({
@@ -296,6 +263,13 @@ export const PATCH: RequestHandler = async (event) => {
 				return errorResponse('Conflict: project has changed', 409)
 			}
 		}
+
+		const invalid = validatePublishing('project', {
+			...existing,
+			...body,
+			slug: body.slug || existing.slug
+		})
+		if (invalid) return invalid
 
 		// Build update data object with only provided fields
 		const updateData: Prisma.ProjectUpdateInput = {}
@@ -322,11 +296,10 @@ export const PATCH: RequestHandler = async (event) => {
 		if (body.role !== undefined) updateData.role = body.role
 		if (body.featuredImage !== undefined) updateData.featuredImage = body.featuredImage
 		if (body.logoUrl !== undefined) updateData.logoUrl = body.logoUrl
-		if (body.gallery !== undefined)
-			updateData.gallery = (body.gallery as Prisma.InputJsonValue) ?? undefined
+		if (body.gallery !== undefined) updateData.gallery = nullableJsonInput(body.gallery)
 		if (body.externalUrl !== undefined) updateData.externalUrl = body.externalUrl
 		if (body.caseStudyContent !== undefined)
-			updateData.caseStudyContent = (body.caseStudyContent as Prisma.InputJsonValue) ?? undefined
+			updateData.caseStudyContent = nullableJsonInput(body.caseStudyContent)
 		if (body.backgroundColor !== undefined) updateData.backgroundColor = body.backgroundColor
 		if (body.highlightColor !== undefined) updateData.highlightColor = body.highlightColor
 		if (body.projectType !== undefined) updateData.projectType = body.projectType
@@ -374,8 +347,8 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Unauthorized', 401)
 	}
 
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid project ID', 400)
 	}
 

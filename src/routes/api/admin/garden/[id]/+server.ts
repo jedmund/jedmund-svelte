@@ -1,37 +1,17 @@
+import { readValidatedBody, parseId } from '$lib/api/validation'
+import { updateGardenSchema, validatePublishing } from '$lib/schemas/cms'
 import { nullableJsonInput } from '$lib/server/json-input'
 import type { RequestHandler } from './$types'
 import { prisma, createSlug, ensureUniqueCategorySlug } from '$lib/server/database'
-import { jsonResponse, errorResponse, parseRequestBody } from '$lib/server/api-utils'
+import { jsonResponse, errorResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
-import { isValidCategory } from '$lib/constants/garden'
 import { cacheGardenImage } from '$lib/server/garden-images'
 import { isCloudinaryUrl, extractPublicId, deleteFile } from '$lib/server/cloudinary'
 
-interface GardenItemUpdateBody {
-	category?: string
-	title?: string
-	slug?: string
-	creator?: string
-	imageUrl?: string
-	url?: string
-	sourceId?: string
-	metadata?: Record<string, unknown> | null
-	summary?: string | null
-	date?: string | null
-	note?: unknown
-	rating?: number | null
-	isCurrent?: boolean
-	isFavorite?: boolean
-	showInUniverse?: boolean
-	displayOrder?: number
-	status?: string
-	updatedAt?: string
-}
-
 // GET /api/admin/garden/[id] - Get a single garden item
 export const GET: RequestHandler = async (event) => {
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid item ID', 400)
 	}
 
@@ -51,16 +31,15 @@ export const GET: RequestHandler = async (event) => {
 
 // PUT /api/admin/garden/[id] - Update a garden item
 export const PUT: RequestHandler = async (event) => {
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid item ID', 400)
 	}
 
 	try {
-		const body = await parseRequestBody<GardenItemUpdateBody>(event.request)
-		if (!body) {
-			return errorResponse('Invalid request body', 400)
-		}
+		const parsed = await readValidatedBody(event.request, updateGardenSchema)
+		if (!parsed.success) return parsed.response
+		const body = parsed.data
 
 		const existing = await prisma.gardenItem.findUnique({ where: { id } })
 		if (!existing) {
@@ -73,11 +52,6 @@ export const PUT: RequestHandler = async (event) => {
 			if (existing.updatedAt.getTime() !== incoming.getTime()) {
 				return errorResponse('Conflict: item has changed', 409)
 			}
-		}
-
-		// Validate category if provided
-		if (body.category && !isValidCategory(body.category)) {
-			return errorResponse('Invalid category', 400)
 		}
 
 		// Handle slug update
@@ -94,14 +68,22 @@ export const PUT: RequestHandler = async (event) => {
 		}
 
 		// Handle status transitions
-		const newStatus =
-			body.status === 'published' || body.status === 'draft' ? body.status : existing.status
+		const newStatus = body.status ?? existing.status
 		let publishedAt = existing.publishedAt
 		if (newStatus === 'published' && existing.status !== 'published') {
 			publishedAt = new Date()
 		} else if (newStatus === 'draft') {
 			publishedAt = null
 		}
+
+		const invalid = validatePublishing('garden', {
+			...existing,
+			...body,
+			slug,
+			category,
+			status: newStatus
+		})
+		if (invalid) return invalid
 
 		// Cache image through Cloudinary if imageUrl changed
 		let imageUrl = existing.imageUrl
@@ -131,12 +113,7 @@ export const PUT: RequestHandler = async (event) => {
 				summary: body.summary !== undefined ? body.summary || null : existing.summary,
 				date: body.date !== undefined ? (body.date ? new Date(body.date) : null) : existing.date,
 				note: nullableJsonInput(body.note),
-				rating:
-					body.rating !== undefined
-						? body.rating != null
-							? Math.min(5, Math.max(1, body.rating))
-							: null
-						: existing.rating,
+				rating: body.rating !== undefined ? body.rating : existing.rating,
 				isCurrent: body.isCurrent ?? existing.isCurrent,
 				isFavorite: body.isFavorite ?? existing.isFavorite,
 				showInUniverse: body.showInUniverse ?? existing.showInUniverse,
@@ -157,8 +134,8 @@ export const PUT: RequestHandler = async (event) => {
 
 // DELETE /api/admin/garden/[id] - Delete a garden item
 export const DELETE: RequestHandler = async (event) => {
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid item ID', 400)
 	}
 

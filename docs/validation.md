@@ -19,6 +19,13 @@ version is 3.28.0 throughout the dependency graph.
 CI reports type checking, ESLint, and formatting separately, even if another quality
 step fails. It also runs the tests, synthetic database corpus round-trip, and both builds.
 
+The tests also cover the [core CMS API conventions](./api-conventions.md): shared
+transport errors, request schemas, publishing requirements, and strict pagination.
+With `TEST_DATABASE_URL` set, authenticated HTTP tests start their own temporary
+local app server and use the synthetic PostgreSQL/Redis services. Local dotenv
+integration credentials are overridden for that server, and test records are
+removed afterward. Without a test database these HTTP tests are skipped.
+
 ## Scope of checks
 
 The pinned `src/lib/components/edra/` snapshot is excluded from local ESLint and
@@ -75,3 +82,18 @@ media attachment, and metadata text/date/toggle/tag bindings. The unused generic
 metadata component was mounted through a temporary harness removed after testing.
 No production data or credentials were used. These were smoke checks, not a new
 permanent browser test suite.
+
+## Core CMS API verification (September 26, 2026)
+
+Full type checking reports zero errors and the same seven CSS warnings. ESLint
+and formatting pass. All 55 tests pass with database tests enabled, including
+authenticated HTTP coverage for validation, publishing, concurrency, pagination,
+and Album attachments. Five editor fixtures and 14 documents from the synthetic
+local database pass schema/rendering/media/undo checks; database round trips roll
+back their changes. Application and Storybook builds pass.
+
+Browser smoke checks cover rejected Post publishing with retained content/status,
+successful corrections and published edits, Project and Garden autosave recovery
+after field validation errors, Album creation/list publishing, and correcting an
+Album slug before publication. They report no browser runtime errors, block
+external browser requests, and remove their synthetic records afterward.

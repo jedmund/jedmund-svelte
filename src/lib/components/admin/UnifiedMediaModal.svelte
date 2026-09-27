@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { request, getErrorMessage } from '$lib/admin/api'
 	import Modal from './Modal.svelte'
 	import AdminFilters from './AdminFilters.svelte'
 	import Select from './Select.svelte'
@@ -290,41 +291,25 @@
 
 				// Handle additions
 				if (toAdd.length > 0) {
-					const response = await fetch(`/api/albums/${albumId}/media`, {
+					await request(`/api/albums/${albumId}/media`, {
 						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({ mediaIds: toAdd }),
-						credentials: 'same-origin'
+						body: { mediaIds: toAdd }
 					})
-
-					if (!response.ok) {
-						throw new Error('Failed to add media to album')
-					}
 				}
 
 				// Handle removals
 				if (toRemove.length > 0) {
-					const response = await fetch(`/api/albums/${albumId}/media`, {
+					await request(`/api/albums/${albumId}/media`, {
 						method: 'DELETE',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({ mediaIds: toRemove }),
-						credentials: 'same-origin'
+						body: { mediaIds: toRemove }
 					})
-
-					if (!response.ok) {
-						throw new Error('Failed to remove media from album')
-					}
 				}
 
 				handleClose()
 				onSave?.()
 			} catch (err) {
 				console.error('Failed to update album:', err)
-				error = err instanceof Error ? err.message : 'Failed to update album'
+				error = getErrorMessage(err, 'Failed to update album')
 			} finally {
 				isSaving = false
 			}

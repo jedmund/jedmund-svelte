@@ -20,7 +20,7 @@
 	let showDeleteConfirmation = $state(false)
 	let postToDelete: AdminPost | null = null
 
-	const actionError = form?.message ?? ''
+	const actionError = $derived(form?.message ?? '')
 	const posts = data.items ?? []
 
 	// Create reactive filters

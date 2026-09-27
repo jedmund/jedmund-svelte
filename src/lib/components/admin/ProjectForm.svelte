@@ -2,7 +2,8 @@
 	import { untrack } from 'svelte'
 	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import type { BeforeNavigate } from '@sveltejs/kit'
-	import { api } from '$lib/admin/api'
+	import { api, getErrorMessage, getFieldErrors } from '$lib/admin/api'
+	import ErrorMessage from './ErrorMessage.svelte'
 	import AdminPage from './AdminPage.svelte'
 	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
 	import StatusDropdown from './StatusDropdown.svelte'
@@ -14,6 +15,8 @@
 	import { toast } from '$lib/stores/toast'
 	import type { Project, ProjectStatus } from '$lib/types/project'
 	import { createProjectFormStore } from '$lib/stores/project-form.svelte'
+
+	let saveError = $state('')
 
 	interface Props {
 		project?: Project | null
@@ -84,6 +87,7 @@
 	const autoSave = useAutoSave({
 		enabled: () => formStore.fields.status === 'draft' && formStore.fields.title.trim() !== '',
 		isDirty: () => isDirty,
+		revision: snapshot,
 		save: () => handleSave(formStore.fields.status, { silent: true })
 	})
 
@@ -193,9 +197,9 @@
 	async function handleSave(newStatus?: string, { silent = false } = {}) {
 		const saveStatus = (newStatus as ProjectStatus) || formStore.fields.status
 
-		// Strict validation only for explicit user-driven saves. Auto-save never blocks on validation —
+		// Publishing uses the form rules; drafts are validated structurally by the API. Auto-save remains permissive —
 		// the form may be partial; the next save attempt will pick up new fields when they're filled in.
-		if (!silent && !formStore.validate()) {
+		if (!silent && saveStatus !== 'draft' && !formStore.validate({ status: saveStatus })) {
 			toast.error('Please fix the validation errors')
 			return
 		}
@@ -205,6 +209,8 @@
 		// to the dropdown about what state the server has.
 		const submittingSnapshot = JSON.stringify({ ...formStore.fields, status: saveStatus })
 
+		saveError = ''
+		formStore.setValidationErrors({})
 		isSaving = true
 		const loadingToastId = silent
 			? null
@@ -221,9 +227,9 @@
 
 			let savedProject: Project
 			if (mode === 'edit') {
-				savedProject = (await api.put(`/api/projects/${project?.id}`, payload)) as Project
+				savedProject = await api.put<Project>(`/api/projects/${project?.id}`, payload)
 			} else {
-				savedProject = (await api.post('/api/projects', payload)) as Project
+				savedProject = await api.post<Project>('/api/projects', payload)
 			}
 
 			if (loadingToastId) {
@@ -248,13 +254,15 @@
 				replaceState(`/admin/projects/${savedProject.id}/edit`, {})
 			}
 		} catch (err) {
+			saveError = getErrorMessage(err)
+			formStore.setValidationErrors(getFieldErrors(err))
 			if (loadingToastId) toast.dismiss(loadingToastId)
 			const errStatus =
 				err && typeof err === 'object' && 'status' in err
 					? (err as { status: number }).status
 					: undefined
 			if (errStatus !== 409 && !silent) {
-				toast.error(`Failed to ${mode === 'edit' ? 'save' : 'create'} project`)
+				toast.error(saveError)
 			}
 			console.error(err)
 			// Only re-throw on the silent (autosave) path — useAutoSave needs the rejection to
@@ -286,6 +294,7 @@
 </script>
 
 <AdminPage>
+	{#if saveError}<ErrorMessage message={saveError} />{/if}
 	{#snippet header()}
 		<header>
 			<div class="header-left">

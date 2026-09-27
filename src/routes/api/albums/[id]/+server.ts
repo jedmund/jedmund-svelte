@@ -1,19 +1,16 @@
+import { readValidatedBody, parseId } from '$lib/api/validation'
+import { updateAlbumSchema, validatePublishing } from '$lib/schemas/cms'
+import { nullableJsonInput } from '$lib/server/json-input'
 import type { RequestHandler } from './$types'
-import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
-import {
-	jsonResponse,
-	errorResponse,
-	checkAdminAuth,
-	parseRequestBody
-} from '$lib/server/api-utils'
+import { jsonResponse, errorResponse, checkAdminAuth } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
 import { syndicateContent } from '$lib/server/syndication/syndicate'
 
 // GET /api/albums/[id] - Get a single album
 export const GET: RequestHandler = async (event) => {
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid album ID', 400)
 	}
 
@@ -76,27 +73,15 @@ export const PUT: RequestHandler = async (event) => {
 		return errorResponse('Unauthorized', 401)
 	}
 
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid album ID', 400)
 	}
 
 	try {
-		const body = await parseRequestBody<{
-			slug?: string
-			title?: string
-			description?: string
-			date?: string
-			location?: string
-			coverPhotoId?: number
-			status?: string
-			showInUniverse?: boolean
-			content?: Prisma.JsonValue
-		}>(event.request)
-
-		if (!body) {
-			return errorResponse('Invalid request body', 400)
-		}
+		const parsed = await readValidatedBody(event.request, updateAlbumSchema)
+		if (!parsed.success) return parsed.response
+		const body = parsed.data
 
 		// Check if album exists
 		const existing = await prisma.album.findUnique({
@@ -106,6 +91,11 @@ export const PUT: RequestHandler = async (event) => {
 		if (!existing) {
 			return errorResponse('Album not found', 404)
 		}
+
+		if (body.updatedAt && new Date(body.updatedAt).getTime() !== existing.updatedAt.getTime())
+			return errorResponse('Conflict: album has changed', 409)
+		const invalid = validatePublishing('album', { ...existing, ...body })
+		if (invalid) return invalid
 
 		// If slug is being updated, check for conflicts
 		if (body.slug && body.slug !== existing.slug) {
@@ -140,10 +130,7 @@ export const PUT: RequestHandler = async (event) => {
 				publishedAt,
 				showInUniverse:
 					body.showInUniverse !== undefined ? body.showInUniverse : existing.showInUniverse,
-				content:
-					((body.content !== undefined
-						? body.content
-						: existing.content) as Prisma.InputJsonValue) ?? undefined
+				content: nullableJsonInput(body.content)
 			}
 		})
 
@@ -169,8 +156,8 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Unauthorized', 401)
 	}
 
-	const id = parseInt(event.params.id)
-	if (isNaN(id)) {
+	const id = parseId(event.params.id)
+	if (id === null) {
 		return errorResponse('Invalid album ID', 400)
 	}
 

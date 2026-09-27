@@ -1,3 +1,4 @@
+import { PaginationError } from '$lib/server/pagination'
 import type { RequestHandler } from './$types'
 import {
 	jsonResponse,
@@ -19,6 +20,7 @@ export const GET: RequestHandler = async (event) => {
 			pagination: getOffsetPaginationMeta(total, limit, offset)
 		})
 	} catch (error) {
+		if (error instanceof PaginationError) return error.response()
 		logger.error('Failed to fetch photos', error as Error)
 		return errorResponse('Failed to fetch photos', 500)
 	}

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto, beforeNavigate, replaceState } from '$app/navigation'
 	import { onMount } from 'svelte'
-	import { api } from '$lib/admin/api'
+	import { api, getErrorMessage } from '$lib/admin/api'
+	import ErrorMessage from '../ErrorMessage.svelte'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import AdminSegmentedControl from '$lib/components/admin/AdminSegmentedControl.svelte'
 	import Composer from '$lib/components/admin/composer'
@@ -61,6 +62,7 @@
 	let tags = $state<Tag[]>(initialPost?.tags?.map((pt) => pt.tag) ?? [])
 
 	let saving = $state(false)
+	let saveError = $state('')
 	let activeTab = $state('content')
 	let heartCount = $state<number | undefined>()
 	let showDeleteConfirmation = $state(false)
@@ -71,11 +73,11 @@
 	// Snapshot-based dirty tracking. The $derived only recomputes when one of the read fields changes,
 	// and crucially does NOT write any reactive state — so it can't form a feedback loop with the
 	// auto-save effect that reads isDirty.
-	function snapshot() {
+	function snapshot(targetStatus = status) {
 		return JSON.stringify([
 			title,
 			postType,
-			status,
+			targetStatus,
 			slug,
 			excerpt,
 			syndicationText,
@@ -119,7 +121,8 @@
 	const autoSave = useAutoSave({
 		enabled: () => status === 'draft',
 		isDirty: () => isDirty,
-		save: () => handleSave(status)
+		revision: snapshot,
+		save: () => handleSave(status, { silent: true })
 	})
 
 	const autoSaveLabel = $derived.by(() => {
@@ -156,7 +159,7 @@
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
 				e.preventDefault()
 				if (status === 'draft') {
-					void autoSave.flush()
+					void autoSave.flush().catch(() => {})
 				} else {
 					handleSave(status)
 				}
@@ -169,7 +172,7 @@
 	// Flush pending auto-save when the window loses focus (matches Notion's behavior).
 	$effect(() => {
 		function handleBlur() {
-			if (status === 'draft') void autoSave.flush()
+			if (status === 'draft') void autoSave.flush().catch(() => {})
 		}
 		window.addEventListener('blur', handleBlur)
 		return () => window.removeEventListener('blur', handleBlur)
@@ -353,16 +356,14 @@
 		}
 	})
 
-	async function handleSave(target: string) {
+	async function handleSave(target: string, { silent = false } = {}) {
 		const targetStatus = (target as 'draft' | 'published') || status
 		saving = true
-
-		// Apply the status transition first so the submitting snapshot reflects what we're about to send.
-		status = targetStatus
+		saveError = ''
 
 		// Capture the snapshot BEFORE the await. Mid-save keystrokes won't be reflected in this string —
 		// they'll show as dirty after the save completes, and the next debounce picks them up.
-		const submittingSnapshot = snapshot()
+		const submittingSnapshot = snapshot(targetStatus)
 
 		const postData = {
 			title: config?.showTitle ? title : null,
@@ -402,10 +403,12 @@
 			}
 			// Mark the version we actually submitted as saved. Mid-await keystrokes diverge from this
 			// snapshot, so isDirty stays true and the next debounce flushes them.
+			status = targetStatus
 			savedSnapshot = submittingSnapshot
 		} catch (error) {
+			saveError = getErrorMessage(error, 'Failed to save post')
 			console.error('Failed to save post:', error)
-			throw error
+			if (silent) throw error
 		} finally {
 			saving = false
 		}
@@ -423,6 +426,7 @@
 			allowNavigation = true
 			goto('/admin/posts')
 		} catch (error) {
+			saveError = getErrorMessage(error, 'Failed to delete post')
 			console.error('Failed to delete post:', error)
 		}
 	}
@@ -466,6 +470,7 @@
 </svelte:head>
 
 <AdminPage>
+	{#if saveError}<ErrorMessage message={saveError} />{/if}
 	{#snippet header()}
 		<header>
 			<div class="header-left">
@@ -484,7 +489,10 @@
 					onSave={(target) => {
 						// If the user is publishing a dirty draft, flush any pending auto-save first so we publish on top of the latest saved snapshot.
 						if (status === 'draft' && target !== 'draft' && isDirty) {
-							void autoSave.flush().then(() => handleSave(target))
+							void autoSave
+								.flush()
+								.then(() => handleSave(target))
+								.catch(() => {})
 						} else {
 							handleSave(target)
 						}

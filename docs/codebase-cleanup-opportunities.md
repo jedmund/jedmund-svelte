@@ -54,13 +54,23 @@ Benefit: less onboarding guesswork and less dependence on copying production dat
 
 ### 2. Finish standardizing API calls and validation
 
-The shared [API client](../src/lib/admin/api.ts) throws a generic “Request failed,” while forms such as AlbumForm independently parse server error messages. Post creation consumes raw JSON, and pagination helpers allow invalid strings to become `NaN`.
+The review found that the shared [API client](../src/lib/admin/api.ts) threw a generic “Request failed,” while forms such as AlbumForm independently parsed server error messages. Post creation consumed raw JSON, and pagination helpers allowed invalid strings to become `NaN`.
 
 - Preserve the server's documented error contract in the shared client and migrate remaining callers.
 - Validate request bodies at server boundaries using shared schemas where appropriate.
 - Validate pagination inputs and return predictable errors or defaults.
 
 Benefit: more consistent behavior and easier diagnosis of failed requests.
+
+Core CMS implementation:
+
+- The shared client preserves structured server errors, and Posts, Projects, Albums, Garden, and Album attachment callers use it.
+- Shared Zod schemas validate core request bodies. Publishing rules also apply to edits of already-published records, while incomplete drafts remain editable.
+- Shared pagination rejects malformed and out-of-range parameters with 400 responses; omitted parameters retain existing defaults.
+- Forms display actionable validation errors, retain rejected edits, and recover autosave after corrections. Album list publishing now uses the implemented PUT endpoint.
+- Transport/schema tests and authenticated HTTP regression tests cover these contracts. See [API conventions](./api-conventions.md) for details and publishing requirements.
+
+Follow-up migrations remain for specialist media operations, tags, settings, syndication, provider searches, and bespoke pagination. This implementation does not consolidate those endpoints or change editor schemas.
 
 ### 3. Extract behavior from large admin components
 

@@ -10,7 +10,7 @@
 	import Button from '$lib/components/admin/Button.svelte'
 	import Select from '$lib/components/admin/Select.svelte'
 	import { createListFilters, commonSorts } from '$lib/admin/listFilters.svelte'
-	import { api } from '$lib/admin/api'
+	import { api, getErrorMessage } from '$lib/admin/api'
 	import { toast } from '$lib/stores/toast'
 	import { getCategoryLabel, GARDEN_CATEGORIES } from '$lib/constants/garden'
 	import { clickOutside } from '$lib/actions/clickOutside'
@@ -94,7 +94,7 @@
 			const data = await api.get<{ items: GardenItem[] }>('/api/admin/garden')
 			items = data.items
 		} catch (err) {
-			toast.error('Failed to load garden items')
+			toast.error(getErrorMessage(err, 'Failed to load garden items'))
 			console.error(err)
 		} finally {
 			isLoading = false
@@ -141,7 +141,7 @@
 			items = items.filter((i) => i.id !== itemToDelete!.id)
 			toast.success('Item deleted')
 		} catch (err) {
-			toast.error('Failed to delete item')
+			toast.error(getErrorMessage(err, 'Failed to delete item'))
 			console.error(err)
 		} finally {
 			showDeleteModal = false

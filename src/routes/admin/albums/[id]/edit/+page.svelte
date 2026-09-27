@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { api, getErrorMessage } from '$lib/admin/api'
 	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
 	import AlbumForm from '$lib/components/admin/AlbumForm.svelte'
 	import type { Album } from '@prisma/client'
@@ -17,22 +17,9 @@
 
 	async function loadAlbum() {
 		try {
-			const response = await fetch(`/api/albums/${albumId}`, {
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to load album')
-			}
-
-			const data = await response.json()
-			album = data
+			album = await api.get<Album>(`/api/albums/${albumId}`)
 		} catch (err) {
-			error = 'Failed to load album'
+			error = getErrorMessage(err, 'Failed to load album')
 			console.error(err)
 		} finally {
 			isLoading = false

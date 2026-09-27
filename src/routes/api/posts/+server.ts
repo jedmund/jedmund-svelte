@@ -1,3 +1,7 @@
+import { readValidatedBody } from '$lib/api/validation'
+import { createPostSchema, validatePublishing } from '$lib/schemas/cms'
+import { nullableJsonInput } from '$lib/server/json-input'
+import { PaginationError } from '$lib/server/pagination'
 import type { RequestHandler } from './$types'
 import type { Prisma } from '@prisma/client'
 import { prisma } from '$lib/server/database'
@@ -90,6 +94,7 @@ export const GET: RequestHandler = async (event) => {
 			pagination
 		})
 	} catch (error) {
+		if (error instanceof PaginationError) return error.response()
 		logger.error('Failed to retrieve posts', error as Error)
 		return errorResponse('Failed to retrieve posts', 500)
 	}
@@ -101,7 +106,9 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const data = await event.request.json()
+		const parsed = await readValidatedBody(event.request, createPostSchema)
+		if (!parsed.success) return parsed.response
+		const data = parsed.data
 
 		if (!data.slug) {
 			if (data.title) {
@@ -114,33 +121,39 @@ export const POST: RequestHandler = async (event) => {
 			}
 		}
 
-		if (data.status === 'published') {
-			data.publishedAt = new Date()
-		}
+		const publishedAt = data.status === 'published' ? new Date() : null
+		const invalid = validatePublishing('post', {
+			...data,
+			postType: data.type,
+			status: data.status ?? 'draft',
+			attachments: data.attachedPhotos
+		})
+		if (invalid) return invalid
 
 		let featuredImageId = data.featuredImage
 		if (data.attachedPhotos && data.attachedPhotos.length > 0 && !featuredImageId) {
-			featuredImageId = data.attachedPhotos[0]
+			featuredImageId = String(data.attachedPhotos[0])
 		}
 
 		await enrichUrlEmbeds(data.content)
 
+		const slug = data.slug
 		const post = await prisma.$transaction(async (tx) => {
 			const created = await tx.post.create({
 				data: {
 					title: data.title,
-					slug: data.slug,
+					slug,
 					postType: data.type,
 					status: data.status,
-					content: data.content,
+					content: nullableJsonInput(data.content),
 					excerpt: data.excerpt || null,
 					syndicationText: data.syndicationText || null,
 					featuredImage: featuredImageId,
 					syndicateBluesky: data.syndicateBluesky ?? true,
 					syndicateMastodon: data.syndicateMastodon ?? true,
-					attachments:
-						data.attachedPhotos && data.attachedPhotos.length > 0 ? data.attachedPhotos : null,
-					publishedAt: data.publishedAt,
+					attachments: nullableJsonInput(data.attachedPhotos?.length ? data.attachedPhotos : null),
+					publishedAt,
+					appendLink: data.appendLink ?? true,
 					tags:
 						data.tagIds && Array.isArray(data.tagIds) && data.tagIds.length > 0
 							? {

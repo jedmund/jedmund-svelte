@@ -10,6 +10,8 @@ export type AutoSaveState = 'idle' | 'unsaved' | 'saving' | 'saved' | 'failed' |
 export interface AutoSaveOptions {
 	enabled: () => boolean
 	isDirty: () => boolean
+	// Track edits even when isDirty stays true after a rejected save.
+	revision?: () => unknown
 	save: () => Promise<void>
 	debounceMs?: number
 	savedVisibleMs?: number
@@ -67,6 +69,7 @@ export function useAutoSave(opts: AutoSaveOptions): AutoSave {
 		savedFlash = false
 		try {
 			await opts.save()
+			saveError = null
 			isSaving = false
 			savedFlash = true
 			savedTimer = setTimeout(() => {
@@ -116,6 +119,7 @@ export function useAutoSave(opts: AutoSaveOptions): AutoSave {
 	// Debounce timer driver. Only reads enabled/isDirty/saveError; never writes state-related $state
 	// inside this effect — those writes happen from runSave (an async call out of band).
 	$effect(() => {
+		opts.revision?.()
 		if (!opts.enabled() || saveError === 'conflict') {
 			clearTimer()
 			return
@@ -128,7 +132,9 @@ export function useAutoSave(opts: AutoSaveOptions): AutoSave {
 		timer = setTimeout(() => {
 			timer = null
 			if (!opts.enabled() || !opts.isDirty() || saveError === 'conflict') return
-			void performSave()
+			void performSave().catch(() => {
+				/* The save state and owning form display the error. */
+			})
 		}, debounceMs)
 	})
 

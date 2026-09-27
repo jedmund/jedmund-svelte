@@ -18,7 +18,7 @@
 	let showDeleteModal = $state(false)
 	let projectToDelete: AdminProject | null = null
 
-	const actionError = form?.message ?? ''
+	const actionError = $derived(form?.message ?? '')
 	const projects = data.items ?? []
 
 	// Create reactive filters
