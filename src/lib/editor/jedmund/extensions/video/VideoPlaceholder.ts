@@ -29,7 +29,7 @@ declare module '@tiptap/core' {
 	}
 }
 
-export const VideoPlaceholder = (content: Component<any>) =>
+export const VideoPlaceholder = (content: Component<NodeViewProps>) =>
 	Node.create<VideoPlaceholderOptions>({
 		name: 'video-placeholder',
 		addOptions() {

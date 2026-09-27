@@ -3,7 +3,7 @@ import type { Component } from 'svelte'
 import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
 import { Audio } from './AudioExtension.js'
 
-export const AudioExtended = (content: Component<any>, onDrop?: (file: File) => Promise<string>) =>
+export const AudioExtended = (content: Component<NodeViewProps>, onDrop?: (file: File) => Promise<string>) =>
 	Audio(onDrop).extend({
 		addAttributes() {
 			return {

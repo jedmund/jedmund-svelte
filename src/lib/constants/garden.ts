@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import type { CategorySearchConfig, TypeaheadResult } from '$lib/types/garden'
 
 export const GARDEN_CATEGORIES = [
@@ -53,8 +54,27 @@ function formatSubtitle(creator: string | null, year: string | null): string | n
 	return [creator, year].filter(Boolean).join(' \u00B7 ') || null
 }
 
+// Validate the JSON boundary once so category-specific mappers receive typed values.
+const nullableText = z.string().nullish().transform((value) => value ?? null)
+const searchResultSchema = z.object({
+	id: z.union([z.string(), z.number()]),
+	name: z.string(),
+	image: nullableText,
+	year: nullableText,
+	sourceId: z.string().nullish(),
+	summary: nullableText
+})
+const metadataSchema = z.record(z.unknown()).nullish().transform((value) => value ?? null)
+
+function defineSearchConfig<Result>(
+	schema: z.ZodType<Result, z.ZodTypeDef, unknown>,
+	config: CategorySearchConfig<Result>
+): CategorySearchConfig {
+	return { ...config, mapResult: (raw) => config.mapResult(schema.parse(raw)) }
+}
+
 export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig>> = {
-	books: {
+	books: defineSearchConfig(searchResultSchema.extend({ author: nullableText }), {
 		endpoint: '/api/admin/garden/search/books',
 		placeholder: 'Search for a book...',
 		emptyText: 'No books found',
@@ -69,8 +89,8 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			metadata: null,
 			summary: raw.summary ?? null
 		})
-	},
-	games: {
+	}),
+	games: defineSearchConfig(searchResultSchema.extend({ developer: nullableText }), {
 		endpoint: '/api/admin/garden/search/games',
 		placeholder: 'Search for a game...',
 		emptyText: 'No games found',
@@ -85,8 +105,8 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			metadata: null,
 			summary: raw.summary ?? null
 		})
-	},
-	music: {
+	}),
+	music: defineSearchConfig(searchResultSchema.extend({ artist: nullableText }), {
 		endpoint: '/api/admin/garden/search/music',
 		placeholder: 'Search for an album...',
 		emptyText: 'No albums found',
@@ -101,8 +121,8 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			metadata: null,
 			summary: raw.summary ?? null
 		})
-	},
-	manga: {
+	}),
+	manga: defineSearchConfig(searchResultSchema.extend({ author: nullableText, metadata: metadataSchema }), {
 		endpoint: '/api/admin/garden/search/manga',
 		placeholder: 'Search for a manga...',
 		emptyText: 'No manga found',
@@ -117,8 +137,8 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			metadata: raw.metadata ?? null,
 			summary: raw.summary ?? null
 		})
-	},
-	movies: {
+	}),
+	movies: defineSearchConfig(searchResultSchema.extend({ director: nullableText, metadata: metadataSchema }), {
 		endpoint: '/api/admin/garden/search/movies',
 		placeholder: 'Search for a movie...',
 		emptyText: 'No movies found',
@@ -133,8 +153,8 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			metadata: raw.metadata ?? null,
 			summary: raw.summary ?? null
 		})
-	},
-	'tv-shows': {
+	}),
+	'tv-shows': defineSearchConfig(searchResultSchema.extend({ originalName: nullableText, metadata: metadataSchema }), {
 		endpoint: '/api/admin/garden/search/tv',
 		placeholder: 'Search for a TV show...',
 		emptyText: 'No TV shows found',
@@ -149,7 +169,7 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			metadata: raw.metadata ?? null,
 			summary: raw.summary ?? null
 		})
-	}
+	})
 }
 
 export function getExternalUrl(category: string, sourceId: string): string | null {

@@ -223,7 +223,7 @@ export const WithPrefixIcon = {
 		placeholder: 'you@example.com',
 		prefixIcon: true
 	},
-	render: (args) => ({
+	render: (/** @type {import('svelte').ComponentProps<typeof Input>} */ args) => ({
 		Component: Input,
 		props: args,
 		slots: {
@@ -245,7 +245,7 @@ export const WithSuffixIcon = {
 		placeholder: 'Search...',
 		suffixIcon: true
 	},
-	render: (args) => ({
+	render: (/** @type {import('svelte').ComponentProps<typeof Input>} */ args) => ({
 		Component: Input,
 		props: args,
 		slots: {

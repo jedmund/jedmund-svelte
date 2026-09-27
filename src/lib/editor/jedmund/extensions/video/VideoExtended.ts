@@ -3,7 +3,7 @@ import type { Component } from 'svelte'
 import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
 import { Video } from './VideoExtension.js'
 
-export const VideoExtended = (content: Component<any>, onDrop?: (file: File) => Promise<string>) =>
+export const VideoExtended = (content: Component<NodeViewProps>, onDrop?: (file: File) => Promise<string>) =>
 	Video(onDrop).extend({
 		addAttributes() {
 			return {

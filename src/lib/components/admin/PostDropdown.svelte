@@ -6,7 +6,6 @@
 	import { clickOutside } from '$lib/actions/clickOutside'
 
 	let isOpen = $state(false)
-	let buttonRef: HTMLElement | undefined
 	let showComposer = $state(false)
 	let selectedType = $state<'post' | 'essay'>('post')
 
@@ -49,7 +48,6 @@
 	onclickoutside={handleClickOutside}
 >
 	<Button
-		bind:this={buttonRef}
 		variant="primary"
 		buttonSize="medium"
 		onclick={(e) => {

@@ -20,7 +20,7 @@ declare module '@tiptap/core' {
 	}
 }
 
-export const GalleryExtended = (component: Component<any>): Node<GalleryOptions, unknown> => {
+export const GalleryExtended = (component: Component<NodeViewProps>): Node<GalleryOptions, unknown> => {
 	return Node.create<GalleryOptions>({
 		name: 'gallery',
 

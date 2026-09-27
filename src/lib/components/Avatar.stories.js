@@ -35,7 +35,7 @@ export const Interactive = {
 	args: {
 		forcePlayingMusic: false
 	},
-	render: (args) => ({
+	render: (/** @type {import('svelte').ComponentProps<typeof Avatar>} */ args) => ({
 		Component: Avatar,
 		props: args
 	}),

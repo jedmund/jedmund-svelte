@@ -17,9 +17,9 @@ export interface TypeaheadSelection {
 	result: TypeaheadResult
 }
 
-export interface CategorySearchConfig {
+export interface CategorySearchConfig<Result = unknown> {
 	endpoint: string
 	placeholder: string
 	emptyText: string
-	mapResult: (raw: unknown) => TypeaheadResult
+	mapResult: (raw: Result) => TypeaheadResult
 }

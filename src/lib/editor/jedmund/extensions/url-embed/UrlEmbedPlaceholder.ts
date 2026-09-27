@@ -1,8 +1,9 @@
+import type { NodeViewProps } from '@tiptap/core'
 import { mergeAttributes, Node } from '@tiptap/core'
 import { SvelteNodeViewRenderer } from '$lib/components/edra/tiptap/index.js'
 import type { Component } from 'svelte'
 
-export const UrlEmbedPlaceholder = (component: Component<any>) =>
+export const UrlEmbedPlaceholder = (component: Component<NodeViewProps>) =>
 	Node.create({
 		name: 'urlEmbedPlaceholder',
 

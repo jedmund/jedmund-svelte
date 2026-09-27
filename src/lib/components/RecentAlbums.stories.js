@@ -177,7 +177,7 @@ export default {
 		}
 	},
 	decorators: [
-		(Story) => ({
+		(/** @type {Parameters<import('@storybook/sveltekit').Decorator>[0]} */ Story) => ({
 			Component: Story,
 			props: {
 				style: 'padding: 40px; background: #f9f9f9; min-height: 400px;'
