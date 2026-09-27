@@ -183,7 +183,6 @@
 </div>
 
 <style lang="scss">
-
 	.geo-card {
 		width: 100%;
 		border-radius: $image-corner-radius;

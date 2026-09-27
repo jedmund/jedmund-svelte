@@ -211,7 +211,6 @@
 {/if}
 
 <style lang="scss">
-
 	.dropdown-menu {
 		background: white;
 		border: 1px solid $gray-85;

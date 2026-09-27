@@ -11,7 +11,14 @@
 		onOpenMediaLibrary: () => void
 	}
 
-	let { editor, position, features, albumId: _albumId, onDismiss, onOpenMediaLibrary }: Props = $props()
+	let {
+		editor,
+		position,
+		features,
+		albumId: _albumId,
+		onDismiss,
+		onOpenMediaLibrary
+	}: Props = $props()
 
 	function insertMedia(type: string) {
 		switch (type) {
@@ -70,7 +77,6 @@
 </div>
 
 <style lang="scss">
-
 	.media-dropdown-portal {
 		font-family: inherit;
 	}

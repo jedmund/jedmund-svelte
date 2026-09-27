@@ -99,7 +99,6 @@
 {/if}
 
 <style lang="scss">
-
 	.related-posts {
 		margin: $unit-6x 0;
 

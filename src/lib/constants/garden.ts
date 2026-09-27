@@ -55,7 +55,10 @@ function formatSubtitle(creator: string | null, year: string | null): string | n
 }
 
 // Validate the JSON boundary once so category-specific mappers receive typed values.
-const nullableText = z.string().nullish().transform((value) => value ?? null)
+const nullableText = z
+	.string()
+	.nullish()
+	.transform((value) => value ?? null)
 const searchResultSchema = z.object({
 	id: z.union([z.string(), z.number()]),
 	name: z.string(),
@@ -64,7 +67,10 @@ const searchResultSchema = z.object({
 	sourceId: z.string().nullish(),
 	summary: nullableText
 })
-const metadataSchema = z.record(z.unknown()).nullish().transform((value) => value ?? null)
+const metadataSchema = z
+	.record(z.unknown())
+	.nullish()
+	.transform((value) => value ?? null)
 
 function defineSearchConfig<Result>(
 	schema: z.ZodType<Result, z.ZodTypeDef, unknown>,
@@ -122,54 +128,63 @@ export const SEARCH_CONFIGS: Partial<Record<GardenCategory, CategorySearchConfig
 			summary: raw.summary ?? null
 		})
 	}),
-	manga: defineSearchConfig(searchResultSchema.extend({ author: nullableText, metadata: metadataSchema }), {
-		endpoint: '/api/admin/garden/search/manga',
-		placeholder: 'Search for a manga...',
-		emptyText: 'No manga found',
-		mapResult: (raw): TypeaheadResult => ({
-			id: raw.id,
-			name: raw.name,
-			subtitle: formatSubtitle(raw.author, raw.year),
-			image: raw.image,
-			creator: raw.author,
-			year: raw.year ?? null,
-			sourceId: raw.sourceId ?? String(raw.id),
-			metadata: raw.metadata ?? null,
-			summary: raw.summary ?? null
-		})
-	}),
-	movies: defineSearchConfig(searchResultSchema.extend({ director: nullableText, metadata: metadataSchema }), {
-		endpoint: '/api/admin/garden/search/movies',
-		placeholder: 'Search for a movie...',
-		emptyText: 'No movies found',
-		mapResult: (raw): TypeaheadResult => ({
-			id: raw.id,
-			name: raw.name,
-			subtitle: formatSubtitle(raw.director, raw.year),
-			image: raw.image,
-			creator: raw.director,
-			year: raw.year ?? null,
-			sourceId: raw.sourceId ?? String(raw.id),
-			metadata: raw.metadata ?? null,
-			summary: raw.summary ?? null
-		})
-	}),
-	'tv-shows': defineSearchConfig(searchResultSchema.extend({ originalName: nullableText, metadata: metadataSchema }), {
-		endpoint: '/api/admin/garden/search/tv',
-		placeholder: 'Search for a TV show...',
-		emptyText: 'No TV shows found',
-		mapResult: (raw): TypeaheadResult => ({
-			id: raw.id,
-			name: raw.name,
-			subtitle: [raw.year, raw.originalName].filter(Boolean).join(' \u00B7 ') || null,
-			image: raw.image,
-			creator: null,
-			year: raw.year ?? null,
-			sourceId: raw.sourceId ?? String(raw.id),
-			metadata: raw.metadata ?? null,
-			summary: raw.summary ?? null
-		})
-	})
+	manga: defineSearchConfig(
+		searchResultSchema.extend({ author: nullableText, metadata: metadataSchema }),
+		{
+			endpoint: '/api/admin/garden/search/manga',
+			placeholder: 'Search for a manga...',
+			emptyText: 'No manga found',
+			mapResult: (raw): TypeaheadResult => ({
+				id: raw.id,
+				name: raw.name,
+				subtitle: formatSubtitle(raw.author, raw.year),
+				image: raw.image,
+				creator: raw.author,
+				year: raw.year ?? null,
+				sourceId: raw.sourceId ?? String(raw.id),
+				metadata: raw.metadata ?? null,
+				summary: raw.summary ?? null
+			})
+		}
+	),
+	movies: defineSearchConfig(
+		searchResultSchema.extend({ director: nullableText, metadata: metadataSchema }),
+		{
+			endpoint: '/api/admin/garden/search/movies',
+			placeholder: 'Search for a movie...',
+			emptyText: 'No movies found',
+			mapResult: (raw): TypeaheadResult => ({
+				id: raw.id,
+				name: raw.name,
+				subtitle: formatSubtitle(raw.director, raw.year),
+				image: raw.image,
+				creator: raw.director,
+				year: raw.year ?? null,
+				sourceId: raw.sourceId ?? String(raw.id),
+				metadata: raw.metadata ?? null,
+				summary: raw.summary ?? null
+			})
+		}
+	),
+	'tv-shows': defineSearchConfig(
+		searchResultSchema.extend({ originalName: nullableText, metadata: metadataSchema }),
+		{
+			endpoint: '/api/admin/garden/search/tv',
+			placeholder: 'Search for a TV show...',
+			emptyText: 'No TV shows found',
+			mapResult: (raw): TypeaheadResult => ({
+				id: raw.id,
+				name: raw.name,
+				subtitle: [raw.year, raw.originalName].filter(Boolean).join(' \u00B7 ') || null,
+				image: raw.image,
+				creator: null,
+				year: raw.year ?? null,
+				sourceId: raw.sourceId ?? String(raw.id),
+				metadata: raw.metadata ?? null,
+				summary: raw.summary ?? null
+			})
+		}
+	)
 }
 
 export function getExternalUrl(category: string, sourceId: string): string | null {

@@ -18,14 +18,20 @@ test('maps every searchable category while preserving creator and metadata diffe
 			summary: 'Summary'
 		})
 		const creator = {
-			books: 'Author', games: 'Developer', music: 'Artist',
-			manga: 'Author', movies: 'Director', 'tv-shows': null
+			books: 'Author',
+			games: 'Developer',
+			music: 'Artist',
+			manga: 'Author',
+			movies: 'Director',
+			'tv-shows': null
 		}[category]
 		assert.equal(result.creator, creator)
 		assert.equal(result.sourceId, '42')
 		assert.equal(result.subtitle, category === 'tv-shows' ? '2026 · Original' : `${creator} · 2026`)
-		assert.deepEqual(result.metadata, ['manga', 'movies', 'tv-shows'].includes(category)
-			? { episodes: 12, runtime: null } : null)
+		assert.deepEqual(
+			result.metadata,
+			['manga', 'movies', 'tv-shows'].includes(category) ? { episodes: 12, runtime: null } : null
+		)
 		assert.equal(result.summary, 'Summary')
 	}
 })
@@ -33,8 +39,15 @@ test('maps every searchable category while preserving creator and metadata diffe
 test('normalizes missing optional search values and preserves explicit source IDs', () => {
 	for (const config of Object.values(SEARCH_CONFIGS)) {
 		assert.deepEqual(config.mapResult({ id: 'item', name: 'Title', sourceId: 'external' }), {
-			id: 'item', name: 'Title', subtitle: null, image: null, creator: null,
-			year: null, sourceId: 'external', metadata: null, summary: null
+			id: 'item',
+			name: 'Title',
+			subtitle: null,
+			image: null,
+			creator: null,
+			year: null,
+			sourceId: 'external',
+			metadata: null,
+			summary: null
 		})
 		assert.throws(() => config.mapResult({ name: 'Missing ID' }))
 	}

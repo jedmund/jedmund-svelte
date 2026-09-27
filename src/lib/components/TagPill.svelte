@@ -26,7 +26,6 @@
 {/if}
 
 <style lang="scss">
-
 	.tag-pill {
 		display: inline-flex;
 		align-items: center;

@@ -59,7 +59,9 @@
 	let isCurrent = $state(seed.item?.isCurrent ?? false)
 	let isFavorite = $state(seed.item?.isFavorite ?? false)
 	let showInUniverse = $state(seed.item?.showInUniverse ?? false)
-	let status = $state<'draft' | 'published'>((seed.item?.status as 'draft' | 'published') ?? 'draft')
+	let status = $state<'draft' | 'published'>(
+		(seed.item?.status as 'draft' | 'published') ?? 'draft'
+	)
 	let note = $state<JSONContent>(
 		(seed.item?.note as JSONContent) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
 	)

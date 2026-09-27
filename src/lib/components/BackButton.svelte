@@ -28,7 +28,6 @@
 </button>
 
 <style lang="scss">
-
 	.back-button {
 		display: inline-flex;
 		align-items: center;

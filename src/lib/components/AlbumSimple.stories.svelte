@@ -42,9 +42,9 @@
 </script>
 
 <Story name="Default" asChild>
-<div style="width: 200px; padding: 20px; background: #f5f5f5;">
-	<Album {album} />
-</div>
+	<div style="width: 200px; padding: 20px; background: #f5f5f5;">
+		<Album {album} />
+	</div>
 </Story>
 
 <style>

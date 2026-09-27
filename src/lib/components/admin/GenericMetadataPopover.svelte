@@ -129,8 +129,12 @@
 	// Typed accessors keep two-way bindings without treating arbitrary metadata as input values.
 	function fieldBinding<Value>(key: string, read: () => Value) {
 		return {
-			get value() { return read() },
-			set value(value: Value) { data[key] = value }
+			get value() {
+				return read()
+			},
+			set value(value: Value) {
+				data[key] = value
+			}
 		}
 	}
 
@@ -144,11 +148,18 @@
 	const emptyTags: MetadataTag[] = []
 
 	function isMetadataTag(tag: unknown): tag is MetadataTag {
-		return tag !== null && typeof tag === 'object' &&
-			'id' in tag && typeof tag.id === 'number' &&
-			'name' in tag && typeof tag.name === 'string' &&
-			'displayName' in tag && typeof tag.displayName === 'string' &&
-			'slug' in tag && typeof tag.slug === 'string'
+		return (
+			tag !== null &&
+			typeof tag === 'object' &&
+			'id' in tag &&
+			typeof tag.id === 'number' &&
+			'name' in tag &&
+			typeof tag.name === 'string' &&
+			'displayName' in tag &&
+			typeof tag.displayName === 'string' &&
+			'slug' in tag &&
+			typeof tag.slug === 'string'
+		)
 	}
 
 	function tagValues(key: string): MetadataTag[] {
@@ -157,7 +168,8 @@
 	}
 
 	function formatTimestamp(value: unknown): string {
-		if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number') return 'Never'
+		if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number')
+			return 'Never'
 		const date = new Date(value)
 		return Number.isNaN(date.getTime()) ? 'Never' : date.toLocaleString()
 	}
@@ -318,7 +330,6 @@
 </div>
 
 <style lang="scss">
-
 	.metadata-popover {
 		background: white;
 		border: 1px solid $gray-80;
@@ -375,7 +386,6 @@
 		flex-direction: column;
 		gap: $unit;
 	}
-
 
 	.metadata {
 		font-size: 0.75rem;

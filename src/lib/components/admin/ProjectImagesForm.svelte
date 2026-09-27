@@ -43,7 +43,7 @@
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				isPhotography: false,
-			isLinkCardImage: false,
+				isLinkCardImage: false,
 				exifData: null,
 				photoCaption: null,
 				photoTitle: null,

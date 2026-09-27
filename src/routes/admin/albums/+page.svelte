@@ -335,7 +335,6 @@
 />
 
 <style lang="scss">
-
 	.loading {
 		padding: $unit-8x;
 		text-align: center;

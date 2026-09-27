@@ -124,7 +124,6 @@
 />
 
 <style lang="scss">
-
 	.dropdown-container {
 		position: relative;
 	}

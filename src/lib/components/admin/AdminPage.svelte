@@ -41,7 +41,6 @@
 </section>
 
 <style lang="scss">
-
 	.admin-page {
 		background: white;
 		border-radius: $corner-radius-lg;

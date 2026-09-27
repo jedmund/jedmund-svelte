@@ -18,7 +18,9 @@ declare module '@tiptap/core' {
 	}
 }
 
-export const GalleryPlaceholder = (component: Component<NodeViewProps>): Node<GalleryPlaceholderOptions> =>
+export const GalleryPlaceholder = (
+	component: Component<NodeViewProps>
+): Node<GalleryPlaceholderOptions> =>
 	Node.create<GalleryPlaceholderOptions>({
 		name: 'gallery-placeholder',
 		addOptions() {
