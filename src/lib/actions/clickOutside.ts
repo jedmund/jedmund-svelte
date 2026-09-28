@@ -59,21 +59,20 @@ export function clickOutside(
 		}
 	}
 
-	// Add listener on next tick to avoid immediate triggering
-	setTimeout(() => {
-		if (enabled) {
-			document.addEventListener('click', handleClick, true)
-		}
-	}, 0)
+	let timer: ReturnType<typeof setTimeout> | undefined
+	let destroyed = false
+	function attach() {
+		clearTimeout(timer)
+		timer = setTimeout(() => {
+			if (!destroyed && enabled) document.addEventListener('click', handleClick, true)
+		}, 0)
+	}
+	attach()
 
 	return {
 		update(newOptions: ClickOutsideOptions | (() => void)) {
-			const wasEnabled = enabled
-
-			// Remove old listener
+			clearTimeout(timer)
 			document.removeEventListener('click', handleClick, true)
-
-			// Normalize new options
 			if (typeof newOptions === 'function') {
 				enabled = true
 				callback = newOptions
@@ -81,20 +80,11 @@ export function clickOutside(
 				enabled = newOptions.enabled !== false
 				callback = newOptions.callback
 			}
-
-			// Only modify listener if enabled state actually changed
-			if (wasEnabled !== enabled) {
-				if (enabled) {
-					setTimeout(() => {
-						document.addEventListener('click', handleClick, true)
-					}, 0)
-				}
-			} else if (enabled) {
-				// State didn't change but we're still enabled - re-add immediately
-				document.addEventListener('click', handleClick, true)
-			}
+			if (enabled) attach()
 		},
 		destroy() {
+			destroyed = true
+			clearTimeout(timer)
 			document.removeEventListener('click', handleClick, true)
 		}
 	}

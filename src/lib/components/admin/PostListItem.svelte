@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { postTypeLabels, getPostSnippet } from '$lib/admin/post-list-formatting'
+	import { formatScheduledDate, formatDate } from '$lib/admin/list-formatting'
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import AdminByline from './AdminByline.svelte'
@@ -15,11 +17,6 @@
 	let { post, onedit, ontogglepublish, ondelete }: Props = $props()
 
 	let isDropdownOpen = $state(false)
-
-	const postTypeLabels: Record<string, string> = {
-		post: 'Post',
-		essay: 'Essay'
-	}
 
 	function handlePostClick(event: MouseEvent) {
 		// Don't navigate if clicking on the dropdown button
@@ -60,80 +57,6 @@
 		document.addEventListener('closeDropdowns', handleCloseDropdowns)
 		return () => document.removeEventListener('closeDropdowns', handleCloseDropdowns)
 	})
-
-	function getPostSnippet(post: AdminPost): string {
-		// Try excerpt first
-		if (post.excerpt) {
-			return post.excerpt.length > 150 ? post.excerpt.substring(0, 150) + '...' : post.excerpt
-		}
-
-		// Try to extract text from content JSON
-		if (post.content) {
-			let textContent = ''
-
-			if (
-				typeof post.content === 'object' &&
-				post.content &&
-				(post.content as Record<string, unknown>).content
-			) {
-				// BlockNote/TipTap format
-				function extractText(node: Record<string, unknown>): string {
-					if (typeof node.text === 'string') return node.text
-					if (Array.isArray(node.content)) {
-						return node.content.map((n) => extractText(n as Record<string, unknown>)).join(' ')
-					}
-					return ''
-				}
-				textContent = extractText(post.content as Record<string, unknown>)
-			} else if (typeof post.content === 'string') {
-				textContent = post.content
-			}
-
-			if (textContent) {
-				return textContent.length > 150 ? textContent.substring(0, 150) + '...' : textContent
-			}
-		}
-
-		// Fallback to link description for link posts
-		if (post.linkDescription) {
-			return post.linkDescription.length > 150
-				? post.linkDescription.substring(0, 150) + '...'
-				: post.linkDescription
-		}
-
-		// Default fallback
-		return `${postTypeLabels[post.postType] || post.postType} without content`
-	}
-
-	function formatScheduledDate(dateString: string): string {
-		return new Date(dateString).toLocaleString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit'
-		})
-	}
-
-	function formatDate(dateString: string): string {
-		const date = new Date(dateString)
-		const now = new Date()
-		const diffTime = now.getTime() - date.getTime()
-		const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-		if (diffDays === 0) {
-			return 'today'
-		} else if (diffDays === 1) {
-			return 'yesterday'
-		} else if (diffDays < 7) {
-			return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`
-		} else {
-			return date.toLocaleDateString('en-US', {
-				month: 'short',
-				day: 'numeric',
-				year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-			})
-		}
-	}
 </script>
 
 <div

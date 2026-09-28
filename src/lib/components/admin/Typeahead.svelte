@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { debounce } from '$lib/utils/debounce'
+	import TypeaheadResults from './TypeaheadResults.svelte'
+	import { onDestroy, untrack, tick } from 'svelte'
+	import { createSuggestionSearch } from '$lib/admin/suggestions'
 	import { clickOutside } from '$lib/actions/clickOutside'
 	import CategoryPicker from './CategoryPicker.svelte'
 	import type { GardenCategory } from '$lib/constants/garden'
@@ -31,20 +33,21 @@
 	let selectedIndex = $state(-1)
 	let results = $state<TypeaheadResult[]>([])
 	let isLoading = $state(false)
-	let resultElements: HTMLButtonElement[] = $state([])
 	let inputEl: HTMLInputElement | undefined = $state()
 	let inputId = `typeahead-${Math.random().toString(36).substr(2, 9)}`
 
-	export function focusAndSearch() {
-		requestAnimationFrame(() => {
+	let disposed = false
+	export async function focusAndSearch() {
+		await tick()
+		if (!disposed) {
 			inputEl?.focus()
 			inputEl?.select()
 
 			if (search && value.length >= 2) {
 				showResults = true
-				debouncedSearch(value)
+				suggestionSearch.query(value)
 			}
-		})
+		}
 	}
 
 	const placeholderAspectRatio = $derived.by(() => {
@@ -59,28 +62,24 @@
 		}
 	})
 
-	const debouncedSearch = debounce(async (query: string) => {
-		if (!search || query.length < 2) {
-			results = []
-			return
+	const suggestionSearch = createSuggestionSearch<TypeaheadResult>(
+		(query) => search?.(query) ?? Promise.resolve([]),
+		(state) => {
+			results = state.results
+			isLoading = state.loading
 		}
-
-		isLoading = true
-		try {
-			results = await search(query)
-		} catch (error) {
-			console.error('Search failed:', error)
-			results = []
-		} finally {
-			isLoading = false
-		}
-	}, 300)
-
-	// Scroll selected result into view
+	)
+	onDestroy(() => {
+		disposed = true
+		suggestionSearch.dispose()
+	})
 	$effect(() => {
-		if (selectedIndex >= 0 && resultElements[selectedIndex]) {
-			resultElements[selectedIndex].scrollIntoView({ block: 'nearest' })
-		}
+		void category
+		void search
+		untrack(() => {
+			if (showResults && search) suggestionSearch.query(value)
+			else suggestionSearch.clear()
+		})
 	})
 
 	function handleInput() {
@@ -90,9 +89,9 @@
 			showResults = value.length >= 2
 
 			if (value.length >= 2) {
-				debouncedSearch(value)
+				suggestionSearch.query(value)
 			} else {
-				results = []
+				suggestionSearch.clear()
 			}
 		}
 
@@ -103,7 +102,7 @@
 		value = result.name
 		showResults = false
 		selectedIndex = -1
-		results = []
+		suggestionSearch.clear()
 
 		onSelect?.({ category, result })
 	}
@@ -140,22 +139,23 @@
 		}
 	}
 
-	function handleCategoryChange(newCategory: GardenCategory) {
+	async function handleCategoryChange(newCategory: GardenCategory) {
 		onCategoryChange?.(newCategory)
-		results = []
+		suggestionSearch.clear()
 		selectedIndex = -1
 
 		// Re-fire search if there's text and the new category has search
 		if (value.length >= 2 && search) {
 			showResults = true
-			debouncedSearch(value)
+			suggestionSearch.query(value)
 		}
 
 		// Focus the input and select all text after category selection
-		requestAnimationFrame(() => {
+		await tick()
+		if (!disposed) {
 			inputEl?.focus()
 			inputEl?.select()
-		})
+		}
 	}
 
 	function closeResults() {
@@ -189,51 +189,23 @@
 			role={search ? 'combobox' : undefined}
 			aria-expanded={search ? showResults : undefined}
 			aria-haspopup={search ? 'listbox' : undefined}
-			aria-controls={search ? 'typeahead-results' : undefined}
-			aria-activedescendant={selectedIndex >= 0 ? `typeahead-option-${selectedIndex}` : undefined}
+			aria-controls={search ? `${inputId}-results` : undefined}
+			aria-activedescendant={selectedIndex >= 0
+				? `${inputId}-results-option-${selectedIndex}`
+				: undefined}
 		/>
 	</div>
 
-	{#if search && showResults}
-		<div class="typeahead-results" id="typeahead-results" role="listbox">
-			{#if isLoading}
-				<div class="result-loading">
-					<span class="spinner"></span>
-					Searching...
-				</div>
-			{:else if results.length > 0}
-				{#each results as result, i (result.id)}
-					<button
-						type="button"
-						class="result-item"
-						class:selected={selectedIndex === i}
-						onclick={() => selectResult(result)}
-						bind:this={resultElements[i]}
-						id="typeahead-option-{i}"
-						role="option"
-						aria-selected={selectedIndex === i}
-					>
-						{#if result.image}
-							<img class="result-thumb" src={result.image} alt="" />
-						{:else}
-							<div
-								class="result-thumb result-thumb-placeholder"
-								style:aspect-ratio={placeholderAspectRatio}
-							></div>
-						{/if}
-						<div class="result-info">
-							<span class="result-name">{result.name}</span>
-							{#if result.subtitle}
-								<span class="result-subtitle">{result.subtitle}</span>
-							{/if}
-						</div>
-					</button>
-				{/each}
-			{:else}
-				<div class="result-empty">{emptyText}</div>
-			{/if}
-		</div>
-	{/if}
+	<TypeaheadResults
+		showResults={Boolean(search) && showResults}
+		{results}
+		{isLoading}
+		{selectedIndex}
+		onselect={selectResult}
+		{placeholderAspectRatio}
+		{emptyText}
+		listId={`${inputId}-results`}
+	/>
 </div>
 
 <style lang="scss">
@@ -283,107 +255,6 @@
 		&::-webkit-search-decoration,
 		&::-webkit-search-cancel-button {
 			-webkit-appearance: none;
-		}
-	}
-
-	.typeahead-results {
-		position: absolute;
-		top: calc(100% + $unit-half);
-		left: 0;
-		right: 0;
-		z-index: 100;
-		background: $white;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-2xl;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		max-height: 360px;
-		overflow-y: auto;
-		padding: $unit;
-		display: flex;
-		flex-direction: column;
-		gap: $unit-fourth;
-	}
-
-	.result-item {
-		display: flex;
-		align-items: center;
-		gap: $unit-2x;
-		width: 100%;
-		padding: $unit-2x $unit-3x;
-		border: none;
-		background: none;
-		cursor: pointer;
-		text-align: left;
-		font-size: $font-size;
-		border-radius: $corner-radius-xl;
-
-		&:hover,
-		&.selected {
-			background: $gray-95;
-		}
-	}
-
-	.result-thumb {
-		width: 56px;
-		border-radius: $unit-half;
-		object-fit: cover;
-		flex-shrink: 0;
-	}
-
-	.result-thumb-placeholder {
-		width: 56px;
-		background-color: $gray-90;
-	}
-
-	.result-info {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-fourth;
-		min-width: 0;
-	}
-
-	.result-name {
-		color: $gray-10;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.result-subtitle {
-		color: $gray-50;
-		font-size: $font-size-small;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.result-loading,
-	.result-empty {
-		padding: $unit-2x;
-		text-align: center;
-		color: $gray-60;
-		font-size: $font-size-small;
-	}
-
-	.result-loading {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: $unit;
-	}
-
-	.spinner {
-		width: $unit-2x;
-		height: $unit-2x;
-		border: 2px solid $gray-90;
-		border-top-color: $red-50;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
 		}
 	}
 </style>

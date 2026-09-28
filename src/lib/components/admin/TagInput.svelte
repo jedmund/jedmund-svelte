@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { debounce } from '$lib/utils/debounce'
-
-	interface Tag {
-		id: number
-		name: string
-		displayName: string
-		slug: string
-		usageCount?: number
-	}
+	import { clickOutside } from '$lib/actions/clickOutside'
+	import TagPill from './TagPill.svelte'
+	import TagSuggestions from './TagSuggestions.svelte'
+	import { onDestroy } from 'svelte'
+	import { createSuggestionSearch } from '$lib/admin/suggestions'
+	import { suggestTags, createTag, type TagSuggestion as Tag } from '$lib/admin/tag-requests'
 
 	interface TagInputProps {
 		tags?: Tag[]
@@ -45,25 +42,20 @@
 		suggestions.filter((tag) => !tags.some((t) => t.id === tag.id))
 	)
 
-	// Debounced suggestion fetching
-	const fetchSuggestions = debounce(async (query: string) => {
-		if (query.length < 2) {
-			suggestions = []
-			return
-		}
-
-		isLoadingSuggestions = true
-		try {
-			const res = await fetch(`/api/tags/suggest?q=${encodeURIComponent(query)}&limit=5`)
-			const data = await res.json()
-			suggestions = data.suggestions
-		} catch (error) {
-			console.error('Failed to fetch suggestions:', error)
-			suggestions = []
-		} finally {
-			isLoadingSuggestions = false
-		}
-	}, 200)
+	const suggestionSearch = createSuggestionSearch(
+		suggestTags,
+		(state) => {
+			suggestions = state.results
+			isLoadingSuggestions = state.loading
+		},
+		200
+	)
+	let creating = false
+	let disposed = false
+	onDestroy(() => {
+		disposed = true
+		suggestionSearch.dispose()
+	})
 
 	// Handle input changes
 	function handleInput(e: Event) {
@@ -72,22 +64,18 @@
 		selectedIndex = -1
 		showSuggestions = value.length >= 2
 
-		if (value.length >= 2) {
-			fetchSuggestions(value)
-		} else {
-			suggestions = []
-		}
+		suggestionSearch.query(value)
 	}
 
 	// Add existing tag from suggestions
-	async function addExistingTag(tag: Tag) {
-		if (tags.length >= maxTags) return
+	function addExistingTag(tag: Tag) {
+		if (disabled || tags.length >= maxTags || tags.some((item) => item.id === tag.id)) return
 
 		tags = [...tags, tag]
 		onTagAdd?.(tag)
 
 		inputValue = ''
-		suggestions = []
+		suggestionSearch.clear()
 		showSuggestions = false
 		selectedIndex = -1
 		inputElement?.focus()
@@ -95,32 +83,26 @@
 
 	// Create and add new tag
 	async function createNewTag(name: string) {
-		if (tags.length >= maxTags) return
-
+		if (disabled || creating || tags.length >= maxTags) return
+		creating = true
+		const inputAtStart = inputValue
 		try {
-			const res = await fetch('/api/tags', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name }),
-				credentials: 'same-origin'
-			})
-
-			if (!res.ok) {
-				const error = await res.json()
-				alert(error.error.message)
-				return
+			const tag = await createTag(name)
+			if (disposed || disabled || tags.length >= maxTags) return
+			if (!tags.some((item) => item.id === tag.id)) {
+				tags = [...tags, tag]
+				onTagAdd?.(tag)
 			}
-
-			const { tag } = await res.json()
-			tags = [...tags, tag]
-			onTagAdd?.(tag)
-
-			inputValue = ''
-			showSuggestions = false
-			inputElement?.focus()
+			if (inputValue === inputAtStart) {
+				inputValue = ''
+				suggestionSearch.clear()
+				showSuggestions = false
+				inputElement?.focus()
+			}
 		} catch (error) {
-			console.error('Failed to create tag:', error)
-			alert('Failed to create tag. Please try again.')
+			if (!disposed) alert(error instanceof Error ? error.message : 'Failed to create tag')
+		} finally {
+			creating = false
 		}
 	}
 
@@ -177,21 +159,17 @@
 		inputElement?.focus()
 	}
 
-	// Click outside to close
-	function handleClickOutside(e: MouseEvent) {
-		if (!(e.target as Element).closest('.tag-input-wrapper')) {
-			showSuggestions = false
-			selectedIndex = -1
-		}
+	function closeSuggestions() {
+		showSuggestions = false
+		selectedIndex = -1
+		suggestionSearch.clear()
 	}
-
-	$effect(() => {
-		document.addEventListener('click', handleClickOutside)
-		return () => document.removeEventListener('click', handleClickOutside)
-	})
 </script>
 
-<div class="tag-input-wrapper">
+<div
+	class="tag-input-wrapper"
+	use:clickOutside={{ enabled: showSuggestions, callback: closeSuggestions }}
+>
 	{#if label}
 		<label class="input-label" for={inputId}>{label}</label>
 	{/if}
@@ -205,20 +183,7 @@
 			onclick={handleContainerClick}
 		>
 			{#each tags as tag (tag.id)}
-				<span class="tag-pill">
-					{tag.displayName}
-					<button
-						type="button"
-						onclick={(e) => {
-							e.stopPropagation()
-							removeTag(tag)
-						}}
-						aria-label="Remove {tag.displayName}"
-						{disabled}
-					>
-						×
-					</button>
-				</span>
+				<TagPill {tag} {disabled} onremove={removeTag} />
 			{/each}
 
 			<!-- Input -->
@@ -236,43 +201,23 @@
 					role="combobox"
 					aria-expanded={showSuggestions}
 					aria-haspopup="listbox"
-					aria-controls="tag-suggestions"
-					aria-activedescendant={selectedIndex >= 0 ? `tag-option-${selectedIndex}` : undefined}
+					aria-controls={`${inputId}-suggestions`}
+					aria-activedescendant={selectedIndex >= 0
+						? `${inputId}-suggestions-option-${selectedIndex}`
+						: undefined}
 					aria-label={label || 'Add tags'}
 				/>
 			{/if}
 		</div>
 
-		<!-- Suggestions dropdown -->
-		{#if showSuggestions}
-			<div class="tag-suggestions" id="tag-suggestions" role="listbox">
-				{#if isLoadingSuggestions}
-					<div class="suggestion-loading">
-						<span class="spinner"></span>
-						Searching...
-					</div>
-				{:else if filteredSuggestions.length > 0}
-					{#each filteredSuggestions as tag, i (tag.id)}
-						<button
-							type="button"
-							class="suggestion-item"
-							class:selected={selectedIndex === i}
-							onclick={() => addExistingTag(tag)}
-							id="tag-option-{i}"
-							role="option"
-							aria-selected={selectedIndex === i}
-						>
-							<span class="suggestion-name">{tag.displayName}</span>
-							{#if tag.usageCount !== undefined}
-								<span class="suggestion-count">{tag.usageCount}</span>
-							{/if}
-						</button>
-					{/each}
-				{:else}
-					<div class="suggestion-empty">No matching tags</div>
-				{/if}
-			</div>
-		{/if}
+		<TagSuggestions
+			{showSuggestions}
+			suggestions={filteredSuggestions}
+			{isLoadingSuggestions}
+			{selectedIndex}
+			onselect={addExistingTag}
+			listId={`${inputId}-suggestions`}
+		/>
 	</div>
 </div>
 
@@ -345,48 +290,6 @@
 		}
 	}
 
-	.tag-pill {
-		display: inline-flex;
-		align-items: center;
-		gap: $unit-half;
-		padding: $unit $unit-2x;
-		background: $accent-color;
-		border-radius: $corner-radius-lg;
-		font-size: 14px;
-		color: $white;
-		transition: background-color $transition-fast ease;
-
-		&:hover {
-			background: $red-50;
-		}
-
-		button {
-			border: none;
-			background: none;
-			color: rgba(255, 255, 255, 0.7);
-			cursor: pointer;
-			font-size: 18px;
-			line-height: 1;
-			padding: $unit;
-			margin: (-$unit) (-$unit) (-$unit) (-$unit-half);
-			width: 16px;
-			height: 16px;
-			box-sizing: content-box;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-
-			&:hover {
-				color: $white;
-			}
-
-			&:disabled {
-				cursor: not-allowed;
-				opacity: 0.5;
-			}
-		}
-	}
-
 	.tag-text-input {
 		flex: 1;
 		border: none;
@@ -404,77 +307,6 @@
 		&:disabled {
 			cursor: not-allowed;
 			opacity: 0.5;
-		}
-	}
-
-	.tag-suggestions {
-		position: absolute;
-		top: calc(100% + $unit-half);
-		left: 0;
-		right: 0;
-		z-index: 100;
-		background: $white;
-		border: 1px solid $gray-85;
-		border-radius: $corner-radius-2xl;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		max-height: 200px;
-		overflow-y: auto;
-	}
-
-	.suggestion-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-		padding: $unit-2x $unit-3x;
-		border: none;
-		background: none;
-		cursor: pointer;
-		text-align: left;
-		font-size: $font-size;
-
-		&:hover,
-		&.selected {
-			background: $gray-95;
-		}
-	}
-
-	.suggestion-name {
-		color: $gray-10;
-	}
-
-	.suggestion-count {
-		color: $gray-60;
-		font-size: $font-size-small;
-	}
-
-	.suggestion-loading,
-	.suggestion-empty {
-		padding: $unit-2x;
-		text-align: center;
-		color: $gray-60;
-		font-size: 14px;
-	}
-
-	.suggestion-loading {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: $unit;
-	}
-
-	.spinner {
-		width: 16px;
-		height: 16px;
-		border: 2px solid $gray-90;
-		border-top-color: $blue-50;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
 		}
 	}
 </style>

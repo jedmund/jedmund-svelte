@@ -27,6 +27,9 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		flex-wrap: wrap;
+		gap: $unit-2x;
+		min-width: 0;
 		padding: 0 $unit-2x 0 $unit;
 		margin-bottom: $unit-2x;
 	}
@@ -35,12 +38,16 @@
 		display: flex;
 		gap: $unit-2x;
 		align-items: center;
+		flex-wrap: wrap;
+		min-width: 0;
 	}
 
 	.filters-right {
 		display: flex;
 		gap: $unit-2x;
 		align-items: center;
-		flex-shrink: 0;
+		flex-wrap: wrap;
+		min-width: 0;
+		flex-shrink: 1;
 	}
 </style>

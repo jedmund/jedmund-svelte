@@ -2,32 +2,8 @@
 	import { goto } from '$app/navigation'
 	import AdminByline from './AdminByline.svelte'
 
-	interface Photo {
-		id: number
-		url: string
-		thumbnailUrl: string | null
-		caption: string | null
-	}
-
-	interface Album {
-		id: number
-		slug: string
-		title: string
-		description: string | null
-		date: string | null
-		location: string | null
-		coverPhotoId: number | null
-		status: string
-		showInUniverse: boolean
-		publishedAt: string | null
-		createdAt: string
-		updatedAt: string
-		photos: Photo[]
-		content?: unknown
-		_count: {
-			media: number
-		}
-	}
+	import type { Album } from '$lib/admin/album-types'
+	import { formatRelativeTime } from '$lib/admin/list-formatting'
 
 	interface Props {
 		album: Album
@@ -46,29 +22,6 @@
 		ontogglepublish,
 		ondelete
 	}: Props = $props()
-
-	function formatRelativeTime(dateString: string): string {
-		const date = new Date(dateString)
-		const now = new Date()
-		const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-		if (diffInSeconds < 60) return 'just now'
-
-		const minutes = Math.floor(diffInSeconds / 60)
-		if (diffInSeconds < 3600) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-
-		const hours = Math.floor(diffInSeconds / 3600)
-		if (diffInSeconds < 86400) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
-
-		const days = Math.floor(diffInSeconds / 86400)
-		if (diffInSeconds < 2592000) return `${days} ${days === 1 ? 'day' : 'days'} ago`
-
-		const months = Math.floor(diffInSeconds / 2592000)
-		if (diffInSeconds < 31536000) return `${months} ${months === 1 ? 'month' : 'months'} ago`
-
-		const years = Math.floor(diffInSeconds / 31536000)
-		return `${years} ${years === 1 ? 'year' : 'years'} ago`
-	}
 
 	function handleAlbumClick() {
 		goto(`/admin/albums/${album.id}/edit`)
