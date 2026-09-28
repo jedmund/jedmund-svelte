@@ -32,13 +32,20 @@
 		if (!isOpen || !closeOnEscape) return
 
 		function handleKeydown(e: KeyboardEvent) {
+			const activeModal = Array.from(
+				document.querySelectorAll('[role="dialog"][aria-modal="true"]')
+			).at(-1)
+			if (activeModal && !activeModal.contains(paneElement ?? null)) return
 			if (e.key === 'Escape') {
+				e.preventDefault()
+				e.stopPropagation()
 				handleClose()
 			}
 		}
 
-		window.addEventListener('keydown', handleKeydown)
-		return () => window.removeEventListener('keydown', handleKeydown)
+		// Editor node views consume bubbling keyboard events from their inputs.
+		window.addEventListener('keydown', handleKeydown, true)
+		return () => window.removeEventListener('keydown', handleKeydown, true)
 	})
 
 	function handleClose() {
@@ -127,6 +134,7 @@
 
 <style lang="scss">
 	.base-pane {
+		box-sizing: border-box;
 		position: fixed;
 		background: $white;
 		border: 1px solid $gray-85;
@@ -138,6 +146,11 @@
 		z-index: $z-index-popover;
 		min-width: 400px;
 		overflow: auto;
+
+		@media (max-width: 440px) {
+			min-width: 0;
+			width: calc(100vw - 40px);
+		}
 
 		// Ensure pane doesn't go off-screen
 		&:global([style*='left']) {
