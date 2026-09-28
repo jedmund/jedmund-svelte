@@ -15,6 +15,7 @@
 			| 'time'
 			| 'datetime-local'
 			| 'color'
+			| 'month'
 		label?: string
 		error?: string
 		helpText?: string

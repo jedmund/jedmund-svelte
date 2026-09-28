@@ -4,7 +4,7 @@
 		title?: string
 		sourceType?: string
 		date?: string
-		source?: string
+		source?: string | null
 	}
 
 	let { href = '', title = '', sourceType = '', date = '', source = '' }: Props = $props()

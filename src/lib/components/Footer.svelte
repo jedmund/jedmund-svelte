@@ -1,12 +1,19 @@
 <script lang="ts">
-	const currentYear = new Date().getFullYear()
+	interface Props {
+		socialLinks?: { name: string; url: string }[]
+	}
 
-	const socialLinks = [
+	const defaultLinks = [
 		{ name: 'Bluesky', url: 'https://bsky.app/profile/jedmund.com' },
 		{ name: 'Mastodon', url: 'https://fireplace.cafe/@jedmund' },
 		{ name: 'Github', url: 'https://github.com/jedmund' },
 		{ name: 'Glass', url: 'https://glass.photo/jedmund' }
 	]
+
+	let { socialLinks: propLinks }: Props = $props()
+
+	const socialLinks = $derived(propLinks && propLinks.length > 0 ? propLinks : defaultLinks)
+	const currentYear = new Date().getFullYear()
 </script>
 
 <footer class="site-footer">

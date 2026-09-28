@@ -5,9 +5,15 @@
 
 	interface Props {
 		projects: Project[]
+		shortBio?: string | null
 	}
 
-	let { projects = [] }: Props = $props()
+	let { projects = [], shortBio }: Props = $props()
+
+	const bioLines = $derived.by(() => {
+		if (!shortBio) return null
+		return shortBio.split('\n\n').filter((line) => line.trim())
+	})
 </script>
 
 <section class="projects">
@@ -16,14 +22,20 @@
 			<a href="/about" class="intro-link">
 				<TiltCard>
 					<div class="intro-card">
-						<p class="intro-text">
-							<span class="highlighted">@jedmund</span> is a software designer and strategist based out
-							of San Francisco.
-						</p>
-						<p class="intro-text">
-							In his 15 year career, he's focused his design practice on building tools that help
-							people connect with each other and themselves through their own creativity.
-						</p>
+						{#if bioLines}
+							{#each bioLines as line}
+								<p class="intro-text">{@html line.replace(/@jedmund/g, '<span class="highlighted">@jedmund</span>')}</p>
+							{/each}
+						{:else}
+							<p class="intro-text">
+								<span class="highlighted">@jedmund</span> is a software designer and strategist based out
+								of San Francisco.
+							</p>
+							<p class="intro-text">
+								In his 15 year career, he's focused his design practice on building tools that help
+								people connect with each other and themselves through their own creativity.
+							</p>
+						{/if}
 					</div>
 				</TiltCard>
 			</a>
