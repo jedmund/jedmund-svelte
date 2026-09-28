@@ -47,11 +47,12 @@ export function useDropdown(options: UseDropdownOptions) {
 	$effect(() => {
 		if (options.isOpen) {
 			// Small delay to avoid immediate closure
-			setTimeout(() => {
+			const timer = setTimeout(() => {
 				document.addEventListener('click', handleClickOutside)
 			}, 0)
 
 			return () => {
+				clearTimeout(timer)
 				document.removeEventListener('click', handleClickOutside)
 			}
 		}

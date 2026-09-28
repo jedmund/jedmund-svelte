@@ -17,6 +17,7 @@ function resolve<T>(value: (() => T) | T): T {
 }
 
 export function useComposerEvents(options: UseComposerEventsOptions) {
+	const inputs = new Set<HTMLInputElement>()
 	// Handle paste events
 	function handlePaste(view: EditorView, event: ClipboardEvent): boolean {
 		const clipboardData = event.clipboardData
@@ -129,14 +130,21 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 		return input
 	}
 
-	// Trigger file selection dialog
+	// Keep the input until selection/cancel, rather than removing it while the native dialog is open.
 	function selectImageFile() {
 		const input = createFileInput()
+		inputs.add(input)
+		const cleanup = () => {
+			input.remove()
+			inputs.delete(input)
+		}
+		input.addEventListener('change', cleanup, { once: true })
+		input.addEventListener('cancel', cleanup, { once: true })
 		input.click()
-		// Clean up after a delay
-		setTimeout(() => {
-			document.body.removeChild(input)
-		}, 1000)
+	}
+	function dispose() {
+		for (const input of inputs) input.remove()
+		inputs.clear()
 	}
 
 	return {
@@ -144,6 +152,7 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 		handleEditorClick,
 		handleEditorKeydown,
 		handleDrop,
-		selectImageFile
+		selectImageFile,
+		dispose
 	}
 }

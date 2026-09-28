@@ -1,12 +1,19 @@
 <script lang="ts">
-	interface SyndicationRecord {
-		id: number
-		platform: string
-		status: string
-		externalUrl: string | null
-		errorMessage: string | null
-		createdAt: string
-	}
+	import SyndicationInlineLink from './SyndicationInlineLink.svelte'
+	import { onDestroy } from 'svelte'
+	import { syndicationRequests, type SyndicationRecord } from '$lib/admin/syndication/requests'
+	import { createSyndicationSession, type SyndicationState } from '$lib/admin/syndication/session'
+	let remote = $state<SyndicationState>({
+		records: [],
+		loading: false,
+		triggering: false,
+		saving: false,
+		error: ''
+	})
+	const session = createSyndicationSession(syndicationRequests, (state) => {
+		remote = state
+	})
+	onDestroy(() => session.dispose())
 
 	interface SyndicationStatusProps {
 		contentType: string
@@ -16,58 +23,22 @@
 
 	let { contentType, contentId, contentStatus }: SyndicationStatusProps = $props()
 
-	let syndications = $state<SyndicationRecord[]>([])
-	let loading = $state(false)
-	let triggering = $state(false)
 	let editingPlatform = $state<string | null>(null)
 	let editUrl = $state('')
 	let addingPlatform = $state<string | null>(null)
 	let addUrl = $state('')
 
-	const bluesky = $derived(syndications.find((s) => s.platform === 'bluesky'))
-	const mastodon = $derived(syndications.find((s) => s.platform === 'mastodon'))
+	const bluesky = $derived(remote.records.find((s) => s.platform === 'bluesky'))
+	const mastodon = $derived(remote.records.find((s) => s.platform === 'mastodon'))
 	const isPublished = $derived(contentStatus === 'published')
 
 	$effect(() => {
-		if (isPublished && contentId) {
-			fetchStatus()
-		}
+		session.setTarget(isPublished && contentId ? { contentType, contentId } : undefined)
+		return () => session.dispose()
 	})
 
-	async function fetchStatus() {
-		loading = true
-		try {
-			const res = await fetch(
-				`/api/syndication/status?contentType=${contentType}&contentId=${contentId}`
-			)
-			if (res.ok) {
-				const data = await res.json()
-				syndications = data.syndications
-			}
-		} catch {
-			// Silently fail
-		} finally {
-			loading = false
-		}
-	}
-
 	async function triggerSyndication() {
-		triggering = true
-		try {
-			const res = await fetch('/api/syndication/trigger', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ contentType, contentId })
-			})
-			if (res.ok) {
-				const data = await res.json()
-				syndications = data.syndications
-			}
-		} catch {
-			// Silently fail
-		} finally {
-			triggering = false
-		}
+		await session.trigger()
 	}
 
 	function startEdit(record: SyndicationRecord) {
@@ -81,21 +52,10 @@
 	}
 
 	async function saveEdit(record: SyndicationRecord) {
-		try {
-			const res = await fetch(`/api/syndication/${record.id}`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ externalUrl: editUrl })
-			})
-			if (res.ok) {
-				const updated = await res.json()
-				syndications = syndications.map((s) => (s.id === updated.id ? updated : s))
-			}
-		} catch {
-			// Silently fail
-		} finally {
-			editingPlatform = null
-			editUrl = ''
+		if (editingPlatform !== record.platform) return
+		const url = editUrl
+		if (await session.save(record.platform, url, record.id)) {
+			if (editingPlatform === record.platform && editUrl === url) cancelEdit()
 		}
 	}
 
@@ -110,33 +70,11 @@
 	}
 
 	async function saveAdd(platform: string) {
-		if (!addUrl.trim()) return
-		try {
-			const res = await fetch('/api/syndication/status', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ contentType, contentId, platform, externalUrl: addUrl })
-			})
-			if (res.ok) {
-				const record = await res.json()
-				syndications = [...syndications, record]
-			}
-		} catch {
-			// Silently fail
-		} finally {
-			addingPlatform = null
-			addUrl = ''
+		if (addingPlatform !== platform) return
+		const url = addUrl
+		if (await session.save(platform, url)) {
+			if (addingPlatform === platform && addUrl === url) cancelAdd()
 		}
-	}
-
-	function handleEditKeydown(e: KeyboardEvent, record: SyndicationRecord) {
-		if (e.key === 'Enter') saveEdit(record)
-		if (e.key === 'Escape') cancelEdit()
-	}
-
-	function handleAddKeydown(e: KeyboardEvent, platform: string) {
-		if (e.key === 'Enter') saveAdd(platform)
-		if (e.key === 'Escape') cancelAdd()
 	}
 
 	function platformLabel(platform: string): string {
@@ -146,9 +84,10 @@
 
 {#if isPublished}
 	<div class="syndication-section">
+		{#if remote.error}<p role="alert">{remote.error}</p>{/if}
 		<h3 class="syndication-title">Syndication</h3>
 
-		{#if loading}
+		{#if remote.loading}
 			<p class="syndication-loading">Loading...</p>
 		{:else}
 			<div class="syndication-grid">
@@ -164,26 +103,18 @@
 						</div>
 						<div class="syndication-action">
 							{#if editingPlatform === platform && record}
-								<div class="edit-inline">
-									<input
-										type="text"
-										bind:value={editUrl}
-										class="edit-input"
-										onkeydown={(e) => handleEditKeydown(e, record)}
-										onblur={() => saveEdit(record)}
-									/>
-								</div>
+								<SyndicationInlineLink
+									bind:value={editUrl}
+									oncommit={() => saveEdit(record)}
+									oncancel={cancelEdit}
+								/>
 							{:else if addingPlatform === platform}
-								<div class="edit-inline">
-									<input
-										type="text"
-										bind:value={addUrl}
-										class="edit-input"
-										placeholder="https://..."
-										onkeydown={(e) => handleAddKeydown(e, platform)}
-										onblur={() => saveAdd(platform)}
-									/>
-								</div>
+								<SyndicationInlineLink
+									bind:value={addUrl}
+									oncommit={() => saveAdd(platform)}
+									oncancel={cancelAdd}
+									placeholder="https://..."
+								/>
 							{:else if (record?.status === 'success' || record?.status === 'manual') && record.externalUrl}
 								<div class="action-links">
 									<a
@@ -209,8 +140,13 @@
 			</div>
 
 			{#if !bluesky || !mastodon || bluesky?.status === 'failed' || mastodon?.status === 'failed'}
-				<button class="syndicate-button" onclick={triggerSyndication} disabled={triggering}>
-					{triggering ? 'Syndicating...' : 'Syndicate Now'}
+				<button
+					type="button"
+					class="syndicate-button"
+					onclick={triggerSyndication}
+					disabled={remote.triggering}
+				>
+					{remote.triggering ? 'Syndicating...' : 'Syndicate Now'}
 				</button>
 			{/if}
 		{/if}
@@ -307,26 +243,6 @@
 
 		&:hover {
 			color: $gray-30;
-		}
-	}
-
-	.edit-inline {
-		display: flex;
-		align-items: center;
-		gap: $unit;
-	}
-
-	.edit-input {
-		font-size: $font-size-small;
-		padding: 2px $unit;
-		border: 1px solid $gray-80;
-		border-radius: 4px;
-		width: 200px;
-		color: $gray-20;
-
-		&:focus {
-			outline: none;
-			border-color: $blue-50;
 		}
 	}
 

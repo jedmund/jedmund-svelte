@@ -1,3 +1,5 @@
+import { api } from '$lib/admin/api'
+import { replaceUploadPlaceholder } from './image-placeholder'
 import type { Editor } from '@tiptap/core'
 import type { Media } from '@prisma/client'
 
@@ -14,6 +16,9 @@ export class ComposerMediaHandler {
 	private editor: Editor
 	private albumId?: number
 	private features: MediaHandlerOptions['features']
+	private controller = new AbortController()
+	private objectUrls = new Set<string>()
+	private disposed = false
 
 	constructor(options: MediaHandlerOptions) {
 		this.editor = options.editor
@@ -22,7 +27,7 @@ export class ComposerMediaHandler {
 	}
 
 	async uploadImage(file: File): Promise<void> {
-		if (!this.editor || !this.features.imageUpload) return
+		if (this.disposed || this.editor.isDestroyed || !this.features.imageUpload) return
 
 		// Validate file size (2MB max)
 		const filesize = file.size / 1024 / 1024
@@ -33,6 +38,7 @@ export class ComposerMediaHandler {
 
 		// Create a placeholder while uploading
 		const placeholderSrc = URL.createObjectURL(file)
+		this.objectUrls.add(placeholderSrc)
 		this.editor.commands.insertContent({
 			type: 'image',
 			attrs: {
@@ -52,52 +58,47 @@ export class ComposerMediaHandler {
 				formData.append('albumId', this.albumId.toString())
 			}
 
-			const response = await fetch('/api/media/upload', {
-				method: 'POST',
-				body: formData,
-				credentials: 'same-origin'
+			const media = await api.post<Media>('/api/media/upload', formData, {
+				signal: this.controller.signal
 			})
-
-			if (!response.ok) {
-				throw new Error('Upload failed')
-			}
-
-			const media = await response.json()
+			if (this.disposed || this.editor.isDestroyed) return
 
 			// Replace placeholder with actual URL
 			const displayWidth = media.width && media.width > 600 ? 600 : media.width
 
-			this.editor.commands.insertContent([
-				{
-					type: 'image',
-					attrs: {
-						src: media.url,
-						alt: media.description || '',
-						title: '',
-						width: displayWidth,
-						height: media.height,
-						align: 'center',
-						mediaId: media.id?.toString()
-					}
-				},
-				{
-					type: 'paragraph'
+			replaceUploadPlaceholder(this.editor, placeholderSrc, {
+				type: 'image',
+				attrs: {
+					src: media.url,
+					alt: media.description || '',
+					title: '',
+					width: displayWidth,
+					height: media.height,
+					align: 'center',
+					mediaId: media.id.toString()
 				}
-			])
-
-			// Clean up the object URL
-			URL.revokeObjectURL(placeholderSrc)
+			})
 		} catch (error) {
-			console.error('Image upload failed:', error)
-			alert('Failed to upload image. Please try again.')
-			// Remove the placeholder on error
-			this.editor.commands.undo()
+			if (!this.disposed && !this.editor.isDestroyed) {
+				console.error('Image upload failed:', error)
+				alert('Failed to upload image. Please try again.')
+				replaceUploadPlaceholder(this.editor, placeholderSrc)
+			}
+		} finally {
 			URL.revokeObjectURL(placeholderSrc)
+			this.objectUrls.delete(placeholderSrc)
 		}
 	}
 
+	dispose() {
+		this.disposed = true
+		this.controller.abort()
+		for (const url of this.objectUrls) URL.revokeObjectURL(url)
+		this.objectUrls.clear()
+	}
+
 	handleMediaSelect(media: Media): void {
-		if (!this.editor) return
+		if (this.disposed || this.editor.isDestroyed) return
 
 		// Remove placeholder if it exists
 		if (this.editor.storage.imageModal?.placeholderPos !== undefined) {
@@ -150,7 +151,11 @@ export class ComposerMediaHandler {
 
 	handleMediaClose(): void {
 		// Remove the placeholder if user cancelled
-		if (this.editor && this.editor.storage.imageModal?.placeholderPos !== undefined) {
+		if (
+			!this.disposed &&
+			!this.editor.isDestroyed &&
+			this.editor.storage.imageModal?.placeholderPos !== undefined
+		) {
 			const pos = this.editor.storage.imageModal.placeholderPos
 			this.editor
 				.chain()
