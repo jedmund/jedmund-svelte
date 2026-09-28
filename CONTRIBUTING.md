@@ -144,7 +144,9 @@ Use the scripts that exist in `package.json`:
 | `pnpm lint:eslint`                   | Code diagnostics                                       |
 | `pnpm lint:format`                   | Formatting check                                       |
 | `pnpm lint:structure`                | File-size limits and shrinking allowances              |
-| `pnpm lint`                          | All three lint checks, reporting every result          |
+| `pnpm lint:unused`                   | Confirmed unused files (Knip comprehensive analysis)   |
+| `pnpm audit:unused`                  | Production reachability report for review              |
+| `pnpm lint`                          | All four lint checks, reporting every result           |
 | `pnpm test`                          | Unit/integration tests and editor fixture verification |
 | `pnpm build`                         | Production application build                           |
 | `pnpm build-storybook`               | Component documentation build                          |
