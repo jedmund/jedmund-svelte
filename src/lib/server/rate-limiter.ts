@@ -1,4 +1,4 @@
-import redis from '../../routes/api/redis-client'
+import redis from '$lib/server/redis-client'
 
 interface RateLimitState {
 	failureCount: number

@@ -6,7 +6,7 @@
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
 	import { extractHeroMedia } from '$lib/utils/extractHeroMedia'
 	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
-	import type { UniverseItem } from '../../routes/api/universe/+server'
+	import type { UniverseItem } from '$lib/types/universe'
 
 	let { post }: { post: UniverseItem } = $props()
 

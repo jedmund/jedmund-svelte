@@ -45,6 +45,23 @@ export default [
 		}
 	},
 	{
+		files: ['src/lib/**/*.{ts,js,svelte}'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['**/routes/**'],
+							message:
+								'Library code must import shared contracts from $lib, not route implementations.'
+						}
+					]
+				}
+			]
+		}
+	},
+	{
 		// Edra is a pinned upstream snapshot; application-owned editor code stays linted.
 		ignores: [
 			'.pnpm-store/',

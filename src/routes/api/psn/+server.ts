@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import Module from 'node:module'
-import redis from '../redis-client'
+import redis from '$lib/server/redis-client'
 
 import type { AuthTokensResponse } from 'psn-api'
 import type { RequestHandler } from './$types'

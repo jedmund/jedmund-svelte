@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '$lib/server/database'
 import { logger } from '$lib/server/logger'
 import { syndicateContent } from '$lib/server/syndication/syndicate'
-import redis from '../../routes/api/redis-client'
+import redis from '$lib/server/redis-client'
 
 const TICK_INTERVAL_MS = 60_000
 const STARTUP_TICK_DELAY_MS = 5_000

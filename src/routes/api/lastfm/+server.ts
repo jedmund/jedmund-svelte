@@ -1,10 +1,11 @@
+import { transformAlbumData } from '$lib/server/apple-music-normalization'
 import 'dotenv/config'
 import { LastClient } from '@musicorum/lastfm'
 import type { RequestHandler } from './$types'
 import type { Album, AlbumImages } from '$lib/types/lastfm'
 import type { LastfmImage } from '@musicorum/lastfm/dist/types/packages/common'
-import { findAlbum, transformAlbumData } from '$lib/server/apple-music-client'
-import redis from '../redis-client'
+import { findAlbum } from '$lib/server/apple-music-client'
+import redis from '$lib/server/redis-client'
 import { logger } from '$lib/server/logger'
 import { getConfig } from '$lib/server/config'
 

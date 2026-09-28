@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types'
-import redis from '../../redis-client'
+import redis from '$lib/server/redis-client'
 
 const RATE_LIMIT_MAX = 10
 const RATE_LIMIT_WINDOW = 3600 // 1 hour in seconds

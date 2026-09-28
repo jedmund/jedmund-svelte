@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import redis from '../redis-client'
+import redis from '$lib/server/redis-client'
 import SteamAPI, { UserPlaytime, GameInfoExtended, Game, GameInfo } from 'steamapi'
 
 import type { RequestHandler } from './$types'

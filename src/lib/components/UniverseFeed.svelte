@@ -4,7 +4,7 @@
 	import UniverseGardenCard from './UniverseGardenCard.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
-	import type { UniverseItem } from '../../routes/api/universe/+server'
+	import type { UniverseItem } from '$lib/types/universe'
 
 	interface Pagination {
 		total: number

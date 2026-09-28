@@ -1,7 +1,7 @@
 <script lang="ts">
 	import UniverseCard from './UniverseCard.svelte'
 	import { renderInlineExcerpt } from '$lib/utils/content'
-	import type { UniverseItem } from '../../routes/api/universe/+server'
+	import type { UniverseItem } from '$lib/types/universe'
 
 	let { garden }: { garden: UniverseItem } = $props()
 

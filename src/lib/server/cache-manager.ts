@@ -1,4 +1,4 @@
-import redis from '../../routes/api/redis-client'
+import redis from '$lib/server/redis-client'
 import { logger } from './logger'
 
 export interface CacheConfig {

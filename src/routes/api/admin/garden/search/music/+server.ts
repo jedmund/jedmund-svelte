@@ -1,4 +1,4 @@
-import redis from '../../../../redis-client'
+import redis from '$lib/server/redis-client'
 import { searchAlbums } from '$lib/server/apple-music-client'
 import { getArtworkUrl } from '$lib/types/apple-music'
 

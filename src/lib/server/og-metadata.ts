@@ -1,4 +1,4 @@
-import redis from '../../routes/api/redis-client'
+import redis from '$lib/server/redis-client'
 import { safeKey } from './cache-keys'
 import { assertAllowedExternalUrl } from './url-guard'
 

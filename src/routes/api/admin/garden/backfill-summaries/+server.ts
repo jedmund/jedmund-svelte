@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types'
 import { prisma } from '$lib/server/database'
 import { jsonResponse } from '$lib/server/api-utils'
 import { logger } from '$lib/server/logger'
-import redis from '../../../redis-client'
+import redis from '$lib/server/redis-client'
 
 const TVDB_BASE = 'https://api4.thetvdb.com/v4'
 const TMDB_BASE = 'https://api.themoviedb.org/3'

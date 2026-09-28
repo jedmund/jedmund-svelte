@@ -24,7 +24,6 @@
 		"src/lib/editor/jedmund/headless/components/ContentInsertionPane.svelte": 765,
 		"src/lib/editor/jedmund/headless/components/GalleryExtended.svelte": 328,
 		"src/lib/editor/jedmund/headless/components/UrlEmbedExtended.svelte": 610,
-		"src/lib/server/apple-music-client.ts": 550,
 		"src/lib/utils/content.ts": 715,
 		"src/routes/albums/+page.svelte": 481,
 		"src/routes/albums/[slug]/+page.svelte": 407,

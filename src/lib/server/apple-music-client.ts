@@ -1,109 +1,14 @@
-import { getAppleMusicHeaders } from './apple-music-auth'
+import { containsJapanese, albumsMatch, artistsMatch } from './apple-music-matching'
 import type {
 	AppleMusicAlbum,
 	AppleMusicTrack,
 	AppleMusicSearchResponse
 } from '$lib/types/apple-music'
-import { isAppleMusicError } from '$lib/types/apple-music'
-import { ApiRateLimiter } from './rate-limiter'
+import type { ExtendedAppleMusicAlbum, SyntheticAlbum } from './apple-music-types'
+import { makeAppleMusicRequest, rateLimiter } from './apple-music-transport'
 import { logger } from './logger'
-
-// Extended types for Apple Music data with custom metadata
-interface ExtendedAppleMusicAlbum extends AppleMusicAlbum {
-	_storefront?: string
-}
-
-interface ExtendedAttributes {
-	isSingle?: boolean
-	_singleSongId?: string
-	_singleSongPreview?: string
-	[key: string]: unknown
-}
-
-interface SyntheticAlbum extends Omit<AppleMusicAlbum, 'attributes'> {
-	attributes: AppleMusicAlbum['attributes'] & ExtendedAttributes
-	_storefront?: string
-}
-
-const APPLE_MUSIC_API_BASE = 'https://api.music.apple.com/v1'
-const DEFAULT_STOREFRONT = 'us' // Default to US storefront
-const JAPANESE_STOREFRONT = 'jp' // Japanese storefront
-const RATE_LIMIT_DELAY = 200 // 200ms between requests to stay well under 3000/hour
-
-let lastRequestTime = 0
-const rateLimiter = new ApiRateLimiter('apple-music')
-
-async function rateLimitedFetch(url: string, options?: RequestInit): Promise<Response> {
-	const now = Date.now()
-	const timeSinceLastRequest = now - lastRequestTime
-
-	if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
-		await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY - timeSinceLastRequest))
-	}
-
-	lastRequestTime = Date.now()
-	return fetch(url, options)
-}
-
-async function makeAppleMusicRequest<T>(endpoint: string, identifier?: string): Promise<T> {
-	// Check if we should block this request
-	if (identifier && (await rateLimiter.shouldBlock(identifier))) {
-		throw new Error('Request blocked due to rate limiting')
-	}
-
-	const url = `${APPLE_MUSIC_API_BASE}${endpoint}`
-	const headers = await getAppleMusicHeaders()
-
-	logger.music('debug', `Making Apple Music API request: ${url}`, {
-		hasAuth: !!headers.Authorization
-	})
-
-	try {
-		const response = await rateLimitedFetch(url, { headers })
-
-		if (!response.ok) {
-			const errorText = await response.text()
-			logger.error(
-				'Apple Music API error response:',
-				undefined,
-				{
-					status: response.status,
-					statusText: response.statusText,
-					body: errorText
-				},
-				'music'
-			)
-
-			// Record failure and handle rate limiting
-			if (identifier) {
-				await rateLimiter.recordFailure(identifier, response.status === 429)
-			}
-
-			try {
-				const errorData = JSON.parse(errorText)
-				if (isAppleMusicError(errorData)) {
-					throw new Error(
-						`Apple Music API Error: ${errorData.errors[0]?.detail || 'Unknown error'}`
-					)
-				}
-			} catch (_e) {
-				// If not JSON, throw the text error
-			}
-
-			throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`)
-		}
-
-		// Record success
-		if (identifier) {
-			await rateLimiter.recordSuccess(identifier)
-		}
-
-		return await response.json()
-	} catch (error) {
-		logger.error('Apple Music API request failed:', error as Error, undefined, 'music')
-		throw error
-	}
-}
+const DEFAULT_STOREFRONT = 'us'
+const JAPANESE_STOREFRONT = 'jp'
 
 export async function searchAlbums(
 	query: string,
@@ -167,12 +72,6 @@ export async function getAlbumDetails(id: string): Promise<AppleMusicAlbum | nul
 export async function getTrack(id: string): Promise<{ data: AppleMusicTrack[] }> {
 	const endpoint = `/catalog/${DEFAULT_STOREFRONT}/songs/${id}`
 	return makeAppleMusicRequest<{ data: AppleMusicTrack[] }>(endpoint, `track:${id}`)
-}
-
-// Helper function to detect if a string contains Japanese characters
-function containsJapanese(str: string): boolean {
-	// Check for Hiragana, Katakana, and Kanji
-	return /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(str)
 }
 
 // Helper function to search for an album by artist and album name
@@ -240,42 +139,6 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 			)
 		})
 
-		// Helper function to check if albums match
-		const albumsMatch = (albumName: string, searchTerm: string, exact = false): boolean => {
-			if (exact) {
-				return albumName === searchTerm
-			}
-			const albumLower = albumName.toLowerCase()
-			const searchLower = searchTerm.toLowerCase()
-			return (
-				albumLower === searchLower ||
-				albumLower.startsWith(searchLower) ||
-				albumLower.includes(searchLower)
-			)
-		}
-
-		// Helper function to check if artists match
-		const artistsMatch = (artistName: string, searchArtist: string, exact = false): boolean => {
-			if (exact) {
-				return artistName === searchArtist
-			}
-			const artistLower = artistName.toLowerCase()
-			const searchLower = searchArtist.toLowerCase()
-
-			// Direct match
-			if (artistLower === searchLower) return true
-
-			// Handle comma-separated artists
-			if (searchArtist.includes(',')) {
-				const primaryArtist = searchArtist.split(',')[0].trim().toLowerCase()
-				if (artistLower === primaryArtist || artistLower.includes(primaryArtist)) return true
-			}
-
-			// Reverse check - if the found artist is in our search
-			return searchLower.includes(artistLower)
-		}
-
-		// Try different matching strategies in order of preference
 		const match = albums.find((a) => {
 			const albumName = a.attributes?.name || ''
 			const artistName = a.attributes?.artistName || ''
@@ -458,93 +321,5 @@ export async function findAlbum(artist: string, album: string): Promise<AppleMus
 		)
 		// Don't cache as not found on error - might be temporary
 		return null
-	}
-}
-
-// Transform Apple Music album data to match existing format
-export async function transformAlbumData(appleMusicAlbum: AppleMusicAlbum | SyntheticAlbum) {
-	const attributes = appleMusicAlbum.attributes
-
-	// Get preview URL from tracks if album doesn't have one
-	let previewUrl = attributes.previews?.[0]?.url
-	let tracks: Array<{ name: string; previewUrl?: string; durationMs?: number }> = []
-
-	// Check if this is a synthetic single album
-	const extendedAttrs = attributes as ExtendedAttributes
-	if (extendedAttrs.isSingle && extendedAttrs._singleSongPreview) {
-		logger.music('debug', 'Processing synthetic single album')
-		previewUrl = extendedAttrs._singleSongPreview
-		tracks = [
-			{
-				name: attributes.name,
-				previewUrl: extendedAttrs._singleSongPreview,
-				durationMs: undefined // We'd need to fetch the song details for duration
-			}
-		]
-	}
-	// Always fetch tracks to get preview URLs
-	else if (appleMusicAlbum.id) {
-		try {
-			// Determine which storefront to use
-			const extendedAlbum = appleMusicAlbum as ExtendedAppleMusicAlbum
-			const storefront = extendedAlbum._storefront || DEFAULT_STOREFRONT
-
-			// Fetch album details with tracks
-			const endpoint = `/catalog/${storefront}/albums/${appleMusicAlbum.id}?include=tracks`
-			const response = await makeAppleMusicRequest<{
-				data: AppleMusicAlbum[]
-				included?: AppleMusicTrack[]
-			}>(endpoint, `album:${appleMusicAlbum.id}`)
-
-			// Tracks are in relationships.tracks.data when using ?include=tracks
-			const albumData = response.data?.[0]
-			const tracksData = albumData?.relationships?.tracks?.data
-
-			if (tracksData?.length) {
-				logger.music('debug', `Found ${tracksData.length} tracks for album "${attributes.name}"`)
-
-				// Process all tracks
-				tracks = tracksData
-					.filter((item) => item.type === 'songs')
-					.map((track) => {
-						return {
-							name: track.attributes?.name || 'Unknown',
-							previewUrl: track.attributes?.previews?.[0]?.url,
-							durationMs: track.attributes?.durationInMillis
-						}
-					})
-
-				// Find the first track with a preview if we don't have one
-				if (!previewUrl) {
-					const trackWithPreview = tracks.find((t) => t.previewUrl)
-					if (trackWithPreview) {
-						previewUrl = trackWithPreview.previewUrl
-						logger.music('debug', `Using preview URL from track "${trackWithPreview.name}"`)
-					}
-				}
-			} else {
-				logger.music('debug', 'No tracks found in album response')
-			}
-		} catch (error) {
-			logger.error('Failed to fetch album tracks:', error as Error, undefined, 'music')
-		}
-	}
-
-	return {
-		appleMusicId: appleMusicAlbum.id,
-		highResArtwork: attributes.artwork
-			? attributes.artwork.url.replace('{w}x{h}', '3000x3000')
-			: undefined,
-		previewUrl,
-		url: attributes.url,
-		// Store additional metadata for future use
-		genres: attributes.genreNames,
-		releaseDate: attributes.releaseDate,
-		trackCount: attributes.trackCount,
-		recordLabel: attributes.recordLabel,
-		copyright: attributes.copyright,
-		editorialNotes: attributes.editorialNotes,
-		isComplete: attributes.isComplete,
-		tracks
 	}
 }
