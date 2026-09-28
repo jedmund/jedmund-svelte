@@ -1,497 +1,140 @@
 <script lang="ts">
-	import { untrack } from 'svelte'
-	import { replaceState } from '$app/navigation'
-	import { z } from 'zod'
 	import AdminPage from './AdminPage.svelte'
-	import AdminSegmentedControl from './AdminSegmentedControl.svelte'
+	import UnsavedChangesModal from './UnsavedChangesModal.svelte'
+	import FormPageHeader from '$lib/components/admin/forms/FormPageHeader.svelte'
 	import Button from './Button.svelte'
-	import Input from './Input.svelte'
-	import DropdownSelectField from './DropdownSelectField.svelte'
+	import AlbumDetailsSection from './forms/AlbumDetailsSection.svelte'
 	import UnifiedMediaModal from './UnifiedMediaModal.svelte'
 	import SmartImage from '../SmartImage.svelte'
-	import Composer from './composer'
+	import Composer from './composer/ComposerCore.svelte'
 	import SyndicationStatus from './SyndicationStatus.svelte'
-	import { toast } from '$lib/stores/toast'
-	import type { Album, Media } from '@prisma/client'
-	import type { JSONContent } from '@tiptap/core'
-
+	import type { Album } from '@prisma/client'
+	import { untrack } from 'svelte'
+	import { createAlbumForm } from '$lib/components/admin/forms/createAlbumForm.svelte'
 	interface Props {
 		album?: Album | null
 		mode: 'create' | 'edit'
 	}
 
 	let { album: initialAlbum = null, mode: initialMode }: Props = $props()
-
-	// Capture the starting record once; later saves must not reset unsaved fields.
-	const seed = untrack(() => ({ album: initialAlbum, mode: initialMode }))
-
-	// Local state so we can transition create → edit in place after first save.
-	let album = $state(seed.album)
-	let mode = $state<'create' | 'edit'>(seed.mode)
-
-	// Album schema for validation
-	const albumSchema = z.object({
-		title: z.string().min(1, 'Title is required'),
-		slug: z
-			.string()
-			.min(1, 'Slug is required')
-			.regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
-		location: z.string().optional(),
-		year: z.string().optional()
-	})
-
-	// State
-	let isLoading = $state(seed.mode === 'edit')
-	let hasLoaded = $state(seed.mode === 'create')
-	let isSaving = $state(false)
-	let _validationErrors = $state<Record<string, string>>({})
-	let showBulkAlbumModal = $state(false)
-	let albumMedia = $state<Array<{ media: Media; displayOrder: number }>>([])
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let editorInstance = $state<any>()
-	let activeTab = $state('metadata')
-	let pendingMediaIds = $state<number[]>([]) // Photos to add after album creation
-	let heartCount = $state<number | undefined>()
-
-	const tabOptions = [
-		{ value: 'metadata', label: 'Metadata' },
-		{ value: 'content', label: 'Content' }
-	]
-
-	const statusOptions = [
-		{
-			value: 'draft',
-			label: 'Draft',
-			description: 'Only visible to you'
-		},
-		{
-			value: 'published',
-			label: 'Published',
-			description: 'Visible on your public site'
-		}
-	]
-
-	// Form data
-	let formData = $state({
-		title: '',
-		slug: '',
-		year: '',
-		location: '',
-		showInUniverse: false,
-		status: 'draft' as 'draft' | 'published',
-		content: { type: 'doc', content: [{ type: 'paragraph' }] } as JSONContent
-	})
-
-	// Derived state for existing media IDs
-	const existingMediaIds = $derived(albumMedia.map((item) => item.media.id))
-
-	// Watch for album changes and populate form data
-	$effect(() => {
-		if (album && mode === 'edit' && !hasLoaded) {
-			populateFormData(album)
-			loadAlbumMedia()
-			if (album.slug) {
-				fetchHeartCount(album.slug)
-			}
-			hasLoaded = true
-		} else if (mode === 'create') {
-			isLoading = false
-		}
-	})
-
-	// Watch for title changes and update slug
-	$effect(() => {
-		if (formData.title && mode === 'create') {
-			formData.slug = formData.title
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, '-')
-				.replace(/^-+|-+$/g, '')
-		}
-	})
-
-	function populateFormData(data: Album) {
-		formData = {
-			title: data.title || '',
-			slug: data.slug || '',
-			year: data.date ? new Date(data.date).getFullYear().toString() : '',
-			location: data.location || '',
-			showInUniverse: data.showInUniverse || false,
-			status: (data.status as 'draft' | 'published') || 'draft',
-			content: (data.content as JSONContent) || { type: 'doc', content: [{ type: 'paragraph' }] }
-		}
-
-		isLoading = false
-	}
-
-	async function fetchHeartCount(slug: string) {
-		try {
-			const res = await fetch(`/api/heart/albums/${slug}`)
-			if (res.ok) {
-				const data = await res.json()
-				heartCount = Object.values(data).reduce((sum: number, n) => sum + (n as number), 0)
-			}
-		} catch {
-			// Silently fail - heart count is non-critical
-		}
-	}
-
-	async function loadAlbumMedia() {
-		if (!album) return
-
-		try {
-			const response = await fetch(`/api/albums/${album.id}`, {
-				credentials: 'same-origin'
-			})
-			if (response.ok) {
-				const data = await response.json()
-				albumMedia = data.media || []
-			}
-		} catch (err) {
-			console.error('Failed to load album media:', err)
-		}
-	}
-
-	function validateForm() {
-		try {
-			albumSchema.parse({
-				title: formData.title,
-				slug: formData.slug,
-				location: formData.location || undefined,
-				year: formData.year || undefined
-			})
-			_validationErrors = {}
-			return true
-		} catch (err) {
-			if (err instanceof z.ZodError) {
-				const errors: Record<string, string> = {}
-				err.errors.forEach((e) => {
-					if (e.path[0]) {
-						errors[e.path[0].toString()] = e.message
-					}
-				})
-				_validationErrors = errors
-			}
-			return false
-		}
-	}
-
-	async function handleSave() {
-		if (!validateForm()) {
-			toast.error('Please fix the validation errors')
-			return
-		}
-
-		isSaving = true
-		const loadingToastId = toast.loading(`${mode === 'edit' ? 'Saving' : 'Creating'} album...`)
-
-		try {
-			const payload = {
-				title: formData.title,
-				slug: formData.slug,
-				description: null,
-				date: formData.year || null,
-				location: formData.location || null,
-				showInUniverse: formData.showInUniverse,
-				status: formData.status,
-				content: formData.content,
-				updatedAt: mode === 'edit' ? album?.updatedAt : undefined
-			}
-
-			const url = mode === 'edit' ? `/api/albums/${album?.id}` : '/api/albums'
-			const method = mode === 'edit' ? 'PUT' : 'POST'
-
-			const response = await fetch(url, {
-				method,
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(payload),
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(
-					errorData.error?.message || `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
-				)
-			}
-
-			const savedAlbum = await response.json()
-
-			toast.dismiss(loadingToastId)
-
-			// Add pending photos to newly created album
-			if (mode === 'create' && pendingMediaIds.length > 0) {
-				const photoToastId = toast.loading('Adding selected photos to album...')
-				try {
-					const photoResponse = await fetch(`/api/albums/${savedAlbum.id}/media`, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({ mediaIds: pendingMediaIds }),
-						credentials: 'same-origin'
-					})
-
-					if (!photoResponse.ok) {
-						throw new Error('Failed to add photos to album')
-					}
-
-					toast.dismiss(photoToastId)
-					toast.success(
-						`Album created with ${pendingMediaIds.length} photo${pendingMediaIds.length !== 1 ? 's' : ''}!`
-					)
-				} catch (err) {
-					toast.dismiss(photoToastId)
-					toast.error(
-						'Album created but failed to add photos. You can add them by editing the album.'
-					)
-					console.error('Failed to add photos:', err)
-				}
-			} else {
-				toast.success(`Album ${mode === 'edit' ? 'saved' : 'created'} successfully!`)
-			}
-
-			const wasCreate = mode === 'create'
-			album = savedAlbum
-			populateFormData(savedAlbum)
-			if (wasCreate) {
-				mode = 'edit'
-				pendingMediaIds = []
-				replaceState(`/admin/albums/${savedAlbum.id}/edit`, {})
-				await loadAlbumMedia()
-			}
-		} catch (err) {
-			toast.dismiss(loadingToastId)
-			toast.error(
-				err instanceof Error
-					? err.message
-					: `Failed to ${mode === 'edit' ? 'save' : 'create'} album`
-			)
-			console.error(err)
-		} finally {
-			isSaving = false
-		}
-	}
-
-	async function handleBulkAlbumSave() {
-		// Reload album to get updated photo count
-		if (album && mode === 'edit') {
-			await loadAlbumMedia()
-		}
-	}
-
-	function handleContentUpdate(content: JSONContent) {
-		formData.content = content
-	}
-
-	function handlePhotoSelection(media: Media | Media[]) {
-		const mediaArray = Array.isArray(media) ? media : [media]
-		pendingMediaIds = mediaArray.map((m) => m.id)
-	}
+	const form = untrack(() => createAlbumForm({ album: initialAlbum, mode: initialMode }))
 </script>
 
 <AdminPage>
 	{#snippet header()}
-		<header>
-			<div class="header-left">
-				<h1 class="form-title">{formData.title || 'Untitled Album'}</h1>
-			</div>
-			<div class="header-center">
-				<AdminSegmentedControl
-					options={tabOptions}
-					value={activeTab}
-					onChange={(value) => (activeTab = value)}
-				/>
-			</div>
-			<div class="header-actions">
-				<Button variant="primary" onclick={handleSave} disabled={isSaving}>
-					{isSaving ? 'Saving...' : 'Save'}
+		<FormPageHeader
+			title={form.formData.title || 'Untitled Album'}
+			tabs={form.tabOptions}
+			bind:activeTab={form.activeTab}
+		>
+			{#snippet actions()}
+				<Button variant="primary" onclick={form.handleSave} disabled={form.isSaving}>
+					{form.isSaving ? 'Saving...' : 'Save'}
 				</Button>
-			</div>
-		</header>
+			{/snippet}
+		</FormPageHeader>
 	{/snippet}
 
 	<div class="admin-container">
-		{#if isLoading}
-			<div class="loading">Loading album...</div>
-		{:else}
-			<div class="tab-panels">
-				<!-- Metadata Panel -->
-				<div class="panel content-wrapper" class:active={activeTab === 'metadata'}>
-					<!-- Album Details -->
-					<div class="form-section">
-						<Input
-							label="Title"
-							size="jumbo"
-							bind:value={formData.title}
-							placeholder="Album title"
-							required
-						/>
-
-						<Input
-							label="Slug"
-							bind:value={formData.slug}
-							placeholder="url-friendly-name"
-							required
-							disabled={mode === 'edit'}
-						/>
-
-						<div class="form-grid">
-							<Input
-								label="Location"
-								bind:value={formData.location}
-								placeholder="e.g. Tokyo, Japan"
-							/>
-							<Input
-								label="Year"
-								type="text"
-								bind:value={formData.year}
-								placeholder="e.g. 2023 or 2023-2025"
-							/>
-						</div>
-
-						<DropdownSelectField
-							label="Status"
-							bind:value={formData.status}
-							options={statusOptions}
-						/>
-
-						{#if mode === 'edit' && heartCount != null}
-							<div class="stat-row">
-								<span class="stat-label">Hearts</span>
-								<span class="stat-value">{heartCount}</span>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Display Settings -->
-					<div class="form-section">
-						<label class="toggle-label">
-							<input type="checkbox" bind:checked={formData.showInUniverse} class="toggle-input" />
-							<div class="toggle-content">
-								<span class="toggle-title">Show in Universe</span>
-								<span class="toggle-description">Display this album in the Universe feed</span>
-							</div>
-							<span class="toggle-slider"></span>
-						</label>
-					</div>
-
-					{#if mode === 'edit' && album?.id}
-						<SyndicationStatus
-							contentType="album"
-							contentId={album.id}
-							contentStatus={formData.status}
-						/>
-					{/if}
-
-					<!-- Photos Grid -->
-					<div class="form-section">
-						<div class="section-header">
-							<h3 class="section-title">
-								Photos {albumMedia.length > 0 || pendingMediaIds.length > 0
-									? `(${mode === 'edit' ? albumMedia.length : pendingMediaIds.length})`
-									: ''}
-							</h3>
-							<button class="btn-secondary" onclick={() => (showBulkAlbumModal = true)}>
-								{mode === 'create' ? 'Select Photos' : 'Manage Photos'}
-							</button>
-						</div>
-						{#if mode === 'edit' && albumMedia.length > 0}
-							<div class="photos-grid">
-								{#each albumMedia as item}
-									<div class="photo-item">
-										<SmartImage
-											media={item.media}
-											alt={item.media.description || item.media.filename}
-											sizes="(max-width: 768px) 50vw, 25vw"
-										/>
-									</div>
-								{/each}
-							</div>
-						{:else if mode === 'create' && pendingMediaIds.length > 0}
-							<p class="selected-count">
-								{pendingMediaIds.length} photo{pendingMediaIds.length !== 1 ? 's' : ''} selected. They
-								will be added when you save the album.
-							</p>
-						{:else}
-							<p class="empty-state">
-								No photos {mode === 'create' ? 'selected' : 'added'} yet. Click "{mode === 'create'
-									? 'Select Photos'
-									: 'Manage Photos'}" to {mode === 'create' ? 'select' : 'add'} photos.
-							</p>
-						{/if}
-					</div>
-				</div>
-
-				<!-- Content Panel -->
-				<div class="panel panel-content" class:active={activeTab === 'content'}>
-					<Composer
-						bind:this={editorInstance}
-						bind:data={formData.content}
-						placeholder="Add album content..."
-						onChange={handleContentUpdate}
-						albumId={album?.id}
-						variant="full"
+		<div class="tab-panels">
+			<!-- Metadata Panel -->
+			<div class="panel content-wrapper" class:active={form.activeTab === 'metadata'}>
+				<AlbumDetailsSection
+					bind:title={form.formData.title}
+					bind:slug={form.formData.slug}
+					bind:location={form.formData.location}
+					bind:year={form.formData.year}
+					bind:status={form.formData.status}
+					bind:showInUniverse={form.formData.showInUniverse}
+					editing={form.mode === 'edit'}
+					heartCount={form.heartCount}
+				/>
+				{#if form.mode === 'edit' && form.album?.id}
+					<SyndicationStatus
+						contentType="album"
+						contentId={form.album.id}
+						contentStatus={form.formData.status}
 					/>
+				{/if}
+
+				{#if form.mode === 'edit' && form.pendingMediaIds.length > 0}
+					<p class="selected-count">
+						{form.pendingMediaIds.length} photo additions pending. Save to retry.
+					</p>
+				{/if}
+				<!-- Photos Grid -->
+				<div class="form-section">
+					<div class="section-header">
+						<h3 class="section-title">
+							Photos {form.albumMedia.length > 0 || form.pendingMediaIds.length > 0
+								? `(${form.mode === 'edit' ? form.albumMedia.length : form.pendingMediaIds.length})`
+								: ''}
+						</h3>
+						<button class="btn-secondary" onclick={() => (form.showBulkAlbumModal = true)}>
+							{form.mode === 'create' ? 'Select Photos' : 'Manage Photos'}
+						</button>
+					</div>
+					{#if form.mode === 'edit' && form.albumMedia.length > 0}
+						<div class="photos-grid">
+							{#each form.albumMedia as item}
+								<div class="photo-item">
+									<SmartImage
+										media={item.media}
+										alt={item.media.description || item.media.filename}
+										sizes="(max-width: 768px) 50vw, 25vw"
+									/>
+								</div>
+							{/each}
+						</div>
+					{:else if form.mode === 'create' && form.pendingMediaIds.length > 0}
+						<p class="selected-count">
+							{form.pendingMediaIds.length} photo{form.pendingMediaIds.length !== 1 ? 's' : ''} selected.
+							They will be added when you save the album.
+						</p>
+					{:else}
+						<p class="empty-state">
+							No photos {form.mode === 'create' ? 'selected' : 'added'} yet. Click "{form.mode ===
+							'create'
+								? 'Select Photos'
+								: 'Manage Photos'}" to {form.mode === 'create' ? 'select' : 'add'} photos.
+						</p>
+					{/if}
 				</div>
 			</div>
-		{/if}
+
+			<!-- Content Panel -->
+			<div class="panel panel-content" class:active={form.activeTab === 'content'}>
+				<Composer
+					bind:data={form.formData.content}
+					placeholder="Add album content..."
+					albumId={form.album?.id}
+					variant="full"
+				/>
+			</div>
+		</div>
 	</div>
 </AdminPage>
 
+<UnsavedChangesModal
+	isOpen={form.lifecycle.showUnsavedChangesModal}
+	onContinueEditing={form.lifecycle.handleContinueEditing}
+	onLeave={form.lifecycle.handleLeaveWithoutSaving}
+/>
+
 <!-- Media Modal -->
 <UnifiedMediaModal
-	bind:isOpen={showBulkAlbumModal}
-	albumId={album?.id}
-	selectedIds={mode === 'edit' ? existingMediaIds : pendingMediaIds}
-	showInAlbumMode={mode === 'edit'}
-	onSave={mode === 'edit' ? handleBulkAlbumSave : undefined}
-	onSelect={mode === 'create' ? handlePhotoSelection : undefined}
+	bind:isOpen={form.showBulkAlbumModal}
+	albumId={form.album?.id}
+	selectedIds={form.mode === 'edit' ? form.existingMediaIds : form.pendingMediaIds}
+	showInAlbumMode={form.mode === 'edit'}
+	onSave={form.mode === 'edit' ? form.handleBulkAlbumSave : undefined}
+	onSelect={form.mode === 'create' ? form.handlePhotoSelection : undefined}
 	mode="multiple"
-	title={mode === 'create' ? 'Select Photos for Album' : 'Manage Album Photos'}
-	confirmText={mode === 'create' ? 'Select Photos' : 'Update Photos'}
+	title={form.mode === 'create' ? 'Select Photos for Album' : 'Manage Album Photos'}
+	confirmText={form.mode === 'create' ? 'Select Photos' : 'Update Photos'}
 />
 
 <style lang="scss">
-	header {
-		display: grid;
-		grid-template-columns: 250px 1fr 250px;
-		align-items: center;
-		width: 100%;
-		gap: $unit-2x;
-
-		.header-left {
-			width: 250px;
-			display: flex;
-			align-items: center;
-			gap: $unit-2x;
-		}
-
-		.header-center {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
-
-		.header-actions {
-			width: 250px;
-			display: flex;
-			justify-content: flex-end;
-			gap: $unit-2x;
-		}
-	}
-
-	.form-title {
-		margin: 0;
-		font-size: 1rem;
-		font-weight: 500;
-		color: $gray-20;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
 	.admin-container {
 		width: 100%;
 		margin: 0 auto;
@@ -527,12 +170,6 @@
 		}
 	}
 
-	.loading {
-		text-align: center;
-		padding: $unit-6x;
-		color: $gray-40;
-	}
-
 	.form-section {
 		display: flex;
 		flex-direction: column;
@@ -554,16 +191,6 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-	}
-
-	.form-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: $unit-3x;
-
-		@include breakpoint('phone') {
-			grid-template-columns: 1fr;
-		}
 	}
 
 	.photos-grid {
@@ -602,76 +229,6 @@
 		}
 	}
 
-	// Toggle styles
-	.toggle-label {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: $unit-3x;
-		cursor: pointer;
-		user-select: none;
-	}
-
-	.toggle-input {
-		position: absolute;
-		opacity: 0;
-		pointer-events: none;
-
-		&:checked + .toggle-content + .toggle-slider {
-			background-color: $blue-60;
-
-			&::before {
-				transform: translateX(20px);
-			}
-		}
-
-		&:disabled + .toggle-content + .toggle-slider {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
-	}
-
-	.toggle-slider {
-		position: relative;
-		width: 44px;
-		height: 24px;
-		background-color: $gray-80;
-		border-radius: 12px;
-		transition: background-color 0.2s ease;
-		flex-shrink: 0;
-
-		&::before {
-			content: '';
-			position: absolute;
-			top: 2px;
-			left: 2px;
-			width: 20px;
-			height: 20px;
-			background-color: white;
-			border-radius: 50%;
-			transition: transform 0.2s ease;
-			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-		}
-	}
-
-	.toggle-content {
-		display: flex;
-		flex-direction: column;
-		gap: $unit-half;
-
-		.toggle-title {
-			font-weight: 500;
-			color: $gray-10;
-			font-size: 0.875rem;
-		}
-
-		.toggle-description {
-			font-size: 0.75rem;
-			color: $gray-50;
-			line-height: 1.4;
-		}
-	}
-
 	// Button styles
 	.btn-secondary {
 		padding: $unit $unit-2x;
@@ -702,25 +259,6 @@
 		background: $gray-95;
 		border-radius: $unit;
 		margin: 0;
-	}
-
-	.stat-row {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: $unit-2x 0;
-
-		.stat-label {
-			font-size: 0.875rem;
-			font-weight: 500;
-			color: $gray-40;
-		}
-
-		.stat-value {
-			font-size: 0.875rem;
-			font-weight: 500;
-			color: $gray-20;
-		}
 	}
 
 	.selected-count {

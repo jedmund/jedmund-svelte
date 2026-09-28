@@ -54,7 +54,9 @@ export function createProjectFormStore(initialProject?: Project | null) {
 		get validationErrors() {
 			return validationErrors
 		},
-		isDirty,
+		get isDirty() {
+			return isDirty
+		},
 
 		// Methods for controlled mutation
 		setField<K extends keyof ProjectFormData>(key: K, value: ProjectFormData[K]) {
