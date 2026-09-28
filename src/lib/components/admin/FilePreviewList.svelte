@@ -1,19 +1,12 @@
 <script lang="ts">
 	import { formatFileSize, isImageFile, isVideoFile } from '$lib/utils/mediaHelpers'
 	import type { Media } from '@prisma/client'
-
-	interface FilePreview {
-		file?: File
-		media?: Media
-		id: string | number
-		name: string
-		size: number
-		type: string
-		url: string
-	}
+	import { createFilePreviews, type FilePreview } from '$lib/admin/media/file-previews'
 
 	interface Props {
 		files: (File | Media)[]
+		onRemoveFile?: (file: File) => void
+		progressFor?: (file: File) => number
 		onRemove?: (id: string | number) => void
 		uploadProgress?: Record<string, number>
 		uploadErrors?: string[]
@@ -25,6 +18,8 @@
 	let {
 		files = [],
 		onRemove,
+		onRemoveFile,
+		progressFor,
 		uploadProgress = {},
 		uploadErrors = [],
 		isUploading = false,
@@ -32,55 +27,25 @@
 		class: className = ''
 	}: Props = $props()
 
-	// Convert files to preview format
-	const previews = $derived<FilePreview[]>(
-		files.map((item) => {
-			if ('url' in item) {
-				// It's a Media object
-				return {
-					media: item,
-					id: item.id,
-					name: item.filename,
-					size: item.size,
-					type: item.mimeType,
-					url: item.url
-				}
-			} else {
-				// It's a File object
-				return {
-					file: item,
-					id: item.name,
-					name: item.name,
-					size: item.size,
-					type: item.type,
-					url: URL.createObjectURL(item)
-				}
-			}
-		})
-	)
-
-	function handleRemove(preview: FilePreview) {
-		onRemove?.(preview.id)
-		// Clean up object URLs
-		if (preview.file) {
-			URL.revokeObjectURL(preview.url)
-		}
-	}
-
-	// Clean up object URLs on unmount
+	let previews = $state.raw<FilePreview[]>([])
+	const resources = createFilePreviews()
 	$effect(() => {
-		return () => {
-			previews.forEach((preview) => {
-				if (preview.file) {
-					URL.revokeObjectURL(preview.url)
-				}
-			})
-		}
+		previews = resources.update(files)
 	})
+	$effect(() => () => resources.dispose())
+	function handleRemove(preview: FilePreview) {
+		if (preview.file && onRemoveFile) onRemoveFile(preview.file)
+		else onRemove?.(preview.id)
+	}
+	function progress(preview: FilePreview) {
+		return preview.file && progressFor
+			? progressFor(preview.file)
+			: uploadProgress[preview.name] || 0
+	}
 </script>
 
 <div class="file-preview-list {variant} {className}">
-	{#each previews as preview (preview.id)}
+	{#each previews as preview (preview.file ?? preview.id)}
 		<div class="file-item">
 			<div class="file-preview">
 				{#if isImageFile(preview.type)}
@@ -97,7 +62,7 @@
 				<div class="file-size">{formatFileSize(preview.size)}</div>
 			</div>
 
-			{#if !isUploading && onRemove}
+			{#if !isUploading && (onRemove || onRemoveFile)}
 				<button
 					type="button"
 					class="remove-button"
@@ -122,13 +87,13 @@
 			{#if variant === 'upload' && isUploading && preview.file}
 				<div class="progress-bar-container">
 					<div class="progress-bar">
-						<div class="progress-fill" style="width: {uploadProgress[preview.name] || 0}%"></div>
+						<div class="progress-fill" style="width: {progress(preview)}%"></div>
 					</div>
 					<div class="upload-status">
-						{#if uploadProgress[preview.name] === 100}
+						{#if progress(preview) === 100}
 							<span class="status-complete">✓</span>
-						{:else if uploadProgress[preview.name] > 0}
-							<span class="status-uploading">{Math.round(uploadProgress[preview.name] || 0)}%</span>
+						{:else if progress(preview) > 0}
+							<span class="status-uploading">{Math.round(progress(preview))}%</span>
 						{:else}
 							<span class="status-waiting">Waiting...</span>
 						{/if}

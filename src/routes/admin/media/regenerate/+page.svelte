@@ -1,164 +1,14 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import MediaMaintenanceStats from '$lib/components/admin/media/MediaMaintenanceStats.svelte'
+	import RegenerationResults from '$lib/components/admin/media/RegenerationResults.svelte'
 	import { goto } from '$app/navigation'
 	import AdminPage from '$lib/components/admin/AdminPage.svelte'
 	import Button from '$lib/components/admin/Button.svelte'
-	import Modal from '$lib/components/admin/Modal.svelte'
 	import { Play, Palette, Image, Sparkles } from '@lucide/svelte'
 	import ChevronLeft from '$icons/chevron-left.svg?component'
 
-	// Lucide icons need casting to Snippet for Button's icon prop
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const iconPlay = Play as any
-
-	let extractingColors = $state(false)
-	let regeneratingThumbnails = $state(false)
-	let reanalyzingColors = $state(false)
-	let colorExtractionResults: {
-		processed: number
-		succeeded: number
-		failed: number
-		errors: string[]
-		photosUpdated: number
-	} | null = $state(null)
-	let thumbnailResults: {
-		processed: number
-		succeeded: number
-		failed: number
-		errors: string[]
-	} | null = $state(null)
-	let reanalysisResults: {
-		processed: number
-		updated: number
-		skipped: number
-		errors: string[]
-	} | null = $state(null)
-	let showResultsModal = $state(false)
-	let error: string | null = $state(null)
-	let mediaStats = $state<{
-		totalMedia: number
-		missingColors: number
-		missingAspectRatio: number
-		outdatedThumbnails: number
-		greyDominantColors: number
-	} | null>(null)
-
-	onMount(() => {
-		fetchMediaStats()
-	})
-
-	async function fetchMediaStats() {
-		try {
-			const response = await fetch('/api/admin/media-stats', {
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to fetch media stats')
-			}
-
-			mediaStats = await response.json()
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'Failed to fetch media stats'
-		}
-	}
-
-	async function extractColors() {
-		extractingColors = true
-		error = null
-		colorExtractionResults = null
-
-		try {
-			const response = await fetch('/api/admin/cloudinary-extract-colors', {
-				method: 'POST',
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to extract colors')
-			}
-
-			colorExtractionResults = await response.json()
-			showResultsModal = true
-
-			// Refresh stats
-			await fetchMediaStats()
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'An error occurred'
-		} finally {
-			extractingColors = false
-		}
-	}
-
-	async function regenerateThumbnails() {
-		regeneratingThumbnails = true
-		error = null
-		thumbnailResults = null
-
-		try {
-			const response = await fetch('/api/admin/regenerate-thumbnails', {
-				method: 'POST',
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to regenerate thumbnails')
-			}
-
-			thumbnailResults = await response.json()
-			showResultsModal = true
-
-			// Refresh stats
-			await fetchMediaStats()
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'An error occurred'
-		} finally {
-			regeneratingThumbnails = false
-		}
-	}
-
-	async function reanalyzeColors() {
-		reanalyzingColors = true
-		error = null
-		reanalysisResults = null
-
-		try {
-			const response = await fetch('/api/admin/reanalyze-colors', {
-				method: 'POST',
-				credentials: 'same-origin'
-			})
-
-			if (!response.ok) {
-				if (response.status === 401) {
-					goto('/admin/login')
-					return
-				}
-				throw new Error('Failed to reanalyze colors')
-			}
-
-			reanalysisResults = await response.json()
-			showResultsModal = true
-
-			// Refresh stats
-			await fetchMediaStats()
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'An error occurred'
-		} finally {
-			reanalyzingColors = false
-		}
-	}
+	import { createRegenerationController } from '$lib/admin/media/regenerate-controller.svelte'
+	const maintenance = createRegenerationController()
 </script>
 
 <svelte:head>
@@ -177,36 +27,13 @@
 		</header>
 	{/snippet}
 
-	{#if error}
+	{#if maintenance.error}
 		<div class="error-message">
-			<p>{error}</p>
+			<p>{maintenance.error}</p>
 		</div>
 	{/if}
 
-	{#if mediaStats}
-		<div class="stats-grid">
-			<div class="stat-card">
-				<h3>Total Media</h3>
-				<p class="value">{mediaStats.totalMedia.toLocaleString()}</p>
-			</div>
-			<div class="stat-card">
-				<h3>Missing Colors</h3>
-				<p class="value">{mediaStats.missingColors.toLocaleString()}</p>
-			</div>
-			<div class="stat-card">
-				<h3>Missing Aspect Ratio</h3>
-				<p class="value">{mediaStats.missingAspectRatio.toLocaleString()}</p>
-			</div>
-			<div class="stat-card">
-				<h3>Outdated Thumbnails</h3>
-				<p class="value">{mediaStats.outdatedThumbnails.toLocaleString()}</p>
-			</div>
-			<div class="stat-card">
-				<h3>Grey Dominant Colors</h3>
-				<p class="value">{mediaStats.greyDominantColors.toLocaleString()}</p>
-			</div>
-		</div>
-	{/if}
+	<MediaMaintenanceStats stats={maintenance.mediaStats} />
 
 	<div class="regenerate-section">
 		<div class="action-card">
@@ -228,12 +55,14 @@
 			</div>
 			<Button
 				variant="primary"
-				onclick={extractColors}
-				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={iconPlay}
+				onclick={maintenance.extractColors}
+				disabled={maintenance.extractingColors ||
+					maintenance.regeneratingThumbnails ||
+					maintenance.reanalyzingColors}
 				iconPosition="left"
 			>
-				{extractingColors ? 'Extracting Colors...' : 'Extract Colors'}
+				{#snippet icon()}<Play />{/snippet}
+				{maintenance.extractingColors ? 'Extracting Colors...' : 'Extract Colors'}
 			</Button>
 		</div>
 
@@ -256,12 +85,16 @@
 			</div>
 			<Button
 				variant="primary"
-				onclick={regenerateThumbnails}
-				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={iconPlay}
+				onclick={maintenance.regenerateThumbnails}
+				disabled={maintenance.extractingColors ||
+					maintenance.regeneratingThumbnails ||
+					maintenance.reanalyzingColors}
 				iconPosition="left"
 			>
-				{regeneratingThumbnails ? 'Regenerating Thumbnails...' : 'Regenerate Thumbnails'}
+				{#snippet icon()}<Play />{/snippet}
+				{maintenance.regeneratingThumbnails
+					? 'Regenerating Thumbnails...'
+					: 'Regenerate Thumbnails'}
 			</Button>
 		</div>
 
@@ -283,110 +116,26 @@
 			</div>
 			<Button
 				variant="primary"
-				onclick={reanalyzeColors}
-				disabled={extractingColors || regeneratingThumbnails || reanalyzingColors}
-				icon={iconPlay}
+				onclick={maintenance.reanalyzeColors}
+				disabled={maintenance.extractingColors ||
+					maintenance.regeneratingThumbnails ||
+					maintenance.reanalyzingColors}
 				iconPosition="left"
 			>
-				{reanalyzingColors ? 'Reanalyzing Colors...' : 'Reanalyze Colors'}
+				{#snippet icon()}<Play />{/snippet}
+				{maintenance.reanalyzingColors ? 'Reanalyzing Colors...' : 'Reanalyze Colors'}
 			</Button>
 		</div>
 	</div>
 </AdminPage>
 
-<!-- Results Modal -->
-<Modal bind:isOpen={showResultsModal}>
-	<div class="modal-content">
-		<div class="modal-header">
-			<h2>
-				{colorExtractionResults
-					? 'Color Extraction Results'
-					: thumbnailResults
-						? 'Thumbnail Regeneration Results'
-						: 'Color Reanalysis Results'}
-			</h2>
-		</div>
-
-		{#if colorExtractionResults}
-			<div class="results">
-				<p><strong>Processed:</strong> {colorExtractionResults.processed} media items</p>
-				<p><strong>Succeeded:</strong> {colorExtractionResults.succeeded}</p>
-				<p><strong>Failed:</strong> {colorExtractionResults.failed}</p>
-				<p><strong>Photos Updated:</strong> {colorExtractionResults.photosUpdated}</p>
-
-				{#if colorExtractionResults.errors.length > 0}
-					<div class="errors-section">
-						<h3>Errors:</h3>
-						<ul>
-							{#each colorExtractionResults.errors.slice(0, 10) as error}
-								<li>{error}</li>
-							{/each}
-							{#if colorExtractionResults.errors.length > 10}
-								<li>... and {colorExtractionResults.errors.length - 10} more errors</li>
-							{/if}
-						</ul>
-					</div>
-				{/if}
-			</div>
-		{/if}
-
-		{#if thumbnailResults}
-			<div class="results">
-				<p><strong>Processed:</strong> {thumbnailResults.processed} media items</p>
-				<p><strong>Succeeded:</strong> {thumbnailResults.succeeded}</p>
-				<p><strong>Failed:</strong> {thumbnailResults.failed}</p>
-
-				{#if thumbnailResults.errors.length > 0}
-					<div class="errors-section">
-						<h3>Errors:</h3>
-						<ul>
-							{#each thumbnailResults.errors.slice(0, 10) as error}
-								<li>{error}</li>
-							{/each}
-							{#if thumbnailResults.errors.length > 10}
-								<li>... and {thumbnailResults.errors.length - 10} more errors</li>
-							{/if}
-						</ul>
-					</div>
-				{/if}
-			</div>
-		{/if}
-
-		{#if reanalysisResults}
-			<div class="results">
-				<p><strong>Processed:</strong> {reanalysisResults.processed} media items</p>
-				<p><strong>Updated:</strong> {reanalysisResults.updated} (colors improved)</p>
-				<p><strong>Skipped:</strong> {reanalysisResults.skipped} (already optimal)</p>
-
-				{#if reanalysisResults.errors.length > 0}
-					<div class="errors-section">
-						<h3>Errors:</h3>
-						<ul>
-							{#each reanalysisResults.errors.slice(0, 10) as error}
-								<li>{error}</li>
-							{/each}
-							{#if reanalysisResults.errors.length > 10}
-								<li>... and {reanalysisResults.errors.length - 10} more errors</li>
-							{/if}
-						</ul>
-					</div>
-				{/if}
-			</div>
-		{/if}
-
-		<div class="modal-actions">
-			<Button
-				variant="primary"
-				onclick={() => {
-					showResultsModal = false
-					colorExtractionResults = null
-					thumbnailResults = null
-					reanalysisResults = null
-				}}>Close</Button
-			>
-		</div>
-	</div>
-</Modal>
+<RegenerationResults
+	clearResults={maintenance.clearResults}
+	colorExtractionResults={maintenance.colorExtractionResults}
+	reanalysisResults={maintenance.reanalysisResults}
+	bind:showResultsModal={maintenance.showResultsModal}
+	thumbnailResults={maintenance.thumbnailResults}
+/>
 
 <style lang="scss">
 	header {
@@ -448,36 +197,6 @@
 		}
 	}
 
-	.stats-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 1rem;
-		margin-bottom: 2rem;
-	}
-
-	.stat-card {
-		background: $gray-97;
-		border: 1px solid $gray-90;
-		border-radius: 8px;
-		padding: 1.5rem;
-
-		h3 {
-			margin: 0 0 0.5rem;
-			font-size: 0.875rem;
-			font-weight: 500;
-			color: $gray-30;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-		}
-
-		.value {
-			margin: 0;
-			font-size: 2rem;
-			font-weight: 600;
-			color: $gray-10;
-		}
-	}
-
 	.regenerate-section {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -534,74 +253,5 @@
 				}
 			}
 		}
-	}
-
-	.modal-content {
-		display: flex;
-		flex-direction: column;
-		padding: 1.5rem;
-		min-width: 500px;
-		max-width: 600px;
-	}
-
-	.modal-header {
-		margin-bottom: 1.5rem;
-
-		h2 {
-			margin: 0;
-			font-size: 1.25rem;
-			font-weight: 600;
-			color: $gray-10;
-		}
-	}
-
-	.results {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-
-		p {
-			margin: 0;
-			font-size: 0.875rem;
-			color: $gray-30;
-
-			strong {
-				color: $gray-10;
-			}
-		}
-	}
-
-	.errors-section {
-		margin-top: 1rem;
-		padding: 1rem;
-		background: rgba($red-60, 0.1);
-		border-radius: 8px;
-		border: 1px solid rgba($red-60, 0.2);
-
-		h3 {
-			margin: 0 0 0.5rem;
-			font-size: 1rem;
-			color: $red-60;
-		}
-
-		ul {
-			margin: 0;
-			padding-left: 1.5rem;
-			list-style-type: disc;
-
-			li {
-				font-size: 0.75rem;
-				color: $gray-30;
-				margin: 0.25rem 0;
-			}
-		}
-	}
-
-	.modal-actions {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: 1.5rem;
-		padding-top: 1.5rem;
-		border-top: 1px solid $gray-90;
 	}
 </style>
