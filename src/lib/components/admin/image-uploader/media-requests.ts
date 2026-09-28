@@ -1,4 +1,5 @@
 import type { Media } from '@prisma/client'
+import { responseData } from '$lib/admin/response'
 
 export type DescriptionUpdate = Pick<Media, 'id' | 'description' | 'updatedAt'>
 
@@ -6,18 +7,6 @@ export function validateImage(file: File, maxFileSize: number): string | null {
 	if (!file.type.startsWith('image/')) return 'Please select an image file'
 	if (file.size > maxFileSize * 1024 * 1024) return `File size must be less than ${maxFileSize}MB`
 	return null
-}
-
-async function responseData<T>(response: Response, fallback: string): Promise<T> {
-	const data: unknown = await response.json().catch(() => null)
-	if (!response.ok) {
-		const error = data && typeof data === 'object' && 'error' in data ? data.error : null
-		const message = error && typeof error === 'object' && 'message' in error ? error.message : null
-		throw new Error(typeof message === 'string' && message ? message : fallback)
-	}
-	if (!data || typeof data !== 'object') throw new Error(fallback)
-	// These endpoints return the existing media wire contract; dates remain serialized in the UI.
-	return data as T
 }
 
 export async function uploadImage(

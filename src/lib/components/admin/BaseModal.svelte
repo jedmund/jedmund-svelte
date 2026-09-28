@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { untrack } from 'svelte'
+	import { modalFocus, lockModalScroll } from './modal-lifecycle'
 	import { fade } from 'svelte/transition'
 
 	// Convert CSS transition durations to milliseconds for Svelte transitions
@@ -42,7 +43,7 @@
 			}, INTRO_DURATION)
 			return () => clearTimeout(timer)
 		} else {
-			if (animationState === 'open' || animationState === 'entering') {
+			if (untrack(() => animationState !== 'closed')) {
 				animationState = 'closing'
 				const timer = setTimeout(() => {
 					animationState = 'closed'
@@ -65,45 +66,8 @@
 		}
 	}
 
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape' && closeOnEscape && isOpen) {
-			handleClose()
-		}
-	}
-
-	// Effect to handle body scroll locking
 	$effect(() => {
-		if (isOpen) {
-			// Save current scroll position
-			const scrollY = window.scrollY
-
-			// Lock body scroll
-			document.body.style.position = 'fixed'
-			document.body.style.top = `-${scrollY}px`
-			document.body.style.width = '100%'
-			document.body.style.overflow = 'hidden'
-
-			return () => {
-				// Restore body scroll
-				const scrollY = document.body.style.top
-				document.body.style.position = ''
-				document.body.style.top = ''
-				document.body.style.width = ''
-				document.body.style.overflow = ''
-
-				// Restore scroll position
-				if (scrollY) {
-					window.scrollTo(0, parseInt(scrollY || '0') * -1)
-				}
-			}
-		}
-	})
-
-	onMount(() => {
-		document.addEventListener('keydown', handleKeydown)
-		return () => {
-			document.removeEventListener('keydown', handleKeydown)
-		}
+		if (isOpen) return lockModalScroll()
 	})
 
 	let modalClass = $derived(`modal modal-${size} ${scale ? 'modal-scale' : ''} ${className}`)
@@ -118,6 +82,11 @@
 	>
 		<div
 			class={modalClass}
+			use:modalFocus={{
+				isOpen: () => isOpen,
+				closeOnEscape: () => closeOnEscape,
+				close: handleClose
+			}}
 			data-state={animationState}
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
@@ -132,6 +101,7 @@
 
 <style lang="scss">
 	.modal-backdrop {
+		box-sizing: border-box;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -146,6 +116,7 @@
 	}
 
 	.modal {
+		min-width: 0;
 		background-color: $white;
 		border-radius: $card-corner-radius;
 		box-shadow: 0 4px 12px $shadow-medium;
