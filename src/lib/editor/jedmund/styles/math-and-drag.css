@@ -1,0 +1,77 @@
+/* Mathematics extension styles */
+.tiptap .tiptap-mathematics-render {
+	padding: 0 0.25rem;
+	border-radius: 0.25rem;
+}
+
+/* Editable math block */
+.tiptap .tiptap-mathematics-render--editable {
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.tiptap .tiptap-mathematics-render--editable:hover {
+	background: var(--code-bg);
+}
+
+/* Inline math */
+.tiptap .tiptap-mathematics-render[data-type='inline-math'] {
+	display: inline-block;
+}
+
+/* Block math */
+.tiptap .tiptap-mathematics-render[data-type='block-math'] {
+	display: block;
+	padding: 0.5rem;
+	margin: 1rem 0;
+	font-size: 1.25rem;
+	text-align: center;
+}
+
+/* Error styles */
+.tiptap .tiptap-mathematics-render.inline-math-error,
+.tiptap .tiptap-mathematics-render.block-math-error {
+	color: var(--destructive);
+	background: var(--code-bg);
+	border: 1px solid darkred;
+}
+
+/* Drag Handle Styling */
+.drag-handle {
+	position: fixed;
+	z-index: 50;
+	width: 1.5rem;
+	height: 1.5rem;
+	display: flex;
+	padding-right: 0.5rem;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	cursor: grab;
+	opacity: 100;
+	transition-property: all;
+	transition-duration: 300ms;
+	transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+	color: var(--border-color-hover);
+}
+
+.drag-handle:active {
+	cursor: grabbing;
+}
+
+.drag-handle.hide {
+	opacity: 0;
+	pointer-events: none;
+}
+
+@media screen and (max-width: 600px) {
+	.drag-handle {
+		display: none;
+		pointer-events: none;
+	}
+}
+
+.drag-handle svg {
+	height: 1rem;
+	width: 1rem;
+}

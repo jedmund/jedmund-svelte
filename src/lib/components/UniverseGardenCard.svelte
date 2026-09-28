@@ -1,6 +1,6 @@
 <script lang="ts">
 	import UniverseCard from './UniverseCard.svelte'
-	import { renderInlineExcerpt } from '$lib/utils/content'
+	import { renderInlineExcerpt } from '$lib/utils/content/excerpts'
 	import type { UniverseItem } from '$lib/types/universe'
 
 	let { garden }: { garden: UniverseItem } = $props()

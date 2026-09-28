@@ -2,7 +2,7 @@
  * Client-side syndication utilities for preview generation.
  * Mirrors logic from src/lib/server/syndication/syndicate.ts — keep in sync.
  */
-import { getContentExcerpt } from '$lib/utils/content'
+import { getContentExcerpt } from '$lib/utils/content/excerpts'
 
 interface TiptapNode {
 	type: string
