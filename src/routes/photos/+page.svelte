@@ -1,11 +1,15 @@
 <script lang="ts">
+	import FeedLoader from '$lib/components/public/FeedLoader.svelte'
+	import { onDestroy, untrack } from 'svelte'
+	import { createPagedFeed, type FeedState } from '$lib/public/paged-feed'
+	import { loadPublicPhotos } from '$lib/public/feed-requests'
 	import PhotoGrid from '$components/PhotoGrid.svelte'
 	import HorizontalPhotoScroll from '$components/HorizontalPhotoScroll.svelte'
 	import LoadingSpinner from '$components/admin/LoadingSpinner.svelte'
 	import ViewModeSelector from '$components/ViewModeSelector.svelte'
 
 	type ViewMode = 'masonry' | 'single' | 'two-column' | 'horizontal'
-	import { InfiniteLoader, LoaderState } from 'svelte-infinite'
+	import { LoaderState } from 'svelte-infinite'
 	import { generateMetaTags } from '$lib/utils/metadata'
 	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
@@ -19,127 +23,72 @@
 	// Initialize loader state
 	const loaderState = new LoaderState()
 
-	// Initialize state with server-side data
-	let allPhotos = $state<Photo[]>(data.photos || [])
-	let currentOffset = $state(data.pagination?.limit || 20)
 	let containerWidth = $state<'normal' | 'wide'>('normal')
-
-	// Initialize view mode from URL or default
 	const urlMode = $page.url.searchParams.get('view') as ViewMode
 	let viewMode = $state<ViewMode>(
 		urlMode && ['masonry', 'single', 'two-column', 'horizontal'].includes(urlMode)
 			? urlMode
 			: 'two-column'
 	)
-
-	// Track loaded photo IDs to prevent duplicates
-	let loadedPhotoIds = $state(new Set(data.photos?.map((photo: Photo) => photo.id) || []))
-
 	const error = $derived(data.error)
 	const pageUrl = $derived($page.url.href)
-
-	// Error message for retry display
-	let lastError = $state<string>('')
-	let isLoadingAll = $state(false)
-
-	// Update URL when view mode changes
+	let feed = $state<FeedState<Photo>>({
+		items: data.photos || [],
+		offset: data.pagination?.limit || 20,
+		hasMore: !!data.pagination?.hasMore,
+		loading: false,
+		loadingAll: false,
+		error: ''
+	})
+	const collection = createPagedFeed({
+		initial: untrack(() => feed),
+		key: (photo: Photo) => photo.id,
+		load: loadPublicPhotos,
+		changed: (next) => {
+			feed = next
+		}
+	})
+	const allPhotos = $derived(feed.items)
+	const currentOffset = $derived(feed.offset)
+	const lastError = $derived(feed.error)
+	const isLoadingAll = $derived(feed.loadingAll)
+	let restoreTimer: ReturnType<typeof setTimeout> | undefined
+	onDestroy(() => {
+		collection.dispose()
+		clearTimeout(restoreTimer)
+	})
+	function updateLoader() {
+		if (feed.error) loaderState.error()
+		else if (!feed.hasMore) loaderState.complete()
+		else loaderState.loaded()
+	}
+	async function loadMore() {
+		await collection.loadMore()
+		updateLoader()
+	}
+	async function loadAllPhotos() {
+		await collection.loadAll()
+		updateLoader()
+	}
 	async function handleViewModeChange(mode: ViewMode) {
 		viewMode = mode
-		if (browser) {
-			const url = new URL($page.url)
-			if (mode === 'two-column') {
-				url.searchParams.delete('view')
-			} else {
-				url.searchParams.set('view', mode)
-			}
-			goto(url.toString(), { replaceState: true, keepFocus: true })
-
-			// Load all remaining photos for horizontal mode
-			if (mode === 'horizontal' && data.pagination?.hasMore && !isLoadingAll) {
-				loadAllPhotos()
-			}
-		}
-	}
-
-	// Load all photos for horizontal mode
-	async function loadAllPhotos() {
-		if (isLoadingAll) return
-		isLoadingAll = true
-
+		if (!browser) return
+		const url = new URL($page.url)
+		if (mode === 'two-column') url.searchParams.delete('view')
+		else url.searchParams.set('view', mode)
 		try {
-			while (currentOffset < (data.pagination?.total || Infinity)) {
-				const response = await fetch(`/api/photos?limit=50&offset=${currentOffset}`)
-				if (!response.ok) break
-
-				const result = await response.json()
-				const newPhotos = (result.photoItems || []).filter(
-					(photo: Photo) => !loadedPhotoIds.has(photo.id)
-				)
-
-				newPhotos.forEach((photo: Photo) => loadedPhotoIds.add(photo.id))
-				allPhotos = [...allPhotos, ...newPhotos]
-				currentOffset += result.pagination?.limit || 50
-
-				if (!result.pagination?.hasMore) break
-			}
-		} finally {
-			isLoadingAll = false
-			loaderState.complete()
+			await goto(url.toString(), { replaceState: true, keepFocus: true })
+			if (mode === 'horizontal') await loadAllPhotos()
+		} catch (error) {
+			console.error('Failed to change photo view:', error)
 		}
 	}
-
-	// Load more photos
-	async function loadMore() {
-		try {
-			const response = await fetch(`/api/photos?limit=20&offset=${currentOffset}`)
-			if (!response.ok) {
-				throw new Error(`Failed to fetch photos: ${response.statusText}`)
-			}
-
-			const data = await response.json()
-
-			// Filter out duplicates
-			const newPhotos = (data.photoItems || []).filter(
-				(photo: Photo) => !loadedPhotoIds.has(photo.id)
-			)
-
-			// Add new photo IDs to the set
-			newPhotos.forEach((photo: Photo) => loadedPhotoIds.add(photo.id))
-
-			// Append new photos to existing list
-			allPhotos = [...allPhotos, ...newPhotos]
-
-			// Update pagination state
-			currentOffset += data.pagination?.limit || 20
-
-			// Update loader state
-			if (!data.pagination?.hasMore || newPhotos.length === 0) {
-				loaderState.complete()
-			} else {
-				loaderState.loaded()
-			}
-
-			// Clear any previous error
-			lastError = ''
-		} catch (err) {
-			console.error('Error loading more photos:', err)
-			lastError = err instanceof Error ? err.message : 'Failed to load more photos'
-			loaderState.error()
-		}
-	}
-
-	// Initialize loader state based on initial data
 	let hasInitialized = false
 	$effect(() => {
-		if (!hasInitialized) {
-			hasInitialized = true
-			if (!data.pagination?.hasMore) {
-				loaderState.complete()
-			} else if (viewMode === 'horizontal') {
-				// Load all photos for horizontal mode on initial load
-				loadAllPhotos()
-			}
-		}
+		if (hasInitialized) return
+		hasInitialized = true
+		if (!feed.hasMore) loaderState.complete()
+		else if (viewMode === 'horizontal') loadAllPhotos()
 	})
 
 	// Generate metadata for photos page
@@ -176,13 +125,12 @@
 			// Re-hydrate everything loaded beyond the initial server page first,
 			// so the document is tall enough for the scroll restore below
 			if (snap.photos?.length > allPhotos.length) {
-				allPhotos = snap.photos
-				currentOffset = snap.offset
-				loadedPhotoIds = new Set(snap.photos.map((photo) => photo.id))
+				collection.restore(snap.photos, snap.offset)
 			}
 
 			// Small delay to ensure content is rendered
-			setTimeout(() => {
+			clearTimeout(restoreTimer)
+			restoreTimer = setTimeout(() => {
 				if (snap.scrollY) {
 					window.scrollTo(0, snap.scrollY)
 				}
@@ -259,43 +207,8 @@
 			{/if}
 		</div>
 
-		{#if viewMode !== 'horizontal'}
-			<InfiniteLoader
-				{loaderState}
-				triggerLoad={loadMore}
-				intersectionOptions={{ rootMargin: '0px 0px 200px 0px' }}
-			>
-				<!-- Empty content since we're rendering the grid above -->
-				<div style="height: 1px;"></div>
-
-				{#snippet loading()}
-					<div class="loading-container">
-						<LoadingSpinner size="medium" text="Loading more photos..." />
-					</div>
-				{/snippet}
-
-				{#snippet error()}
-					<div class="error-retry">
-						<p class="error-text">{lastError || 'Failed to load photos'}</p>
-						<button
-							class="retry-button"
-							onclick={() => {
-								lastError = ''
-								loaderState.reset()
-								loadMore()
-							}}
-						>
-							Try again
-						</button>
-					</div>
-				{/snippet}
-
-				{#snippet noData()}
-					<div class="end-message">
-						<p>You've reached the end</p>
-					</div>
-				{/snippet}
-			</InfiniteLoader>
+		{#if viewMode !== 'horizontal' || lastError}
+			<FeedLoader {loaderState} {loadMore} {lastError} noun="photos" />
 		{/if}
 	{/if}
 </div>
@@ -374,14 +287,6 @@
 		}
 	}
 
-	.loading-container {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 100px;
-		margin-top: $unit-4x;
-	}
-
 	.loading-more-indicator {
 		position: fixed;
 		bottom: $unit-3x;
@@ -391,53 +296,5 @@
 		border-radius: $corner-radius-lg;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 		z-index: 20;
-	}
-
-	.end-message {
-		text-align: center;
-		padding: $unit-6x 0;
-
-		p {
-			margin: 0;
-			color: $gray-50;
-			font-size: 1rem;
-		}
-	}
-
-	.error-retry {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: $unit-2x;
-		padding: $unit-4x $unit-2x;
-		margin-top: $unit-4x;
-	}
-
-	.error-text {
-		margin: 0;
-		color: $red-60;
-		font-size: 0.875rem;
-		text-align: center;
-		max-width: 300px;
-	}
-
-	.retry-button {
-		padding: $unit $unit-3x;
-		background-color: $primary-color;
-		color: white;
-		border: none;
-		border-radius: $unit;
-		font-size: 0.875rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-
-		&:hover {
-			background-color: color.adjust($primary-color, $lightness: -10%);
-		}
-
-		&:active {
-			transform: scale(0.98);
-		}
 	}
 </style>

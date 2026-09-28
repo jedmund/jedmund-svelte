@@ -1,194 +1,67 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { onDestroy } from 'svelte'
 	import XIcon from '$icons/x.svg?component'
-	import LoaderIcon from '$icons/loader.svg?component'
-
-	let isOpen = $state(false)
+	import AppleSearchControls from './debug/AppleSearchControls.svelte'
+	import AppleSearchResults from './debug/AppleSearchResults.svelte'
+	import { createAppleSearch, type AppleSearchState } from './debug/apple-search'
+	import { modalFocus, lockModalScroll } from './admin/modal-lifecycle'
 	let searchQuery = $state('')
 	let storefront = $state('us')
-	let isSearching = $state(false)
-	let searchResults = $state<unknown>(null)
-	let searchError = $state<string | null>(null)
-	let responseTime = $state<number>(0)
-
-	// Available storefronts
-	const storefronts = [
-		{ value: 'us', label: 'United States' },
-		{ value: 'jp', label: 'Japan' },
-		{ value: 'gb', label: 'United Kingdom' },
-		{ value: 'ca', label: 'Canada' },
-		{ value: 'au', label: 'Australia' },
-		{ value: 'de', label: 'Germany' },
-		{ value: 'fr', label: 'France' },
-		{ value: 'es', label: 'Spain' },
-		{ value: 'it', label: 'Italy' },
-		{ value: 'kr', label: 'South Korea' },
-		{ value: 'cn', label: 'China' },
-		{ value: 'br', label: 'Brazil' }
-	]
-
-	export function open() {
-		isOpen = true
-		searchQuery = ''
-		searchResults = null
-		searchError = null
-		responseTime = 0
-	}
-
-	function close() {
-		isOpen = false
-	}
-
-	async function performSearch() {
-		if (!searchQuery.trim()) {
-			searchError = 'Please enter a search query'
-			return
-		}
-
-		isSearching = true
-		searchError = null
-		searchResults = null
-
-		const startTime = performance.now()
-
-		try {
-			const response = await fetch('/api/admin/debug/apple-music-search', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					query: searchQuery,
-					storefront
-				})
-			})
-
-			responseTime = Math.round(performance.now() - startTime)
-
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-			}
-
-			searchResults = await response.json()
-		} catch (error) {
-			searchError = error instanceof Error ? error.message : 'Unknown error occurred'
-			searchResults = null
-		} finally {
-			isSearching = false
-		}
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && isOpen) {
-			close()
-		} else if (e.key === 'Enter' && !isSearching) {
-			performSearch()
-		}
-	}
-
-	onMount(() => {
-		window.addEventListener('keydown', handleKeydown)
-		return () => window.removeEventListener('keydown', handleKeydown)
+	let searchState = $state<AppleSearchState>({
+		open: false,
+		searching: false,
+		results: null,
+		error: null,
+		responseTime: 0
 	})
+	const search = createAppleSearch((next) => (searchState = next))
+	onDestroy(search.dispose)
+	$effect(() => {
+		if (searchState.open) return lockModalScroll()
+	})
+	export function open() {
+		searchQuery = ''
+		search.open()
+	}
 </script>
 
-{#if isOpen}
-	<div class="modal-overlay" role="presentation" onclick={close}>
+{#if searchState.open}
+	<div class="modal-overlay" role="presentation" onclick={search.close}>
 		<div
 			class="modal-container"
 			role="dialog"
 			aria-modal="true"
+			aria-label="Apple Music API Search"
 			tabindex="-1"
-			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.stopPropagation()}
+			onclick={(event) => event.stopPropagation()}
+			onkeydown={(event) => event.stopPropagation()}
+			use:modalFocus={{
+				isOpen: () => searchState.open,
+				closeOnEscape: () => true,
+				close: search.close
+			}}
 		>
 			<div class="modal-header">
 				<h2>Apple Music API Search</h2>
-				<button class="close-btn" onclick={close} aria-label="Close">
-					<XIcon />
-				</button>
+				<button type="button" class="close-btn" onclick={search.close} aria-label="Close"
+					><XIcon /></button
+				>
 			</div>
-
 			<div class="modal-body">
-				<div class="search-controls">
-					<div class="control-group">
-						<label for="search-query">Search Query</label>
-						<input
-							id="search-query"
-							type="text"
-							bind:value={searchQuery}
-							placeholder="e.g., Taylor Swift folklore"
-							disabled={isSearching}
-						/>
-					</div>
-
-					<div class="control-group">
-						<label for="storefront">Storefront</label>
-						<select id="storefront" bind:value={storefront} disabled={isSearching}>
-							{#each storefronts as store}
-								<option value={store.value}>{store.label}</option>
-							{/each}
-						</select>
-					</div>
-
-					<button
-						class="search-btn"
-						onclick={performSearch}
-						disabled={isSearching || !searchQuery.trim()}
-					>
-						{#if isSearching}
-							<LoaderIcon class="icon spinning" /> Searching...
-						{:else}
-							Search
-						{/if}
-					</button>
-				</div>
-
-				{#if searchError}
-					<div class="error-message">
+				<AppleSearchControls
+					bind:searchQuery
+					bind:storefront
+					isSearching={searchState.searching}
+					onSearch={() => search.search(searchQuery, storefront)}
+				/>
+				{#if searchState.error}<div class="error-message">
 						<strong>Error:</strong>
-						{searchError}
-					</div>
-				{/if}
-
-				{#if responseTime > 0}
-					<div class="response-time">
-						Response time: {responseTime}ms
-					</div>
-				{/if}
-
-				{#if searchResults}
-					<div class="results-section">
-						<h3>Results</h3>
-
-						<div class="result-tabs">
-							<button class="tab" class:active={true} onclick={() => {}}> Raw JSON </button>
-							<button
-								class="copy-btn"
-								onclick={async () => {
-									try {
-										await navigator.clipboard.writeText(JSON.stringify(searchResults, null, 2))
-										// Show a temporary success message
-										const btn = event?.target as HTMLButtonElement
-										if (btn) {
-											const originalText = btn.textContent
-											btn.textContent = 'Copied!'
-											setTimeout(() => {
-												btn.textContent = originalText
-											}, 2000)
-										}
-									} catch (err) {
-										console.error('Failed to copy:', err)
-									}
-								}}
-							>
-								Copy to Clipboard
-							</button>
-						</div>
-
-						<div class="results-content">
-							<pre>{JSON.stringify(searchResults, null, 2)}</pre>
-						</div>
-					</div>
-				{/if}
+						{searchState.error}
+					</div>{/if}
+				{#if searchState.responseTime > 0}<div class="response-time">
+						Response time: {searchState.responseTime}ms
+					</div>{/if}
+				{#if searchState.results}<AppleSearchResults results={searchState.results} />{/if}
 			</div>
 		</div>
 	</div>
@@ -208,7 +81,6 @@
 		justify-content: center;
 		backdrop-filter: blur(4px);
 	}
-
 	.modal-container {
 		background: rgba(20, 20, 20, 0.98);
 		border-radius: $unit * 1.5;
@@ -220,7 +92,6 @@
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
-
 	.modal-header {
 		display: flex;
 		justify-content: space-between;
@@ -255,89 +126,11 @@
 			}
 		}
 	}
-
 	.modal-body {
 		flex: 1;
 		overflow-y: auto;
 		padding: $unit * 2;
 	}
-
-	.search-controls {
-		display: flex;
-		gap: $unit * 2;
-		margin-bottom: $unit * 2;
-		align-items: flex-end;
-
-		.control-group {
-			flex: 1;
-
-			label {
-				display: block;
-				color: rgba(255, 255, 255, 0.8);
-				font-size: 12px;
-				font-weight: 500;
-				margin-bottom: $unit-half;
-			}
-
-			input,
-			select {
-				width: 100%;
-				background: rgba(255, 255, 255, 0.1);
-				border: 1px solid rgba(255, 255, 255, 0.2);
-				color: white;
-				padding: $unit;
-				border-radius: 4px;
-				font-size: 14px;
-				font-family: inherit;
-
-				&::placeholder {
-					color: rgba(255, 255, 255, 0.4);
-				}
-
-				&:focus {
-					outline: none;
-					border-color: $primary-color;
-					background: rgba(255, 255, 255, 0.15);
-				}
-
-				&:disabled {
-					opacity: 0.5;
-					cursor: not-allowed;
-				}
-			}
-		}
-
-		.search-btn {
-			padding: $unit $unit * 2;
-			background: $primary-color;
-			border: none;
-			color: white;
-			border-radius: 4px;
-			font-size: 14px;
-			font-weight: 500;
-			cursor: pointer;
-			transition: all 0.2s;
-			display: flex;
-			align-items: center;
-			gap: $unit-half;
-			white-space: nowrap;
-
-			&:hover:not(:disabled) {
-				background: color.adjust($primary-color, $lightness: -10%);
-			}
-
-			&:disabled {
-				opacity: 0.5;
-				cursor: not-allowed;
-			}
-
-			:global(.icon) {
-				width: 16px;
-				height: 16px;
-			}
-		}
-	}
-
 	.error-message {
 		background: rgba(255, 59, 48, 0.1);
 		border: 1px solid rgba(255, 59, 48, 0.3);
@@ -347,98 +140,9 @@
 		font-size: $font-size-small;
 		margin-bottom: $unit * 2;
 	}
-
 	.response-time {
 		color: rgba(255, 255, 255, 0.6);
 		font-size: 12px;
 		margin-bottom: $unit;
-	}
-
-	.results-section {
-		margin-top: $unit * 2;
-
-		h3 {
-			margin: 0 0 $unit 0;
-			color: #87ceeb;
-			font-size: 16px;
-			font-weight: 600;
-		}
-	}
-
-	.result-tabs {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-		margin-bottom: $unit * 2;
-
-		.tab {
-			padding: $unit $unit * 2;
-			background: none;
-			border: none;
-			color: rgba(255, 255, 255, 0.6);
-			cursor: pointer;
-			font-size: $font-size-small;
-			font-weight: 500;
-			transition: all 0.2s;
-			border-bottom: 2px solid transparent;
-
-			&:hover {
-				color: rgba(255, 255, 255, 0.8);
-			}
-
-			&.active {
-				color: white;
-				border-bottom-color: $primary-color;
-			}
-		}
-
-		.copy-btn {
-			padding: $unit-half $unit;
-			background: rgba(255, 255, 255, 0.1);
-			border: 1px solid rgba(255, 255, 255, 0.2);
-			color: rgba(255, 255, 255, 0.8);
-			border-radius: 4px;
-			font-size: 12px;
-			font-weight: 500;
-			cursor: pointer;
-			transition: all 0.2s;
-
-			&:hover {
-				background: rgba(255, 255, 255, 0.15);
-				border-color: rgba(255, 255, 255, 0.3);
-				color: white;
-			}
-		}
-	}
-
-	.results-content {
-		background: rgba(0, 0, 0, 0.5);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 4px;
-		max-height: 400px;
-		overflow-y: auto;
-
-		pre {
-			margin: 0;
-			padding: $unit * 1.5;
-			font-size: 12px;
-			line-height: 1.5;
-			color: rgba(255, 255, 255, 0.9);
-			font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-		}
-	}
-
-	:global(.spinning) {
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		from {
-			transform: rotate(0deg);
-		}
-		to {
-			transform: rotate(360deg);
-		}
 	}
 </style>
