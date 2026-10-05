@@ -138,3 +138,83 @@
 		color: inherit;
 	}
 }
+
+// Lyrics: A/B paragraph pairs laid out as columns; `data-view` comes from the hydrated toggle
+.lyrics-rendered {
+	display: flex;
+	flex-direction: column;
+	gap: $unit-3x;
+	margin: $unit-2x 0;
+	line-height: 1.7;
+
+	p {
+		margin: 0;
+	}
+
+	.lyrics-controls {
+		display: flex;
+	}
+
+	.lyrics-header,
+	.lyrics-stanza {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: $unit $unit-4x;
+	}
+
+	.lyrics-a {
+		grid-column: 1;
+	}
+
+	.lyrics-b {
+		grid-column: 2;
+		color: $gray-40;
+	}
+
+	.lyrics-heading {
+		line-height: 1.4;
+		color: inherit;
+	}
+
+	.lyrics-title {
+		font-weight: 600;
+	}
+
+	.lyrics-artist {
+		font-size: $font-size-small;
+		color: $gray-40;
+	}
+
+	&[data-view='a'] .lyrics-b,
+	&[data-view='b'] .lyrics-a,
+	&[data-view='a'] .lyrics-stanza:not(:has(.lyrics-a)),
+	&[data-view='b'] .lyrics-stanza:not(:has(.lyrics-b)) {
+		display: none;
+	}
+
+	&[data-view='a'],
+	&[data-view='b'] {
+		.lyrics-header,
+		.lyrics-stanza {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.lyrics-a,
+		.lyrics-b {
+			grid-column: 1;
+			color: inherit;
+		}
+	}
+
+	// Too narrow for two columns: keep each translation directly under its original
+	@media (max-width: 768px) {
+		.lyrics-header,
+		.lyrics-stanza {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.lyrics-b {
+			grid-column: 1;
+		}
+	}
+}
