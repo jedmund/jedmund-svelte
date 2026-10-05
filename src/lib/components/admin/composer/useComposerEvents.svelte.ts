@@ -59,10 +59,17 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 		return false
 	}
 
+	// Node views (captions, lyrics) host their own fields; refocusing ProseMirror would steal their input.
+	function fromFormControl(event: Event): boolean {
+		return (
+			event.target instanceof Element && !!event.target.closest('input, textarea, select, button')
+		)
+	}
+
 	// Handle editor click
 	function handleEditorClick(event: MouseEvent) {
 		const editorVal = resolve(options.editor)
-		if (editorVal) {
+		if (editorVal && !fromFormControl(event)) {
 			focusEditor(editorVal, event)
 		}
 	}
@@ -70,7 +77,7 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 	// Handle editor keyboard events
 	function handleEditorKeydown(event: KeyboardEvent) {
 		const editorVal = resolve(options.editor)
-		if (editorVal && (event.key === 'Enter' || event.key === ' ')) {
+		if (editorVal && !fromFormControl(event) && (event.key === 'Enter' || event.key === ' ')) {
 			focusEditor(editorVal, event)
 		}
 	}
