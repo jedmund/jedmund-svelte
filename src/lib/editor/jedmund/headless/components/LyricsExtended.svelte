@@ -7,6 +7,7 @@
 	import Trash from '@lucide/svelte/icons/trash'
 	import X from '@lucide/svelte/icons/x'
 	import NodeToolbar from './NodeToolbar.svelte'
+	import LyricsLanguagePicker from './LyricsLanguagePicker.svelte'
 	import { duplicateNode } from '../../node-actions.js'
 	import { normalizeStanzas, type LyricsStanza } from '$lib/utils/content/lyrics.js'
 
@@ -69,18 +70,14 @@
 <NodeViewWrapper>
 	<div bind:this={groupRef} class="lyrics-node" class:selected>
 		<div class="lyrics-columns">
-			{#each [{ side: 'A', lang: langA }, { side: 'B', lang: langB }] as column, i (column.side)}
+			{#each [{ side: 'A', lang: langA }, { side: 'B', lang: langB }] as column (column.side)}
 				<div class="lyrics-meta-column">
-					<label class="lyrics-lang">
-						<span>Language {column.side}</span>
-						<input
-							value={column.lang}
-							placeholder={i === 0 ? 'ja' : 'en'}
-							disabled={!editor.isEditable}
-							oninput={(event) =>
-								updateAttributes({ [`lang${column.side}`]: event.currentTarget.value.trim() })}
-						/>
-					</label>
+					<LyricsLanguagePicker
+						value={column.lang}
+						label="Language {column.side}"
+						disabled={!editor.isEditable}
+						onchange={(lang) => updateAttributes({ [`lang${column.side}`]: lang })}
+					/>
 					<input
 						class="lyrics-title-input"
 						lang={column.lang}
@@ -184,21 +181,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: $unit-half;
-	}
-
-	.lyrics-lang {
-		display: flex;
-		align-items: center;
-		gap: $unit;
-		font-size: $font-size-extra-small;
-		font-weight: 500;
-		color: $gray-40;
-
-		input {
-			width: 6em;
-			padding: 2px $unit-half;
-			font-size: $font-size-extra-small;
-		}
 	}
 
 	input,
