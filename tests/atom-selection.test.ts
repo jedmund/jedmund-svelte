@@ -26,7 +26,8 @@ for (const name of [
 	'urlEmbed',
 	'audio',
 	'video',
-	'iframe'
+	'iframe',
+	'lyrics'
 ]) {
 	test(`selection across ${name} preserves document and undo history`, () => {
 		const atom = Node.create({ name, group: 'block', atom: true })

@@ -16,6 +16,9 @@ declare module '@tiptap/core' {
 			resultIndex: number
 			lastResultIndex: number
 		}
+		lyrics: {
+			autoFocus: boolean
+		}
 		slashCommand: {
 			rect: {
 				width: number
