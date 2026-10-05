@@ -68,7 +68,7 @@
 
 <NodeViewWrapper>
 	<div bind:this={groupRef} class="lyrics-node" class:selected>
-		<div class="lyrics-columns lyrics-meta">
+		<div class="lyrics-columns">
 			{#each [{ side: 'A', lang: langA }, { side: 'B', lang: langB }] as column, i (column.side)}
 				<div class="lyrics-meta-column">
 					<label class="lyrics-lang">
@@ -178,11 +178,6 @@
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		gap: $unit;
-	}
-
-	.lyrics-meta {
-		padding-bottom: $unit;
-		border-bottom: 1px solid $gray-85;
 	}
 
 	.lyrics-meta-column {
