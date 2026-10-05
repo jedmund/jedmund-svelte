@@ -29,6 +29,7 @@ const strings = {
 		audioPlaceholder: 'Audio',
 		iframePlaceholder: 'iFrame',
 		table: 'Table',
+		lyrics: 'Lyrics',
 		inlineExpression: 'Inline Expression',
 		blockExpression: 'Block Expression',
 		horizontalRule: 'Horizontal Rule',

@@ -1,17 +1,23 @@
 <script lang="ts">
 	import StarIcon from '$icons/star.svg?component'
+	import { hydrateContent } from '$lib/utils/hydrate-content'
 	let {
 		renderedNote,
 		rating,
 		isFavorite
 	}: { renderedNote: string; rating: number | null; isFavorite: boolean } = $props()
+
+	let noteEl: HTMLDivElement | undefined = $state()
+	$effect(() => {
+		if (noteEl && renderedNote) return hydrateContent(noteEl)
+	})
 </script>
 
 {#if renderedNote || rating}
 	<div class="item-thoughts">
 		<h2 class="thoughts-label">Thoughts</h2>
 		{#if renderedNote}
-			<div class="item-note">
+			<div class="item-note" bind:this={noteEl}>
 				{@html renderedNote}
 			</div>
 		{/if}

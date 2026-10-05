@@ -1,5 +1,6 @@
 import type { ContentNode, Mark } from './types'
 import { extractMediaIdFromUrl } from './media-url'
+import { renderLyrics } from './lyrics'
 
 // Render Tiptap JSON content to HTML
 export function renderTiptapContent(
@@ -267,6 +268,10 @@ export function renderTiptapContent(
 				].join(',')
 				const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude},${longitude}`
 				return `<figure class="geolocation-rendered" data-latitude="${latitude}" data-longitude="${longitude}" data-zoom="${safeZoom}"><iframe src="${escapeHtml(embedUrl)}" title="${title || 'Location'}" loading="lazy"></iframe><a href="${mapUrl}" target="_blank" rel="noopener noreferrer"><strong>${title}</strong>${description ? `<span>${description}</span>` : ''}</a></figure>`
+			}
+
+			case 'lyrics': {
+				return renderLyrics(node.attrs)
 			}
 
 			case 'iframe': {
