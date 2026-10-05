@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
+	import { hydrateContent } from '$lib/utils/hydrate-content'
 	let { html, essay = false }: { html: string; essay?: boolean } = $props()
 	let element: HTMLDivElement | undefined = $state()
 	$effect(() => {
-		if (element && html) return hydrateAudioPlayers(element)
+		if (element && html) return hydrateContent(element)
 	})
 </script>
 
