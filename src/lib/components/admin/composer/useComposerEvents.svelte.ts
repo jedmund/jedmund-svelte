@@ -40,10 +40,16 @@ export function useComposerEvents(options: UseComposerEventsOptions) {
 			// Use editor commands to insert HTML content
 			const editorInstance = resolve(options.editor)
 			if (editorInstance) {
+				const { from, to } = editorInstance.state.selection
 				editorInstance
 					.chain()
 					.focus()
-					.insertContent(htmlData, { parseOptions: { preserveWhitespace: false } })
+					// Clipboard HTML always carries wrappers the schema doesn't know (<meta>, styled spans);
+					// the editor's strict content check would reject the whole paste, so drop them instead.
+					.insertContentAt({ from, to }, htmlData, {
+						parseOptions: { preserveWhitespace: false },
+						errorOnInvalidContent: false
+					})
 					.run()
 			} else {
 				// Fallback to plain text
