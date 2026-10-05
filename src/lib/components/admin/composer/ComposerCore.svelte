@@ -3,6 +3,7 @@
 	import type { Editor as CoreEditor } from '@tiptap/core'
 	import { onMount, setContext } from 'svelte'
 	import { initiateEditor, getEditorExtensions } from '$lib/editor/jedmund/editor-extensions.js'
+	import { ensureNonEmptyDoc } from '$lib/components/admin/forms/post-content'
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle'
 	import ComposerControls from './ComposerControls.svelte'
 	import ComposerLinkBubble from './ComposerLinkBubble.svelte'
@@ -129,9 +130,8 @@
 	let isEditorInitialized = false
 	$effect(() => {
 		if (editor && !isEditorInitialized) {
-			// Set initial content to ensure proper initialization
-			// This ensures the editor has at least an empty paragraph for placeholder
-			editor.commands.setContent(data, { emitUpdate: false })
+			// Re-apply initial content; an empty doc becomes one paragraph so the placeholder shows
+			editor.commands.setContent(ensureNonEmptyDoc(data), { emitUpdate: false })
 			isEditorInitialized = true
 		}
 	})
@@ -150,7 +150,7 @@
 		// Initialize editor
 		const newEditor = initiateEditor(
 			element,
-			data, // content
+			ensureNonEmptyDoc(data), // content
 			extensions, // extensions
 			{
 				onCreate: () => {
