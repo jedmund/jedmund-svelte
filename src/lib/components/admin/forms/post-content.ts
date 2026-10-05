@@ -12,21 +12,31 @@ interface BlockContent {
 	}>
 }
 
+// The schema requires `doc` to contain at least one block, so an empty doc
+// (`content: []`) fails Tiptap's content check.
+export function emptyDoc(): JSONContent {
+	return { type: 'doc', content: [{ type: 'paragraph' }] }
+}
+
+export function ensureNonEmptyDoc(doc: JSONContent): JSONContent {
+	return doc.content?.length ? doc : emptyDoc()
+}
+
 export function normalizeContent(raw: unknown): JSONContent {
 	if (raw && typeof raw === 'object') {
 		if ('blocks' in raw) {
-			return convertBlocksToTiptap(raw as unknown as BlockContent)
+			return ensureNonEmptyDoc(convertBlocksToTiptap(raw as unknown as BlockContent))
 		}
 		if ((raw as { type?: string }).type === 'doc') {
-			return raw as JSONContent
+			return ensureNonEmptyDoc(raw as JSONContent)
 		}
 	}
-	return { type: 'doc', content: [] }
+	return emptyDoc()
 }
 
 function convertBlocksToTiptap(blocksContent: BlockContent): JSONContent {
 	if (!blocksContent || !blocksContent.blocks) {
-		return { type: 'doc', content: [] }
+		return emptyDoc()
 	}
 
 	const tiptapContent = blocksContent.blocks.map((block) => {
