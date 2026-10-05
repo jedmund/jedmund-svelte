@@ -20,6 +20,7 @@ import { IFramePlaceholder } from './extensions/iframe/IFramePlaceholder.js'
 import { IFrameExtended } from './extensions/iframe/IFrameExtended.js'
 import { UrlEmbedPlaceholder } from './extensions/url-embed/UrlEmbedPlaceholder.js'
 import { UrlEmbedExtended } from './extensions/url-embed/UrlEmbedExtended.js'
+import { LyricsExtended } from './extensions/lyrics/LyricsExtended.js'
 import { LinkContextMenu } from './extensions/link-context-menu/LinkContextMenu.js'
 import slashcommand from './extensions/slash-command/slashcommand.js'
 
@@ -38,6 +39,7 @@ import IFramePlaceholderComponent from './headless/components/IFramePlaceholder.
 import IFrameExtendedComponent from './headless/components/IFrameExtended.svelte'
 import UrlEmbedPlaceholderComponent from './headless/components/UrlEmbedPlaceholder.svelte'
 import UrlEmbedExtendedComponent from './headless/components/UrlEmbedExtended.svelte'
+import LyricsExtendedComponent from './headless/components/LyricsExtended.svelte'
 import SlashCommandList from './headless/components/SlashCommandList.svelte'
 
 // Create lowlight instance
@@ -78,7 +80,9 @@ export function getEditorExtensions(options: EditorExtensionOptions = {}): Exten
 		IFrameExtended(IFrameExtendedComponent),
 		// URL Embed extension with optional callback
 		UrlEmbedPlaceholder(UrlEmbedPlaceholderComponent),
-		UrlEmbedExtended(UrlEmbedExtendedComponent, onShowUrlConvertDropdown)
+		UrlEmbedExtended(UrlEmbedExtendedComponent, onShowUrlConvertDropdown),
+		// Bilingual lyrics with A / side-by-side / B display
+		LyricsExtended(LyricsExtendedComponent)
 	]
 
 	// Suppress native browser context menu when right-clicking on a link

@@ -1,4 +1,5 @@
 import Minus from '@lucide/svelte/icons/minus'
+import Music from '@lucide/svelte/icons/music'
 import Quote from '@lucide/svelte/icons/quote'
 import SquareCode from '@lucide/svelte/icons/square-code'
 import type { Editor } from '@tiptap/core'
@@ -50,6 +51,14 @@ export const GROUPS: Group[] = [
 		actions: [
 			...commands.media.filter((cmd) => cmd.name === 'iframe-placeholder'),
 			...commands.table,
+			{
+				icon: Music,
+				name: 'lyrics',
+				tooltip: strings.command.lyrics,
+				onClick: (editor: Editor) => {
+					editor.chain().focus().insertLyrics().run()
+				}
+			},
 			{
 				icon: Minus,
 				name: 'horizontalRule',

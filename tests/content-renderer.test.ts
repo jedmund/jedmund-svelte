@@ -181,3 +181,71 @@ test('renders merged table cells and supported inline marks', () => {
 	assert.match(html, /<sup><mark><u>Marked<\/u><\/mark><\/sup>/)
 	assert.match(html, /<sub>Sub<\/sub>/)
 })
+
+test('renders lyrics as interleaved A/B paragraphs that read in order without styles', () => {
+	const html = renderEdraContent({
+		type: 'doc',
+		content: [
+			{
+				type: 'lyrics',
+				attrs: {
+					langA: 'ja',
+					langB: 'en',
+					titleA: '夜に駆ける',
+					artistA: 'YOASOBI',
+					titleB: 'Racing into the Night',
+					artistB: null,
+					stanzas: [
+						{ a: '沈むように\n溶けてゆくように', b: 'Like sinking\nlike melting <away>' },
+						{ a: '  ', b: '' },
+						{ a: '二人だけの空が', b: '' }
+					]
+				}
+			}
+		]
+	})
+
+	assert.match(
+		html,
+		/<figure class="lyrics-rendered" data-lyrics="" data-lang-a="ja" data-lang-b="en">/
+	)
+	assert.match(
+		html,
+		/<p class="lyrics-heading lyrics-a" lang="ja"><strong class="lyrics-title">夜に駆ける<\/strong><br><span class="lyrics-artist">YOASOBI<\/span><\/p>/
+	)
+	assert.match(
+		html,
+		/<p class="lyrics-heading lyrics-b" lang="en"><strong class="lyrics-title">Racing into the Night<\/strong><\/p>/
+	)
+	assert.match(
+		html,
+		/<div class="lyrics-stanza"><p class="lyrics-a" lang="ja">沈むように<br>溶けてゆくように<\/p><p class="lyrics-b" lang="en">Like sinking<br>like melting &lt;away&gt;<\/p><\/div>/
+	)
+	// Blank stanzas vanish and one-sided stanzas don't leave empty paragraphs behind.
+	assert.equal(html.match(/class="lyrics-stanza"/g)?.length, 2)
+	assert.match(
+		html,
+		/<div class="lyrics-stanza"><p class="lyrics-a" lang="ja">二人だけの空が<\/p><\/div>/
+	)
+	assert.doesNotMatch(html, /<button/)
+})
+
+test('lyrics fall back to safe language tags and drop when empty', () => {
+	const html = renderEdraContent({
+		type: 'doc',
+		content: [
+			{
+				type: 'lyrics',
+				attrs: { langA: 'ja" onclick="alert(1)', langB: 'pt-BR', stanzas: [{ a: 'a', b: 'b' }] }
+			}
+		]
+	})
+	assert.match(html, /data-lang-a="ja" data-lang-b="pt-BR"/)
+	assert.doesNotMatch(html, /onclick/)
+
+	const empty = renderEdraContent({
+		type: 'doc',
+		content: [{ type: 'lyrics', attrs: { stanzas: [{ a: '', b: '' }] } }]
+	})
+	assert.equal(empty, '')
+})

@@ -6,7 +6,7 @@
 	import { renderInlineExcerpt } from '$lib/utils/content/excerpts'
 	import { extractEmbeds } from '$lib/utils/extractEmbeds'
 	import { extractHeroMedia } from '$lib/utils/extractHeroMedia'
-	import { hydrateAudioPlayers } from '$lib/utils/hydrate-audio-players'
+	import { hydrateContent } from '$lib/utils/hydrate-content'
 	import type { UniverseItem } from '$lib/types/universe'
 
 	let { post }: { post: UniverseItem } = $props()
@@ -36,7 +36,7 @@
 
 	let excerptEl: HTMLDivElement | undefined = $state()
 	$effect(() => {
-		if (excerptEl && post.content) return hydrateAudioPlayers(excerptEl)
+		if (excerptEl && post.content) return hydrateContent(excerptEl)
 	})
 </script>
 

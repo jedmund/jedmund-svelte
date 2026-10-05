@@ -74,6 +74,15 @@ const NODE_SCHEMA_DEFAULTS: Record<string, Record<string, JsonValue>> = {
 		address: null
 	},
 	iframe: mediaDefaults,
+	lyrics: {
+		langA: 'ja',
+		langB: 'en',
+		titleA: null,
+		titleB: null,
+		artistA: null,
+		artistB: null,
+		stanzas: []
+	},
 	image: { ...mediaDefaults, mediaId: null },
 	tableCell: { colspan: 1, rowspan: 1, colwidth: null },
 	tableHeader: { colspan: 1, rowspan: 1, colwidth: null },
