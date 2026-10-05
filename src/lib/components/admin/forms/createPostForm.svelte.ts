@@ -1,5 +1,9 @@
 import { createSaveQueue, acknowledgeField } from './save-session'
-import { normalizeContent } from '$lib/components/admin/forms/post-content'
+import {
+	emptyDoc,
+	ensureNonEmptyDoc,
+	normalizeContent
+} from '$lib/components/admin/forms/post-content'
 import { formatSaveStatus } from '$lib/components/admin/forms/auto-save'
 import { useFormLifecycle } from '$lib/components/admin/forms/useFormLifecycle.svelte'
 import { replaceState } from '$app/navigation'
@@ -40,7 +44,9 @@ export function createPostForm(options: Props) {
 	let content = $state<JSONContent>(
 		initialPost
 			? normalizeContent(initialPost.content)
-			: (initialContent ?? { type: 'doc', content: [] })
+			: initialContent
+				? ensureNonEmptyDoc(initialContent)
+				: emptyDoc()
 	)
 	let tags = $state<Tag[]>(initialPost?.tags?.map((pt) => pt.tag) ?? [])
 
