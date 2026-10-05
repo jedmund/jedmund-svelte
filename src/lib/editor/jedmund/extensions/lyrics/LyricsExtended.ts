@@ -34,7 +34,9 @@ export const LyricsExtended = (component: Component<NodeViewProps>): Node<Lyrics
 		name: 'lyrics',
 		group: 'block',
 		atom: true,
-		draggable: true,
+		// ProseMirror marks draggable leaf views `draggable="true"`, which stops Firefox/Safari from
+		// placing the caret in the textareas. The side drag handle still moves the block.
+		draggable: false,
 
 		addOptions() {
 			return { HTMLAttributes: {} }
